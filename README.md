@@ -34,8 +34,8 @@ Explain here how to work with this project (compile, build, execute, install etc
 6) Find a way to make the network learn. At the moment my idea is to use
    STDP but let's see. The goal would be to be able to perform online
    training.
-7) Write the linux driver in order to be able to test, valuate and use the
+7) Write the linux driver in order to be able to test, evaluate and use the
    developed structure.
 8) Write a complete python program that, provided the characteristics of
-   the network, creates the VHDL structure.
+   the network, creates the accelerator and interacts with it.
 
