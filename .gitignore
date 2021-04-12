@@ -1,3 +1,6 @@
 # File that determines the positioning of directories and files inside
 # the current directory
 .DS_Store
+
+# Directory containing the bytecode precompiled files
+__pycache__
