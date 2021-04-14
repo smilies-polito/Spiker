@@ -1,16 +1,16 @@
 #!/Users/alessio/anaconda3/bin/python3
 
 # Script that simulates the behaviour of the developed
-# neuron model
+# single cycle neuron model
 
 import numpy as np
 from scipy.sparse import random
 import matplotlib.pyplot as plt 
 
-from neuron import neuron
+from neuronSingleCycle import neuronSingleCycle
 
 # Random generator
-rand_gen = np.random.default_rng()
+randGen = np.random.default_rng()
 
 # Store the partial values to plot them
 v_mem_values = []
@@ -23,20 +23,20 @@ v_th_min = 1
 dt_tau = 0.1
 
 # Generate a sparse train of input spikes
-inEvent = random(1, 1000, density = 0.02, random_state = rand_gen)
+inEvent = random(1, 1000, density = 0.02, random_state = randGen)
 inEvent = inEvent.A[0].astype(bool).astype(int)
 
 # Generate random weights to simulate the neuron
 w_min = 2	
 w_max = 100
-weight = (w_max - w_min)*rand_gen.\
+weight = (w_max - w_min)*randGen.\
 	random(size=inEvent.size) + w_min
 
 
 # Simulate the neuron
 for i in range(inEvent.size):
 
-	values = neuron(inEvent[i], v_mem, v_th_max, v_th_min, weight[i], dt_tau)
+	values = neuronSingleCycle(inEvent[i], v_mem, v_th_max, v_th_min, weight[i], dt_tau)
 	v_mem = values[0]
 	outEvent = values[1]
 

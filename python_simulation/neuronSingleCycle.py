@@ -3,7 +3,7 @@
 # Function which simulates the behaviour of a simple spiking
 # neuron with a single input (it can process one event per
 # cycle)
-def neuron(inEvent, v_mem, v_th_max, v_th_min, weight, dt_tau):
+def neuronSingleCycle(inEvent, v_mem, v_th_max, v_th_min, weight, dt_tau):
 
 	# Check if the previous update has caused the 
 	# membrane potential to grow over the threshold
