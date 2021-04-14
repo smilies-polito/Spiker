@@ -21,21 +21,23 @@ def neuronMultiCycle(inEvents, v_mem, v_th_max, v_th_min,
 	previousNode = 0
 	outEvent = 0
 
+		
+	# Generate event
+	if v_mem > v_th_max:
+		v_mem = 0
+		outEvent = 1
+
+
+
 	# Loop for all the events in the previous layer of neurons
 	# until the current neuron emits a spike or the previous
 	# layer has been completely analized
-	while previousNode < inEvents.size and outEvent == 0:
-		
-		# Generate event
-		if v_mem > v_th_max:
-			v_mem = 0
-			outEvent = 1
+	while previousNode < inEvents.size:
 
 		# Update with the coefficient corresponding to the
 		# neuron in the previous layer
-		else:
-			if inEvents[previousNode] == 1:
-				v_mem = v_mem + weights[previousNode]
+		if inEvents[previousNode] == 1:
+			v_mem = v_mem + weights[previousNode]
 
 		# Analize a new node in the previous layer
 		previousNode += 1

@@ -18,7 +18,7 @@ N_prevNeurons = 5
 randGen = np.random.default_rng()
 
 # Thresholds
-v_th_max = 100
+v_th_max = 50
 v_th_min = 2
 
 # Membrane potentials
@@ -62,6 +62,8 @@ for i in range(N_sim):
 # with respect to time
 inEvents = inEvents.T
 
+# Create the v_th array in order to be able tp plot it
+v_th_max = v_th_max * np.ones(inEvents[0].size)
 
 # Plot the obtained results
 fig, axs = plt.subplots(N_prevNeurons+2, 1)
@@ -70,23 +72,23 @@ fig, axs = plt.subplots(N_prevNeurons+2, 1)
 for i in range(N_prevNeurons):
 	axs[i].plot(inEvents[i])
 	axs[i].grid()
-#	axs[i].set_xticks(np.arange(0, inEvents_values.size[0], 
-#			step = inEvents_values.size[0]/20))
+	axs[i].set_xticks(np.arange(0, inEvents[i].size, 
+			step = inEvents[i].size/20))
 	axs[i].set_title("Input spikes")
 
 # Membrane potential
 axs[N_prevNeurons].plot(v_mem_values)
 axs[N_prevNeurons].plot(v_th_max, "--")
-axs[N_prevNeurons].grid()
-#axs[N_prevNeurons].set_xticks(np.arange(0, len(v_mem_values), 
-#			step = len(v_mem_values)/20))
+#axs[N_prevNeurons].grid()
+axs[N_prevNeurons].set_xticks(np.arange(0, len(v_mem_values), 
+			step = len(v_mem_values)/20))
 axs[N_prevNeurons].set_title("Membrane potential")
 
 # Output spikes
 axs[N_prevNeurons+1].plot(outEvents_values)
 axs[N_prevNeurons+1].grid()
-#axs[N_prevNeurons+1].set_xticks(np.arange(0, len(outEvent_values), 
-#			step = len(outEvent_values)/20))
+axs[N_prevNeurons+1].set_xticks(np.arange(0, len(outEvents_values), 
+			step = len(outEvents_values)/20))
 axs[N_prevNeurons+1].set_title("Output spikes")
 
 plt.subplots_adjust(hspace = 0.6)
