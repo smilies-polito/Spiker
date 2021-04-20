@@ -26,20 +26,21 @@ Explain here how to work with this project (compile, build, execute, install etc
 
 
 # TODO
-1) Implement the spiking neuron. At the moment I've chosen the LIF model
-   and I'm evaluating the differences between the time-stepped and the
-   event driven implementations.
-2) Test the developed model with MATLAB or python.
-3) Implement the developed model in VHDL.
+1) Find a way to make the network learn. At the moment I want to use STDP but let's
+   see. Once the network is able to learn it can be tested in python before starting
+   to develop the VHDL structure.
+2) Find an encoding/decoding method in order to be able to use real data in input
+   and to use the net to classificate them for example.
+3) If the obtained results are reasonable implement the developed model in VHDL.
+   here I want to develop two types of circuit in parallel, one with full resources,
+   simpler from a control point of view; the other with limited resources. These
+   two models at the end will be used to create the circuit basing on the requests
+   made by the user.
 4) Test the developed neuron on the FPGA, evaluate the performances and
    the required resources in order to have an idea of the maximum reachable
    dimensions of the network.
-5) Create the network with a modular organization.
-6) Find a way to make the network learn. At the moment my idea is to use
-   STDP but let's see. The goal would be to be able to perform online
-   training.
-7) Write the linux driver in order to be able to test, evaluate and use the
+5) Write the linux driver in order to be able to test, evaluate and use the
    developed structure.
-8) Write a complete python program that, provided the characteristics of
+6) Write a complete python program that, provided the characteristics of
    the network, creates the accelerator and interacts with it.
 
