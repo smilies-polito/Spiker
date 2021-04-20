@@ -105,6 +105,6 @@ axs[N_prevNeurons+1].set_xticks(np.arange(0, len(outEvents_values),
 			step = len(outEvents_values)/20))
 axs[N_prevNeurons+1].set_title("Output spikes")
 
-plt.subplots_adjust(hspace = 0.6)
+plt.subplots_adjust(hspace = 1)
 
 plt.show()
