@@ -16,7 +16,7 @@ Tesi/spiker/python_simulation/development"
 if development not in sys.path:
 	sys.path.insert(1,development)
 
-from layerMultiCycle import layerMultiCycle
+from layer import layer
 
 
 
@@ -61,7 +61,7 @@ dt_tau = 0.3
 for i in range(N_sim):
 
 	# Update the layer
-	layerMultiCycle(inEvents[i], v_mem, v_th_max, v_th_min, weights, 
+	layer(inEvents[i], v_mem, v_th_max, v_th_min, weights, 
 		dt_tau, N_curr, N_prev, outEvents[i])
 
 	v_mem_evolution[i] = v_mem

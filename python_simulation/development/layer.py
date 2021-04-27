@@ -38,10 +38,10 @@
 # at the beginning of the simulation and then simply updated by the 
 # various functions.
 
-from neuronMultiCycle import neuronMultiCycle
+from neuron import neuron
 
 
-def layerMultiCycle(inEvents, v_mem, v_th_max, v_th_min, weights, dt_tau,\
+def layer(inEvents, v_mem, v_th_max, v_th_min, weights, dt_tau,\
 		N_curr, N_prev, outEvents):
 
 
@@ -49,7 +49,7 @@ def layerMultiCycle(inEvents, v_mem, v_th_max, v_th_min, weights, dt_tau,\
 	for i in range(N_curr):
 
 		# Update the neuron
-		update = neuronMultiCycle(inEvents, v_mem[i], v_th_max[i],
+		update = neuron(inEvents, v_mem[i], v_th_max[i],
 				v_th_min[i], weights[i], dt_tau, N_prev)
 
 		# Update the output arrays with the values returned by

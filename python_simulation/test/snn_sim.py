@@ -16,7 +16,7 @@ Tesi/spiker/python_simulation/development"
 if development not in sys.path:
 	sys.path.insert(1,development)
 
-from snnMultiCycle import snnMultiCycle
+from snn import snn
 
 
 
@@ -65,7 +65,7 @@ dt_tau = 0.3
 for i in range(N_sim):
 
 	# Update the network
-	snnMultiCycle(inEvents[i], layersList[1:], v_mem, v_th_max, v_th_min, 
+	snn(inEvents[i], layersList[1:], v_mem, v_th_max, v_th_min, 
 	weights, dt_tau, outEvents)
 
 	for j in range(len(layersList)-1):
@@ -121,5 +121,5 @@ for i in range(1, len(layersList)):
 	
 		plt.subplots_adjust(hspace = 2)
 
-		name = "plots/multiCycle/layer_" + str(i) + "_node_" + str(j) + ".png"
+		name = "plots/optimizedVersion/layer_" + str(i) + "_node_" + str(j) + ".png"
 		plt.savefig(name)

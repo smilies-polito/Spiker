@@ -49,14 +49,14 @@
 # at the beginning of the simulation and then simply updated by the 
 # various functions.
 
-from layerMultiCycle import layerMultiCycle
+from layer import layer
 
-def snnMultiCycle(inEvents, layersList, v_mem, v_th_max, v_th_min, weights, dt_tau,\
+def snn(inEvents, layersList, v_mem, v_th_max, v_th_min, weights, dt_tau,\
 	outEvents):
 
 
 	# Update the first layer with the input events
-	layerMultiCycle(inEvents, v_mem[0], v_th_max[0], v_th_min[0], weights[0],\
+	layer(inEvents, v_mem[0], v_th_max[0], v_th_min[0], weights[0],\
 		dt_tau, layersList[0], inEvents.size, outEvents[0])
 
 	# Loop over all the other layers in the network updating them
@@ -64,6 +64,6 @@ def snnMultiCycle(inEvents, layersList, v_mem, v_th_max, v_th_min, weights, dt_t
 	for i in range(1, len(layersList)):
 
 		# Update the layer
-		layerMultiCycle(outEvents[i-1], v_mem[i], v_th_max[i], v_th_min[i],\
+		layer(outEvents[i-1], v_mem[i], v_th_max[i], v_th_min[i],\
 			weights[i], dt_tau, layersList[i], layersList[i-1],\
 			outEvents[i])
