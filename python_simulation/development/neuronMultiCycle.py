@@ -59,10 +59,10 @@ def neuronMultiCycle(inEvents, v_mem, v_th_max, v_th_min,
 
 	
 	# Exponential decrease
-	if v_mem > v_th_min:
-		v_mem = v_mem - dt_tau*v_mem
-	else:
-		v_mem = 0
+#	if v_mem > v_th_min:
+	v_mem = v_mem - dt_tau*v_mem
+#	else:
+#		v_mem = 0
 
 	
 	return [v_mem, outEvent]
