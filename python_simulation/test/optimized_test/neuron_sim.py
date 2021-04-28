@@ -11,12 +11,12 @@ import sys
 # Add the path containing the script to simulate to the modules
 # search path and then import the script
 development = "/Users/alessio/Documents/Poli/Magistrale/Tesi/\
-Tesi/spiker/python_simulation/development"
+Tesi/spiker/python_simulation/development/optimized_test"
 
 if development not in sys.path:
 	sys.path.insert(1,development)
 
-from neuronMultiCycle import neuronMultiCycle
+from neuron import neuron
 
 
 
@@ -59,7 +59,7 @@ outEvents_values = []
 for i in range(N_sim):
 
 	# Update the neuron
-	outValues = neuronMultiCycle(inEvents[i], v_mem, v_th_max, 
+	outValues = neuron(inEvents[i], v_mem, v_th_max, 
 			v_th_min, weights, dt_tau, N_prevNeurons)
 
 	# Update the potential

@@ -13,7 +13,8 @@ import sys
 # Add the path containing the script to simulate to the modules
 # search path and then import the script
 development = "/Users/alessio/Documents/Poli/Magistrale/Tesi/\
-Tesi/spiker/python_simulation/development"
+Tesi/spiker/python_simulation/development/singleCycle"
+
 
 if development not in sys.path:
 	sys.path.insert(1,development)
