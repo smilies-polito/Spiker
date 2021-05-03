@@ -29,7 +29,7 @@
 
 def neuron(inEvents, neuronDict, dt_tau):
 
-	outEvent = 0
+	outEvent = False
 
 	# Generate event
 	if neuronDict["v_mem"] > neuronDict["v_th"]:

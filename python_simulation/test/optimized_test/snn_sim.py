@@ -1,128 +1,67 @@
 #!/Users/alessio/anaconda3/bin/python3
 
-# Script that simulates a layer of multi cycle neurons
+# Script which simulates an entire spiking neural network and plots the temporal evolution
+# of the spikes and the membrane potentials 
+
+from neuronFunctions import createSparseArray
+
+from snnFunctions import simulateSnn, \
+			createNetworkDictList, \
+			createArraysList, \
+			plotNetworkResults
 
 import numpy as np
-from scipy.sparse import random
-import matplotlib.pyplot as plt
-import sys
-
-
-# Add the path containing the script to simulate to the modules
-# search path and then import the script
-development = "/Users/alessio/Documents/Poli/Magistrale/Tesi/\
-Tesi/spiker/python_simulation/development/optimized_test"
-
-# Plots directory 
-plots = "../plots"
-
-if development not in sys.path:
-	sys.path.insert(1,development)
-
-from snn import snn
-
-
-
-
 
 # Number of simulation cycles
 N_sim = 1000
 
-# Network shape = list of layers
-layersList = [2, 4, 1]
+# List which describes the network. Each entry represents the number of neurons in the
+# corresponding layer
+layersList = [4, 3, 2]
 
-# Random generator
-randGen = np.random.default_rng()
+# Density of the input spikes
+density = 0.01
 
 # Thresholds
-v_th_max = [50*np.ones(i) for i in layersList[1:]]
+v_th_list = [50*np.ones(layersList[i]) for i in range(1, len(layersList))]
 
-v_th_min = [2*np.ones(i) for i in layersList[1:]]
-
-# Membrane potential
-v_mem = [np.zeros(i) for i in layersList[1:]]
-
-# Output events
-outEvents = [np.zeros(i) for i in layersList[1:]]
+# Membrane potential reset state
+v_res_list = [np.zeros(layersList[i]) for i in range(1, len(layersList))]
 
 
-# Output arrays
-v_mem_evolution = [np.zeros((N_sim, i)) for i in layersList[1:]]
-outEvents_evolution = [np.zeros((N_sim, i)) for i in layersList[1:]]
-
-# Generate random weights to simulate the neuron
-w_min = 2
-w_max = 100
-weights = [(w_max - w_min)*randGen.\
-	random(size=(layersList[i], layersList[i-1])) + w_min for i\
-	in range(1,len(layersList))]
-
-
-# Generate a sparse train of input spikes
-inEvents = random(N_sim, layersList[0], density = 0.01, 
-		random_state = randGen)
-inEvents = inEvents.A.astype(bool).astype(int)
+# Range of the weights to generate
+w_min_list = [2*np.ones(layersList[i]) for i in range(1, len(layersList))]	
+w_max_list = [60*np.ones(layersList[i]) for i in range(1, len(layersList))]
 
 dt_tau = 0.3
 
-for i in range(N_sim):
-
-	# Update the network
-	snn(inEvents[i], layersList[1:], v_mem, v_th_max, v_th_min, 
-	weights, dt_tau, outEvents)
-
-	for j in range(len(layersList)-1):
-		v_mem_evolution[j][i] = v_mem[j]
-		outEvents_evolution[j][i] = outEvents[j]
+# Create the neuron dictionaries
+networkDictList = createNetworkDictList(layersList, v_th_list, v_res_list, w_min_list, 
+			w_max_list)
 
 
-# Transpose the array of input events in order to plot it
+# Create the bidimensional array containing the input events
+inEvents_evolution = createSparseArray(N_sim, layersList[0], density)
+
+# Create the output events array
+outEventsEvol_list = [np.zeros((N_sim, layersList[i])).astype(bool) 
+			for i in range(1, len(layersList))] 
+
+
+# Create the array of membrane potentials
+v_memEvol_list = createArraysList(layersList, N_sim)
+
+
+# Simulate the network
+simulateSnn(N_sim, inEvents_evolution, networkDictList, dt_tau, outEventsEvol_list,
+		v_memEvol_list, layersList)
+
+
+# Transpose the arrays of input events in order to plot it
 # with respect to time
-inEvents = inEvents.T
-
-for i in range(len(layersList)-1):
-	outEvents_evolution[i] = outEvents_evolution[i].T
-	v_mem_evolution[i] = v_mem_evolution[i].T
+inEvents_evolution = inEvents_evolution.T
 
 
-N_prev = layersList[0]
-outEvents_evolution.insert(0, inEvents)
-
-for i in range(1, len(layersList)):
-
-	for j in range(layersList[i]):
-
-		v_th = v_th_max[i-1][j]
-
-		# Plot the obtained results
-		fig, axs = plt.subplots(layersList[i-1]+2, 1)
-	
-		# Input spikes
-		for k in range(layersList[i-1]):
-
-			axs[k].plot(outEvents_evolution[i-1][k])
-			axs[k].grid()
-			axs[k].set_xticks(np.arange(0, outEvents_evolution[i-1][k].size,\
-					step = outEvents_evolution[i-1][k].size/20))
-			axs[k].set_title("Input spikes")
-	
-		# Membrane potential
-		v_th = v_th*np.ones(v_mem_evolution[i-1][j].size)
-		axs[layersList[i-1]].plot(v_mem_evolution[i-1][j])
-		axs[layersList[i-1]].plot(v_th, "--")
-		axs[layersList[i-1]].grid()
-		axs[layersList[i-1]].set_xticks(np.arange(0, v_mem_evolution[i-1][j].size,\
-					step = v_mem_evolution[i-1][j].size/20))
-		axs[layersList[i-1]].set_title("Membrane potential")
-	
-		# Output spikes
-		axs[layersList[i-1]+1].plot(outEvents_evolution[i][j])
-		axs[layersList[i-1]+1].grid()
-		axs[layersList[i-1]+1].set_xticks(np.arange(0, outEvents_evolution[i][j].size, \
-					step = outEvents_evolution[i][j].size/20))
-		axs[layersList[i-1]+1].set_title("Output spikes")
-	
-		plt.subplots_adjust(hspace = 2)
-
-		name = plots + "/optimized_test/layer_" + str(i) + "_node_" + str(j) + ".png"
-		plt.savefig(name)
+# Plot the results
+plotNetworkResults(layersList, inEvents_evolution, outEventsEvol_list, 
+			v_memEvol_list, v_th_list)
