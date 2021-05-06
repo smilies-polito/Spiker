@@ -1,37 +1,59 @@
 #!/Users/alessio/anaconda3/bin/python3
 
+# Script which simulates the model developed for the layer 
+
+from layerFunctions import createSparseArray, \
+			simulateLayer,	\
+			createLayerDict, \
+			plotLayerResults
+
 import numpy as np
 
-# Create the dictionary that contains all the parameters of the layer.
-#
-# INPUT PARAMETERS:
-#
-# 	1) v_th: NumPy array containing the threshold of each neuron.
-#
-# 	2) v_reset: numerical value at which the membrane potential is reset at the
-# 	   beginning and whenever it exceeds the threshold.
-#
-# 	3) w_min and w_max: NumPy arrays containing the minimum and the maximum of the 
-# 	   range in which the random weights will be generated. Working with NumPy
-# 	   arrays with a dimension equal to the number of nodes in the layer each
-# 	   neuron can have its own range.
-#
-# 	4) currLayerDim: dimension of the layer to create.
-#
-# 	5) prevLayerDim: dimension of the previous layer of neurons. Needed to dimension
-# 	   the array of weights
+# Number of simulation cycles
+N_sim = 1000
 
-def createLayerDict(v_th, v_reset, w_min, w_max, currLayerDim, prevLayerDim):
+# Number of neurons in the previous and current layers
+prevLayerDim = 3
+currLayerDim = 4
 
-	layerDict = {}
+# Density of the input spikes
+density = 0.01
 
-	layerDict["v_mem"] = v_reset*np.ones(currLayerDim)
+# Thresholds
+v_th = 50*np.ones(currLayerDim)
 
-	layerDict["v_th"] = v_th
+# Membrane potential reset state
+v_reset = 0
 
-	layerDict["outEvents"] = np.zeros(currLayerDim)
+# Range of the weights to generate
+w_min = 2*np.ones(currLayerDim)	
+w_max = 100*np.ones(currLayerDim)
 
-	layerDict["weights"] = (np.random.random((currLayerDim, prevLayerDim)).T*\
-				(w_max-w_min) + w_min).T
+dt_tau = 0.3
 
-	return layerDict
+# Create the neuron dictionary
+layerDict = createLayerDict(v_th, v_reset, w_min, w_max, currLayerDim, prevLayerDim)
+
+# Create the bidimensional array containing the input events
+inEvents_evolution = createSparseArray(N_sim, prevLayerDim, density)
+
+# Create the output events array
+outEvents_evolution = np.zeros((N_sim, currLayerDim)).astype(bool) 
+
+# Create the array of membrane potentials
+v_mem_evolution = np.zeros((N_sim, currLayerDim))
+
+# Simulate the neuron
+simulateLayer(N_sim, inEvents_evolution, layerDict,  outEvents_evolution, 
+		v_mem_evolution, dt_tau, v_reset)
+
+
+# Transpose the arrays in order to plot them with respect to time
+inEvents_evolution = inEvents_evolution.T
+outEvents_evolution = outEvents_evolution.T
+v_mem_evolution = v_mem_evolution.T
+
+# Plot the results
+plotLayerResults(currLayerDim, prevLayerDim, inEvents_evolution, outEvents_evolution, 
+			v_mem_evolution, v_th)
+

@@ -9,8 +9,8 @@ import numpy as np
 #
 # INPUT PARAMETERS:
 #
-# 	1) inEvents: NumPy array containing the input of the current layer corresponding
-# 	   to the current step.
+# 	1) inEvents: boolean NumPy array containing the input of the current layer 
+# 	   corresponding to the current step.
 #
 # 	2) layerDict: dictionary containing the parameters of all the neurons inside the
 # 	   layer
