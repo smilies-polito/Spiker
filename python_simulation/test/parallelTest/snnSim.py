@@ -36,7 +36,6 @@ dt_tau = 0.3
 
 # Create the network dictionary list
 networkDictList = createNetworkDictList(v_th_list, v_reset, w_min_list, w_max_list, networkList)
-print(networkDictList)
 
 # Create the bidimensional array containing the input events
 inEvents_evolution = createSparseArray(N_sim, networkList[0], density)

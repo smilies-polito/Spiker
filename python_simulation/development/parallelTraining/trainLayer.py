@@ -25,11 +25,15 @@ import numpy as np
 # 	4) v_reset: voltage at which the membrane potential is reset in case it exceeds
 # 	   the threshold.
 #
-# 	5) currentStep: current elaboration step. Needed to compute time differences.
+#	5) A_ltp: parameter which affects the learning rate in long term plasticity.
+#
+#	6) A_ltd: parameter which affects the learning rate in long term depression.
+#
+# 	7) currentStep: current elaboration step. Needed to compute time differences.
 # 	   Using a loop to make the network evolve in time this simply corresponds to 
 # 	   the value of the index used for the loop.
 
-def updateLayer(inEvents, layerDict, dt_tau, v_reset, currentStep):
+def trainLayer(inEvents, layerDict, dt_tau, v_reset, A_ltp, A_ltd, currentStep):
 
 	# Neurons that have generated an output spike
 	generateOutputEvents(layerDict)
@@ -39,6 +43,7 @@ def updateLayer(inEvents, layerDict, dt_tau, v_reset, currentStep):
 	ltp(layerDict, A_ltp, dt_tau, currentStep)
 
 	resetPotentials(layerDict, v_reset)
+
 
 	# Neurons that have not generated an output spike
 	ltd(inEvents, layerDict, A_ltd, dt_tau, currentStep)
