@@ -23,6 +23,12 @@ Explain here how to work with this project (compile, build, execute, install etc
   "Digital Multiplier-Less Spiking Neural Network Architecture of Reinforcement 
   Learning in a Context-Dependent Task", IEEE JOURNAL ON EMERGING AND SELECTED TOPICS 
   IN CIRCUITS AND SYSTEMS, VOL. 10, NO. 4, DECEMBER 2020
+- Rafael Medina and Morillas Pablo Ituero, "STDP Design Trade-offs for FPGA-Based 
+  Spiking Neural Networks", ETSI Telecomunicacion, Universidad Politecnica de Madrid 
+  Ciudad Universitaria s/n, 28040 Madrid, Spain
+- Peter U. Diehl and Matthew Cook, "Unsupervised learning of digit recognition using 
+  spike-timing-dependent plasticity", Institute of Neuroinformatics, ETH Zurich and 
+  University Zurich, Zurich, Switzerland
 
 
 # TODO
