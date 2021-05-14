@@ -29,6 +29,8 @@ Explain here how to work with this project (compile, build, execute, install etc
 - Peter U. Diehl and Matthew Cook, "Unsupervised learning of digit recognition using 
   spike-timing-dependent plasticity", Institute of Neuroinformatics, ETH Zurich and 
   University Zurich, Zurich, Switzerland
+- Professor David Heeger, "Poisson Model of Spike Generation", September 5, 2000
+
 
 
 # TODO
