@@ -10,7 +10,6 @@ if development not in sys.path:
 
 
 from trainSnn import trainSnn
-from simFunctions import addToTemporalEvolution
 
 import numpy as np
 
@@ -23,14 +22,6 @@ def trainSingleImg(poissonImg, label, labelsArray, networkDictList, dt_tau, v_re
 
 		trainSnn(poissonImg[i], networkDictList, dt_tau, v_reset, A_ltp, A_ltd, i)
 		updateSpikeCount(spikeCountArray, networkDictList[-1]["outEvents"])
-
-		# To remove once tested
-		addToTemporalEvolution(networkDictList, "v_mem", v_memEvol_list, i)
-
-		addToTemporalEvolution(networkDictList, "outEvents", 
-					outEventsEvol_list, i)
-
-		addToTemporalEvolution(networkDictList, "weights", weightsEvol_list, i)
 
 	return accuracyAndClassification(spikeCountArray, labelsArray, label)
 

@@ -7,7 +7,7 @@ from snnDataStruct import createNetworkDictList
 from simFunctions import createSparseArray,		\
 			plotTrainNetworkResults
 
-from training import trainSingleImg
+from simFunctions import trainSingleImg
 
 
 
