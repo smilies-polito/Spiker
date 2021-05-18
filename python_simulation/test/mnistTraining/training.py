@@ -32,10 +32,6 @@ def trainSingleImg(poissonImg, label, labelsArray, networkDictList, dt_tau, v_re
 
 		addToTemporalEvolution(networkDictList, "weights", weightsEvol_list, i)
 
-	print("\nSpike Count Array")
-	print(spikeCountArray)
-	print("\n")
-
 	return accuracyAndClassification(spikeCountArray, labelsArray, label)
 
 

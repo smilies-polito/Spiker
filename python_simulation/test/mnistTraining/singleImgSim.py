@@ -72,6 +72,10 @@ accuracy = trainSingleImg(poissonImg, label, labelsArray, networkDictList, dt_ta
 			A_ltp, A_ltd, spikeCountArray, v_memEvol_list, outEventsEvol_list,
 			weightsEvol_list)
 
+print("\nSpike Count Array")
+print(spikeCountArray)
+print("\n")
+
 print("\nClassification result")
 print(accuracy)
 print("\n")
