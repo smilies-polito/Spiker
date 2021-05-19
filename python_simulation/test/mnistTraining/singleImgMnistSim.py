@@ -35,7 +35,8 @@ v_reset = 0
 w_min_list = [0*np.ones(networkList[i]) for i in range(1,len(networkList))]
 w_max_list = [1*np.ones(networkList[i]) for i in range(1,len(networkList))]
 
-dt_tau = 0.005
+v_mem_dt_tau = 0.1
+stdp_dt_tau = 0.03
 
 A_ltp = 0.001
 A_ltd = -0.001
@@ -68,8 +69,9 @@ poissonImg = poisson(imgArray[0], random2D)
 start = perf_counter()
 
 # Train the network
-accuracy = trainSingleImg(poissonImg, labels[0], labelsArray, networkDictList, dt_tau, 
-				v_reset, A_ltp, A_ltd, spikeCountArray)
+accuracy = trainSingleImg(poissonImg, labels[0], labelsArray, networkDictList, 
+				v_mem_dt_tau, stdp_dt_tau, v_reset, A_ltp, A_ltd, 
+				spikeCountArray)
 
 # Ending time of the training
 stop = perf_counter()

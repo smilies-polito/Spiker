@@ -19,13 +19,15 @@ from training import updateSpikeCount,			\
 
 
 
-def trainSingleImg(poissonImg, label, labelsArray, networkDictList, dt_tau, v_reset, 
-			A_ltp, A_ltd, spikeCountArray,v_memEvol_list, outEventsEvol_list, weightsEvol_list):
+def trainSingleImg(poissonImg, label, labelsArray, networkDictList, v_mem_dt_tau, 
+			stdp_dt_tau, v_reset, A_ltp, A_ltd, spikeCountArray,
+			v_memEvol_list, outEventsEvol_list, weightsEvol_list):
 
 
 	for i in range(len(poissonImg)):
 
-		trainSnn(poissonImg[i], networkDictList, dt_tau, v_reset, A_ltp, A_ltd, i)
+		trainSnn(poissonImg[i], networkDictList, v_mem_dt_tau, stdp_dt_tau,
+				v_reset, A_ltp, A_ltd, i)
 		updateSpikeCount(spikeCountArray, networkDictList[-1]["outEvents"])
 
 		# To remove once tested

@@ -15,42 +15,45 @@ import numpy as np
 # 	2) layerDict: dictionary containing the parameters of all the neurons inside the
 # 	   layer
 #
-# 	3) dt_tau: parameter that is common to all the neurons inside the network. It
-# 	   represents the ratio delta_t/tau, where delta_t is the time duration of
+# 	3) v_mem dt_tau: parameter that is common to all the neurons inside the network. 
+# 	   It represents the ratio delta_t/tau, where delta_t is the time duration of
 # 	   the elaboration step and tau is time constant of the exponential. Being the
 # 	   exponential function comupted step by step this parameter affects its
 # 	   steepness. An higher value of delta_t/tau implies a faster decay of the
 # 	   exponential function.
 #
-# 	4) v_reset: voltage at which the membrane potential is reset in case it exceeds
+# 	4) stdp_dt_tau: steepness of the stdp exponential function.
+#
+# 	5) v_reset: voltage at which the membrane potential is reset in case it exceeds
 # 	   the threshold.
 #
-#	5) A_ltp: parameter which affects the learning rate in long term plasticity.
+#	6) A_ltp: parameter which affects the learning rate in long term plasticity.
 #
-#	6) A_ltd: parameter which affects the learning rate in long term depression.
+#	7) A_ltd: parameter which affects the learning rate in long term depression.
 #
-# 	7) currentStep: current elaboration step. Needed to compute time differences.
+# 	8) currentStep: current elaboration step. Needed to compute time differences.
 # 	   Using a loop to make the network evolve in time this simply corresponds to 
 # 	   the value of the index used for the loop.
 
-def trainLayer(inEvents, layerDict, dt_tau, v_reset, A_ltp, A_ltd, currentStep):
+def trainLayer(inEvents, layerDict, v_mem_dt_tau, stdp_dt_tau, v_reset, A_ltp, A_ltd, 
+		currentStep):
 
 	# Neurons that have generated an output spike
 	generateOutputEvents(layerDict)
 
 	updateOutTime(layerDict, currentStep)
 
-	ltp(layerDict, A_ltp, dt_tau, currentStep)
+	ltp(layerDict, A_ltp, stdp_dt_tau, currentStep)
 
 	resetPotentials(layerDict, v_reset)
 
 
 	# Neurons that have not generated an output spike
-	ltd(inEvents, layerDict, A_ltd, dt_tau, currentStep)
+	ltd(inEvents, layerDict, A_ltd, stdp_dt_tau, currentStep)
 
 
 	# All the neurons
-	expDecay(layerDict, dt_tau)
+	expDecay(layerDict, v_mem_dt_tau)
 
 	updateInTime(inEvents, layerDict, currentStep)
 

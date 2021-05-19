@@ -34,17 +34,18 @@ import matplotlib.pyplot as plt
 # 	5) v_mem_evolution: bidimensional NumPy array that is filled by the function
 # 	   with the temporal evolution of the membrane potentials of the layer.
 #
-# 	6) dt_tau, v_reset: numerical values. These are parameters that are common to
-# 	   all the neurons in the layer. See updateLayer for more details.
+# 	6) v_mem_dt_tau, stdp_dt_tau, v_reset: numerical values. These are parameters 
+# 	   that are common to all the neurons in the layer. See updateLayer for more 
+# 	   details.
 
 def simulateTrainLayer(N_sim, inEvents_evolution, layerDict, weights_evolution,
-			outEvents_evolution, v_mem_evolution, dt_tau, v_reset,
-			A_ltp, A_ltd):
+			outEvents_evolution, v_mem_evolution, v_mem_dt_tau, 
+			stdp_dt_tau, v_reset, A_ltp, A_ltd):
 
 	for i in range(N_sim):
 		
-		trainLayer(inEvents_evolution[i], layerDict, dt_tau, v_reset, 
-				A_ltp, A_ltd, i)
+		trainLayer(inEvents_evolution[i], layerDict, v_mem_dt_tau, 
+				stdp_dt_tau, v_reset, A_ltp, A_ltd, i)
 
 		outEvents_evolution[i] = layerDict["outEvents"]
 		v_mem_evolution[i] = layerDict["v_mem"]

@@ -29,7 +29,8 @@ v_reset = 0
 w_min = 25*np.ones(currLayerDim)	
 w_max = 25*np.ones(currLayerDim)
 
-dt_tau = 0.03
+v_mem_dt_tau = 0.1
+stdp_dt_tau = 0.03
 
 A_ltp = 1
 A_ltd = -1
@@ -52,8 +53,8 @@ weights_evolution = np.zeros((N_sim, currLayerDim, prevLayerDim))
 
 # Simulate the neuron
 simulateTrainLayer(N_sim, inEvents_evolution, layerDict, weights_evolution, 
-			outEvents_evolution, v_mem_evolution, dt_tau, v_reset,
-			A_ltp, A_ltd)
+			outEvents_evolution, v_mem_evolution, v_mem_dt_tau, 
+			stdp_dt_tau, v_reset, A_ltp, A_ltd)
 
 
 # Transpose the arrays in order to plot them with respect to time

@@ -14,13 +14,14 @@ from trainSnn import trainSnn
 import numpy as np
 
 
-def trainSingleImg(poissonImg, label, labelsArray, networkDictList, dt_tau, v_reset, 
-			A_ltp, A_ltd, spikeCountArray):
+def trainSingleImg(poissonImg, label, labelsArray, networkDictList, v_mem_dt_tau,
+			stdp_dt_tau, v_reset, A_ltp, A_ltd, spikeCountArray):
 
 
 	for i in range(len(poissonImg)):
 
-		trainSnn(poissonImg[i], networkDictList, dt_tau, v_reset, A_ltp, A_ltd, i)
+		trainSnn(poissonImg[i], networkDictList, v_mem_dt_tau, stdp_dt_tau,
+				v_reset, A_ltp, A_ltd, i)
 		updateSpikeCount(spikeCountArray, networkDictList[-1]["outEvents"])
 
 	return accuracyAndClassification(spikeCountArray, labelsArray, label)

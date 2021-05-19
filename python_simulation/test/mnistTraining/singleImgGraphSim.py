@@ -34,7 +34,8 @@ w_min_list = [10*np.ones(networkList[i]) for i in range(1,len(networkList))]
 
 w_max_list = [40*np.ones(networkList[i]) for i in range(1,len(networkList))]
 
-dt_tau = 0.055
+v_mem_dt_tau = 0.1
+stdp_dt_tau = 0.03
 
 A_ltp = 1
 A_ltd = -1
@@ -68,9 +69,9 @@ weightsEvol_list = [np.zeros((N_sim, networkList[i], networkList[i-1]))
 
 
 # Simulate the network
-accuracy = trainSingleImg(poissonImg, label, labelsArray, networkDictList, dt_tau, v_reset, 
-			A_ltp, A_ltd, spikeCountArray, v_memEvol_list, outEventsEvol_list,
-			weightsEvol_list)
+accuracy = trainSingleImg(poissonImg, label, labelsArray, networkDictList, v_mem_dt_tau, 
+				stdp_dt_tau, v_reset, A_ltp, A_ltd, spikeCountArray, 
+				v_memEvol_list, outEventsEvol_list, weightsEvol_list)
 
 print("\nSpike Count Array")
 print(spikeCountArray)

@@ -39,17 +39,19 @@ import matplotlib.pyplot as plt
 # 	6) weights_evolution: tridimensional NumPy array which is filled by the function
 # 	   with the temporal evolution of the weights.
 #
-# 	7) dt_tau, v_reset: numerical values. These are parameters that are common to
-# 	   all the neurons in the layer. See updateLayer for more details.
+# 	7) v_mem_dt_tau, stdp_dt_tau, v_reset: numerical values. These are parameters 
+# 	   that are common to all the neurons in the layer. See updateLayer for more 
+# 	   details.
 
 
 def simulateTrainSnn(N_sim, inEvents_evolution, networkDictList, outEventsEvol_list, 
-			weightsEvol_list, v_memEvol_list, dt_tau, v_reset, A_ltp, A_ltd):
+			weightsEvol_list, v_memEvol_list, v_mem_dt_tau, stdp_dt_tau, 
+			v_reset, A_ltp, A_ltd):
 
 	for i in range(N_sim):
 	
-		trainSnn(inEvents_evolution[i], networkDictList, dt_tau, v_reset, A_ltp, 
-			A_ltd, i)
+		trainSnn(inEvents_evolution[i], networkDictList, v_mem_dt_tau, 
+				stdp_dt_tau, v_reset, A_ltp, A_ltd, i)
 
 		addToTemporalEvolution(networkDictList, "v_mem", v_memEvol_list, i)
 
