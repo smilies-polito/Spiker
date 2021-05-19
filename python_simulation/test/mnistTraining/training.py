@@ -15,7 +15,7 @@ import numpy as np
 
 
 def trainSingleImg(poissonImg, label, labelsArray, networkDictList, dt_tau, v_reset, 
-			A_ltp, A_ltd, spikeCountArray,v_memEvol_list, outEventsEvol_list, weightsEvol_list):
+			A_ltp, A_ltd, spikeCountArray):
 
 
 	for i in range(len(poissonImg)):
