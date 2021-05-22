@@ -19,24 +19,37 @@ def train(images, labels, N_subsets, timeEvolCycles, N_pixels, pixelMin, pixelMa
 		labelsArray, networkDictList, v_mem_dt_tau, stdp_dt_tau, v_reset, A_ltp, 
 		A_ltd, classificationArray):
 
-		subsetLength = int(images.size // N_subsets)
-		lastSubsetLength = images.size % N_subsets
+		subsetLength = int(images.shape[0] // N_subsets)
+		lastSubsetLength = images.shape[0] % N_subsets
+
+		if(lastSubsetLength) == 0:
+			lastSubsetLength = subsetLength
 
 		for i in range(N_subsets-1):
 			
-			accuracy = trainSubset(images, labels, subsetLength, 
-					timeEvolCycles, N_pixels, pixelMin, pixelMax, 
-					labelsArray, networkDictList, v_mem_dt_tau, 
-					stdp_dt_tau, v_reset, A_ltp, A_ltd, 
-					classificationArray)
+			print(str(subsetLength*i))
+			print(str(subsetLength*(i+1)))	
+			accuracy = trainSubset(images[subsetLength*i:subsetLength*(i+1)], 
+						labels[subsetLength*i:subsetLength*(i+1)], 
+						subsetLength, timeEvolCycles, N_pixels, 
+						pixelMin, pixelMax, labelsArray, 
+						networkDictList, v_mem_dt_tau, 
+						stdp_dt_tau, v_reset, A_ltp, A_ltd, 
+						classificationArray)
 
 			logString = "Accuracy: " + str(accuracy) + ", Labels' array: " + \
 					str(labelsArray)
 			print(logString)
 
-		accuracy = trainSubset(images, labels, lastSubsetLength, 
-					timeEvolCycles, N_pixels, pixelMin, pixelMax, 
-					labelsArray, networkDictList, v_mem_dt_tau, 
+		print(str(subsetLength*(N_subsets-1)))
+		print(str(subsetLength*(N_subsets-1) + lastSubsetLength))
+		accuracy = trainSubset(images[subsetLength*(N_subsets-1):
+					subsetLength*(N_subsets-1) + lastSubsetLength], 
+					labels[subsetLength*(N_subsets-1):
+					subsetLength*(N_subsets-1) + lastSubsetLength], 
+					subsetLength, timeEvolCycles, N_pixels, 
+					pixelMin, pixelMax, labelsArray, 
+					networkDictList, v_mem_dt_tau, 
 					stdp_dt_tau, v_reset, A_ltp, A_ltd, 
 					classificationArray)
 

@@ -63,15 +63,14 @@ networkDictList = createNetworkDictList(v_th_list, v_reset, w_min_list, w_max_li
 
 
 # Load all the images and labels from the dataset
-imgages, labels = loadDataset(images, labels)
+images, labels = loadDataset(images, labels)
 
-N_subsets = 100
+N_subsets = 10
 
 # Starting time of the training
 start = perf_counter()
 
-
-train(imgages, labels, N_subsets, timeEvolCycles, N_pixels, pixelMin, pixelMax, 
+train(images[0:100], labels[0:100], N_subsets, timeEvolCycles, N_pixels, pixelMin, pixelMax, 
 		labelsArray, networkDictList, v_mem_dt_tau, stdp_dt_tau, v_reset, A_ltp, 
 		A_ltd, classificationArray)
 
