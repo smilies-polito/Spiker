@@ -14,18 +14,20 @@ from time import perf_counter
 
 from snnDataStruct import createNetworkDictList
 from mnist import loadDataset
-from poisson import imgToSpikeTrain
-from training import trainSingleImg
+from training import trainSubset
 
 
 images = "../../mnist/train-images-idx3-ubyte"
 labels = "../../mnist/train-labels-idx1-ubyte"
 
+
 # Number of simulation cycles
-N_sim = 100
+timeEvolCycles = 100
 
 # Number of pixels pf each image
 N_pixels = 784
+pixelMin = 0
+pixelMax = 255
 
 # List describing the network. Each entry corresponds to the number of nodes in the
 # specific layer
@@ -51,13 +53,12 @@ A_ltd = -0.001
 
 # Array containing the number classification
 labelsArray = np.linspace(0, networkList[-1]-1, networkList[-1]).astype(int)
-
 print("Initial labels array")
 print(labelsArray)
 print("\n")
 
 # Array that will contain the count of the output spikes for each neuron
-spikeCountArray = np.zeros(networkList[-1]).astype(int)
+classificationArray = np.zeros((networkList[-1], networkList[-1])).astype(int)
 
 # Create the network dictionary list
 networkDictList = createNetworkDictList(v_th_list, v_reset, w_min_list, w_max_list, 
@@ -65,26 +66,28 @@ networkDictList = createNetworkDictList(v_th_list, v_reset, w_min_list, w_max_li
 
 
 # Load all the images and labels from the dataset
-imgArray, labels = loadDataset(images, labels)
+imgages, labels = loadDataset(images, labels)
 
-poissonImg = imgToSpikeTrain(imgArray[0], 100, N_pixels, 0, 255)
+subsetLength = 60000
+
 
 # Starting time of the training
 start = perf_counter()
 
-# Train the network
-accuracy = trainSingleImg(poissonImg, labels[0], labelsArray, networkDictList, 
-				v_mem_dt_tau, stdp_dt_tau, v_reset, A_ltp, A_ltd, 
-				spikeCountArray)
+
+accuracy = trainSubset(imgages, labels, subsetLength, timeEvolCycles, N_pixels, pixelMin, 
+		pixelMax, labelsArray, networkDictList, v_mem_dt_tau, stdp_dt_tau, v_reset,
+		A_ltp, A_ltd, classificationArray)
+
 
 # Ending time of the training
 stop = perf_counter()
 
-print("\nSpike Count Array")
-print(spikeCountArray)
+print("\nClassification Array")
+print(classificationArray)
 print("\n")
 
-print("\nClassification result")
+print("\nAccuracy")
 print(accuracy)
 print("\n")
 
@@ -96,8 +99,4 @@ print("\nTraining time")
 trainingTime = str(stop-start) + " seconds"
 print(trainingTime)
 print("\n")
-
-
-
-
 

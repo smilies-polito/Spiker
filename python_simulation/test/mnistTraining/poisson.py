@@ -2,14 +2,15 @@
 
 import numpy as np
 
-def randInt3Dgen(N_images, timeEvolCycles, N_pixels, pixelMin, pixelMax):
+
+def imgToSpikeTrain(image, timeEvolCycles, N_pixels, pixelMin, pixelMax):
 
 	rng = np.random.default_rng()
 
-	return rng.integers(low=pixelMin, high=pixelMax, size=(N_images, timeEvolCycles, 
-		N_pixels))
+	random2D = rng.integers(low=pixelMin, high=pixelMax, size=(timeEvolCycles, 
+			N_pixels))
 
-
+	return poisson(image, random2D)
 
 
 def poisson(image, random2D):

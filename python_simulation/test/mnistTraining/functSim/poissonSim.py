@@ -11,9 +11,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-from poisson import poisson, randInt3Dgen
+from poisson import imgToSpikeTrain
 
-N_images = 1
 timeEvolCycles = 100
 N_pixels = 256
 pixelMin = 0
@@ -21,9 +20,7 @@ pixelMax = 255
 
 image = np.linspace(0, 255, 256)
 
-random2D = randInt3Dgen(N_images, timeEvolCycles, N_pixels, pixelMin, pixelMax)[0]
-
-imgSpikes = poisson(image, random2D)
+imgSpikes = imgToSpikeTrain(image, timeEvolCycles, N_pixels, pixelMin, pixelMax)
 
 imgSpikes = imgSpikes.T
 

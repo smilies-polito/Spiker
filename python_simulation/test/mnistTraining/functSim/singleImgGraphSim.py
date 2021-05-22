@@ -2,6 +2,14 @@
 
 # Script which simulates the model developed for the layer 
 
+import sys
+
+previousDir = ".."
+
+if previousDir not in sys.path:
+	sys.path.insert(1, previousDir)
+
+
 from snnDataStruct import createNetworkDictList 
 
 from simFunctions import createSparseArray,		\

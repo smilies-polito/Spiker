@@ -10,8 +10,93 @@ if development not in sys.path:
 
 
 from trainSnn import trainSnn
+from poisson import imgToSpikeTrain
 
 import numpy as np
+
+
+def train(images, labels, N_subsets, timeEvolCycles, N_pixels, pixelMin, pixelMax,
+		labelsArray, networkDictList, v_mem_dt_tau, stdp_dt_tau, v_reset, A_ltp, 
+		A_ltd, classificationArray):
+
+		subsetLength = int(images.size // N_subsets)
+		lastSubsetLength = images.size % N_subsets
+
+		for i in range(N_subsets-1):
+			
+			accuracy = trainSubset(images, labels, subsetLength, 
+					timeEvolCycles, N_pixels, pixelMin, pixelMax, 
+					labelsArray, networkDictList, v_mem_dt_tau, 
+					stdp_dt_tau, v_reset, A_ltp, A_ltd, 
+					classificationArray)
+
+			logString = "Accuracy: " + str(accuracy) + ", Labels' array: " + \
+					str(labelsArray)
+			print(logString)
+
+		accuracy = trainSubset(images, labels, lastSubsetLength, 
+					timeEvolCycles, N_pixels, pixelMin, pixelMax, 
+					labelsArray, networkDictList, v_mem_dt_tau, 
+					stdp_dt_tau, v_reset, A_ltp, A_ltd, 
+					classificationArray)
+
+		logString = "Accuracy: " + str(accuracy) + ", Labels' array: " + \
+					str(labelsArray)
+		print(logString)
+
+
+
+
+
+def trainSubset(images, labels, subsetLength, timeEvolCycles, N_pixels, pixelMin, pixelMax,
+		labelsArray, networkDictList, v_mem_dt_tau, stdp_dt_tau, v_reset, A_ltp, 
+		A_ltd, classificationArray):
+
+		accuracy = 0
+
+		for i in range(subsetLength):
+
+			poissonImg = imgToSpikeTrain(images[i], timeEvolCycles, N_pixels,
+					pixelMin, pixelMax)
+
+			label = labels[i]
+
+			classResult = trainSingleImg(poissonImg, label, labelsArray,
+					networkDictList, v_mem_dt_tau, stdp_dt_tau,
+					v_reset, A_ltp, A_ltd, 
+					classificationArray[label])
+
+			accuracy = accuracy + classResult
+
+			restartNetwork(networkDictList)	
+
+			
+
+		return accuracy/subsetLength
+
+
+
+
+
+def restartNetwork(networkDictList):
+
+	for i in range(len(networkDictList)):
+
+		restartLayer(networkDictList[i])
+
+
+
+
+
+def restartLayer(layerDict):
+	
+	layerDict["v_mem"][:] = 0
+	layerDict["t_in"][:] = 0
+	layerDict["t_out"][:] = 0
+	layerDict["outEvents"][:] = 0
+
+
+
 
 
 def trainSingleImg(poissonImg, label, labelsArray, networkDictList, v_mem_dt_tau,
