@@ -108,4 +108,3 @@ def createLayerDict(v_th, v_reset, w_min, w_max, currLayerDim, prevLayerDim):
 	layerDict["t_out"] = np.zeros(currLayerDim).astype(int)
 
 	return layerDict
-

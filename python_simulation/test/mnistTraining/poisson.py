@@ -42,6 +42,9 @@ def imgToSpikeTrain(image, timeEvolCycles, N_pixels, pixelMin, pixelMax):
 
 
 
+
+
+
 # Poisson convertion of the numerical values of the pixels into spike trains. 
 #
 # The function exploits the Poisson method which consists in generating a randomly

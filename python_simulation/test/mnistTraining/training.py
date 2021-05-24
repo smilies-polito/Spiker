@@ -504,8 +504,3 @@ def restartLayer(layerDict):
 	layerDict["t_in"][:] = 0
 	layerDict["t_out"][:] = 0
 	layerDict["outEvents"][:] = 0
-
-
-
-
-
