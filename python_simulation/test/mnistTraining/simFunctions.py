@@ -424,8 +424,8 @@ def subplotArrayAndConst(axs, plotData, title, constValue):
 #
 # 	INPUT PARAMETERS;
 #
-# 		1) axs: preallocate subolot object. This must be properly dimensioned to host
-# 		all the subplots and can be created through a call to
+# 		1) axs: preallocate subolot object. This must be properly dimensioned to 
+# 		host all the subplots and can be created through a call to
 # 		matplotlib.pyplot.subplots.
 #
 #		2) plotData1: first bidimensional NumPy array containing N arrays to plot.
