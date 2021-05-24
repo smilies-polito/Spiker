@@ -99,4 +99,3 @@ print("\nTraining time")
 trainingTime = str(stop-start) + " seconds"
 print(trainingTime)
 print("\n")
-

@@ -93,12 +93,11 @@ print("\nFinal labels array")
 print(labelsArray)
 print("\n")
 
-
-
-
 # Transpose the arrays in order to plot them with respect to time
 inEvents_evolution = poissonImg.T
 
 
+# Plot the temporal evolution of the input spikes, the weights, the output spikes and the
+# membrane potential
 plotTrainNetworkResults(networkList, inEvents_evolution, weightsEvol_list,
 			outEventsEvol_list, v_memEvol_list, v_th_list)
