@@ -89,6 +89,10 @@ def createLayerDict(v_th, v_reset, w_min, w_max, currLayerDim, prevLayerDim):
 
 	layerDict["t_out"] = np.zeros(currLayerDim).astype(int)
 
+	layerDict["inMask"] = np.zeros(prevLayerDim).astype(bool)
+
+	layerDict["outMask"] = np.zeros(currLayerDim).astype(bool)
+
 	return layerDict
 
 

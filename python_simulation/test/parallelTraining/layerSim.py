@@ -13,7 +13,7 @@ import numpy as np
 N_sim = 1000
 
 # Number of neurons in the previous and current layers
-prevLayerDim = 2
+prevLayerDim = 4
 currLayerDim = 1
 
 # Density of the input spikes
@@ -41,6 +41,7 @@ layerDict = createLayerDict(v_th, v_reset, w_min, w_max, currLayerDim, prevLayer
 
 # Create the bidimensional array containing the input events
 inEvents_evolution = createSparseArray(N_sim, prevLayerDim, density)
+
 
 # Create the output events array
 outEvents_evolution = np.zeros((N_sim, currLayerDim)).astype(bool) 
