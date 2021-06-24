@@ -3,41 +3,42 @@
 import numpy as np
 
 
-# Function which updates an entire layer of spiking neurons in parallel. In particular
-# it computes the new values of their membrane potentials and generates the output
-# spikes in case some of them exceed the threshold.
-#
-# INPUT PARAMETERS:
-#
-# 	1) inEvents: boolean NumPy array containing the input of the current layer 
-# 	corresponding to the current step.
-#
-# 	2) layerDict: dictionary containing the parameters of all the neurons inside the
-# 	layer
-#
-# 	3) v_mem dt_tau: parameter that is common to all the neurons inside the network. 
-#	It represents the ratio delta_t/tau, where delta_t is the time duration of
-# 	the elaboration step and tau is time constant of the exponential. Being the
-# 	exponential function comupted step by step this parameter affects its
-# 	steepness. An higher value of delta_t/tau implies a faster decay of the
-# 	exponential function.
-#
-# 	4) stdp_dt_tau: steepness of the stdp exponential function.
-#
-# 	5) v_reset: voltage at which the membrane potential is reset in case it exceeds
-# 	the threshold.
-#
-#	6) A_ltp: parameter which affects the learning rate in long term plasticity.
-#
-#	7) A_ltd: parameter which affects the learning rate in long term depression.
-#
-# 	8) currentStep: current elaboration step. Needed to compute time differences.
-# 	Using a loop to make the network evolve in time this simply corresponds to 
-# 	the value of the index used for the loop.
-
 def trainLayer(inEvents, layerDict, v_mem_dt_tau, stdp_dt_tau, v_reset, A_ltp, A_ltd, 
 		currentStep):
 
+	"""
+	Function which updates an entire layer of spiking neurons in parallel. In particular
+	it computes the new values of their membrane potentials and generates the output
+	spikes in case some of them exceed the threshold.
+
+	INPUT PARAMETERS:
+
+		1) inEvents: boolean NumPy array containing the input of the current layer 
+		corresponding to the current step.
+
+		2) layerDict: dictionary containing the parameters of all the neurons inside the
+		layer
+
+		3) v_mem dt_tau: parameter that is common to all the neurons inside the network. 
+		It represents the ratio delta_t/tau, where delta_t is the time duration of
+		the elaboration step and tau is time constant of the exponential. Being the
+		exponential function comupted step by step this parameter affects its
+		steepness. An higher value of delta_t/tau implies a faster decay of the
+		exponential function.
+
+		4) stdp_dt_tau: steepness of the stdp exponential function.
+
+		5) v_reset: voltage at which the membrane potential is reset in case it exceeds
+		the threshold.
+
+		6) A_ltp: parameter which affects the learning rate in long term plasticity.
+
+		7) A_ltd: parameter which affects the learning rate in long term depression.
+
+		8) currentStep: current elaboration step. Needed to compute time differences.
+		Using a loop to make the network evolve in time this simply corresponds to 
+		the value of the index used for the loop. 
+	"""
 
 	# Generate the output spikes
 	generateOutputEvents(layerDict)

@@ -1,10 +1,10 @@
 import brian2 as b2
-import Packages_Ontrain20606.Equations as Eqs
-import Packages_Ontrain20606.Parameters as Par
+import equations as Eqs
+import parameters as Par
 import numpy as np
 import torch
 
-def X2Ae(source, target,N_source,N_target):
+def excToExcConnection(source, target, N_source,N_target):
     synapses = b2.Synapses(
         source=source,
         target=target,
@@ -14,12 +14,14 @@ def X2Ae(source, target,N_source,N_target):
         namespace=Par.STDP_params
     )
     synapses.connect()
-    synapses.w = 0.3 * np.reshape(torch.rand(784, 100).numpy(),(784*100))
+    synapses.w = 0.3 * np.reshape(torch.rand(N_source,
+    N_target).numpy(),(N_source*N_target))
     synapses.pre = 0
     synapses.post = 0
     return synapses
 
-def Ae2Ai(source, target):
+
+def excToInhConnection(source, target):
     synapses = b2.Synapses(
         source=source,
         target=target,
@@ -29,7 +31,7 @@ def Ae2Ai(source, target):
     synapses.w = Par.exc
     return synapses
 
-def Ai2Ae(source, target):
+def inhToExcConnection(source, target):
     synapses = b2.Synapses(
         source=source,
         target=target,

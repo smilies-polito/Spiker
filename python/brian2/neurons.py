@@ -1,9 +1,9 @@
 import brian2 as b2
-import Packages_Ontrain20606.Equations as Eqs
-import Packages_Ontrain20606.Parameters as Par
+import equations as Eqs
+import parameters as Par
 
 
-def Ae(n_neurons):
+def excLayer(n_neurons):
     neurons = b2.NeuronGroup(
         N=n_neurons,
         model=Eqs.neuron_eqs_Ae, threshold=Eqs.thresh_Ae,
@@ -14,7 +14,7 @@ def Ae(n_neurons):
     return neurons
 
 
-def Ai(n_neurons):
+def inhLayer(n_neurons):
     neurons = b2.NeuronGroup(
         N=n_neurons,
         model=Eqs.neuron_eqs_Ai, threshold=Eqs.thresh_Ai,
