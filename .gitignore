@@ -7,8 +7,3 @@ __pycache__
 
 # Plots used to visualize the output results
 *.png
-
-
-# Temporaneo. Voglio prima copiare il modello di P.U.Diehl paro paro
-python/brian2/mnist.py
-python/brian2/plotUtils.py

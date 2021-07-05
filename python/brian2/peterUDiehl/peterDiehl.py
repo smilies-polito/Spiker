@@ -5,15 +5,15 @@ import matplotlib.pyplot as plt
 
 np.set_printoptions(threshold = np.inf, linewidth = 150)
 
-
-from neurons import *
-from synapse import *
 from trainFunctions import *
 
 # To graphically visualize the synapse connections between layers
 from plotUtils import *
 
 from mnist import loadDataset
+
+from equations import *
+from parameters import *
 
 
 # Script that implements the model presented in "Unsupervised learning of digit
@@ -25,135 +25,11 @@ from mnist import loadDataset
 # -----------------------------------------------------------------------------
 
 # MNIST files
-images = "./mnist/train-images-idx3-ubyte"
-labels = "./mnist/train-labels-idx1-ubyte"
+images = "../mnist/train-images-idx3-ubyte"
+labels = "../mnist/train-labels-idx1-ubyte"
 
 # Layers of the network
 networkList = [784, 400]
-
-# Train periods
-singleExampleTime = 0.35*b2.second
-restingTime = 0.15*b2.second
-
-updateInterval = 250
-weightUpdateInterval = 10
-printInterval = 1
-startInputIntensity = 2.
-inputIntensity = startInputIntensity
-
-# Rest potentials
-vRest_exc = -65.*b2.mV
-vRest_inh = -60.*b2.mV
-
-# Reset potentials
-vReset_exc = -65.*b2.mV
-vReset_inh =  -45.*b2.mV
-
-# Threshold voltages
-vThresh_exc = -52*b2.mV
-vThresh_inh = -40.*b2.mV
-
-# Refractory periods
-tRefrac_exc = 5.*b2.ms
-tRefrac_inh = 2.*b2.ms
-
-# Constant total sum of the weights for normalization
-totalWeight = 78
-
-delay_in2exc = 10*b2.ms
-delay_exc2inh = 5*b2.ms
-
-
-
-# Time constants
-tauPre_exc = 20*b2.ms
-tauPost1_exc = 20*b2.ms
-tauPost2_exc = 40*b2.ms
-
-# Learning rates
-etaPre_exc = 0.0001
-etaPost_exc = 0.01
-etaPre_AeAe = 0.1
-etaPost_AeAe = 0.5
-
-# Weight dependence
-wMax_exc = 1.0
-nuPre_exc = 0.2
-nuPost_exc = 0.2
-wMu_pre = 0.2
-wMu_post = 0.2
-
-
-
-# EQUATIONS
-# -----------------------------------------------------------------------------
-
-# When the neuron's membrane potential exceeds the threshold
-tauTheta = 1e7*b2.ms
-thetaPlus = 0.05*b2.mV
-reset_exc = '''
-	v = vReset_exc
-	theta = theta + thetaPlus
-	timer = 0*ms
-'''
-reset_inh = 'v = vReset_inh'
-
-
-offset = 20.0*b2.mV
-
-# Thresholds
-thresh_exc = '( v > (theta - offset + vThresh_exc)) and (timer > \
-tRefrac_exc)'
-thresh_inh = 'v > vThresh_inh'
-
-# Resets
-
-
-# Equations for the neurons
-neuronsEqs_exc = '''
-	dv/dt = ((vRest_exc - v) + (I_synE + I_synI) / nS) / (100 * ms)	: volt
-        I_synE = ge * nS *(-v)						: amp
-        I_synI = gi * nS * (-100.*mV-v)					: amp
-        dge/dt = -ge/(1.0*ms)						: 1
-        dgi/dt = -gi/(2.0*ms)						: 1
-	dtheta/dt = -theta/tauTheta					: volt
-	dtimer/dt = 0.1							: second
-
-'''
-
-neuronsEqs_inh = '''
-	dv/dt = ((vRest_inh - v) + (I_synE + I_synI) / nS) / (10 * ms)	: volt
-        I_synE = ge * nS *(-v)						: amp
-        I_synI = gi * nS * (-85.*mV-v)					: amp
-        dge/dt = -ge/(1.0*ms)						: 1
-        dgi/dt = -gi/(2.0*ms)						: 1
-
-'''
-
-
-# Stdp equations
-stdpEqs = '''
-	w					: 1
-	post2before				: 1
-	dpre/dt   =   -pre/(tauPre_exc)		: 1	(event-driven)
-	dpost1/dt  = -post1/(tauPost1_exc)	: 1	(event-driven)
-	dpost2/dt  = -post2/(tauPost2_exc)	: 1	(event-driven)	
-
-'''
-
-stdpPre = '''
-	ge = ge + w
-	pre = 1.
-	w = clip(w - etaPre_exc*post1, 0, wMax_exc)
-'''
-
-stdpPost = '''
-	post2before = post2
-	w = clip(w + etaPost_exc * pre * post2before, 0, wMax_exc)
-	post1 = 1.
-	post2 = 1.	
-'''
-
 
 
 
@@ -261,12 +137,7 @@ while i < imgArray.shape[0]:
 	startTimeImage = timeit.default_timer()
 
 	# Train the network
-	b2.run(singleExampleTime, profile = True)
-	b2.profiling_summary(show=5)
-
-	printString = "Time to run: " + str(timeit.default_timer() -
-	startTimeImage)
-	print(printString)
+	b2.run(singleExampleTime)
 
 	# Store the count of the spikes for the current image
 	currentSpikesCount = spikeMonitor.count - prevSpikesCount
@@ -283,9 +154,9 @@ while i < imgArray.shape[0]:
 
 		printProgress(i, printInterval, startTimeImage, startTimeTraining)
 
-		accuracies = computePerformances(i, updateInterval, networkList[1],
+		accuracy = computePerformances(i, updateInterval, networkList[1],
 			spikesEvolution, labelsArray[i - updateInterval : i], 
-			assignements, accuracies)
+			assignements) #, accuracies)
 
 		# Update the correspondence between the output neurons and the labels
 		updateAssignements(i, updateInterval, networkList[1], spikesEvolution,
