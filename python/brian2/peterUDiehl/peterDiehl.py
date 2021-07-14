@@ -132,15 +132,6 @@ startTimeTraining = timeit.default_timer()
 
 accuracies = []
 
-<<<<<<< HEAD
-print(locals())
-=======
-tracemalloc.start()
-
-
-local_vars = list(locals().items())
-
->>>>>>> 5715ef7efbc53426308d9a2fc2d79435ba7515c0
 
 while i < imgArray.shape[0]:
 
