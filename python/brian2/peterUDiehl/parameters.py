@@ -5,11 +5,6 @@ import brian2 as b2
 singleExampleTime = 0.35*b2.second
 restingTime = 0.15*b2.second
 
-updateInterval = 30
-printInterval = 5
-startInputIntensity = 2.
-inputIntensity = startInputIntensity
-
 # Rest potentials
 vRest_exc = -65.*b2.mV
 vRest_inh = -60.*b2.mV
