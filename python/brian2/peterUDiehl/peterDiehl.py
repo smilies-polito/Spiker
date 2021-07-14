@@ -125,6 +125,8 @@ startTimeTraining = timeit.default_timer()
 
 accuracies = []
 
+print(locals())
+
 while i < imgArray.shape[0]:
 
 	# Convert the image into a Poisson train of spikes
