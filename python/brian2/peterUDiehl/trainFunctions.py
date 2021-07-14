@@ -3,6 +3,7 @@ import timeit
 import numpy as np
 
 
+
 def updateAssignements(currentIndex, updateInterval, outputLayerSize,
 			spikesEvolution, labelsSequence, assignements):
 
@@ -46,11 +47,10 @@ def printProgress(currentIndex, printInterval, startTimeImage, startTimeTraining
 
 
 def computePerformances(currentIndex, updateInterval, outputLayerSize,
-			spikesEvolution, labelsSequence, assignements): #, accuracies):
+			spikesEvolution, labelsSequence, assignements, accuracies):
 
 	maxCount = np.zeros(updateInterval)
 	classification = -1*np.ones(updateInterval)
-	accuracy = 0
 
 	# Update every updateInterval
 	if currentIndex % updateInterval == 0 and currentIndex > 0:
@@ -72,23 +72,24 @@ def computePerformances(currentIndex, updateInterval, outputLayerSize,
 			# Update the maximum number of spikes for the label
 			maxCount[whereMaxSpikes] = spikeCount[whereMaxSpikes]
 
-		accuracy = updateAccuracy(classification, labelsSequence) #, accuracies)
+		accuracies = updateAccuracy(classification, labelsSequence, accuracies)
 
-	return accuracy
+	return accuracies
 
 
 
-def updateAccuracy(classification, labelsSequence): #, accuracies):
+def updateAccuracy(classification, labelsSequence, accuracies):
 
 	# Compute the number of correct classifications
 	correct = np.where(classification == labelsSequence)[0].size
 
 	# Compute the percentage of accuracy and add it to the list
-	# accuracies += ["{:.2f}".format(correct/classification.size*100)+ "%"]
-	accuracy = "{:.2f}".format(correct/classification.size*100)+ "%"
+	print("{:.2f}".format(correct/classification.size*100) + "%")
+	accuracies += ["{:.2f}".format(correct/classification.size*100) + "%"]
+	
 	# Print the accuracy
-	# accuracyString = "\nAccuracy: " + str(accuracies) + "\n"
-	accuracyString = "\nAccuracy: " + accuracy 
+	accuracyString = "\nAccuracy: " + str(accuracies) + "\n"
+
 	print(accuracyString)
 
-	return accuracy
+	return accuracies
