@@ -27,8 +27,8 @@ from parameters import *
 # -----------------------------------------------------------------------------
 
 # MNIST files
-images = "../mnist/train-images-idx3-ubyte"
-labels = "../mnist/train-labels-idx1-ubyte"
+images = "../../mnist/train-images-idx3-ubyte"
+labels = "../../mnist/train-labels-idx1-ubyte"
 
 # Layers of the network
 networkList = [784, 400]
@@ -93,6 +93,8 @@ weightMatrix = (b2.random(networkList[0]*networkList[1]) + 0.01)*0.3
 exc2exc = b2.Synapses(poissonGroup, excNeurons, 
 model = stdpEqs, on_pre = stdpPre, on_post = stdpPost, method = 'exact')
 exc2exc.connect()
+
+print(exc2exc.w.shape)
 
 # Initialize the weights
 exc2exc.w = weightMatrix
