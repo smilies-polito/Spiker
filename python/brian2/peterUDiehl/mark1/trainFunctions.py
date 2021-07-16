@@ -4,65 +4,104 @@ import numpy as np
 
 
 
+def trainCycle(image, networkList, network, trainDuration, restTime, 
+		spikesEvolution, updateInterval, printInterval, 
+		currentSpikesCount, prevSpikesCount, startTimeImage, 
+		startTimeTraining, accuracies, labelsArray, assignements, 
+		inputIntensity, startInputIntensity, currentIndex):
 
-def trainSingleImg(network, image, ratesDict, startTimeTraining):
+	
+	imgToSpikeTrain(image, inputIntensity)
 
-	ratesDict["poissongroup"]["rates"] = image*b2.Hz
-	network.set_states(ratesDict, units=True, format='dict', level=0 )
 
-	network.run(200*b2.ms)
+	inputIntensity, currentIndex = trainSingleImage(networkList, network, 
+		trainDuration, spikesEvolution, updateInterval, printInterval, 
+		currentSpikesCount, prevSpikesCount, startTimeImage, 
+		startTimeTraining, accuracies, labelsArray, assignements, 
+		inputIntensity, startInputIntensity, currentIndex)
 
-	print(network.get_states(units=True, format='dict', subexpressions=False,
-	read_only_variables=True, level=0)["poissongroup"]["rates"])
+	imgToSpikeTrain(np.zeros(image.shape[0]), inputIntensity)
 
-	return network
+	b2.run(restTime)
 
-def trainCycle():
+	return inputIntensity, currentIndex
 
-	# Measure the time at which the training on the single image starts
-	startTimeImage = timeit.default_timer()
 
-	# Train the network
-	b2.run(singleExampleTime)
+
+
+
+def imgToSpikeTrain(image, inputIntensity):
+	
+	values = {
+		"poissongroup":{
+			"rates": image*b2.Hz/8*inputIntensity
+		}
+	}
+
+	network.set_states(values, units=True, format='dict', level=0)
+
+
 	
 
-def updateSimParameters(networkList, network, prevSpikesCount, inputIntensity,
-			startInputIntensity, currentIndex, updateInterval, 
-			printInterval, startTimeImage, startTimeTraining, 
-			accuracies, spikesEvolution, labelsArray, assignements):
+def trainSingleImage(networkList, network, trainDuration, spikesEvolution, 
+		updateInterval, printInterval, currentSpikesCount, 
+		prevSpikesCount, startTimeImage, startTimeTraining, accuracies, 
+		labelsArray, assignements, inputIntensity, startInputIntensity,
+		currentIndex):
 
-	currentSpikesCount, prevSpikesCount = updatePulsesCount(network, 
-							prevSpikesCount)
+	network.run(trainDuration)
+
+	updatePulsesCount(network, currentSpikesCount, prevSpikesCount)
 
 	if np.sum(currentSpikesCount) < 5:
 
-		inputIntensity +=1
-		print("Increase input intensity: ", inputIntensity)
+		inputIntensity = repeatImage(inputIntensity)
 
 	else:
 
-		spikesEvolution[currentIndex % updateInterval] = 
-				currentSpikesCount
+		inputIntensity, currentIndex = nextImage(networkList, 
+			spikesEvolution, updateInterval, printInterval, 
+			currentSpikesCount, startTimeImage, startTimeTraining, 
+			accuracies, labelsArray, assignements, 
+			startInputIntensity, currentIndex)
 
-		printProgress(currentIndex, printInterval, startTimeImage, 
-				startTimeTraining)
+	return inputIntensity, currentIndex
 
-		accuracies = computePerformances(currentIndex, updateInterval,
-				networkList[-1], spikesEvolution, 
-				labelsArray[currentIndex - updateInterval :
-				currentIndex], assignements, accuracies)
 
-		# Update the correspondence between the output neurons and the labels
-		updateAssignements(currentIndex, updateInterval, 
-				networkList[1], spikesEvolution, 
-				labelsArray[currentIndex - updateInterval :
-				currentIndex], assignements)
 
-		inputIntensity = startInputIntensity
 
-		currentIndex += 1
-	
-	return prevSpikesCount, inputIntensity, currentIndex
+
+def nextImage(networkList, spikesEvolution, updateInterval, printInterval, 
+		currentSpikesCount, startTimeImage, startTimeTraining,
+		accuracies, labelsArray, assignements, startInputIntensity, 
+		currentIndex):
+
+	spikesEvolution[currentIndex % updateInterval] = currentSpikesCount
+
+	printProgress(currentIndex, printInterval, startTimeImage,
+			startTimeTraining)
+
+	accuracies = computePerformances(currentIndex, updateInterval,
+			networkList[-1], spikesEvolution,
+			labelsArray[currentIndex - updateInterval :
+			currentIndex], assignements, accuracies)
+
+	updateAssignements(currentIndex, updateInterval, networkList[-1],
+			spikesEvolution, labelsArray[currentIndex -
+			updateInterval : currentIndex], assignements)
+
+	return startInputIntensity, currentIndex + 1	
+
+
+
+
+def repeatImage(inputIntensity):
+
+	print("Increase inputIntensity from " + str(inputIntensity) + \
+	" to " + str(inputIntensity + 1))
+
+	return inputIntensity + 1
+
 
 
 
@@ -76,6 +115,8 @@ def updatePulsesCount(network, currentSpikesCount, prevSpikesCount):
 
 	currentSpikesCount =  spikeMonitorCount - prevSpikesCount
 	prevSpikesCount = np.asarray(spikeMonitorCount)
+
+
 
 
 
@@ -123,6 +164,8 @@ def printProgress(currentIndex, printInterval, startTimeImage, startTimeTraining
 
 
 
+
+
 def computePerformances(currentIndex, updateInterval, outputLayerSize,
 			spikesEvolution, labelsSequence, assignements, accuracies):
 
@@ -155,6 +198,9 @@ def computePerformances(currentIndex, updateInterval, outputLayerSize,
 
 
 
+
+
+
 def updateAccuracy(classification, labelsSequence, accuracies):
 
 	# Compute the number of correct classifications
@@ -170,32 +216,3 @@ def updateAccuracy(classification, labelsSequence, accuracies):
 	print(accuracyString)
 
 	return accuracies
-
-
-from createNetwork import *
-from equations import *
-from equationsParameters import *
-from neuronsParameters import *
-
-locals().update(parametersDict)
-
-networkList = [784, 5, 1]
-image = np.linspace(1, 10, 10)
-
-ratesDict = {
-	"poissongroup"	: {
-		"rates"		: np.ones(784)
-	}
-}
-
-network = createNetwork(networkList, equationsDict, parametersDict, 
-		stdpDict, weightInitDict)
-
-
-image = 50000*np.ones(784)
-startTimeTraining = 1
-network = trainSingleImg(network, image, ratesDict, startTimeTraining)
-
-prevSpikesCount = 0
-
-updatePulsesCount(network, prevSpikesCount)
