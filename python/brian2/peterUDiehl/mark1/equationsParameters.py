@@ -1,8 +1,5 @@
 import brian2 as b2
 
-# Train periods
-singleExampleTime = 0.35*b2.second
-restingTime = 0.15*b2.second
 
 # Reset potentials
 vReset_exc = -65.*b2.mV

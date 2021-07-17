@@ -1,36 +1,42 @@
-from brian2 import run
+import brian2 as b2
 import timeit
 import numpy as np
+from equationsParameters import *
+from neuronsParameters import *
+
+locals().update(parametersDict)
 
 
 
 def trainCycle(image, networkList, network, trainDuration, restTime, 
 		spikesEvolution, updateInterval, printInterval, 
-		currentSpikesCount, prevSpikesCount, startTimeImage, 
-		startTimeTraining, accuracies, labelsArray, assignements, 
-		inputIntensity, startInputIntensity, currentIndex):
+		currentSpikesCount, prevSpikesCount, startTimeTraining, 
+		accuracies, labelsArray, assignements, inputIntensity, 
+		startInputIntensity, currentIndex):
 
 	
-	imgToSpikeTrain(image, inputIntensity)
+	imgToSpikeTrain(network, image, inputIntensity)
+	
+	startTimeImage = timeit.default_timer()
+
+	inputIntensity, currentIndex, accuracies = trainSingleImage(networkList,
+		network, trainDuration, spikesEvolution, updateInterval, 
+		printInterval, currentSpikesCount, prevSpikesCount, 
+		startTimeImage, startTimeTraining, accuracies, labelsArray, 
+		assignements, inputIntensity, startInputIntensity, currentIndex)
 
 
-	inputIntensity, currentIndex = trainSingleImage(networkList, network, 
-		trainDuration, spikesEvolution, updateInterval, printInterval, 
-		currentSpikesCount, prevSpikesCount, startTimeImage, 
-		startTimeTraining, accuracies, labelsArray, assignements, 
-		inputIntensity, startInputIntensity, currentIndex)
-
-	imgToSpikeTrain(np.zeros(image.shape[0]), inputIntensity)
+	imgToSpikeTrain(network, np.zeros(image.shape[0]), inputIntensity)
 
 	b2.run(restTime)
 
-	return inputIntensity, currentIndex
+	return inputIntensity, currentIndex, accuracies
 
 
 
 
 
-def imgToSpikeTrain(image, inputIntensity):
+def imgToSpikeTrain(network, image, inputIntensity):
 	
 	values = {
 		"poissongroup":{
@@ -53,19 +59,20 @@ def trainSingleImage(networkList, network, trainDuration, spikesEvolution,
 
 	updatePulsesCount(network, currentSpikesCount, prevSpikesCount)
 
+
 	if np.sum(currentSpikesCount) < 5:
 
 		inputIntensity = repeatImage(inputIntensity)
 
 	else:
 
-		inputIntensity, currentIndex = nextImage(networkList, 
-			spikesEvolution, updateInterval, printInterval, 
-			currentSpikesCount, startTimeImage, startTimeTraining, 
-			accuracies, labelsArray, assignements, 
-			startInputIntensity, currentIndex)
+		inputIntensity, currentIndex, accuracies = nextImage(
+			networkList, spikesEvolution, updateInterval, 
+			printInterval, currentSpikesCount, startTimeImage, 
+			startTimeTraining, accuracies, labelsArray, 
+			assignements, startInputIntensity, currentIndex)
 
-	return inputIntensity, currentIndex
+	return inputIntensity, currentIndex, accuracies
 
 
 
@@ -90,7 +97,7 @@ def nextImage(networkList, spikesEvolution, updateInterval, printInterval,
 			spikesEvolution, labelsArray[currentIndex -
 			updateInterval : currentIndex], assignements)
 
-	return startInputIntensity, currentIndex + 1	
+	return startInputIntensity, currentIndex + 1, accuracies	
 
 
 
@@ -113,8 +120,8 @@ def updatePulsesCount(network, currentSpikesCount, prevSpikesCount):
 				subexpressions=False, read_only_variables=True,
 				level=0)["spikemonitor"]["count"]
 
-	currentSpikesCount =  spikeMonitorCount - prevSpikesCount
-	prevSpikesCount = np.asarray(spikeMonitorCount)
+	currentSpikesCount[:] = np.asarray(spikeMonitorCount) - prevSpikesCount
+	prevSpikesCount[:] = np.asarray(spikeMonitorCount)
 
 
 
