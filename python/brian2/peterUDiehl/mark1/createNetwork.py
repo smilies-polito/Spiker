@@ -1,19 +1,21 @@
 import brian2 as b2
 import numpy as np
+import sys
 
 
 
 def createNetwork(networkList, equationsDict, parametersDict, stdpDict,
-		weightInitDict):
+		weightInitDict, mode, thetaFilename, weightFilename):
 
 	poissonGroup = b2.PoissonGroup(networkList[0], 0*b2.Hz)
 
 	excLayersList, inhLayersList = createLayersStructure(networkList, 
-	 				equationsDict, parametersDict)
+	 				equationsDict, parametersDict, mode,
+					thetaFilename)
 
 	synapsesList = connectLayersStructure(networkList, poissonGroup, 
 	 				excLayersList, inhLayersList,stdpDict, 
-					weightInitDict)
+					weightInitDict, mode, weightFilename)
 
 	
 	spikeMonitor = b2.SpikeMonitor(excLayersList[-1], record=False)
@@ -25,7 +27,9 @@ def createNetwork(networkList, equationsDict, parametersDict, stdpDict,
 
 
 
-def createLayersStructure(networkList, equationsDict, parametersDict):
+
+def createLayersStructure(networkList, equationsDict, parametersDict, mode,
+			thetaFilename):
 
 	networkSize = len(networkList)
 
@@ -33,6 +37,8 @@ def createLayersStructure(networkList, equationsDict, parametersDict):
 	inhLayersList = [0] * (networkSize - 1)
 
 	for layer in range(1, networkSize):
+
+		thetaFile = thetaFilename + str(layer) + ".txt"
 
 		excLayersList[layer-1] = createLayer(
 			networkList[layer],
@@ -42,7 +48,9 @@ def createLayersStructure(networkList, equationsDict, parametersDict):
 			equationsDict["reset_exc"],
 			"excLayer" + str(layer),
 			parametersDict["vRest_exc"],
-			"exc"
+			"exc",
+			mode,
+			thetaFile
 		)
 
 
@@ -54,7 +62,9 @@ def createLayersStructure(networkList, equationsDict, parametersDict):
 			equationsDict["reset_inh"],
 			"inhLayer" + str(layer),
 			parametersDict["vRest_inh"],
-			"inh"
+			"inh",
+			mode,
+			thetaFile
 		)
 
 	return excLayersList, inhLayersList
@@ -66,7 +76,7 @@ def createLayersStructure(networkList, equationsDict, parametersDict):
 
 def createLayer(numberOfNeurons, neuronsEquations, threshEquations,
 		refractoryPeriod, resetEquations, groupName, restPotential,
-		neuronType):
+		neuronType, mode, thetaFile):
 
 	# Create the group
 	neuronGroup = b2.NeuronGroup(
@@ -84,30 +94,48 @@ def createLayer(numberOfNeurons, neuronsEquations, threshEquations,
 
 	# Initialize the threshold parameter theta
 	if neuronType == "exc":
-		neuronGroup.theta = np.ones(numberOfNeurons)*20*b2.mV
+		initializeTheta(neuronGroup, mode, thetaFile)
+		print(neuronGroup.theta)
 
 	return neuronGroup
 
 
 
 
+def initializeTheta(neuronGroup, mode, thetaFile):
+
+	if mode == "train":
+		neuronGroup.theta = np.ones(numberOfNeurons)*20*b2.mV
+	elif mode == "test":
+		with open(thetaFile, 'rb') as fp: 
+			neuronGroup.theta = np.load(fp)*b2.mV
+	else:
+		print('Invalid operation mode. Accepted values: \n\t1) test\
+			\n\t2) train')
+		sys.exit()
+
 
 
 
 def connectLayersStructure(networkList, poissonGroup, excLayersList, 
-			inhLayersList,stdpDict, weightInitDict):
+			inhLayersList,stdpDict, weightInitDict, mode,
+			weightFilename):
 
 	networkSize = len(networkList)
 	synapsesList = [0] * (networkSize - 1) * 3
 
 	for layer in range (1, networkSize):
 		
+		weightFile = weightFilename + str(layer) + ".txt"
+		
 		synapsesList[3*(layer - 1)] = exc2excConnection(
 			networkList, 
 			poissonGroup, 
 			excLayersList, 
 			stdpDict, 
-			layer)
+			layer,
+			mode,
+			weightFile)
 
 
 		synapsesList[3*(layer -1 ) + 1] = connectLayers(
@@ -141,10 +169,9 @@ def connectLayersStructure(networkList, poissonGroup, excLayersList,
 
 
 def exc2excConnection(networkList, poissonGroup, excLayersList, stdpDict, 
-			layer):
+			layer, mode, weightFile):
 
-	weightMatrix = (b2.random(networkList[layer]*networkList[layer - 1])
-			+ 0.01)*0.3
+	weightMatrix = initializeWeights(mode, networkList, weightFile, layer)
 
 	if layer == 1:
 
@@ -177,6 +204,22 @@ def exc2excConnection(networkList, poissonGroup, excLayersList, stdpDict,
 
 
 
+
+
+def initializeWeights(mode, networkList, weightFile, layer):
+
+	if mode == "train":
+		return (b2.random(networkList[layer]*networkList[layer - 1])
+			+ 0.01)*0.3
+
+	elif mode == "test":
+		with open(weightFile, 'rb') as fp:
+			return np.load(weightFile)
+	
+	else:
+		print('Invalid operation mode. Accepted values:\n\t1) test\
+		\n\t2) train')
+		sys.exit()
 
 
 

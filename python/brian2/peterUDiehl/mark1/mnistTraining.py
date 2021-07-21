@@ -16,6 +16,16 @@ labels = "../../mnist/train-labels-idx1-ubyte"
 
 networkList = [784, 400]
 
+mode = "test"
+weightFilename = "weights"
+thetaFilename = "theta"
+
+weightFile = "weights1.txt"
+thetaFile = "theta1.txt"
+
+
+
+
 
 updateInterval = 250
 printInterval = 10
@@ -36,8 +46,17 @@ restTime = 0.15*b2.second
 
 imgArray, labelsArray = loadDataset(images, labels)
 
+equationsDict, stdpDict = defineEquations(mode)
+
+
+with open(thetaFile, 'wb') as fp:
+	np.save(fp, np.random.randn(networkList[-1]))
+
+with open(weightFile, 'wb') as fp:
+	np.save(fp, np.random.randn(networkList[-1]*networkList[0]))
+
 network = createNetwork(networkList, equationsDict, parametersDict, stdpDict,
-		weightInitDict)
+		weightInitDict, mode, thetaFilename, weightFilename)
 
 
 i = 0
