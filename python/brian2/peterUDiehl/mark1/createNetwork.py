@@ -5,7 +5,8 @@ import sys
 
 
 def createNetwork(networkList, equationsDict, parametersDict, stdpDict,
-		weightInitDict, mode, thetaFilename, weightFilename):
+		weightInitDict, mode, thetaFilename, weightFilename,
+		scaleFactors):
 
 	poissonGroup = b2.PoissonGroup(networkList[0], 0*b2.Hz)
 
@@ -15,7 +16,8 @@ def createNetwork(networkList, equationsDict, parametersDict, stdpDict,
 
 	synapsesList = connectLayersStructure(networkList, poissonGroup, 
 	 				excLayersList, inhLayersList,stdpDict, 
-					weightInitDict, mode, weightFilename)
+					weightInitDict, mode, weightFilename,
+					scaleFactors)
 
 	
 	spikeMonitor = b2.SpikeMonitor(excLayersList[-1], record=False)
@@ -94,15 +96,14 @@ def createLayer(numberOfNeurons, neuronsEquations, threshEquations,
 
 	# Initialize the threshold parameter theta
 	if neuronType == "exc":
-		initializeTheta(neuronGroup, mode, thetaFile)
-		print(neuronGroup.theta)
+		initializeTheta(neuronGroup, numberOfNeurons, mode, thetaFile)
 
 	return neuronGroup
 
 
 
 
-def initializeTheta(neuronGroup, mode, thetaFile):
+def initializeTheta(neuronGroup, numberOfNeurons, mode, thetaFile):
 
 	if mode == "train":
 		neuronGroup.theta = np.ones(numberOfNeurons)*20*b2.mV
@@ -119,7 +120,7 @@ def initializeTheta(neuronGroup, mode, thetaFile):
 
 def connectLayersStructure(networkList, poissonGroup, excLayersList, 
 			inhLayersList,stdpDict, weightInitDict, mode,
-			weightFilename):
+			weightFilename, scaleFactors):
 
 	networkSize = len(networkList)
 	synapsesList = [0] * (networkSize - 1) * 3
@@ -135,7 +136,8 @@ def connectLayersStructure(networkList, poissonGroup, excLayersList,
 			stdpDict, 
 			layer,
 			mode,
-			weightFile)
+			weightFile,
+			scaleFactors[layer-1])
 
 
 		synapsesList[3*(layer -1 ) + 1] = connectLayers(
@@ -169,9 +171,10 @@ def connectLayersStructure(networkList, poissonGroup, excLayersList,
 
 
 def exc2excConnection(networkList, poissonGroup, excLayersList, stdpDict, 
-			layer, mode, weightFile):
+			layer, mode, weightFile, scaleFactor):
 
-	weightMatrix = initializeWeights(mode, networkList, weightFile, layer)
+	weightMatrix = initializeWeights(mode, networkList, weightFile, layer,
+			scaleFactor)
 
 	if layer == 1:
 
@@ -206,11 +209,11 @@ def exc2excConnection(networkList, poissonGroup, excLayersList, stdpDict,
 
 
 
-def initializeWeights(mode, networkList, weightFile, layer):
+def initializeWeights(mode, networkList, weightFile, layer, scaleFactor):
 
 	if mode == "train":
 		return (b2.random(networkList[layer]*networkList[layer - 1])
-			+ 0.01)*0.3
+			+ 0.01)*scaleFactor
 
 	elif mode == "test":
 		with open(weightFile, 'rb') as fp:

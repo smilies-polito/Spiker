@@ -10,3 +10,6 @@ __pycache__
 
 # Report files and similar
 *.txt
+
+# Numpy arrays
+*.npy
