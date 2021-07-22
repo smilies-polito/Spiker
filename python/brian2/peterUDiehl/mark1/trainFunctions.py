@@ -3,8 +3,24 @@ import timeit
 import numpy as np
 from equationsParameters import *
 from neuronsParameters import *
+import sys
 
 locals().update(parametersDict)
+
+
+def initAssignements(mode, networkList, assignementsFile):
+
+	if mode == "train":
+		return -1*np.ones(networkList[-1])
+
+	elif mode == "test":
+		with open(assignementsFile, 'rb') as fp:
+			return np.load(fp)
+
+	else:
+		print('Invalid operation mode. Accepted values: \n\t1) test\
+			\n\t2) train')
+		sys.exit()
 
 
 
@@ -12,18 +28,18 @@ def trainCycle(image, networkList, network, trainDuration, restTime,
 		spikesEvolution, updateInterval, printInterval, 
 		currentSpikesCount, prevSpikesCount, startTimeTraining, 
 		accuracies, labelsArray, assignements, inputIntensity, 
-		startInputIntensity, currentIndex):
+		startInputIntensity, currentIndex, mode):
 
-	
-	imgToSpikeTrain(network, image, inputIntensity)
-	
 	startTimeImage = timeit.default_timer()
 
+	imgToSpikeTrain(network, image, inputIntensity)
+	
 	inputIntensity, currentIndex, accuracies = trainSingleImage(networkList,
 		network, trainDuration, spikesEvolution, updateInterval, 
-		printInterval, currentSpikesCount, prevSpikesCount, 
+		printInterval, currentSpikesCount, prevSpikesCount,
 		startTimeImage, startTimeTraining, accuracies, labelsArray, 
-		assignements, inputIntensity, startInputIntensity, currentIndex)
+		assignements, inputIntensity, startInputIntensity, currentIndex,
+		mode)
 
 
 	imgToSpikeTrain(network, np.zeros(image.shape[0]), inputIntensity)
@@ -52,8 +68,8 @@ def imgToSpikeTrain(network, image, inputIntensity):
 def trainSingleImage(networkList, network, trainDuration, spikesEvolution, 
 		updateInterval, printInterval, currentSpikesCount, 
 		prevSpikesCount, startTimeImage, startTimeTraining, accuracies, 
-		labelsArray, assignements, inputIntensity, startInputIntensity,
-		currentIndex):
+		labelsArray, assignements, inputIntensity, startInputIntensity, 
+		currentIndex, mode):
 
 	network.run(trainDuration)
 
@@ -62,15 +78,15 @@ def trainSingleImage(networkList, network, trainDuration, spikesEvolution,
 
 	if np.sum(currentSpikesCount) < 5:
 
-		inputIntensity = repeatImage(inputIntensity)
+		inputIntensity = repeatImage(inputIntensity, currentIndex)
 
 	else:
 
 		inputIntensity, currentIndex, accuracies = nextImage(
 			networkList, spikesEvolution, updateInterval, 
-			printInterval, currentSpikesCount, startTimeImage, 
+			printInterval, currentSpikesCount, startTimeImage,
 			startTimeTraining, accuracies, labelsArray, 
-			assignements, startInputIntensity, currentIndex)
+			assignements, startInputIntensity, currentIndex, mode)
 
 	return inputIntensity, currentIndex, accuracies
 
@@ -79,13 +95,13 @@ def trainSingleImage(networkList, network, trainDuration, spikesEvolution,
 
 
 def nextImage(networkList, spikesEvolution, updateInterval, printInterval, 
-		currentSpikesCount, startTimeImage, startTimeTraining,
+		currentSpikesCount, startTimeImage, startTimeTraining, 
 		accuracies, labelsArray, assignements, startInputIntensity, 
-		currentIndex):
+		currentIndex, mode):
 
 	spikesEvolution[currentIndex % updateInterval] = currentSpikesCount
 
-	printProgress(currentIndex, printInterval, startTimeImage,
+	printProgress(currentIndex, printInterval, startTimeImage, 
 			startTimeTraining)
 
 	accuracies = computePerformances(currentIndex, updateInterval,
@@ -93,19 +109,21 @@ def nextImage(networkList, spikesEvolution, updateInterval, printInterval,
 			labelsArray[currentIndex - updateInterval :
 			currentIndex], assignements, accuracies)
 
-	updateAssignements(currentIndex, updateInterval, networkList[-1],
-			spikesEvolution, labelsArray[currentIndex -
-			updateInterval : currentIndex], assignements)
+	if mode == "train":
+		updateAssignements(currentIndex, updateInterval, 
+				networkList[-1], spikesEvolution, 
+				labelsArray[currentIndex - updateInterval
+				: currentIndex], assignements)
 
 	return startInputIntensity, currentIndex + 1, accuracies	
 
 
 
 
-def repeatImage(inputIntensity):
+def repeatImage(inputIntensity, currentIndex):
 
 	print("Increase inputIntensity from " + str(inputIntensity) + \
-	" to " + str(inputIntensity + 1))
+	" to " + str(inputIntensity + 1) + " for image " + str(currentIndex))
 
 	return inputIntensity + 1
 
@@ -156,15 +174,17 @@ def updateAssignements(currentIndex, updateInterval, outputLayerSize,
 
 
 
-def printProgress(currentIndex, printInterval, startTimeImage, startTimeTraining):
+def printProgress(currentIndex, printInterval, startTimeImage, 
+			startTimeTraining):
+
+	currentTime = timeit.default_timer()
 
 	# Print every printInterval
 	if currentIndex % printInterval == 0 and currentIndex > 0:
 			
 		progressString = "Analyzed images: " + str(currentIndex) + \
-		". Time required for a single image: " + \
-		str(timeit.default_timer() - startTimeImage) + \
-		"s. Total elapsed time: " + \
+		". Time required for a single image: " + str(currentTime -
+		startTimeImage) + "s. Total elapsed time: " + \
 		str(timeit.default_timer() - startTimeTraining) + "s."
 
 		print(progressString)
@@ -228,7 +248,8 @@ def updateAccuracy(classification, labelsSequence, accuracies):
 
 
 
-def storeParameters(networkList, network, weightFilename, thetaFilename):
+def storeParameters(networkList, network, assignements, weightFilename,
+			thetaFilename, assignementsFilename):
 
 	storeArray(weightFilename + str(1) + ".npy", network["poisson2exc"].w)
 
@@ -241,6 +262,11 @@ def storeParameters(networkList, network, weightFilename, thetaFilename):
 
 		storeArray(thetaFilename + str(layer) + ".npy", 
 			network["excLayer" + str(layer)].theta)
+
+
+	storeArray(assignementsFilename + ".npy", assignements)
+
+
 
 
 def storeArray(filename, numpyArray):
@@ -256,13 +282,12 @@ def storePerformace(startTimeTraining, accuracies, performanceFilename):
 	timeString = "Total training time : " + \
 		seconds2hhmmss(timeit.default_timer() - startTimeTraining)
 
-	accuracyString = "Accuracy evolution:\n" + str(accuracies)
+	accuracyString = "Accuracy evolution:\n" + "\n".join(accuracies)
 
 	with open(performanceFilename + ".txt", 'w') as fp:
 		fp.write(timeString)
 		fp.write("\n\n")
 		fp.write(accuracyString)
-
 
 
 def seconds2hhmmss(seconds):
@@ -272,16 +297,3 @@ def seconds2hhmmss(seconds):
 	seconds = int(seconds % 60)
 
 	return str(hours) + "h " + str(minutes) + "min " + str(seconds) + "s"
-
-	
-
-import time
-
-accuracies = [1,2,3]
-performanceFilename = "performance"
-
-startTimeTraining = timeit.default_timer()
-time.sleep(1)
-
-
-storePerformace(startTimeTraining, accuracies, performanceFilename)

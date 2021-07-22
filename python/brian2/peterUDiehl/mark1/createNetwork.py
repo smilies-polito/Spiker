@@ -40,7 +40,7 @@ def createLayersStructure(networkList, equationsDict, parametersDict, mode,
 
 	for layer in range(1, networkSize):
 
-		thetaFile = thetaFilename + str(layer) + ".txt"
+		thetaFile = thetaFilename + str(layer) + ".npy"
 
 		excLayersList[layer-1] = createLayer(
 			networkList[layer],
@@ -127,7 +127,7 @@ def connectLayersStructure(networkList, poissonGroup, excLayersList,
 
 	for layer in range (1, networkSize):
 		
-		weightFile = weightFilename + str(layer) + ".txt"
+		weightFile = weightFilename + str(layer) + ".npy"
 		
 		synapsesList[3*(layer - 1)] = exc2excConnection(
 			networkList, 
