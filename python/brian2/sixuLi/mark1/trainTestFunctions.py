@@ -24,7 +24,7 @@ def initAssignements(mode, networkList, assignementsFile):
 
 
 
-def trainCycle(image, networkList, network, trainDuration, restTime, 
+def trainTestCycle(image, networkList, network, trainDuration, restTime, 
 		spikesEvolution, updateInterval, printInterval, 
 		currentSpikesCount, prevSpikesCount, startTimeTraining, 
 		accuracies, labelsArray, assignements, inputIntensity, 
@@ -34,12 +34,12 @@ def trainCycle(image, networkList, network, trainDuration, restTime,
 
 	imgToSpikeTrain(network, image, inputIntensity)
 	
-	inputIntensity, currentIndex, accuracies = trainSingleImage(networkList,
-		network, trainDuration, spikesEvolution, updateInterval, 
-		printInterval, currentSpikesCount, prevSpikesCount,
-		startTimeImage, startTimeTraining, accuracies, labelsArray, 
-		assignements, inputIntensity, startInputIntensity, currentIndex,
-		mode)
+	inputIntensity, currentIndex, accuracies = trainTestSingleImage(
+		networkList, network, trainDuration, spikesEvolution, 
+		updateInterval, printInterval, currentSpikesCount, 
+		prevSpikesCount, startTimeImage, startTimeTraining, accuracies,
+		labelsArray, assignements, inputIntensity, startInputIntensity, 
+		currentIndex,mode)
 
 
 	imgToSpikeTrain(network, np.zeros(image.shape[0]), inputIntensity)
@@ -65,7 +65,7 @@ def imgToSpikeTrain(network, image, inputIntensity):
 
 	
 
-def trainSingleImage(networkList, network, trainDuration, spikesEvolution, 
+def trainTestSingleImage(networkList, network, trainDuration, spikesEvolution, 
 		updateInterval, printInterval, currentSpikesCount, 
 		prevSpikesCount, startTimeImage, startTimeTraining, accuracies, 
 		labelsArray, assignements, inputIntensity, startInputIntensity, 
@@ -234,6 +234,7 @@ def updateAccuracy(classification, labelsSequence, accuracies):
 	correct = np.where(classification == labelsSequence)[0].size
 
 	# Compute the percentage of accuracy and add it to the list
+	print("{:.2f}".format(correct/classification.size*100) + "%")
 	accuracies += ["{:.2f}".format(correct/classification.size*100) + "%"]
 	
 	# Print the accuracy

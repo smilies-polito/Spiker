@@ -11,15 +11,18 @@ from trainTestFunctions import *
 from utils import createParamDir
 
 
-images = "../../mnist/t10k-images-idx3-ubyte"
-labels = "../../mnist/t10k-labels-idx1-ubyte"
+images = "../../mnist/train-images-idx3-ubyte"
+labels = "../../mnist/train-labels-idx1-ubyte"
 
 paramDir = "./parameters"
 
 weightFilename = paramDir + "/weights"
 thetaFilename = paramDir + "/theta"
 performanceFilename = paramDir + "/performance"
-assignementsFile = paramDir + "/assignements"
+assignementsFilename = paramDir + "/assignements"
+assignementsFile = paramDir + "/assignements.npy"
+
+
 
 
 createParamDir(paramDir)
@@ -62,7 +65,7 @@ i = 0
 
 startTimeTraining = timeit.default_timer()
 
-numberOfCycles = imgArray.shape[0]
+numberOfCycles = 1501 #imgArray.shape[0]
 
 while i < numberOfCycles:
 
@@ -73,7 +76,7 @@ while i < numberOfCycles:
 		assignements,inputIntensity, startInputIntensity, i, mode)
 
 
-storeParameters(networkList, network, assigmenets, weightFilename, 
+storeParameters(networkList, network, assignements, weightFilename, 
 		thetaFilename, assignementsFilename)
 
 storePerformace(startTimeTraining, accuracies, performanceFilename)
