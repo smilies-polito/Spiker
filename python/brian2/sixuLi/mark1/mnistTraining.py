@@ -65,7 +65,7 @@ i = 0
 
 startTimeTraining = timeit.default_timer()
 
-numberOfCycles = 1501 #imgArray.shape[0]
+numberOfCycles = imgArray.shape[0]
 
 while i < numberOfCycles:
 
