@@ -11,10 +11,10 @@ excInhConnectionDict = {
 
 
 	# Inhibitory presynaptic response when excitatory event received
-	"exc2inhPre"	:	'v_post += w',
+	"exc2inhPre"	:	'v += w',
 
 	# Excitatory presynaptic response when inhibitorily event reveived
-	"inh2excPre"	:	'v_post += w'
+	"inh2excPre"	:	'v += w'
 
 }
 

@@ -17,5 +17,5 @@ parametersDict = {
 
 weightInitDict = {
 	"exc2inh"	: 22.5,
-	"inh2exc"	: -120
+	"inh2exc"	: -18
 }

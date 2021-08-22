@@ -95,8 +95,8 @@ def createLayer(numberOfNeurons, neuronsEquations, threshEquations,
 	neuronGroup.v = resetPotential
 
 	# Initialize the threshold parameter theta
-#	if neuronType == "exc":
-#		initializeTheta(neuronGroup, numberOfNeurons, mode, thetaFile)
+	if neuronType == "exc":
+		initializeTheta(neuronGroup, numberOfNeurons, mode, thetaFile)
 
 	return neuronGroup
 
@@ -106,10 +106,10 @@ def createLayer(numberOfNeurons, neuronsEquations, threshEquations,
 def initializeTheta(neuronGroup, numberOfNeurons, mode, thetaFile):
 
 	if mode == "train":
-		neuronGroup.theta = np.ones(numberOfNeurons)*20*b2.mV
+		neuronGroup.theta = np.ones(numberOfNeurons)*20
 	elif mode == "test":
 		with open(thetaFile, 'rb') as fp: 
-			neuronGroup.theta = np.load(fp)*b2.mV
+			neuronGroup.theta = np.load(fp)
 	else:
 		print('Invalid operation mode. Accepted values: \n\t1) test\
 			\n\t2) train')

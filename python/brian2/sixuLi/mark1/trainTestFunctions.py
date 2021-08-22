@@ -75,7 +75,7 @@ def trainTestSingleImage(networkList, network, trainDuration, spikesEvolution,
 
 	updatePulsesCount(network, currentSpikesCount, prevSpikesCount)
 
-
+	print(currentSpikesCount)
 	if np.sum(currentSpikesCount) < 5:
 
 		inputIntensity = repeatImage(inputIntensity, currentIndex)
@@ -234,7 +234,6 @@ def updateAccuracy(classification, labelsSequence, accuracies):
 	correct = np.where(classification == labelsSequence)[0].size
 
 	# Compute the percentage of accuracy and add it to the list
-	print("{:.2f}".format(correct/classification.size*100) + "%")
 	accuracies += ["{:.2f}".format(correct/classification.size*100) + "%"]
 	
 	# Print the accuracy

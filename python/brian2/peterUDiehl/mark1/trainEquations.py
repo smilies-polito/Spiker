@@ -12,7 +12,7 @@ trainEquationsDict = {
 
 
 
-	# Excitatory hreshold
+	# Excitatory threshold
 	"thresh_exc" 	:	'( v > (theta - offset + vThresh_exc)) and \
 					(timer > tRefrac_exc)',
 

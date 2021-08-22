@@ -3,7 +3,7 @@ trainEquationsDict = {
 	# Excitatory reset
 	"reset_exc" 	:	'''
 				v = vReset_exc
-				theta = theta + thetaPlus
+				theta += thetaPlus
 				''',
 
 	# Inhibitory reset
@@ -11,7 +11,7 @@ trainEquationsDict = {
 
 
 
-	# Excitatory hreshold
+	# Excitatory threshold
 	"thresh_exc" 	:	'v >=  vThresh_exc + theta',
 
 	# Inhibitory threshold
@@ -23,7 +23,7 @@ trainEquationsDict = {
 	# Excitatory equations
 	"neuronsEqs_exc":	'''
 				dv/dt = (vRest_exc - v)/tcV_exc	: 1
-				theta				: 1
+				dtheta/dt = -theta/tauTheta	: 1
 				''',
 
 	# Inhibitory equations
@@ -43,20 +43,21 @@ trainStdpDict = {
 				w					: 1
 				dpre/dt   =   -pre/(tc_trace)		: 1 \
 					(event-driven)
-				dpost/dt  = -post/(tc_trace)	: 1 \
+				dpost/dt  = -post/(tc_trace)		: 1 \
 					(event-driven)
 				''',
 
 	# Presynaptic STDP
 	"stdpPre"	:	'''
+				v += w
 				pre = 1
-				v_post += w
+				w = clip(w - nu_pre*post, 0, wMax)
 				''',
 
 	# Postsynaptic STDP
 	"stdpPost"	:	'''
 				post = 1
-				w = w + nu_post*pre
+				w = clip(w + nu_post*pre, 0, wMax)
 				'''
 
 }

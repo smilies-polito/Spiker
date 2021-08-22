@@ -16,8 +16,12 @@ tc_trace = 20*b2.ms
 
 # Learning rates
 nu_pre = 1e-4
-nu_post = 1e-2
+nu_post = 1e-3 	#1e-2
 
 
 # When the neuron's membrane potential exceeds the threshold
-thetaPlus = 0.05
+thetaPlus = 0.1
+tauTheta = 1e7*b2.ms 
+
+# Maximum value of the weights
+wMax = 1
