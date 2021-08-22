@@ -75,7 +75,6 @@ def trainTestSingleImage(networkList, network, trainDuration, spikesEvolution,
 
 	updatePulsesCount(network, currentSpikesCount, prevSpikesCount)
 
-	print(currentSpikesCount)
 	if np.sum(currentSpikesCount) < 5:
 
 		inputIntensity = repeatImage(inputIntensity, currentIndex)
