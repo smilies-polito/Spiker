@@ -16,7 +16,7 @@ tc_trace = 20*b2.ms
 
 # Learning rates
 nu_pre = 1e-4
-nu_post = 1e-3 	#1e-2
+nu_post = 1e-3
 
 
 # When the neuron's membrane potential exceeds the threshold

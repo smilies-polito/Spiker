@@ -16,13 +16,13 @@ N_sim = 1000
 
 # List describing the network. Each entry corresponds to the number of nodes in the
 # specific layer
-networkList = [1,1]
+networkList = [2,1]
 
 # Density of the input spikes
-density = 0.1
+density = 0.02
 
 # Thresholds
-v_th_list = [50*np.ones(networkList[i]) for i in range(1,len(networkList))]
+v_th_list = [40*np.ones(networkList[i]) for i in range(1,len(networkList))]
 
 # Membrane potential reset state
 v_reset = 0 
@@ -30,9 +30,9 @@ v_reset = 0
 # Range of the weights to generate
 w_min_list = [10*np.ones(networkList[i]) for i in range(1,len(networkList))]
 
-w_max_list = [40*np.ones(networkList[i]) for i in range(1,len(networkList))]
+w_max_list = [20*np.ones(networkList[i]) for i in range(1,len(networkList))]
 
-dt_tau = 0.3
+dt_tau = 0.05
 
 # Create the network dictionary list
 networkDictList = createNetworkDictList(v_th_list, v_reset, w_min_list, w_max_list, networkList)

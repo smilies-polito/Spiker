@@ -61,6 +61,9 @@ network = createNetwork(networkList, equationsDict, parametersDict, stdpDict,
 		scaleFactors)
 
 
+imgArray = np.repeat(imgArray, 2, axis=0)
+labelsArray = np.repeat(labelsArray, 2, axis=0)
+
 i = 0
 
 startTimeTraining = timeit.default_timer()

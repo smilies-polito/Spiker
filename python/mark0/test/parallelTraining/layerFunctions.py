@@ -3,7 +3,7 @@
 import sys
 
 development = "/Users/alessio/Documents/Poli/Magistrale/Tesi/\
-Tesi/spiker/python_simulation/development/parallelTraining"
+Tesi/spiker/python/mark0/development/parallelTraining"
 
 if development not in sys.path:
 	sys.path.insert(1,development)
