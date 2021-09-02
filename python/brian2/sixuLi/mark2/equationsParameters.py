@@ -24,4 +24,4 @@ thetaPlus = 0.1
 tauTheta = 1e7*b2.ms 
 
 # Maximum value of the weights
-wMax = 1
+wMax = 2**16

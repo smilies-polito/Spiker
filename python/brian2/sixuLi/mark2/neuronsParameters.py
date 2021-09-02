@@ -9,10 +9,10 @@ parametersDict = {
 	"vRest_inh"		: -60.0,
 
 	# Excitatory refractory period
-	"tRefrac_exc"		: 5.*b2.ms,
+	"tRefrac_exc"		: 0*b2.ms, #5.*b2.ms,
 
 	# Inhibitory refractory period
-	"tRefrac_inh"		: 2*b2.ms
+	"tRefrac_inh"		: 0*b2.ms, #2*b2.ms
 }
 
 weightInitDict = {
