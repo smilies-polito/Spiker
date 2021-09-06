@@ -127,7 +127,7 @@ def createLayer(network, layerType, initDict, networkList, layer, mode,
 		"vReset"	: initDict["vReset"],
 
 		# Initialize the output spikes
-		"outSpikes"	: np.zeros((1, networkList[layer]))
+		"outSpikes"	: np.zeros((1, networkList[layer])).astype(bool)
 	}
 
 	if layerType == "exc":
@@ -169,7 +169,7 @@ def initializeTheta(mode, thetaFile, initDict, numberOfNeurons):
 	if mode == "train":
 
 		# Initialize theta to a starting value
-		return np.ones(numberOfNeurons)*initDict["initTheta"]
+		return np.ones((1, numberOfNeurons))*initDict["initTheta"]
 
 	elif mode == "test":
 
@@ -236,10 +236,11 @@ def intraLayersSynapses(network, synapseName, mode, networkList, weightFile,
 		"t_out"		: np.zeros((1, networkList[layer])),
 
 		# Initialize the input spikes mask
-		"mask_in"	: np.zeros((1, networkList[layer - 1])),
+		"mask_in"	: np.zeros((1, networkList[layer -
+					1])).astype(bool),
 
 		# Initialize the output spikes mask
-		"mask_out"	: np.zeros((1, networkList[layer]))
+		"mask_out"	: np.zeros((1, networkList[layer])).astype(bool)
 
 	}
 

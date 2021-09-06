@@ -26,7 +26,8 @@ def updateExcLayer(network, layer, dt_tau, inputSpikes):
 	targetLayer = "excLayer" + str(layer)
 	
 	# Generate spikes if the potential exceeds the dynamic threshold	
-	generateOutputSpikes(network, targetLayer)
+	generateOutputSpikes(network, targetLayer,
+				network[targetLayer]["theta"][0])
 
 	# Reset the potential of the active neurons	
 	resetPotentials(network, targetLayer)
@@ -43,7 +44,7 @@ def updateExcLayer(network, layer, dt_tau, inputSpikes):
 		str(layer))
 
 	# Increase threshold for active neurons. Decrease it for inactive ones.
-	homeostasis(network, layerName, dt_tau)
+	homeostasis(network, targetLayer, dt_tau)
 
 
 
@@ -69,7 +70,7 @@ def updateInhLayer(network, layer, dt_tau):
 
 	
 	# Generate spikes if the potential exceeds the dynamic threshold	
-	generateOutputSpikes(network, targetLayer)
+	generateOutputSpikes(network, targetLayer, 0)
 	
 	# Reset the potential of the active neurons	
 	resetPotentials(network, targetLayer)
@@ -86,7 +87,7 @@ def updateInhLayer(network, layer, dt_tau):
 
 
 
-def generateOutputSpikes(network, layerName): 
+def generateOutputSpikes(network, layerName, theta): 
 
 	''' 
 	Generate the output spikes for all those neurons whose membrane
@@ -99,11 +100,13 @@ def generateOutputSpikes(network, layerName):
 		2) layerName: string. Complete name of the layer, including the
 		index of the layer itself.
 
+		3) theta: NumPy array containing the dynamic homeostasis values.
+		For the inhibitory layer this must be set to 0.
+
 	'''
 	
 	network[layerName]["outSpikes"][0] = network[layerName]["v"][0] > \
-		network[layerName]["vThresh"] + network[layerName]["theta"]
-
+		network[layerName]["vThresh"] + theta
 
 
 
