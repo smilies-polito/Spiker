@@ -470,7 +470,7 @@ def initializeWeights(mode, networkList, weightFile, layer, scaleFactor):
 		3) weightFile: Complete name of the file containing the trained
 		weights for the current layer
 
-		4) layer: number of the current layer. The count starts from 1.
+		4) layer: index of the current layer. The count starts from 1.
 
 		5) scaleFactor: float number. Factor used to scale the randomly
 		generated weights.
