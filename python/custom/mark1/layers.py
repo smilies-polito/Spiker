@@ -4,7 +4,7 @@ import numpy as np
 
 
 
-def updateExcLayer(network, layer, dt_tau, inputSpikes):
+def updateExcLayer(network, layer, dt_tau_exc, dt_tau_theta, inputSpikes):
 
 	'''
 	One training step update of the excitatory layer.
@@ -15,10 +15,13 @@ def updateExcLayer(network, layer, dt_tau, inputSpikes):
 
 		2) layer: index of the current layer. The count starts from 1.
 
-		3) dt_tau: ratio of the time step and the membrane exponential
+		3) dt_tau_exc: ratio of the time step and the membrane exponential
 		time constant.
 
-		4) inputSpikes: boolean NumPy array containing the input spikes.
+		4) dt_tau_theta: ratio of the time step and the homeostasis exponential
+		time constant.
+
+		5) inputSpikes: boolean NumPy array containing the input spikes.
 
 	'''
 
@@ -33,7 +36,7 @@ def updateExcLayer(network, layer, dt_tau, inputSpikes):
 	resetPotentials(network, targetLayer)
 
 	# Exponentially decrease the membrane potential
-	expDecay(network, targetLayer, dt_tau, 
+	expDecay(network, targetLayer, dt_tau_exc, 
 		network[targetLayer]["vRest"], "v")
 
 	# Update membrane potential with the spikes from the previous layer
@@ -44,7 +47,7 @@ def updateExcLayer(network, layer, dt_tau, inputSpikes):
 		str(layer))
 
 	# Increase threshold for active neurons. Decrease it for inactive ones.
-	homeostasis(network, targetLayer, dt_tau)
+	homeostasis(network, targetLayer, dt_tau_theta)
 
 
 

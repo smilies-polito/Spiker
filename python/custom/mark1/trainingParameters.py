@@ -11,6 +11,15 @@ inhDictList = [inhDict] * (len(networkList) - 1)
 exc2inhWeights = exc2inhWeight * np.ones(len(networkList) - 1)
 inh2excWeights = inh2excWeight * np.ones(len(networkList) - 1)
 
+dt = 0.1	# ms
+
+dt_tau_exc = dt/tauExc
+dt_tau_inh = dt/tauExc
+
+stdpDict["ltp_dt_tau"] = dt/stdpDict["ltp_tau"]
+stdpDict["ltd_dt_tau"] = dt/stdpDict["ltd_tau"]
+
+
 scaleFactors = np.array([10])
 
 

@@ -16,26 +16,33 @@ inhDict = {
 	"vRest"		: -60.0,	# mV
 	"vReset"	: -45.0,	# mV
 	"vThresh"	: -40.0		# mV
+
 }
 
 
+# STDP synapses
+stdpDict = {
+
+	# Learning rates
+	"A_ltp"		: 1e-4,
+	"A_ltd"		: 1e-3,
+
+	# Time constants
+	"ltp_tau"	: 20,		# ms
+	"ltd_tau"	: 20		# ms
+}
+
 # Inter layer synapses
-exc2inhWeight = 22.5		# mV
-inh2excWeight = -15             # mV
+exc2inhWeight = 22.5			# mV
+inh2excWeight = -15             	# mV
 
 
 # Membrane potential time constants
-tauExc = 100			# ms
-tauInh = 10			# ms
-
-
-# STDP time constant
-tauTraces = 20			# ms
+tauExc = 100				# ms
+tauInh = 10				# ms
 
 
 # Dynamic homeostasis time constant
-tauTheta = 1e7			# ms
+tauTheta = 1e7				# ms
 
-# Learning rates
-A_ltp = 1e-4
-A_ltd = 1e-3
+
