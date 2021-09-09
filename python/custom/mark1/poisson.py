@@ -3,7 +3,7 @@
 import numpy as np
 
 
-def imgToSpikeTrain(image, trainDuration, N_pixels, pixelMin, pixelMax):
+def imgToSpikeTrain(image, trainingSteps, pixelMin, pixelMax, inputIntensity):
 
 	''' 
 	Convert a black and white image into spike trains using the Poisson
@@ -14,17 +14,17 @@ def imgToSpikeTrain(image, trainDuration, N_pixels, pixelMin, pixelMax):
 		1) image: NumPy array containing the value of each pixel
 		expressed as an integer.
 
-		2) trainDuration: total amount of time steps associated to the
+		2) trainingSteps: total amount of time steps associated to the
 		pixels' spikes trains.
 
-		3) N_pixels: total number of pixels composing the image,
-		corresponding to height*width.
-
-		4) pixelMin: minimum value of the pixels. In the MNIST the value
+		3) pixelMin: minimum value of the pixels. In the MNIST the value
 		0 is used to express a totally black pixel.
 
-		5) pixelMax: maximum value of the pixels. In the MNIST the value
+		4) pixelMax: maximum value of the pixels. In the MNIST the value
 		255 is used to express a totally white pixel.
+
+		5) inputIntensity: current value of the pixel's intensity.
+
 
 	OUTPUT:
 
@@ -33,17 +33,18 @@ def imgToSpikeTrain(image, trainDuration, N_pixels, pixelMin, pixelMax):
 	'''
 
 	# Create bidimensional array of random values
-	rng = np.random.default_rng() random2D = rng.integers(low=pixelMin,
-		high=pixelMax, size=(timeEvolCycles, N_pixels))
+	rng = np.random.default_rng() 
+	random2D = rng.integers(low=pixelMin, high=pixelMax, size = 
+			(trainingSteps, image.shape[0]))
 
 	# Convert the image into spikes trains
-	return poisson(image, random2D)
+	return poisson(image, random2D, inputIntensity)
 
 
 
 
 
-def poisson(image, random2D):
+def poisson(image, random2D, inputIntensity):
 
 	''' 
 	Poisson convertion of the numerical values of the pixels into spike
@@ -54,9 +55,11 @@ def poisson(image, random2D):
 		1) image: NumPy array containing the value of each pixel
 		expressed as an integer.
 
-
 		2) random2D: teo-dimensional NumPy array containing random
 		values between pixelMin and pixelMax.
+
+		3) inputIntensity: current value of the pixel's intensity.
+
 
 	OUTPUT:
 
@@ -64,4 +67,4 @@ def poisson(image, random2D):
 		train for each pixel.  
 	'''
 
-	return image > random2D
+	return image*inputIntensity/8 > random2D

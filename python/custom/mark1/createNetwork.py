@@ -282,7 +282,8 @@ def initializeWeights(mode, networkList, weightFile, layer, scaleFactor):
 	if mode == "train":
 
 		# Randomly initialize the weights
-		return (np.random.rand(networkList[layer], networkList[layer - 1])
+		rng = np.random.default_rng()
+		return (rng.random((networkList[layer], networkList[layer - 1]))
 			+ 0.01)*scaleFactor
 
 	elif mode == "test":

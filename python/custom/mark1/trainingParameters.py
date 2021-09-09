@@ -1,42 +1,78 @@
 import numpy as np
-from networkParameters import *
+from parameters import *
+from utils import initAssignments
+from files import *
 
+
+# List of layer sizes
 networkList = [784, 400]
 
 mode = "train"
 
+# List of dictionaries of parameters for the layers
 excDictList = [excDict] * (len(networkList) - 1)
 inhDictList = [inhDict] * (len(networkList) - 1)
 
+
+# Arrays of weights for the inter layer connections
 exc2inhWeights = exc2inhWeight * np.ones(len(networkList) - 1)
 inh2excWeights = inh2excWeight * np.ones(len(networkList) - 1)
 
-dt = 0.1	# ms
 
-dt_tau_exc = dt/tauExc
-dt_tau_inh = dt/tauExc
+# Training and resting periods in milliseconds
+trainDuration = 350	# ms
+restTime = 150		# ms
+
+
+# Time step duration in milliseconds
+dt = 0.1		# ms
+
+
+# Exponential time constants
+dt_tauDict = {
+
+	"exc" 	: dt/tauExc,
+	"inh" 	: dt/tauExc,
+	"theta"	: dt/tauTheta
+
+}
 
 stdpDict["ltp_dt_tau"] = dt/stdpDict["ltp_tau"]
 stdpDict["ltd_dt_tau"] = dt/stdpDict["ltd_tau"]
 
 
-scaleFactors = np.array([10])
+# Array of scale factors for the random generation of the weights
+scaleFactors = scaleFactor * np.ones(len(networkList) - 1)
 
 
+# Update and print intervals expressed in number of steps
 updateInterval = 250
-printInterval = 10
+printInterval = 1
+
+
+# Initial intensity of the input pixels
 startInputIntensity = 2.
 inputIntensity = startInputIntensity
 
-#singleExampleTime = 0.35*b2.second
-#restTime = 0.15*b2.second
-constSum = 78.4
+
+# Array of normalization factors for the weights of the various layers 
+constSums = constSum * np.ones(len(networkList) - 1)
 
 
+# Initialize history of accuracies
 accuracies = []
+
+# Initialize history of spikes
 spikesEvolution = np.zeros((updateInterval, networkList[-1]))
-currentSpikesCount = np.zeros(networkList[-1])
-prevSpikesCount = np.zeros(networkList[-1])
 
 
-# assignements = initAssignements(mode, networkList, assignementsFile)
+# Initialize the output classification
+assignments = initAssignments(mode, networkList, assignmentsFile)
+
+# Minimum and maximum value of a pixel
+pixelMin = 0
+pixelMax = 255
+
+
+# Minimum acceptable number of output spikes generated during the training.
+countThreshold = 5

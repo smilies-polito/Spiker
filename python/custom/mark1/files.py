@@ -8,7 +8,7 @@ paramDir = "./parameters"
 weightFilename = paramDir + "/weights"
 thetaFilename = paramDir + "/theta"
 performanceFilename = paramDir + "/performance"
-assignementsFilename = paramDir + "/assignements"
-assignementsFile = paramDir + "/assignements.npy"
+assignmentsFilename = paramDir + "/assignments"
+assignmentsFile = paramDir + "/assignments.npy"
 
 createParamDir(paramDir)

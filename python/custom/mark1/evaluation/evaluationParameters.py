@@ -23,10 +23,13 @@ scaleFactors = np.array([10])
 
 dt = 1
 
-dt_tau_exc = dt/tauExc
-dt_tau_inh = dt/tauExc
+dt_tauDict = {
 
-dt_tau_theta = dt/tauTheta
+	"exc" 	: dt/tauExc,
+	"inh"	: dt/tauExc,
+	"theta"	: dt/tauTheta
+
+}
 
 stdpDict["ltp_dt_tau"] = dt/stdpDict["ltp_tau"]
 stdpDict["ltd_dt_tau"] = dt/stdpDict["ltd_tau"]

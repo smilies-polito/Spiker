@@ -45,4 +45,14 @@ tauInh = 10				# ms
 # Dynamic homeostasis time constant
 tauTheta = 1e7				# ms
 
+# Weights normalization factor
+constSum = 78.4
+
+# Scaling factor for the random generation of the weights
+scaleFactor = 0.3	
+
+
+
+
+
 
