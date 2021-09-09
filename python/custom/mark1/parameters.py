@@ -50,9 +50,3 @@ constSum = 78.4
 
 # Scaling factor for the random generation of the weights
 scaleFactor = 0.3	
-
-
-
-
-
-

@@ -27,3 +27,15 @@ def initAssignments(mode, networkList, assignmentsFile):
 		print('Invalid operation mode. Accepted values: \n\t1) test\
 			\n\t2) train')
 		sys.exit()
+
+
+def seconds2hhmmss(seconds):
+
+	hours = int(seconds // 3600)
+	minutes = int((seconds % 3600) // 60)
+	seconds = int(seconds % 60)
+
+	return str(hours) + "h " + str(minutes) + "min " + str(seconds) + "s"
+
+
+

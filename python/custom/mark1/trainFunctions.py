@@ -2,10 +2,10 @@ import timeit
 import numpy as np
 import sys
 
+from utils import seconds2hhmmss
 from poisson import imgToSpikeTrain
 from network import run
 
-import matplotlib.pyplot as plt
 
 def singleImageTraining(trainDuration, restTime, dt, image, pixelMin, pixelMax,
 			network, networkList, dt_tauDict, stdpDict,
@@ -402,11 +402,10 @@ def printProgress(currentIndex, printInterval, startTimeImage,
 		progressString = "Analyzed images: " + str(currentIndex) + \
 			". Time required for a single image: " + str(currentTime
 			- startTimeImage) + "s. Total elapsed time: " + \
-			str(timeit.default_timer() - startTimeTraining) + "s."
+			seconds2hhmmss(timeit.default_timer() - 
+			startTimeTraining)
 
 		print(progressString)
-
-
 
 
 
@@ -466,13 +465,13 @@ def computePerformance(currentIndex, updateInterval, lastLayerSize,
 					label], axis = 1)
 
 			# Find where the spikes count is grater than the maximum
-			whereMaxSpikes = spikeCount > maxCount
+			whereMaxSpikes = spikesCount > maxCount
 
 			# Associate the instants to the current label
 			classification[whereMaxSpikes] = label
 
 			# Update the maximum number of spikes for the label
-			maxCount[whereMaxSpikes] = spikeCount[whereMaxSpikes]
+			maxCount[whereMaxSpikes] = spikesCount[whereMaxSpikes]
 
 		# Compute the accuracy and add it to the list of accuracies
 		accuracies = updateAccuracy(classification, labelsSequence, accuracies)
@@ -559,7 +558,7 @@ def updateAssignments(currentIndex, updateInterval, lastLayerSize,
 	if currentIndex % updateInterval == 0 and currentIndex > 0:
 
 		# Initialize the maximum count to 0
-		maxCount = np.zeros(outputLayerSize)
+		maxCount = np.zeros(lastLayerSize)
 
 		for label in range(10):
 

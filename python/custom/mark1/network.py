@@ -53,8 +53,6 @@ def run(network, networkList, spikesTrains, dt_tauDict, stdpDict):
 		spikesCounter[0][network["excLayer" +
 			str(lastLayerIndex)]["outSpikes"][0]] += 1
 
-	print(spikesCounter)
-
 	return spikesCounter
 
 
