@@ -7,6 +7,7 @@ from poisson import imgToSpikeTrain
 from network import run
 
 
+
 def singleImageTraining(trainDuration, restTime, dt, image, pixelMin, pixelMax,
 			network, networkList, dt_tauDict, stdpDict,
 			countThreshold, inputIntensity, currentIndex,
@@ -139,11 +140,9 @@ def singleImageTraining(trainDuration, restTime, dt, image, pixelMin, pixelMax,
 	# Normalize the weights
 	normalizeWeights(network, networkList, constSums)
 
-	# Reset to zero the spikes trains
-	spikesTrains = np.zeros((restingSteps, image.shape[0])).astype(bool)
-
-	# Run the network on the resting inputs
-	run(network, networkList, spikesTrains, dt_tauDict, stdpDict)
+	# Bring the network into a rest state
+	rest(network, networkList, restingSteps, image.shape[0], dt_tauDict,
+		stdpDict)
 
 
 	return inputIntensity, currentIndex, accuracies
@@ -237,8 +236,14 @@ def train(network, networkList, spikesTrains, dt_tauDict, stdpDict,
 
 	if np.sum(spikesCounter) < countThreshold:
 
-		# Prepare the training over the same image
-		inputIntensity = repeatImage(inputIntensity, currentIndex)
+		if inputIntensity < 10:
+
+			# Prepare the training over the same image
+			inputIntensity = repeatImage(inputIntensity, currentIndex)
+
+		else:
+			inputIntensity = startInputIntensity
+			currentIndex += 1
 
 	else:
 		
@@ -671,3 +676,45 @@ def normalizeLayerWeights(network, synapseName, constSum):
 
 	# Normalize the weights
 	network[synapseName]["weights"][:] *= normFactor
+
+
+
+def rest(network, networkList, restingSteps, imageSize, dt_tauDict, stdpDict):
+
+	'''
+	Bring the network into a rest state.
+
+	INPUT:
+
+		1) network: dictionary of the network.
+
+		2) networkList: list of integer numbers. Each element of the 
+		list corresponds to a layer and identifies the number of nodes
+		in that layer.
+
+		3) restingSteps: time duration of the resting period expressed
+		in trainingSteps.
+
+		4) imageSize: total number of pixels composing the image.
+
+		5) dt_tauDict: dictionary containing the exponential constants
+		of the excitatory and inhibitory membrane and of the 
+		homeostasis parameter theta .
+
+		6) stdpDict: dictionary containing the STDP parameters.
+
+	'''
+
+	# Reset to zero the spikes trains
+	spikesTrains = np.zeros((restingSteps, imageSize)).astype(bool)
+
+	# Run the network on the resting inputs
+	run(network, networkList, spikesTrains, dt_tauDict, stdpDict)
+
+	# Reset the time instants
+	network["exc2exc1"]["t_in"][:] = 0
+	network["exc2exc1"]["t_out"][:] = 0
+
+	# Reset the masks
+	network["exc2exc1"]["mask_in"][:] = False
+	network["exc2exc1"]["mask_out"][:] = False

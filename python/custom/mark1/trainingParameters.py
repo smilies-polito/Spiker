@@ -46,8 +46,8 @@ scaleFactors = scaleFactor * np.ones(len(networkList) - 1)
 
 
 # Update and print intervals expressed in number of steps
-updateInterval = 10
-printInterval = 1
+updateInterval = 250
+printInterval = 10
 
 
 # Initial intensity of the input pixels

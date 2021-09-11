@@ -3,10 +3,10 @@ import timeit
 from mnist import loadDataset
 from createNetwork import createNetwork
 from trainFunctions import singleImageTraining
+from storeParameters import *
 
 
 
-print("\n1) Initialize training parameters\n")
 
 # Initialize the training parameters
 from files import *
@@ -14,14 +14,11 @@ from trainingParameters import *
 
 
 
-print("\n2) Import the MNIST dataset\n")
-
 # Load the MNIST dataset
 imgArray, labelsArray = loadDataset(images, labels)
 
 
 
-print("\n3) Create the network\n")
 
 # Create the network data structure
 network = createNetwork(networkList, weightFilename, thetaFilename, mode, 
@@ -39,7 +36,6 @@ startTimeTraining = timeit.default_timer()
 
 
 
-print("\n4) Start the training of the netwoek\n")
 while currentIndex < numberOfCycles:
 
 	# Complete training cycle over a single image
@@ -70,7 +66,10 @@ while currentIndex < numberOfCycles:
 			constSums
 		)
 
-# storeParameters(networkList, network, assignements, weightFilename, 
-# 		thetaFilename, assignementsFilename)
-# 
-# storePerformace(startTimeTraining, accuracies, performanceFilename)
+
+# Store the network parameters into NumPy files
+storeParameters(network, networkList, assignments, weightFilename, 
+ 		thetaFilename, assignmentsFile)
+ 
+# Store the performance of the network into a text file
+storePerformace(startTimeTraining, accuracies, performanceFile)

@@ -4,6 +4,7 @@ from layers import updateExcLayer, updateInhLayer
 from synapses import updateWeights
 
 
+import matplotlib.pyplot as plt
 
 def run(network, networkList, spikesTrains, dt_tauDict, stdpDict):
 
@@ -61,6 +62,30 @@ def run(network, networkList, spikesTrains, dt_tauDict, stdpDict):
 
 def updateNetwork(networkList, network, inputSpikes, dt_tauDict, stdpDict, 
 	currentStep):
+
+	'''
+	One training step update for the entire network.
+
+	INPUT:
+
+		1) networkList: list of integer numbers. Each element of the 
+		list corresponds to a layer and identifies the number of nodes
+		in that layer.
+
+		2) network: dictionary of the network.
+
+		3) inputSpikes: NumPy array. Value of the input spikes within a
+		single training step, one for each neuron.
+		
+		4) dt_tauDict: dictionary containing the exponential constants
+		of the excitatory and inhibitory membrane and of the 
+		homeostasis parameter theta .
+
+		5) stdpDict: dictionary containing the STDP parameters.
+
+		6) currentStep: current value of the training loop index. 
+
+	'''	
 
 	# Update the first excitatory layer
 	updateExcLayer(network, 1, dt_tauDict["exc"], dt_tauDict["theta"],
