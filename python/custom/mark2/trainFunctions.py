@@ -708,11 +708,3 @@ def rest(network, networkList, restingSteps, imageSize, dt_tauDict, stdpDict):
 
 	# Run the network on the resting inputs
 	run(network, networkList, spikesTrains, dt_tauDict, stdpDict)
-
-	# Reset the time instants
-	network["exc2exc1"]["t_in"][:] = 0
-	network["exc2exc1"]["t_out"][:] = 0
-
-	# Reset the masks
-	network["exc2exc1"]["mask_in"][:] = False
-	network["exc2exc1"]["mask_out"][:] = False

@@ -25,6 +25,7 @@ def updateWeights(network, layer, stdpDict, currentStep, inputSpikes):
 	# Update output instants for the active neurons
 	updateTime(network, synapseName, "t_out",
 		network[layerName]["outSpikes"][0], currentStep - 1)
+	
 
 	# Update output mask for the active neurons
 	updateMask(network, synapseName, "mask_out", 
@@ -173,13 +174,17 @@ def ltp(network, synapseName, layerName, A_ltp, dt_tau, currentStep):
 
 	# Compute the ltp increment for all the inputs
 	ltpIncrease = A_ltp * np.exp(-Delta_t * dt_tau)
-	
+
 	# Select only the inputs that have already been active
 	ltpIncrease *= network[synapseName]["mask_in"][0]
 
 	# Update the synapses of the active neurons
 	network[synapseName]["weights"][network[layerName]["outSpikes"][0]] += \
 		ltpIncrease
+
+
+
+
 
 
 
@@ -230,7 +235,3 @@ def ltd(network, synapseName, layerName, A_ltd, dt_tau, currentStep,
 	# Update the weights
 	network[synapseName]["weights"][inactiveNeurons] -= \
 		ltdDecrease[inactiveNeurons]
-		
-
-
-

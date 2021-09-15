@@ -1,7 +1,7 @@
 import numpy as np
 
 from layers import updateExcLayer, updateInhLayer
-from synapses import updateWeights
+from synapses import stdp 
 
 
 import matplotlib.pyplot as plt
@@ -44,17 +44,15 @@ def run(network, networkList, spikesTrains, dt_tauDict, stdpDict):
 	# Initialize the output spikes counter to 0
 	spikesCounter = np.zeros((1, lastLayerSize))
 
-	for currentStep in range(trainDuration):
+	for i in range(trainDuration):
 
 		# Train the network over a single step
-		updateNetwork(networkList, network, spikesTrains[currentStep], 
-			dt_tauDict, stdpDict, currentStep)
+		updateNetwork(networkList, network, spikesTrains[i], dt_tauDict,
+			stdpDict)
 
 		# Update the output spikes counter
 		spikesCounter[0][network["excLayer" +
 			str(lastLayerIndex)]["outSpikes"][0]] += 1
-
-	print(spikesCounter)
 
 	return spikesCounter
 
@@ -62,8 +60,7 @@ def run(network, networkList, spikesTrains, dt_tauDict, stdpDict):
 
 
 
-def updateNetwork(networkList, network, inputSpikes, dt_tauDict, stdpDict, 
-	currentStep):
+def updateNetwork(networkList, network, inputSpikes, dt_tauDict, stdpDict):
 
 	'''
 	One training step update for the entire network.
@@ -97,7 +94,7 @@ def updateNetwork(networkList, network, inputSpikes, dt_tauDict, stdpDict,
 	updateInhLayer(network, 1, dt_tauDict["inh"])
 
 	# Update the first layer weights 
-	updateWeights(network, 1, stdpDict, currentStep, inputSpikes)
+	stdp(network, 1, stdpDict, inputSpikes)
 
 
 	for layer in range(2, len(networkList)):
@@ -111,7 +108,7 @@ def updateNetwork(networkList, network, inputSpikes, dt_tauDict, stdpDict,
 		updateInhLayer(network, layer, dt_tauDict["inh"])
 
 		# Update the layer weights
-		updateWeights(network, layer, stdpDict, currentStep,
-			network["excLayer" + str(layer - 1)]["outSpikes"][0])
+		stdp(network, layer, stdpDict, network["excLayer" + 
+			str(layer - 1)]["outSpikes"][0])
 
 

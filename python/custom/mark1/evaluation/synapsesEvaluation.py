@@ -16,12 +16,13 @@ from synapses import *
 # Initialize the evaluation parameters
 from evaluationParameters import *
 
+np.set_printoptions(linewidth=150)
+
 
 # Create the network
 network = createNetwork(networkList, None, None, mode, excDictList, 
 			inhDictList, scaleFactors, exc2inhWeights,
 			inh2excWeights)
-
 
 # Create a spare matrix of random spikes
 inputSpikes = sp.random(N_sim, networkList[0], density = density)
@@ -34,28 +35,32 @@ inhSpikes = np.zeros((N_sim, networkList[1])).astype(bool)
 excPotential = np.zeros((N_sim, networkList[1]))
 inhPotential = np.zeros((N_sim, networkList[1]))
 weights = np.zeros((N_sim, networkList[1], networkList[0]))
+mask_in = np.zeros((N_sim, networkList[0]))
+mask_out = np.zeros((N_sim, networkList[1]))
+t_in = np.zeros((N_sim, networkList[0]))
+t_out = np.zeros((N_sim, networkList[1]))
+
+
 
 
 
 for i in range(N_sim):
 
 	# Update excitatory layer
-	updateExcLayer(network, 1, dt_tau_exc, dt_tau_theta, inputSpikes[i])
+	updateExcLayer(network, 1, dt_tauDict["exc"], dt_tauDict["theta"], inputSpikes[i])
 	
 	# Update inhibitory layer
-	updateInhLayer(network, 1, dt_tau_inh)
+	updateInhLayer(network, 1, dt_tauDict["inh"])
 
 	# Update the synapse's weights
-	updateWeights(network, "exc2exc1", "excLayer1", stdpDict, i,
-	inputSpikes[i])
+	updateWeights(network, 1, stdpDict, i, inputSpikes[i])
 
-	excSpikes[i] = network["excLayer1"]["outSpikes"][0]
-	weights[i] = network["exc2exc1"]["weights"]
-
+	excSpikes[i]	= network["excLayer1"]["outSpikes"][0]
+	weights[i]	= network["exc2exc1"]["weights"]
 
 
 inputSpikes = inputSpikes.T
-excSpikes = excSpikes.T 
+excSpikes = excSpikes.T
 weights = np.transpose(weights, (1,2,0))
 
 
