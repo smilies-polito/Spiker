@@ -6,6 +6,8 @@ from utils import seconds2hhmmss
 from poisson import imgToSpikeTrain
 from network import run
 
+np.set_printoptions(threshold = sys.maxsize)
+
 
 
 def singleImageTraining(trainDuration, restTime, dt, image, pixelMin, pixelMax,
@@ -109,8 +111,7 @@ def singleImageTraining(trainDuration, restTime, dt, image, pixelMin, pixelMax,
 	startTimeImage = timeit.default_timer()
 
 	# Convert the image into spikes trains
-	spikesTrains = imgToSpikeTrain(image, trainingSteps, pixelMin, pixelMax,
-			inputIntensity)
+	spikesTrains = imgToSpikeTrain(image, dt, trainingSteps, inputIntensity)
 
 	# Train the network with the spikes sequences associated to the pixels.
 	inputIntensity, currentIndex, accuracies = \
@@ -134,6 +135,7 @@ def singleImageTraining(trainDuration, restTime, dt, image, pixelMin, pixelMax,
 			startInputIntensity, 
 			mode
 			)
+
 
 	# Normalize the weights
 	normalizeWeights(network, networkList, constSums)
@@ -234,14 +236,8 @@ def train(network, networkList, spikesTrains, dt_tauDict, stdpDict,
 
 	if np.sum(spikesCounter) < countThreshold:
 
-		if inputIntensity < 10:
-
-			# Prepare the training over the same image
-			inputIntensity = repeatImage(inputIntensity, currentIndex)
-
-		else:
-			inputIntensity = startInputIntensity
-			currentIndex += 1
+		# Prepare the training over the same image
+		inputIntensity = repeatImage(inputIntensity, currentIndex)
 
 	else:
 		
@@ -663,17 +659,17 @@ def normalizeLayerWeights(network, synapseName, constSum):
 
 	# Compute the sum of the weights for each neuron
 	weightsSum = np.sum(network[synapseName]["weights"], 
-			axis = 1).reshape(network[synapseName]\
-			["weights"].shape[0], 1)
+			axis = 1, keepdims = True)
 
 	# Set to one the zero sums to avoid division by 0
-	weightsSum[weightsSum == 0] = 1	
+	weightsSum[weightsSum == 0] = 1.	
 
 	# Compute the normalization factor
 	normFactor = constSum / weightsSum
 
 	# Normalize the weights
 	network[synapseName]["weights"][:] *= normFactor
+
 
 
 

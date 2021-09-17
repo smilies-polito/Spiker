@@ -62,6 +62,7 @@ network = createNetwork(networkList, equationsDict, parametersDict, stdpDict,
 		weightInitDict, mode, thetaFilename, weightFilename, 
 		scaleFactors)
 
+
 i = 0
 
 startTimeTraining = timeit.default_timer()

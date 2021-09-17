@@ -25,7 +25,7 @@ stdpDict = {
 
 	# Learning rates
 	"A_ltp"		: 1e-4,
-	"A_ltd"		: - 1e-3,
+	"A_ltd"		: 1e-3,
 
 	# Time constants
 	"ltp_tau"	: 80,		# ms

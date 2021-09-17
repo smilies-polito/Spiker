@@ -67,8 +67,7 @@ def createNetwork(networkList, equationsDict, parametersDict, stdpDict,
 					weightInitDict, mode, weightFilename,
 					scaleFactors)
 
-	# Create the spikes monitor
-	spikeMonitor = b2.SpikeMonitor(excLayersList[-1], record=False)
+	spikeMonitor = b2.SpikeMonitor(excLayersList[-1], record = False)
 
 	# Create the complete network putting together all the components
 	return b2.Network(poissonGroup, excLayersList, inhLayersList, 

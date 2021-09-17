@@ -41,6 +41,8 @@ def trainTestCycle(image, networkList, network, trainDuration, restTime,
 		labelsArray, assignements, inputIntensity, startInputIntensity, 
 		currentIndex,mode)
 
+
+
 	normalizeNetWeights(network, networkList, constSum)	
 
 	imgToSpikeTrain(network, np.zeros(image.shape[0]), inputIntensity)
@@ -74,7 +76,9 @@ def trainTestSingleImage(networkList, network, trainDuration, spikesEvolution,
 
 	network.run(trainDuration)
 
+
 	updatePulsesCount(network, currentSpikesCount, prevSpikesCount)
+
 
 	if np.sum(currentSpikesCount) < 5:
 

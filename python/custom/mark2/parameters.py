@@ -4,7 +4,7 @@ excDict = {
 	"vRest"		: -65.0,	# mV
 	"vReset"	: -60.0,	# mV
 	"vThresh"	: -52.0,	# mV
-	"thetaPlus"	: 0.01,		# mV
+	"thetaPlus"	: 0.1,		# mV
 	"initTheta"	: 20		# mV
 
 }
@@ -24,8 +24,8 @@ inhDict = {
 stdpDict = {
 
 	# Learning rates
-	"A_ltp"		: 1e-4,
-	"A_ltd"		: 1e-3,
+	"eta_pre"	: 1e-4,
+	"eta_post"	: 1e-3,
 
 	# Time constants
 	"ltp_tau"	: 20,		# ms
@@ -43,7 +43,7 @@ tauInh = 10				# ms
 
 
 # Dynamic homeostasis time constant
-tauTheta = 1e5				# ms
+tauTheta = 1e7				# ms
 
 # Weights normalization factor
 constSum = 78.4

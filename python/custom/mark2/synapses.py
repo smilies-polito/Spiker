@@ -22,20 +22,21 @@ def stdp(network, layer, stdpDict, inputSpikes):
 	layerName = "excLayer" + str(layer)
 
 	# Increase the weights of the active neurons' synapses through LTP.
-	ltp(network, synapseName, layerName, stdpDict["A_ltd"],
+	ltp(network, synapseName, layerName, stdpDict["eta_post"],
 		stdpDict["ltp_dt_tau"])
 
 	# Decrease the weights of the inactive neurons' synapses through LTD.
-	ltd(network, synapseName, layerName, stdpDict["A_ltp"],
-		stdpDict["ltp_dt_tau"], inputSpikes)
+	ltd(network, synapseName, layerName, stdpDict["eta_pre"],
+		stdpDict["ltd_dt_tau"], inputSpikes)
 
+	
 	network[synapseName]["weights"][network[synapseName]["weights"] < 0] = 0
 
 
 
 
 
-def ltp(network, synapseName, layerName, A_ltd, dt_tau):
+def ltp(network, synapseName, layerName, eta_post, dt_tau):
 
 	'''
 	Increase the weights of the active neurons' synapses through LTP.
@@ -50,7 +51,7 @@ def ltp(network, synapseName, layerName, A_ltd, dt_tau):
 		3) layerName: string. Complete name of the layer, including the
 		index of the layer itself.
 
-		4) A_ltp: LTP learning rate. 
+		4) A_ltd: LTD learning rate. 
 
 		5) dt_tau: ratio of the time step and the LTP exponential
 		time constant.
@@ -62,17 +63,17 @@ def ltp(network, synapseName, layerName, A_ltd, dt_tau):
 
 	# Reset the post-synaptic trace to its starting value
 	network[synapseName]["post"][:, 0][network[layerName]["outSpikes"][0]] = \
-		A_ltd
+		1
 
 	# Update the synapses of the active neurons
 	network[synapseName]["weights"][network[layerName]["outSpikes"][0]] += \
-		network[synapseName]["pre"][0]
+		eta_post*network[synapseName]["pre"]
 
 
 
 
 
-def ltd(network, synapseName, layerName, A_ltp, dt_tau, inputSpikes):
+def ltd(network, synapseName, layerName, eta_pre, dt_tau, inputSpikes):
 
 	'''
 	Decrease the weights of the inactive neurons' synapses through LTD.
@@ -87,7 +88,7 @@ def ltd(network, synapseName, layerName, A_ltp, dt_tau, inputSpikes):
 		3) layerName: string. Complete name of the layer, including the
 		index of the layer itself.
 
-		4) A_ltd: LTD learning rate. 
+		4) A_ltp: LTP learning rate. 
 
 		5) dt_tau: ratio of the time step and the LTD exponential
 		time constant.
@@ -99,8 +100,8 @@ def ltd(network, synapseName, layerName, A_ltp, dt_tau, inputSpikes):
 	expDecay(network, synapseName, dt_tau, 0, "pre")
 	
 	# Reset the pre-synaptic trace to its starting value
-	network[synapseName]["pre"][0][inputSpikes] = A_ltp
+	network[synapseName]["pre"][0][inputSpikes] = 1
 
 	# Update the synapses of the inactive neurons
 	network[synapseName]["weights"][:, inputSpikes] -= \
-		network[synapseName]["post"]
+		eta_pre*network[synapseName]["post"]

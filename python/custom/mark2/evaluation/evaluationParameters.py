@@ -7,7 +7,7 @@ from parameters import *
 
 N_sim = 3500
 
-density = 0.001
+density = 0.005
 
 networkList = [3, 2]
 

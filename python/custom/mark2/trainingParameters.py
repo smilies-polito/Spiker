@@ -32,10 +32,11 @@ dt = 0.1		# ms
 dt_tauDict = {
 
 	"exc" 	: dt/tauExc,
-	"inh" 	: dt/tauExc,
+	"inh" 	: dt/tauInh,
 	"theta"	: dt/tauTheta
 
 }
+
 
 stdpDict["ltp_dt_tau"] = dt/stdpDict["ltp_tau"]
 stdpDict["ltd_dt_tau"] = dt/stdpDict["ltd_tau"]

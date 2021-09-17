@@ -66,7 +66,7 @@ excSpikes = excSpikes.T
 # ------------------------------------------------------------------------------
 
 # First input
-fig, axs = plt.subplots(2, 1)
+fig, axs = plt.subplots(5, 1)
 
 axs[0].plot(inputSpikes[0])
 axs[0].grid()
@@ -76,19 +76,19 @@ axs[1].plot(pre[0])
 axs[1].grid()
 axs[1].set_title("Pre-synaptic trace")
 
-plt.show()
+# plt.show()
 
-# axs[2].plot(weights[0][0])
-# axs[2].grid()
+axs[2].plot(weights[0][0])
+axs[2].grid()
 
-fig, axs = plt.subplots(2, 1)
+# fig, axs = plt.subplots(2, 1)
 
-axs[0].plot(excSpikes[0])
-axs[0].set_title("Output spikes")
-axs[0].grid()
+axs[3].plot(excSpikes[0])
+axs[3].set_title("Output spikes")
+axs[3].grid()
 
-axs[1].plot(post[0])
-axs[1].grid()
+axs[4].plot(post[0])
+axs[4].grid()
 
 
 plt.show()
