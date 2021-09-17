@@ -2,8 +2,9 @@ import numpy as np
 import timeit
 from utils import seconds2hhmmss
 
-def storeParameters(network, networkList, assignments, weightFilename,
-			thetaFilename, assignmentsFile):
+
+def storeParameters(network, networkList, assignements, weightFilename,
+			thetaFilename, assignementsFile):
 
 	'''
 	Store the parameters of the network inside NumPy files.
@@ -32,20 +33,25 @@ def storeParameters(network, networkList, assignments, weightFilename,
 	
 	'''
 
-	for layer in range(1, len(networkList)):
+	# Store the weights of the input synapses
+	storeArray(weightFilename + str(1) + ".npy", network["poisson2exc"].w)
+
+	# Store the dynamic homeostasis of the first excitatory layer
+	storeArray(thetaFilename + str(1) + ".npy", network["excLayer1"].theta)
+
+	for layer in range(2, len(networkList)):
 
 		# Store the weights of the current synapse
-		storeArray(weightFilename + str(layer) + ".npy",
-			network["exc2exc" + str(layer)]["weights"])
+		storeArray(weightFilename + str(layer) + ".npy", 
+			network["exc2exc" + str(layer)].w)
 
 		# Store the dynamic homeostasis of the current layer
 		storeArray(thetaFilename + str(layer) + ".npy", 
-			network["excLayer" + str(layer)]["theta"])
+			network["excLayer" + str(layer)].theta)
 
 
 	# Store the assignments of the output layer
-	storeArray(assignmentsFile, assignments)
-
+	storeArray(assignementsFile, assignements)
 
 
 
@@ -71,7 +77,7 @@ def storeArray(filename, numpyArray):
 
 
 
-def storePerformace(startTimeTraining, accuracies, performanceFile):
+def storePerformace(startTimeTraining, accuracies, performanceFilename):
 
 	'''
 	Store the performance of the network into a text file.
@@ -88,7 +94,7 @@ def storePerformace(startTimeTraining, accuracies, performanceFile):
 		the performance of the network will be stored.
 
 	'''
-
+	
 	# Format the string with the total elapsed time
 	timeString = "Total training time : " + \
 		seconds2hhmmss(timeit.default_timer() - startTimeTraining)
@@ -97,7 +103,7 @@ def storePerformace(startTimeTraining, accuracies, performanceFile):
 	accuracyString = "Accuracy evolution:\n" + "\n".join(accuracies)
 
 	# Write the strings into the file
-	with open(performanceFile, 'w') as fp:
+	with open(performanceFilename + ".txt", 'w') as fp:
 		fp.write(timeString)
 		fp.write("\n\n")
 		fp.write(accuracyString)

@@ -1,3 +1,5 @@
+# Equations that characterize the model in train mode.
+
 trainEquationsDict = {
 	
 	# Excitatory reset

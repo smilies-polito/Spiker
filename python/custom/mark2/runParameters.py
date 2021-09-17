@@ -1,7 +1,6 @@
 import numpy as np
 from parameters import *
 from utils import initAssignments
-from files import *
 
 
 # List of layer sizes
@@ -46,8 +45,8 @@ stdpDict["ltd_dt_tau"] = dt/stdpDict["ltd_tau"]
 scaleFactors = scaleFactor * np.ones(len(networkList) - 1)
 
 
-# Update and print intervals expressed in number of steps
-updateInterval = 250
+# Update and print intervals expressed in number of images
+updateInterval = 10
 printInterval = 10
 
 
@@ -69,10 +68,6 @@ spikesEvolution = np.zeros((updateInterval, networkList[-1]))
 
 # Initialize the output classification
 assignments = initAssignments(mode, networkList, assignmentsFile)
-
-# Minimum and maximum value of a pixel
-pixelMin = 0
-pixelMax = 255
 
 
 # Minimum acceptable number of output spikes generated during the training.

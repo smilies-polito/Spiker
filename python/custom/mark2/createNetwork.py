@@ -48,8 +48,8 @@ def createNetwork(networkList, weightFilename, thetaFilename, mode,
 	for layer in range(1, len(networkList)):
 
 		if mode == "test":
-			weightFile = weightFilename + str(layer)
-			thetaFile = thetaFilename + str(layer)
+			weightFile = weightFilename + str(layer) + ".npy"
+			thetaFile = thetaFilename + str(layer) + ".npy"
 		else:
 			weightFile = None
 			thetaFile = None

@@ -1,3 +1,5 @@
+# Equations that characterize the model in test mode.
+
 testEquationsDict = {
 	
 	# Excitatory reset

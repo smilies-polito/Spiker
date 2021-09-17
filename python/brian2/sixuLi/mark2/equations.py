@@ -8,8 +8,6 @@ excInhConnectionDict = {
 
 	"inh2excEqs"	:	'w	: 1',
 
-
-
 	# Inhibitory presynaptic response when excitatory event received
 	"exc2inhPre"	:	'v += w',
 
@@ -18,7 +16,22 @@ excInhConnectionDict = {
 
 }
 
+
 def defineEquations(mode):
+
+	'''
+	Select the correct equations depending on the operational mode.
+
+	INPUT:
+
+		mode: string. It can be "train" or "test".
+
+	OUTPUT:
+
+		touple of dictionaries containing the membrane potential and the
+		STDP equations.
+
+	'''
 
 	if mode == "train":
 		return trainEquationsDict, trainStdpDict

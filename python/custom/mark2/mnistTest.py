@@ -4,7 +4,6 @@ from mnist import loadDataset
 from createNetwork import createNetwork
 from trainFunctions import singleImageTraining
 from storeParameters import *
-from utils import createDir
 
 
 
@@ -16,7 +15,7 @@ from runParameters import *
 
 
 # Load the MNIST dataset
-imgArray, labelsArray = loadDataset(trainImages, trainLabels)
+imgArray, labelsArray = loadDataset(testImages, testabels)
 
 
 
@@ -32,24 +31,25 @@ currentIndex = 0
 numberOfCycles = imgArray.shape[0]
 
 
-# Measure the training starting time
+# Measure the test starting time
 startTimeTraining = timeit.default_timer()
 
 
 
 while currentIndex < numberOfCycles:
 
-	# Complete training cycle over a single image
+	# Complete test cycle over a single image
 	inputIntensity, currentIndex, accuracies = \
-		singleImageTraining(
+		singleImageTest(
 			trainDuration,
 			restTime,
 			dt,
 			imgArray[currentIndex],
+			pixelMin,
+			pixelMax,
 			network,
 			networkList,
 			dt_tauDict,
-			stdpDict,
 			countThreshold,
 			inputIntensity,
 			currentIndex,
@@ -64,14 +64,3 @@ while currentIndex < numberOfCycles:
 			mode,
 			constSums
 		)
-
-
-# Create the directory in which to store the parameters and the performance
-createDir(paramDir)
-
-# Store the network parameters into NumPy files
-storeParameters(network, networkList, assignments, weightFilename, 
- 		thetaFilename, assignmentsFile)
- 
-# Store the performance of the network into a text file
-storePerformace(startTimeTraining, accuracies, performanceFile)

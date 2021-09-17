@@ -2,84 +2,72 @@ import numpy as np
 import brian2 as b2
 import timeit
 
-from equations import *
-from equationsParameters import *
-from neuronsParameters import *
 from mnist import loadDataset
 from createNetwork import createNetwork
-from trainTestFunctions import *
-from utils import createParamDir
+from trainFunctions import singleImageTraining
 
+from utils import createDir
+from storeParameters import storeParameters, storePerformace
 
-images = "../../mnist/train-images-idx3-ubyte"
-labels = "../../mnist/train-labels-idx1-ubyte"
-
-paramDir = "./parameters"
-
-weightFilename = paramDir + "/weights"
-thetaFilename = paramDir + "/theta"
-performanceFilename = paramDir + "/performance"
-assignementsFilename = paramDir + "/assignements"
-assignementsFile = paramDir + "/assignements.npy"
+from runParameters import *
 
 
 
 
-createParamDir(paramDir)
+# Load the MNIST dataset
+imgArray, labelsArray = loadDataset(trainImages, trainLabels)
 
 
-networkList = [784, 400]
 
-mode = "train"
-
-
-updateInterval = 250
-printInterval = 10
-startInputIntensity = 2.
-inputIntensity = startInputIntensity
-scaleFactors = np.array([0.3])
-
-
-accuracies = []
-spikesEvolution = np.zeros((updateInterval, networkList[-1]))
-currentSpikesCount = np.zeros(networkList[-1])
-prevSpikesCount = np.zeros(networkList[-1])
-
-
-singleExampleTime = 0.35*b2.second
-restTime = 0.15*b2.second
-
-constSum = 78.4
-
-assignements = initAssignements(mode, networkList, assignementsFile)
-
-imgArray, labelsArray = loadDataset(images, labels)
-
-equationsDict, stdpDict = defineEquations(mode)
-
-
+# Create the network data structure
 network = createNetwork(networkList, equationsDict, parametersDict, stdpDict,
 		weightInitDict, mode, thetaFilename, weightFilename, 
 		scaleFactors)
 
 
-i = 0
-
-startTimeTraining = timeit.default_timer()
-
+currentIndex  = 0
 numberOfCycles = imgArray.shape[0]
 
-while i < numberOfCycles:
-
-	inputIntensity, i, accuracies = trainTestCycle(imgArray[i], networkList, 
-		network, singleExampleTime, restTime, spikesEvolution, 
-		updateInterval, printInterval, currentSpikesCount, 
-		prevSpikesCount, startTimeTraining, accuracies, labelsArray, 
-		assignements,inputIntensity, startInputIntensity, i, mode,
-		constSum)
 
 
+# Measure the training starting time
+startTimeTraining = timeit.default_timer()
+
+
+while currentIndex < numberOfCycles:
+
+	
+	# Complete training cycle over a single image
+	inputIntensity, currentIndex, accuracies = \
+		singleImageTraining(
+			imgArray[currentIndex], 
+			networkList, 
+			network, 
+			singleExampleTime, 
+			restTime, 
+			spikesEvolution, 
+			updateInterval, 
+			printInterval, 
+			currentSpikesCount, 
+			prevSpikesCount, 
+			startTimeTraining, 
+			accuracies, 
+			labelsArray, 
+			assignments,
+			inputIntensity, 
+			startInputIntensity, 
+			currentIndex, 
+			mode,
+			constSum)
+
+
+
+# Create the directory in which to store the parameters and the performance
+createDir(paramDir)
+
+# Store the network parameters into NumPy files
 storeParameters(networkList, network, assignements, weightFilename, 
-		thetaFilename, assignementsFilename)
+		thetaFilename, assignementsFile)
 
+# Store the performance of the network into a text file
 storePerformace(startTimeTraining, accuracies, performanceFilename)

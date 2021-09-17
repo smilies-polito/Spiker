@@ -6,7 +6,7 @@ from synapses import stdp
 
 import matplotlib.pyplot as plt
 
-def run(network, networkList, spikesTrains, dt_tauDict, stdpDict):
+def run(network, networkList, spikesTrains, dt_tauDict, stdpDict, mode):
 
 
 	'''
@@ -30,6 +30,8 @@ def run(network, networkList, spikesTrains, dt_tauDict, stdpDict):
 
 		5) stdpDict: dictionary containing the STDP parameters.
 
+		6) mode: string. It can be "train" or "test".
+
 	OUTPUT:
 
 		spikesCounter: NumPy array containing the total amount of 
@@ -48,7 +50,7 @@ def run(network, networkList, spikesTrains, dt_tauDict, stdpDict):
 
 		# Train the network over a single step
 		updateNetwork(networkList, network, spikesTrains[i], dt_tauDict,
-			stdpDict)
+			stdpDict, mode)
 
 		# Update the output spikes counter
 		spikesCounter[0][network["excLayer" +
@@ -61,7 +63,8 @@ def run(network, networkList, spikesTrains, dt_tauDict, stdpDict):
 
 
 
-def updateNetwork(networkList, network, inputSpikes, dt_tauDict, stdpDict):
+def updateNetwork(networkList, network, inputSpikes, dt_tauDict, stdpDict, 
+			mode):
 
 	'''
 	One training step update for the entire network.
@@ -85,6 +88,8 @@ def updateNetwork(networkList, network, inputSpikes, dt_tauDict, stdpDict):
 
 		6) currentStep: current value of the training loop index. 
 
+		7) mode: string. It can be "train" or "test".
+
 	'''	
 
 	# Update the first excitatory layer
@@ -94,8 +99,10 @@ def updateNetwork(networkList, network, inputSpikes, dt_tauDict, stdpDict):
 	# Update the first inhibitory layer
 	updateInhLayer(network, 1, dt_tauDict["inh"])
 
-	# Update the first layer weights 
-	stdp(network, 1, stdpDict, inputSpikes)
+
+	if mode == "train":
+		# Update the first layer weights 
+		stdp(network, 1, stdpDict, inputSpikes)
 
 
 	for layer in range(2, len(networkList)):
@@ -108,8 +115,9 @@ def updateNetwork(networkList, network, inputSpikes, dt_tauDict, stdpDict):
 		# Update the inhibitory layer
 		updateInhLayer(network, layer, dt_tauDict["inh"])
 
-		# Update the layer weights
-		stdp(network, layer, stdpDict, network["excLayer" + 
-			str(layer - 1)]["outSpikes"][0])
+		if mode == "train":
+			# Update the layer weights
+			stdp(network, layer, stdpDict, network["excLayer" + 
+				str(layer - 1)]["outSpikes"][0])
 
 

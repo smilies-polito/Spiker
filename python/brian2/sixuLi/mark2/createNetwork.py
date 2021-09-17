@@ -1,10 +1,11 @@
 import brian2 as b2
 import numpy as np
 import sys
+
+
 from equations import excInhConnectionDict
 
-
-
+from equationsParameters import *
 
 def createNetwork(networkList, equationsDict, parametersDict, stdpDict,
 		weightInitDict, mode, thetaFilename, weightFilename,

@@ -8,15 +8,15 @@ from common import *
 
 
 
-def singleImageTraining(trainDuration, restTime, dt, image, network,
-			networkList, dt_tauDict, stdpDict, countThreshold,
-			inputIntensity, currentIndex, spikesEvolution,
-			updateInterval, printInterval, startTimeTraining,
-			accuracies, labelsArray, assignments,
-			startInputIntensity, mode, constSums):
+def singleImageTest(trainDuration, restTime, dt, image,	network, networkList,
+			dt_tauDict, countThreshold, inputIntensity,
+			currentIndex, spikesEvolution, updateInterval,
+			printInterval, startTimeTraining, accuracies,
+			labelsArray, assignments, startInputIntensity, mode,
+			constSums):
 
 	'''
-	Train the network over an image of the dataset.
+	Test the network over an image of the dataset.
 
 	INPUT:
 
@@ -41,44 +41,42 @@ def singleImageTraining(trainDuration, restTime, dt, image, network,
 		of the excitatory and inhibitory membrane and of the 
 		homeostasis parameter theta .
 
-		8) stdpDict: dictionary containing the STDP parameters.
-
-		9) countThreshold: minimum acceptable number of output spikes
+		8) countThreshold: minimum acceptable number of output spikes
 		generated during the training.
 
-		10) inputIntensity: current value of the pixel's intensity.
+		9) inputIntensity: current value of the pixel's intensity.
 
-		11) currentIndex: index of the current image.
+		10) currentIndex: index of the current image.
 
-		12) spikesEvolution: two-dimensional NumPy array containing the
+		11) spikesEvolution: two-dimensional NumPy array containing the
 		history of the spikes counter in the last "updateInterval"
 		cycles. One row for each training step. One column for each
 		element in the output layer.
 
-		13) updateInterval: number of images after which the performance
+		12) updateInterval: number of images after which the performance
 		is computed.
 
-		14) printInterval: number of images after which the progress
+		13) printInterval: number of images after which the progress
 		message is printed. 
 
-		15) startTimeTraining: system time corresponfing to the beginning
+		14) startTimeTraining: system time corresponfing to the beginning
 		of the training.
 
-		16) accuracies: list of strings containing the history of the
+		15) accuracies: list of strings containing the history of the
 		accuracy.
 
-		17) labelsArray: NumPy array containing all the labels of the
+		16) labelsArray: NumPy array containing all the labels of the
 		training set.
 
-		18) assignments: NumPy array containing one label assignment for
+		17) assignments: NumPy array containing one label assignment for
 		each output neuron.
 
-		19) startInputIntensity: starting value of the pixel's intensity.
+		18) startInputIntensity: starting value of the pixel's intensity.
 		The default value is 2.
 
-		20) mode: string. It can be "train" or "test".
+		19) mode: string. It can be "train" or "test".
 
-		21) constSums: NumPy array. Each element represents the constant
+		20) constSums: NumPy array. Each element represents the constant
 		value corresponding to the sum of all the weights of a single 
 		neuron in the specific layer.
 
@@ -105,14 +103,13 @@ def singleImageTraining(trainDuration, restTime, dt, image, network,
 	# Convert the image into spikes trains
 	spikesTrains = imgToSpikeTrain(image, dt, trainingSteps, inputIntensity)
 
-	# Train the network with the spikes sequences associated to the pixels.
+	# Test the network with the spikes sequences associated to the pixels.
 	inputIntensity, currentIndex, accuracies = \
-		train(
+		test(
 			network, 
 			networkList, 
 			spikesTrains, 
 			dt_tauDict, 
-			stdpDict,
 			countThreshold,
 			inputIntensity, 
 			currentIndex, 
@@ -129,12 +126,9 @@ def singleImageTraining(trainDuration, restTime, dt, image, network,
 			)
 
 
-	# Normalize the weights
-	normalizeWeights(network, networkList, constSums)
-
 	# Bring the network into a rest state
 	rest(network, networkList, restingSteps, image.shape[0], dt_tauDict,
-		stdpDict, mode)
+		stdpDict)
 
 
 	return inputIntensity, currentIndex, accuracies
@@ -144,14 +138,13 @@ def singleImageTraining(trainDuration, restTime, dt, image, network,
 
 
 
-def train(network, networkList, spikesTrains, dt_tauDict, stdpDict,
-		countThreshold, inputIntensity, currentIndex, spikesEvolution,
-		updateInterval, printInterval, startTimeImage,
-		startTimeTraining, accuracies, labelsArray, assignments,
-		startInputIntensity, mode):
+def test(network, networkList, spikesTrains, dt_tauDict, countThreshold,
+	inputIntensity, currentIndex, spikesEvolution, updateInterval,
+	printInterval, startTimeImage, startTimeTraining, accuracies,
+	labelsArray, assignments, startInputIntensity, mode):
 
 	'''
-	Train the network with the spikes sequences associated to the pixels.
+	Test the network with the spikes sequences associated to the pixels.
 
 	INPUT:
 
@@ -168,45 +161,43 @@ def train(network, networkList, spikesTrains, dt_tauDict, stdpDict,
 		of the excitatory and inhibitory membrane and of the 
 		homeostasis parameter theta .
 
-		5) stdpDict: dictionary containing the STDP parameters.
-
-		6) countThreshold: minimum acceptable number of output spikes
+		5) countThreshold: minimum acceptable number of output spikes
 		generated during the training.
 
-		7) inputIntensity: current value of the pixel's intensity.
+		6) inputIntensity: current value of the pixel's intensity.
 
-		8) currentIndex: index of the current image.
+		7) currentIndex: index of the current image.
 
-		9) spikesEvolution: two-dimensional NumPy array containing the
+		8) spikesEvolution: two-dimensional NumPy array containing the
 		history of the spikes counter in the last "updateInterval"
 		cycles. One row for each training step. One column for each
 		element in the output layer.
 
-		10) updateInterval: number of images after which the performance
+		9) updateInterval: number of images after which the performance
 		is computed.
 
-		11) printInterval: number of images after which the progress
+		10) printInterval: number of images after which the progress
 		message is printed. 
 
-		12) startTimeImage: system time corresponding to the beginning of
+		11) startTimeImage: system time corresponding to the beginning of
 		the image.
 
-		13) startTimeTraining: system time corresponfing to the beginning
+		12) startTimeTraining: system time corresponfing to the beginning
 		of the training.
 
-		14) accuracies: list of strings containing the history of the
+		13) accuracies: list of strings containing the history of the
 		accuracy.
 
-		15) labelsArray: NumPy array containing all the labels of the
+		14) labelsArray: NumPy array containing all the labels of the
 		training set.
 
-		16) assignments: NumPy array containing one label assignment for
+		15) assignments: NumPy array containing one label assignment for
 		each output neuron.
 
-		17) startInputIntensity: starting value of the pixel's intensity.
+		16) startInputIntensity: starting value of the pixel's intensity.
 		The default value is 2.
 
-		18) mode: string. It can be "train" or "test".
+		17) mode: string. It can be "train" or "test".
 
 	OUTPUT:
 
@@ -252,68 +243,3 @@ def train(network, networkList, spikesTrains, dt_tauDict, stdpDict,
 			)
 
 	return inputIntensity, currentIndex, accuracies
-
-
-
-
-
-def normalizeWeights(network, networkList, constSums):
-
-	'''
-	Normalize the weights of all the layers in the network.
-
-	INPUT:
-
-		1) network: dictionary of the network.
-
-		2) networkList: list of integer numbers. Each element of the 
-		list corresponds to a layer and identifies the number of nodes
-		in that layer.
-
-		3) constSums: NumPy array. Each element represents the constant
-		value corresponding to the sum of all the weights of a single 
-		neuron in the specific layer.
-		
-	'''
-	
-	for layer in range(1, len(networkList)):
-
-		# Normalize the weights of the layer
-		normalizeLayerWeights(network, "exc2exc" + str(layer),
-					constSums[layer - 1])
-
-
-
-
-
-
-def normalizeLayerWeights(network, synapseName, constSum):
-
-	'''
-	Normalize the weights of the given layer.
-
-	INPUT:
-
-		1) network: dictionary of the network.
-
-
-		2) synapseName: string reporting the name of the connection. The
-		standard name is "exc2exc" + the index of the layer.
-
-		3) constSum: constant value corresponding to the sum of all the
-		weights of a single neuron.
-
-	'''
-
-	# Compute the sum of the weights for each neuron
-	weightsSum = np.sum(network[synapseName]["weights"], 
-			axis = 1, keepdims = True)
-
-	# Set to one the zero sums to avoid division by 0
-	weightsSum[weightsSum == 0] = 1.	
-
-	# Compute the normalization factor
-	normFactor = constSum / weightsSum
-
-	# Normalize the weights
-	network[synapseName]["weights"][:] *= normFactor
