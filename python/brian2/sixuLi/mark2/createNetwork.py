@@ -445,8 +445,9 @@ def exc2excConnection(networkList, poissonGroup, excLayersList, stdpDict,
 		)
 
 	# Initialize the stdp parameters pre and post
-	exc2exc.pre = 0
-	exc2exc.post = 0
+	if mode == "train":
+		exc2exc.pre = 0
+		exc2exc.post = 0
 
 	return exc2exc
 
@@ -491,7 +492,7 @@ def initializeWeights(mode, networkList, weightFile, layer, scaleFactor):
 
 		# Load weights from file
 		with open(weightFile, 'rb') as fp:
-			return np.load(weightFile)
+			return np.load(weightFile).reshape(784*400)
 	
 	else:
 		# Invalid mode, print error and exit

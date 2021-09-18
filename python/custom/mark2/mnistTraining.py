@@ -74,4 +74,4 @@ storeParameters(network, networkList, assignments, weightFilename,
  		thetaFilename, assignmentsFile)
  
 # Store the performance of the network into a text file
-storePerformace(startTimeTraining, accuracies, performanceFile)
+storePerformace(startTimeTraining, accuracies, testPerformanceFile)

@@ -128,7 +128,7 @@ def singleImageTest(trainDuration, restTime, dt, image,	network, networkList,
 
 	# Bring the network into a rest state
 	rest(network, networkList, restingSteps, image.shape[0], dt_tauDict,
-		stdpDict)
+		None, mode)
 
 
 	return inputIntensity, currentIndex, accuracies
@@ -215,7 +215,7 @@ def test(network, networkList, spikesTrains, dt_tauDict, countThreshold,
 	
 	# Train the network over the pixels' spikes train
 	spikesCounter = run(network, networkList, spikesTrains, dt_tauDict,
-				stdpDict, mode)
+				None, mode)
 
 	if np.sum(spikesCounter) < countThreshold:
 

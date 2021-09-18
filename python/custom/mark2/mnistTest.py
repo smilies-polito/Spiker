@@ -2,7 +2,7 @@ import timeit
 
 from mnist import loadDataset
 from createNetwork import createNetwork
-from trainFunctions import singleImageTraining
+from testFunctions import singleImageTest
 from storeParameters import *
 
 
@@ -15,7 +15,7 @@ from runParameters import *
 
 
 # Load the MNIST dataset
-imgArray, labelsArray = loadDataset(testImages, testabels)
+imgArray, labelsArray = loadDataset(testImages, testLabels)
 
 
 
@@ -45,8 +45,6 @@ while currentIndex < numberOfCycles:
 			restTime,
 			dt,
 			imgArray[currentIndex],
-			pixelMin,
-			pixelMax,
 			network,
 			networkList,
 			dt_tauDict,
@@ -64,3 +62,6 @@ while currentIndex < numberOfCycles:
 			mode,
 			constSums
 		)
+
+# Store the performance of the network into a text file
+storePerformace(startTimeTraining, accuracies, testPerformanceFile)

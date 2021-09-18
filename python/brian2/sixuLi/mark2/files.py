@@ -12,7 +12,7 @@ paramDir = "./parameters"
 # Name of the parameters files
 weightFilename = paramDir + "/weights"
 thetaFilename = paramDir + "/theta"
-assignmentsFile = paramDir + "/assignements.npy"
+assignmentsFile = paramDir + "/assignments.npy"
 
 
 # Name of the performance files
