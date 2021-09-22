@@ -4,8 +4,8 @@ excDict = {
 	"vRest"		: -65.0,	# mV
 	"vReset"	: -60.0,	# mV
 	"vThresh"	: -52.0,	# mV
-	"thetaPlus"	: 5, 		# mV
-	"initTheta"	: 20		# mV
+	"thetaPlus"	: 0.5, 		# mV
+	"initTheta"	: 0		# mV
 
 }
 
@@ -24,8 +24,8 @@ inhDict = {
 stdpDict = {
 
 	# Learning rates
-	"A_ltp"		: 1e-4,
-	"A_ltd"		: 1e-3,
+	"eta_pre"	: 1e-4,
+	"eta_post"	: - 1e-3,
 
 	# Time constants
 	"ltp_tau"	: 80,		# ms
@@ -34,7 +34,7 @@ stdpDict = {
 
 # Inter layer synapses
 exc2inhWeight = 22.5			# mV
-inh2excWeight = -15             	# mV
+inh2excWeight =  -15             	# mV
 
 
 # Membrane potential time constants
@@ -49,4 +49,4 @@ tauTheta = 100				# ms
 constSum = 78.4
 
 # Scaling factor for the random generation of the weights
-scaleFactor = 0.3	
+scaleFactor = 0.5	

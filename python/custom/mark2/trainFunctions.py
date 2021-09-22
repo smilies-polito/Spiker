@@ -278,7 +278,7 @@ def normalizeWeights(network, networkList, constSums):
 	
 	for layer in range(1, len(networkList)):
 
-		# Normalize the weights of the layer
+		# Normalize the weights of the synapses
 		normalizeLayerWeights(network, "exc2exc" + str(layer),
 					constSums[layer - 1])
 

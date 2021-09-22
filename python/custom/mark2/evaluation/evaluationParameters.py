@@ -5,11 +5,11 @@ from parameters import *
 
 
 
-N_sim = 3500
+N_sim = 1500
 
 density = 0.005
 
-networkList = [3, 2]
+networkList = [2, 3]
 
 mode = "train"
 

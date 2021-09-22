@@ -4,6 +4,36 @@ import timeit
 from utils import seconds2hhmmss
 from network import run 
 
+
+def repeatImage(inputIntensity, currentIndex):
+
+	'''
+	Prepare the training over the same image.
+
+	INPUT:
+
+		1) inputIntensity: current value of the pixel's intensity.
+
+		2) currentIndex: index of the current image.
+
+	OUTPUT:
+
+		current value of the pixel's intensity increased by 1.
+
+	'''
+
+	# Print a message to say that the training will be repeated
+	print("Increase inputIntensity from " + str(inputIntensity) + \
+	" to " + str(inputIntensity + 1) + " for image " + str(currentIndex))
+
+	# Increase the pixel's intensity
+	return inputIntensity + 1
+
+
+
+
+
+
 def nextImage(networkList, spikesEvolution, updateInterval, printInterval,
 	spikesCounter, startTimeImage, startTimeTraining, accuracies,
 	labelsArray, assignments, startInputIntensity, currentIndex, mode):
@@ -77,7 +107,6 @@ def nextImage(networkList, spikesEvolution, updateInterval, printInterval,
 	accuracies = computePerformance(
 				currentIndex, 
 				updateInterval,
-				networkList[-1], 
 				spikesEvolution, 
 				labelsArray[currentIndex - updateInterval :
 					currentIndex], 
@@ -144,9 +173,8 @@ def printProgress(currentIndex, printInterval, startTimeImage,
 
 
 
-def computePerformance(currentIndex, updateInterval, lastLayerSize,
-			spikesEvolution, labelsSequence, assignments, 
-			accuracies):
+def computePerformance(currentIndex, updateInterval, spikesEvolution, 
+			labelsSequence, assignments, accuracies):
 
 	'''
 	Compute the network performance.
@@ -158,20 +186,18 @@ def computePerformance(currentIndex, updateInterval, lastLayerSize,
 		2) updateInterval: number of images after which the performance
 		is computed.
 
-		3) lastLayerSize: number of elements in the output layer.
-
-		4) spikesEvolution: two-dimensional NumPy array containing the
+		3) spikesEvolution: two-dimensional NumPy array containing the
 		history of the spikes counter in the last "updateInterval"
 		cycles. One row for each training step. One column for each
 		element in the output layer.
 
-		5) labelsSequence: NumPy array containing the history of the
+		4) labelsSequence: NumPy array containing the history of the
 		labels in the last "updateInterval" cycles.
 
-		6) assignments: NumPy array containing one label assignment for
+		5) assignments: NumPy array containing one label assignment for
 		each output neuron.
 
-		7) accuracies: list of strings containing the history of the
+		6) accuracies: list of strings containing the history of the
 		accuracy.
 
 	OUTPUT:
@@ -310,33 +336,6 @@ def updateAssignments(currentIndex, updateInterval, lastLayerSize,
 
 
 
-
-
-
-
-def repeatImage(inputIntensity, currentIndex):
-
-	'''
-	Prepare the training over the same image.
-
-	INPUT:
-
-		1) inputIntensity: current value of the pixel's intensity.
-
-		2) currentIndex: index of the current image.
-
-	OUTPUT:
-
-		current value of the pixel's intensity increased by 1.
-
-	'''
-
-	# Print a message to say that the training will be repeated
-	print("Increase inputIntensity from " + str(inputIntensity) + \
-	" to " + str(inputIntensity + 1) + " for image " + str(currentIndex))
-
-	# Increase the pixel's intensity
-	return inputIntensity + 1
 
 
 

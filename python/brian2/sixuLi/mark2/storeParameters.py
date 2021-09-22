@@ -3,8 +3,8 @@ import timeit
 from utils import seconds2hhmmss
 
 
-def storeParameters(network, networkList, assignements, weightFilename,
-			thetaFilename, assignementsFile):
+def storeParameters(network, networkList, assignments, weightFilename,
+			thetaFilename, assignmentsFile):
 
 	'''
 	Store the parameters of the network inside NumPy files.
@@ -51,7 +51,7 @@ def storeParameters(network, networkList, assignements, weightFilename,
 
 
 	# Store the assignments of the output layer
-	storeArray(assignementsFile, assignements)
+	storeArray(assignmentsFile, assignments)
 
 
 
@@ -77,7 +77,7 @@ def storeArray(filename, numpyArray):
 
 
 
-def storePerformace(startTimeTraining, accuracies, performanceFilename):
+def storePerformace(startTimeTraining, accuracies, performanceFile):
 
 	'''
 	Store the performance of the network into a text file.
@@ -103,7 +103,7 @@ def storePerformace(startTimeTraining, accuracies, performanceFilename):
 	accuracyString = "Accuracy evolution:\n" + "\n".join(accuracies)
 
 	# Write the strings into the file
-	with open(performanceFilename + ".txt", 'w') as fp:
+	with open(performanceFile, 'w') as fp:
 		fp.write(timeString)
 		fp.write("\n\n")
 		fp.write(accuracyString)

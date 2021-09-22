@@ -16,5 +16,6 @@ assignmentsFile = paramDir + "/assignments.npy"
 
 
 # Name of the performance files
-performanceFilename = paramDir + "/performance"
+trainPerformanceFile = paramDir + "/performance.txt"
+testPerformanceFile = paramDir + "/testPerformance.txt"
 

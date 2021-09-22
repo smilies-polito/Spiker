@@ -40,25 +40,27 @@ while currentIndex < numberOfCycles:
 	# Complete training cycle over a single image
 	inputIntensity, currentIndex, accuracies = \
 		singleImageTraining(
-			imgArray[currentIndex], 
-			networkList, 
-			network, 
-			singleExampleTime, 
+			trainDuration, 
 			restTime, 
-			spikesEvolution, 
-			updateInterval, 
-			printInterval, 
+			imgArray[currentIndex], 
+			network, 
+			networkList, 
 			currentSpikesCount, 
 			prevSpikesCount, 
+			countThreshold,
+			inputIntensity, 
+			currentIndex, 
+			spikesEvolution, 
+			updateInterval,
+			printInterval, 
 			startTimeTraining, 
 			accuracies, 
-			labelsArray, 
-			assignments,
-			inputIntensity, 
+			labelsArray,
+			assignments, 
 			startInputIntensity, 
-			currentIndex, 
-			mode,
-			constSum)
+			mode, 
+			constSum
+		)
 
 
 
@@ -66,8 +68,8 @@ while currentIndex < numberOfCycles:
 createDir(paramDir)
 
 # Store the network parameters into NumPy files
-storeParameters(networkList, network, assignements, weightFilename, 
-		thetaFilename, assignementsFile)
+storeParameters(network, networkList, assignments, weightFilename, 
+		thetaFilename, assignmentsFile)
 
 # Store the performance of the network into a text file
-storePerformace(startTimeTraining, accuracies, performanceFilename)
+storePerformace(startTimeTraining, accuracies, trainPerformanceFile)

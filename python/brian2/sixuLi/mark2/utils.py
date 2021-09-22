@@ -85,7 +85,3 @@ def seconds2hhmmss(seconds):
 	seconds = int(seconds % 60)
 
 	return str(hours) + "h " + str(minutes) + "min " + str(seconds) + "s"
-
-
-
-

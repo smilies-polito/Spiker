@@ -2,6 +2,15 @@ import numpy as np
 import timeit
 
 from utils import seconds2hhmmss
+from poisson import imgToSpikeTrain
+
+from equationsParameters import *
+from neuronsParameters import *
+
+# Add the parameters of the network to the local variables
+locals().update(parametersDict)
+
+
 
 
 def updatePulsesCount(network, currentSpikesCount, prevSpikesCount):
@@ -25,8 +34,11 @@ def updatePulsesCount(network, currentSpikesCount, prevSpikesCount):
 	'''
 
 	# Get the total spikes' count from the beginnning up to now.
-	spikeMonitorCount = network.get_states(units=True, format='dict', 
-				subexpressions=False, read_only_variables=True,
+	spikeMonitorCount = network.get_states(
+				units=True, 
+				format='dict', 
+				subexpressions=False, 
+				read_only_variables=True,
 				level=0)["spikemonitor"]["count"]
 
 	# Compute the spikes' count relative to the current image
@@ -42,9 +54,27 @@ def updatePulsesCount(network, currentSpikesCount, prevSpikesCount):
 
 def repeatImage(inputIntensity, currentIndex):
 
+	'''
+	Prepare the training over the same image.
+
+	INPUT:
+
+		1) inputIntensity: current value of the pixel's intensity.
+
+		2) currentIndex: index of the current image.
+
+	OUTPUT:
+
+		current value of the pixel's intensity increased by 1.
+
+	'''
+
+
+	# Print a message to say that the training will be repeated
 	print("Increase inputIntensity from " + str(inputIntensity) + \
 	" to " + str(inputIntensity + 1) + " for image " + str(currentIndex))
 
+	# Increase the pixel's intensity
 	return inputIntensity + 1
 
 
@@ -57,22 +87,95 @@ def nextImage(networkList, spikesEvolution, updateInterval, printInterval,
 		accuracies, labelsArray, assignements, startInputIntensity, 
 		currentIndex, mode):
 
+	'''
+	Prepare the training over the next image.
+
+	INPUT:
+
+		1) networkList: list of integer numbers. Each element of the 
+		list corresponds to a layer and identifies the number of nodes
+		in that layer.
+
+		2) spikesEvolution: two-dimensional NumPy array containing the
+		history of the spikes counter in the last "updateInterval"
+		cycles. One row for each training step. One column for each
+		element in the output layer.
+
+		3) updateInterval: number of images after which the performance
+		is computed.
+
+		4) printInterval: number of images after which the progress
+		message is printed. 
+
+		5) currentSpikesCount: NumPy array with size equal to the number
+		of elements in the last layer.
+
+		6) startTimeImage: system time corresponding to the beginning of
+		the image.
+
+		7) startTimeTraining: system time corresponfing to the beginning
+		of the training.
+
+		8) accuracies: list of strings containing the history of the
+		accuracy.
+
+		9) labelsArray: NumPy array containing all the labels of the
+		training set.
+
+		10) assignments: NumPy array containing one label assignment for
+		each output neuron.
+
+		11) startInputIntensity: starting value of the pixel's intensity.
+		The default value is 2.
+
+		12) currentIndex: index of the current image.
+
+		13) mode: string. It can be "train" or "test".
+
+
+	OUTPUT:
+
+		1) startInputIntensity: reset value of the pixel's intensity.
+
+		2) currentIndex + 1: index of the next image to analyse.
+
+		3) accuracies: updated list of strings containing the history of 
+		the accuracy.
+
+	'''
+
+
+	
+	# Update the temporal evolution of the spikes
 	spikesEvolution[currentIndex % updateInterval] = currentSpikesCount
 
+	# Print the training progress
 	printProgress(currentIndex, printInterval, startTimeImage, 
 			startTimeTraining)
 
-	accuracies = computePerformance(currentIndex, updateInterval,
-			networkList[-1], spikesEvolution,
-			labelsArray[currentIndex - updateInterval :
-			currentIndex], assignements, accuracies)
+	# Compute the accuracy of the network
+	accuracies = computePerformance(
+				currentIndex, 
+				updateInterval,
+				spikesEvolution,
+				labelsArray[currentIndex - updateInterval :
+				currentIndex], 
+				assignements, 
+				accuracies)
 
 	if mode == "train":
-		updateAssignements(currentIndex, updateInterval, 
-				networkList[-1], spikesEvolution, 
-				labelsArray[currentIndex - updateInterval
-				: currentIndex], assignements)
+		
+		# Update the output classification
+		updateAssignements(
+				currentIndex, 
+				updateInterval, 
+				networkList[-1], 
+				spikesEvolution, 
+				labelsArray[currentIndex - updateInterval :
+				currentIndex], 
+				assignements)
 
+	# Reset input intensity and increase the image index by 1
 	return startInputIntensity, currentIndex + 1, accuracies	
 
 
@@ -84,15 +187,37 @@ def nextImage(networkList, spikesEvolution, updateInterval, printInterval,
 def printProgress(currentIndex, printInterval, startTimeImage, 
 			startTimeTraining):
 
-	currentTime = timeit.default_timer()
+	'''
+	Print the training progress.
 
-	# Print every printInterval
+	INPUT:
+
+		1) currentIndex: index of the current image.
+
+		2) printInterval: number of images after which the progress
+		message is printed. 
+
+		3) startTimeImage: system time corresponding to the beginning of
+		the image.
+
+		4) startTimeTraining: system time corresponfing to the beginning
+		of the training.
+
+	'''
+	
+
+	# End of print interval?
 	if currentIndex % printInterval == 0 and currentIndex > 0:
 			
+		# Measure the current time instant
+		currentTime = timeit.default_timer()
+
+		# Format the output message and print it
 		progressString = "Analyzed images: " + str(currentIndex) + \
-		". Time required for a single image: " + str(currentTime -
-		startTimeImage) + "s. Total elapsed time: " + \
-		str(timeit.default_timer() - startTimeTraining) + "s."
+			". Time required for a single image: " + str(currentTime
+			- startTimeImage) + "s. Total elapsed time: " + \
+			seconds2hhmmss(timeit.default_timer() -
+			startTimeTraining)
 
 		print(progressString)
 
@@ -101,32 +226,68 @@ def printProgress(currentIndex, printInterval, startTimeImage,
 
 
 
-def computePerformance(currentIndex, updateInterval, outputLayerSize,
-			spikesEvolution, labelsSequence, assignements, accuracies):
+def computePerformance(currentIndex, updateInterval ,
+			spikesEvolution, labelsSequence, assignements, 
+			accuracies):
 
-	maxCount = np.zeros(updateInterval)
-	classification = -1*np.ones(updateInterval)
+	'''
+	Compute the network performance.
 
-	# Update every updateInterval
+	INPUT:	
+
+		1) currentIndex: index of the current image.
+
+		2) updateInterval: number of images after which the performance
+		is computed.
+
+		3) spikesEvolution: two-dimensional NumPy array containing the
+		history of the spikes counter in the last "updateInterval"
+		cycles. One row for each training step. One column for each
+		element in the output layer.
+
+		4) labelsSequence: NumPy array containing the history of the
+		labels in the last "updateInterval" cycles.
+
+		5) assignments: NumPy array containing one label assignment for
+		each output neuron.
+
+		6) accuracies: list of strings containing the history of the
+		accuracy.
+
+	OUTPUT:
+
+		accuracies: updated list of strings containing the history of the
+		accuracy.
+
+	'''
+
+
+	# End of update interval?
 	if currentIndex % updateInterval == 0 and currentIndex > 0:
 
-		# Loop over the ten labels
+
+		# Initialize the maximum count to 0
+		maxCount = np.zeros(updateInterval)
+
+		# Initialize the output classification
+		classification = -1*np.ones(updateInterval)
+		
 		for label in range(10):
 
-			# Consider only the neurons assigned to the current
-			# label
+			# Add the spikes count associated to the current label
 			spikeCount = np.sum(spikesEvolution[:, assignements ==
 					label], axis = 1)
 
-			# Find where the neurons have generated max spikes
+			# Find where the spikes count is grater than the maximum
 			whereMaxSpikes = spikeCount > maxCount
 
-			# Update the classification along the updateInterval
+			# Associate the instants to the current label
 			classification[whereMaxSpikes] = label
 
 			# Update the maximum number of spikes for the label
 			maxCount[whereMaxSpikes] = spikeCount[whereMaxSpikes]
 
+		# Compute the accuracy and add it to the list of accuracies
 		accuracies = updateAccuracy(classification, labelsSequence, accuracies)
 
 	return accuracies
@@ -138,7 +299,29 @@ def computePerformance(currentIndex, updateInterval, outputLayerSize,
 
 def updateAccuracy(classification, labelsSequence, accuracies):
 
-	# Compute the number of correct classifications
+	'''
+	Compute the accuracy and add it to the list of accuracies.
+
+	INPUT:
+
+		1) classification: NumPy array containing the history of the
+		classification performed by the network in the last
+		"updateInterval" cycles
+
+		2) labelsSequence: NumPy array containing the history of the
+		labels in the last "updateInterval" cycles.
+
+		3) accuracies: list of strings containing the history of the
+		accuracy.
+
+	OUTPUT:
+
+		accuracies: updated list of strings containing the history of the
+		accuracy.
+
+	'''
+
+	# Number of instants in which the classification is equal to the label
 	correct = np.where(classification == labelsSequence)[0].size
 
 	# Compute the percentage of accuracy and add it to the list
@@ -158,26 +341,77 @@ def updateAccuracy(classification, labelsSequence, accuracies):
 
 
 
-def updateAssignements(currentIndex, updateInterval, outputLayerSize,
+def updateAssignements(currentIndex, updateInterval, lastLayerSize,
 			spikesEvolution, labelsSequence, assignements):
 
-	maxCount = np.zeros(outputLayerSize)
+	'''
+	Update the output classification.
 
-	# Update every updateInterval
+	INPUT:
+
+		1) currentIndex: index of the current image.
+
+		2) updateInterval: number of images after which the performance
+		is computed.
+
+		3) lastLayerSize: number of elements in the output layer.
+
+		4) spikesEvolution: two-dimensional NumPy array containing the
+		history of the spikes counter in the last "updateInterval"
+		cycles. One row for each training step. One column for each
+		element in the output layer.
+
+		5) labelsSequence: NumPy array containing the history of the
+		labels in the last "updateInterval" cycles.
+
+		6) assignments: NumPy array containing one label assignment for
+		each output neuron.
+
+	'''
+
+	# End of update interval?
 	if currentIndex % updateInterval == 0 and currentIndex > 0:
 
-		# Loop over the 10 labels
+		# Initialize the maximum count to 0
+		maxCount = np.zeros(lastLayerSize)
+		
 		for label in range(10):
 
-			# Total spikes count for the specific label
+			# Add spikes for the instants associated to the label
 			labelSpikes = np.sum(spikesEvolution[labelsSequence ==
 					label], axis=0)
 
-			# Find where the spike count exceeds the current maximum
+			# Find where spikes count exceeds current maximum
 			whereMaxSpikes = labelSpikes > maxCount
 
 			# Update the assignements	
 			assignements[whereMaxSpikes] = label
 
-			# Update the maxima
+			# Update the maximum count for the current label
 			maxCount[whereMaxSpikes] = labelSpikes[whereMaxSpikes]
+
+
+
+
+def rest(network, restTime, imageSize):
+
+	'''
+	Bring the network into a rest state.
+
+	INPUT:
+
+		1) network: Brian2 Network object containing the complete
+		network structure.
+
+		2) restTime: time duration of the resting period expressed
+		in milliseconds.
+
+		3) imageSize: total number of pixels composing the image.
+
+	'''
+
+	# Reset to zero the spikes trains
+	imgToSpikeTrain(network, np.zeros(imageSize), 0)
+
+	# Run the network on the resting inputs
+	network.run(restTime)

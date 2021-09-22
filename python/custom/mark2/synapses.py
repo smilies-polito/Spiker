@@ -36,7 +36,7 @@ def stdp(network, layer, stdpDict, inputSpikes):
 
 
 
-def ltp(network, synapseName, layerName, eta_post, dt_tau):
+def ltp(network, synapseName, layerName, eta_pre, dt_tau):
 
 	'''
 	Increase the weights of the active neurons' synapses through LTP.
@@ -63,17 +63,17 @@ def ltp(network, synapseName, layerName, eta_post, dt_tau):
 
 	# Reset the post-synaptic trace to its starting value
 	network[synapseName]["post"][:, 0][network[layerName]["outSpikes"][0]] = \
-		1
+		eta_pre
 
 	# Update the synapses of the active neurons
 	network[synapseName]["weights"][network[layerName]["outSpikes"][0]] += \
-		eta_post*network[synapseName]["pre"]
+		network[synapseName]["pre"]
 
 
 
 
 
-def ltd(network, synapseName, layerName, eta_pre, dt_tau, inputSpikes):
+def ltd(network, synapseName, layerName, eta_post, dt_tau, inputSpikes):
 
 	'''
 	Decrease the weights of the inactive neurons' synapses through LTD.
@@ -100,8 +100,8 @@ def ltd(network, synapseName, layerName, eta_pre, dt_tau, inputSpikes):
 	expDecay(network, synapseName, dt_tau, 0, "pre")
 	
 	# Reset the pre-synaptic trace to its starting value
-	network[synapseName]["pre"][0][inputSpikes] = 1
+	network[synapseName]["pre"][0][inputSpikes] = eta_post
 
 	# Update the synapses of the inactive neurons
 	network[synapseName]["weights"][:, inputSpikes] -= \
-		eta_pre*network[synapseName]["post"]
+		network[synapseName]["post"]

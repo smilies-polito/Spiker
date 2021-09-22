@@ -40,22 +40,27 @@ while currentIndex < numberOfCycles:
 	# Complete test cycle over a single image
 	inputIntensity, currentIndex, accuracies = \
 		singleImageTest(
-			imgArray[currentIndex], 
-			networkList, 
-			network, 
-			singleExampleTime, 
+			trainDuration, 
 			restTime, 
-			spikesEvolution, 
-			updateInterval, 
-			printInterval, 
+			imgArray[currentIndex], 
+			network, 
+			networkList, 
 			currentSpikesCount, 
 			prevSpikesCount, 
+			countThreshold,
+			inputIntensity, 
+			currentIndex, 
+			spikesEvolution, 
+			updateInterval,
+			printInterval, 
 			startTimeTraining, 
 			accuracies, 
-			labelsArray, 
-			assignments,
-			inputIntensity, 
+			labelsArray,
+			assignments, 
 			startInputIntensity, 
-			currentIndex, 
-			mode,
-			constSum)
+			mode, 
+			constSum
+		)
+
+# Store the performance of the network into a text file
+storePerformace(startTimeTraining, accuracies, testPerformanceFile)

@@ -12,11 +12,11 @@ from files import *
 # List of layer sizes
 networkList = [784, 400]
 
-mode = "test"
+mode = "train"
 
 
 # Training and resting periods in milliseconds
-singleExampleTime = 0.35*b2.second
+trainDuration = 0.35*b2.second
 restTime = 0.15*b2.second
 
 
@@ -52,3 +52,6 @@ assignments = initAssignments(mode, networkList, assignmentsFile)
 
 # Select the correct equations depending on the operational mode.
 equationsDict, stdpDict = defineEquations(mode)
+
+# Minimum acceptable number of output spikes generated during the training.
+countThreshold = 5

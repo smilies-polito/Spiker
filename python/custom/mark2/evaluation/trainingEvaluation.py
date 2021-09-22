@@ -27,6 +27,6 @@ spikesTrains = sp.random(N_sim, networkList[0], density = density)
 spikesTrains = spikesTrains.A.astype(bool)
 
 
-counter = run(networkList, network, spikesTrains, dt_tauDict, stdpDict)
+counter = run(network, networkList, spikesTrains, dt_tauDict, stdpDict, mode)
 
 print("Counter: ", counter)

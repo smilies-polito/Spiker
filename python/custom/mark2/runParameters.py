@@ -48,7 +48,7 @@ scaleFactors = scaleFactor * np.ones(len(networkList) - 1)
 
 
 # Update and print intervals expressed in number of images
-updateInterval = 250
+updateInterval = 10
 printInterval = 10
 
 

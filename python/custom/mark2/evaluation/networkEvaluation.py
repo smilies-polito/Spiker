@@ -38,7 +38,7 @@ threshold = np.zeros((N_sim, networkList[1]))
 for i in range(N_sim):
 
 	updateNetwork(networkList, network, inputSpikes[i], dt_tauDict, 
-		stdpDict)
+		stdpDict, mode)
 
 	excSpikes[i] = network["excLayer1"]["outSpikes"][0]
 	inhSpikes[i] = network["inhLayer1"]["outSpikes"][0]
