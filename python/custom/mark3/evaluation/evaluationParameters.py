@@ -7,27 +7,25 @@ from parameters import *
 
 N_sim = 1500
 
-density = 0.005
+density = 0.01
 
 networkList = [2, 3]
 
 mode = "train"
 
 excDictList = [excDict] * (len(networkList) - 1)
-inhDictList = [inhDict] * (len(networkList) - 1)
 
-exc2inhWeights = exc2inhWeight * np.ones(len(networkList) - 1)
 inh2excWeights = inh2excWeight * np.ones(len(networkList) - 1)
 
-scaleFactors = np.array([22])
+scaleFactors = np.array([10])
 
 dt = 1
 
 dt_tauDict = {
 
-	"exc" 	: dt/tauExc,
-	"inh"	: dt/tauExc,
-	"theta"	: dt/tauTheta
+	"exc" 		: dt/tauExc,
+	"inh"		: dt/tauExc,
+	"thresh"	: dt/tauThresh
 
 }
 

@@ -8,15 +8,13 @@ from files import *
 # List of layer sizes
 networkList = [784, 400]
 
-mode = "test"
+mode = "train"
 
 # List of dictionaries of parameters for the layers
 excDictList = [excDict] * (len(networkList) - 1)
-inhDictList = [inhDict] * (len(networkList) - 1)
 
 
 # Arrays of weights for the inter layer connections
-exc2inhWeights = exc2inhWeight * np.ones(len(networkList) - 1)
 inh2excWeights = inh2excWeight * np.ones(len(networkList) - 1)
 
 
@@ -31,11 +29,7 @@ dt = 0.1		# ms
 
 # Exponential time constants
 dt_tauDict = {
-
-	"exc" 	: dt/tauExc,
-	"inh" 	: dt/tauInh,
-	"theta"	: dt/tauTheta
-
+	"exc" 		: dt/tauExc,
 }
 
 

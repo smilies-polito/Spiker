@@ -32,9 +32,9 @@ dt = 0.1		# ms
 # Exponential time constants
 dt_tauDict = {
 
-	"exc" 	: dt/tauExc,
-	"inh" 	: dt/tauInh,
-	"theta"	: dt/tauTheta
+	"exc" 		: dt/tauExc,
+	"inh" 		: dt/tauInh,
+	"thresh"	: dt/tauTheta
 
 }
 
