@@ -29,7 +29,7 @@ dt = 0.1		# ms
 
 # Exponential time constants
 dt_tauDict = {
-	"exc" 		: dt/tauExc,
+	"exc" 		: 2**(-10)#dt/tauExc,
 }
 
 

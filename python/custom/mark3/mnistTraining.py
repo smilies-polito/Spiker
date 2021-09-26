@@ -27,7 +27,7 @@ network = createNetwork(networkList, weightFilename, thresholdFilename, mode,
 
 
 
-currentIndex = 1#0
+currentIndex = 0
 numberOfCycles = imgArray.shape[0]
 
 
@@ -73,4 +73,4 @@ storeParameters(network, networkList, assignments, weightFilename,
  		thresholdFilename, assignmentsFile)
  
 # Store the performance of the network into a text file
-storePerformace(startTimeTraining, accuracies, testPerformanceFile)
+storePerformace(startTimeTraining, accuracies, trainPerformanceFile)

@@ -9,9 +9,9 @@ paramDir = "./parameters"
 
 # Name of the parameters files
 weightFilename = paramDir + "/weights"
-thresholdFilename = paramDir + "/thhresholds"
+thresholdFilename = paramDir + "/thresholds"
 assignmentsFile = paramDir + "/assignments.npy"
 
 # Name of the performance files
-trainPerformanceFile = paramDir + "/performance.txt"
+trainPerformanceFile = paramDir + "/trainPerformance.txt"
 testPerformanceFile = paramDir + "/testPerformance.txt"
