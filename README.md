@@ -31,19 +31,11 @@ Explain here how to work with this project (compile, build, execute, install etc
 
 
 # TODO
-1) Simplify Peter U. Diehl model in order to make it suitable for an HW
-   implementation.
-2) Convert the algorithm in a custom python implementation.
-3) Reduce accuracy of the model and analyze the impact on the performances.
-4) Implement the developed model in VHDL. Here I want to develop two types of 
-   circuit in parallel, one with full resources, simpler from a control point 
-   of view; the other with limited resources. These two models at the end will 
-   be used to create the circuit basing on the requests made by the user.
-5) Test the developed neuron on the FPGA, evaluate the performances and
+1) Implement the developed model in VHDL. 
+2) Test the developed neuron on the FPGA, evaluate the performances and
    the required resources in order to have an idea of the maximum reachable
    dimensions of the network.
-6) Write the linux driver in order to be able to test, evaluate and use the
+3) Write the linux driver in order to be able to test, evaluate and use the
    developed structure.
-7) Write a complete python program that, provided the characteristics of
+4) Write a complete python program that, provided the characteristics of
    the network, creates the accelerator and interacts with it.
-
