@@ -31,8 +31,6 @@ def stdp(network, layer, stdpDict, inputSpikes):
 
 	
 	network[synapseName]["weights"][network[synapseName]["weights"] < 0] = 0
-	# network[synapseName]["weights"][network[synapseName]["weights"] > 1] = 1
-
 
 
 

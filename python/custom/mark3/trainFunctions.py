@@ -3,7 +3,7 @@ import numpy as np
 
 from utils import seconds2hhmmss
 from poisson import imgToSpikeTrain
-from network import run
+from network import *
 from common import *
 
 

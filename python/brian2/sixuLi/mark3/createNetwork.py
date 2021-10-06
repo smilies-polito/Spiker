@@ -70,6 +70,7 @@ def createNetwork(networkList, equationsDict, parametersDict, stdpDict,
 					weightInitDict, mode, weightFilename,
 					scaleFactors)
 
+	# Create the monitor for the output spikes
 	spikeMonitor = b2.SpikeMonitor(excLayersList[-1], record = False)
 
 	# Create the complete network putting together all the components
@@ -317,7 +318,7 @@ def connectLayersStructure(networkList, poissonGroup, excLayersList,
 	particular "inh2exc" and "exc2inh" + the number of the current
 	layer.
 
-'''
+	'''
 
 	networkSize = len(networkList)
 
@@ -429,7 +430,7 @@ def exc2excConnection(networkList, poissonGroup, excLayersList, stdpDict,
 			stdpDict["stdpPost"], 
 			connectionType = "i==j or i!=j", 
 			weightInit = weightMatrix, 
-			name = "poisson2exc"
+			name = "exc2exc" + str(layer)
 		)
 
 	else:
@@ -443,7 +444,7 @@ def exc2excConnection(networkList, poissonGroup, excLayersList, stdpDict,
 			stdpDict["stdpPost"], 
 			connectionType = "i==j or i!=j", 
 			weightInit = weightMatrix, 
-			name = "exc2exc" + str(layer-1)
+			name = "exc2exc" + str(layer)
 		)
 
 	# Initialize the stdp parameters pre and post

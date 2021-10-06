@@ -34,12 +34,15 @@ def updateExcLayer(network, layer, dt_tau_exc, inputSpikes):
 	expDecay(network, layerName, dt_tau_exc, 
 		network[layerName]["vRest"], "v")
 
-	# Update membrane potential with the spikes from the previous layer
-	all2allUpdate(network, layerName, "exc2exc" + str(layer), inputSpikes)
+	if np.sum(inputSpikes) != 0:
 
-	# Update membrane potential with the spikes from the inhibitory layer
-	all2othersUpdate(network, layerName, "inh2exc" +
-		str(layer))
+		# Update membrane potential with the spikes from the previous layer
+		all2allUpdate(network, layerName, "exc2exc" + str(layer), inputSpikes)
+
+	if np.sum(network["excLayer" + str(layer)]["inhSpikes"]) != 0:
+		# Update membrane potential with the spikes from the inhibitory layer
+		all2othersUpdate(network, layerName, "inh2exc" +
+			str(layer))
 
 	# Increase threshold for active neurons. Decrease it for inactive ones.
 	homeostasis(network, layerName)

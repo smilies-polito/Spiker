@@ -413,5 +413,5 @@ def rest(network, restTime, imageSize):
 	# Reset to zero the spikes trains
 	imgToSpikeTrain(network, np.zeros(imageSize), 0)
 
-	# Run the network on the resting inputs
+	# Run the network for a resting period 
 	network.run(restTime)

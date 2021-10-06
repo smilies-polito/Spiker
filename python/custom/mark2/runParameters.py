@@ -8,7 +8,7 @@ from files import *
 # List of layer sizes
 networkList = [784, 400]
 
-mode = "test"
+mode = "train"
 
 # List of dictionaries of parameters for the layers
 excDictList = [excDict] * (len(networkList) - 1)

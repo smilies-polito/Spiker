@@ -2,7 +2,7 @@ import numpy as np
 import timeit
 
 from utils import seconds2hhmmss
-from network import run 
+from network import * 
 
 
 def repeatImage(inputIntensity, currentIndex):
@@ -333,45 +333,3 @@ def updateAssignments(currentIndex, updateInterval, lastLayerSize,
 
 			# Update the maximum count for the current label
 			maxCount[whereMaxSpikes] = labelSpikes[whereMaxSpikes]
-
-
-
-
-
-
-
-
-def rest(network, networkList, restingSteps, imageSize, dt_tauDict, stdpDict,
-		mode):
-
-	'''
-	Bring the network into a rest state.
-
-	INPUT:
-
-		1) network: dictionary of the network.
-
-		2) networkList: list of integer numbers. Each element of the 
-		list corresponds to a layer and identifies the number of nodes
-		in that layer.
-
-		3) restingSteps: time duration of the resting period expressed
-		in trainingSteps.
-
-		4) imageSize: total number of pixels composing the image.
-
-		5) dt_tauDict: dictionary containing the exponential constants
-		of the excitatory and inhibitory membrane and of the 
-		homeostasis parameter theta .
-
-		6) stdpDict: dictionary containing the STDP parameters.
-
-		7) mode: string. It can be "train" or "test".
-
-	'''
-
-	# Reset to zero the spikes trains
-	spikesTrains = np.zeros((restingSteps, imageSize)).astype(bool)
-
-	# Run the network on the resting inputs
-	run(network, networkList, spikesTrains, dt_tauDict, stdpDict, mode)

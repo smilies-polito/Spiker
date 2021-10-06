@@ -130,7 +130,7 @@ def singleImageTraining(trainDuration, restTime, dt, image, network,
 
 
 	# Normalize the weights
-	normalizeWeights(network, networkList, constSums)
+	normalizeNetWeights(network, networkList, constSums)
 
 	# Bring the network into a rest state
 	rest(network, networkList, restingSteps, image.shape[0], dt_tauDict,
@@ -257,7 +257,7 @@ def train(network, networkList, spikesTrains, dt_tauDict, stdpDict,
 
 
 
-def normalizeWeights(network, networkList, constSums):
+def normalizeNetWeights(network, networkList, constSums):
 
 	'''
 	Normalize the weights of all the layers in the network.

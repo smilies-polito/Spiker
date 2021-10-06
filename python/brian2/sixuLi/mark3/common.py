@@ -2,7 +2,16 @@ import numpy as np
 import timeit
 
 from utils import seconds2hhmmss
-from network import run 
+from poisson import imgToSpikeTrain
+
+from equationsParameters import *
+from neuronsParameters import *
+
+# Add the parameters of the network to the local variables
+locals().update(parametersDict)
+
+
+
 
 
 def repeatImage(inputIntensity, currentIndex):
@@ -22,6 +31,7 @@ def repeatImage(inputIntensity, currentIndex):
 
 	'''
 
+
 	# Print a message to say that the training will be repeated
 	print("Increase inputIntensity from " + str(inputIntensity) + \
 	" to " + str(inputIntensity + 1) + " for image " + str(currentIndex))
@@ -34,10 +44,10 @@ def repeatImage(inputIntensity, currentIndex):
 
 
 
-def nextImage(networkList, spikesEvolution, updateInterval, printInterval,
-	spikesCounter, startTimeImage, startTimeTraining, accuracies,
-	labelsArray, assignments, startInputIntensity, currentIndex, mode):
-
+def nextImage(networkList, spikesEvolution, updateInterval, printInterval, 
+		currentSpikesCount, startTimeImage, startTimeTraining, 
+		accuracies, labelsArray, assignements, startInputIntensity, 
+		currentIndex, mode):
 
 	'''
 	Prepare the training over the next image.
@@ -59,8 +69,8 @@ def nextImage(networkList, spikesEvolution, updateInterval, printInterval,
 		4) printInterval: number of images after which the progress
 		message is printed. 
 
-		5) spikesCounter: NumPy array containing the total amount of 
-		generate spike for each neuron.
+		5) currentSpikesCount: NumPy array with size equal to the number
+		of elements in the last layer.
 
 		6) startTimeImage: system time corresponding to the beginning of
 		the image.
@@ -96,40 +106,42 @@ def nextImage(networkList, spikesEvolution, updateInterval, printInterval,
 
 	'''
 
+
+	
 	# Update the temporal evolution of the spikes
-	spikesEvolution[currentIndex % updateInterval] = spikesCounter
+	spikesEvolution[currentIndex % updateInterval] = currentSpikesCount
 
 	# Print the training progress
-	printProgress(currentIndex, printInterval, startTimeImage,
-		startTimeTraining)
+	printProgress(currentIndex, printInterval, startTimeImage, 
+			startTimeTraining)
 
 	# Compute the accuracy of the network
 	accuracies = computePerformance(
 				currentIndex, 
 				updateInterval,
-				spikesEvolution, 
+				spikesEvolution,
 				labelsArray[currentIndex - updateInterval :
-					currentIndex], 
-				assignments, 
-				accuracies
-			)
+				currentIndex], 
+				assignements, 
+				accuracies)
 
-
-	if mode == "train": 
-
+	if mode == "train":
+		
 		# Update the output classification
-		updateAssignments(
+		updateAssignements(
 				currentIndex, 
-				updateInterval,
+				updateInterval, 
 				networkList[-1], 
 				spikesEvolution, 
 				labelsArray[currentIndex - updateInterval :
-					currentIndex], 
-				assignments
-		)
+				currentIndex], 
+				assignements)
 
 	# Reset input intensity and increase the image index by 1
 	return startInputIntensity, currentIndex + 1, accuracies	
+
+
+
 
 
 
@@ -154,18 +166,19 @@ def printProgress(currentIndex, printInterval, startTimeImage,
 		of the training.
 
 	'''
+	
 
 	# End of print interval?
 	if currentIndex % printInterval == 0 and currentIndex > 0:
-
+			
 		# Measure the current time instant
 		currentTime = timeit.default_timer()
-			
+
 		# Format the output message and print it
 		progressString = "Analyzed images: " + str(currentIndex) + \
 			". Time required for a single image: " + str(currentTime
 			- startTimeImage) + "s. Total elapsed time: " + \
-			seconds2hhmmss(timeit.default_timer() - 
+			seconds2hhmmss(timeit.default_timer() -
 			startTimeTraining)
 
 		print(progressString)
@@ -173,8 +186,11 @@ def printProgress(currentIndex, printInterval, startTimeImage,
 
 
 
-def computePerformance(currentIndex, updateInterval, spikesEvolution, 
-			labelsSequence, assignments, accuracies):
+
+
+def computePerformance(currentIndex, updateInterval ,
+			spikesEvolution, labelsSequence, assignements, 
+			accuracies):
 
 	'''
 	Compute the network performance.
@@ -211,33 +227,32 @@ def computePerformance(currentIndex, updateInterval, spikesEvolution,
 	# End of update interval?
 	if currentIndex % updateInterval == 0 and currentIndex > 0:
 
+
 		# Initialize the maximum count to 0
 		maxCount = np.zeros(updateInterval)
 
 		# Initialize the output classification
 		classification = -1*np.ones(updateInterval)
-
-
+		
 		for label in range(10):
 
 			# Add the spikes count associated to the current label
-			spikesCount = np.sum(spikesEvolution[:, assignments ==
+			spikeCount = np.sum(spikesEvolution[:, assignements ==
 					label], axis = 1)
 
 			# Find where the spikes count is grater than the maximum
-			whereMaxSpikes = spikesCount > maxCount
+			whereMaxSpikes = spikeCount > maxCount
 
 			# Associate the instants to the current label
 			classification[whereMaxSpikes] = label
 
 			# Update the maximum number of spikes for the label
-			maxCount[whereMaxSpikes] = spikesCount[whereMaxSpikes]
+			maxCount[whereMaxSpikes] = spikeCount[whereMaxSpikes]
 
 		# Compute the accuracy and add it to the list of accuracies
 		accuracies = updateAccuracy(classification, labelsSequence, accuracies)
 
 	return accuracies
-
 
 
 
@@ -285,8 +300,11 @@ def updateAccuracy(classification, labelsSequence, accuracies):
 
 
 
-def updateAssignments(currentIndex, updateInterval, lastLayerSize,
-			spikesEvolution, labelsSequence, assignments):
+
+
+
+def updateAssignements(currentIndex, updateInterval, lastLayerSize,
+			spikesEvolution, labelsSequence, assignements):
 
 	'''
 	Update the output classification.
@@ -318,7 +336,7 @@ def updateAssignments(currentIndex, updateInterval, lastLayerSize,
 
 		# Initialize the maximum count to 0
 		maxCount = np.zeros(lastLayerSize)
-
+		
 		for label in range(10):
 
 			# Add spikes for the instants associated to the label
@@ -328,8 +346,8 @@ def updateAssignments(currentIndex, updateInterval, lastLayerSize,
 			# Find where spikes count exceeds current maximum
 			whereMaxSpikes = labelSpikes > maxCount
 
-			# Update the assignments	
-			assignments[whereMaxSpikes] = label
+			# Update the assignements	
+			assignements[whereMaxSpikes] = label
 
 			# Update the maximum count for the current label
 			maxCount[whereMaxSpikes] = labelSpikes[whereMaxSpikes]
