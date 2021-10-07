@@ -188,9 +188,8 @@ def printProgress(currentIndex, printInterval, startTimeImage,
 
 
 
-def computePerformance(currentIndex, updateInterval ,
-			spikesEvolution, labelsSequence, assignements, 
-			accuracies):
+def computePerformance(currentIndex, updateInterval, spikesEvolution, 
+			labelsSequence, assignements, accuracies):
 
 	'''
 	Compute the network performance.

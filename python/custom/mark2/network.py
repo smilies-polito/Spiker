@@ -6,7 +6,8 @@ from synapses import stdp
 
 import matplotlib.pyplot as plt
 
-def run(network, networkList, spikesTrains, dt_tauDict, stdpDict, mode):
+def run(network, networkList, spikesTrains, dt_tauDict, stdpDict, mode,
+	constSums):
 
 
 	'''
@@ -55,6 +56,12 @@ def run(network, networkList, spikesTrains, dt_tauDict, stdpDict, mode):
 		# Update the output spikes counter
 		spikesCounter[0][network["excLayer" +
 			str(lastLayerIndex)]["outSpikes"][0]] += 1
+
+
+	if mode == "train":
+
+		# Normalize the weights
+		normalizeNetWeights(network, networkList, constSums)
 
 
 	return spikesCounter
@@ -124,11 +131,11 @@ def updateNetwork(networkList, network, inputSpikes, dt_tauDict, stdpDict,
 
 
 
-def rest(network, networkList, restingSteps, imageSize, dt_tauDict, stdpDict,
-		mode):
+
+def normalizeNetWeights(network, networkList, constSums):
 
 	'''
-	Bring the network into a rest state.
+	Normalize the weights of all the layers in the network.
 
 	INPUT:
 
@@ -138,23 +145,50 @@ def rest(network, networkList, restingSteps, imageSize, dt_tauDict, stdpDict,
 		list corresponds to a layer and identifies the number of nodes
 		in that layer.
 
-		3) restingSteps: time duration of the resting period expressed
-		in trainingSteps.
+		3) constSums: NumPy array. Each element represents the constant
+		value corresponding to the sum of all the weights of a single 
+		neuron in the specific layer.
+		
+	'''
+	
+	for layer in range(1, len(networkList)):
 
-		4) imageSize: total number of pixels composing the image.
+		# Normalize the weights of the synapses
+		normalizeLayerWeights(network, "exc2exc" + str(layer),
+					constSums[layer - 1])
 
-		5) dt_tauDict: dictionary containing the exponential constants
-		of the excitatory and inhibitory membrane and of the 
-		homeostasis parameter theta .
 
-		6) stdpDict: dictionary containing the STDP parameters.
 
-		7) mode: string. It can be "train" or "test".
+
+
+
+def normalizeLayerWeights(network, synapseName, constSum):
+
+	'''
+	Normalize the weights of the given layer.
+
+	INPUT:
+
+		1) network: dictionary of the network.
+
+
+		2) synapseName: string reporting the name of the connection. The
+		standard name is "exc2exc" + the index of the layer.
+
+		3) constSum: constant value corresponding to the sum of all the
+		weights of a single neuron.
 
 	'''
 
-	# Reset to zero the spikes trains
-	spikesTrains = np.zeros((restingSteps, imageSize)).astype(bool)
+	# Compute the sum of the weights for each neuron
+	weightsSum = np.sum(network[synapseName]["weights"], 
+			axis = 1, keepdims = True)
 
-	# Run the network for a resting period 
-	run(network, networkList, spikesTrains, dt_tauDict, stdpDict, mode)
+	# Set to one the zero sums to avoid division by 0
+	weightsSum[weightsSum == 0] = 1.	
+
+	# Compute the normalization factor
+	normFactor = constSum / weightsSum
+
+	# Normalize the weights
+	network[synapseName]["weights"][:] *= normFactor
