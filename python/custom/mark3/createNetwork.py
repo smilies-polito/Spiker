@@ -2,7 +2,7 @@ import numpy as np
 import sys
 
 
-def createNetwork(networkList, weightFilename, thetaFilename, mode,
+def createNetwork(networkList, weightFilename, thresholdFilename, mode,
 			excDictList, scaleFactors, inh2excWeights):
 
 	'''
@@ -43,14 +43,14 @@ def createNetwork(networkList, weightFilename, thetaFilename, mode,
 
 		if mode == "test":
 			weightFile = weightFilename + str(layer) + ".npy"
-			thetaFile = thetaFilename + str(layer) + ".npy"
+			thresholdFile = thresholdFilename + str(layer) + ".npy"
 		else:
 			weightFile = None
-			thetaFile = None
+			thresholdFile = None
 
 		# Create the excitatory layer
 		createLayer(network, "exc", excDictList[layer-1], networkList,
-				layer, mode, thetaFile)
+				layer, mode, thresholdFile)
 
 		# Create the excitatory to excitatory connection
 		intraLayersSynapses(network, "exc2exc", mode, networkList,
@@ -164,7 +164,7 @@ def initializeThreshold(mode, thresholdFile, initDict, numberOfNeurons):
 	elif mode == "test":
 
 		# Load thresholds values from file
-		with open(threhsoldFile, 'rb') as fp: 
+		with open(thresholdFile, 'rb') as fp: 
 			return np.load(fp)
 	else:
 

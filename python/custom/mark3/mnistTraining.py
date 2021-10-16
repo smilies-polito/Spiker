@@ -68,9 +68,12 @@ while currentIndex < numberOfCycles:
 # Create the directory in which to store the parameters and the performance
 createDir(paramDir)
 
+
+# Store the performance of the network into a text file
+storePerformace(startTimeTraining, accuracies, trainPerformanceFile)
+
 # Store the network parameters into NumPy files
 storeParameters(network, networkList, assignments, weightFilename, 
  		thresholdFilename, assignmentsFile)
  
-# Store the performance of the network into a text file
-storePerformace(startTimeTraining, accuracies, trainPerformanceFile)
+

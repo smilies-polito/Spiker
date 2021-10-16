@@ -28,7 +28,7 @@ def imgToSpikeTrain(image, dt, trainingSteps, inputIntensity):
 		time step. Each column corresponds to a pixel.
 	'''
 
-	# Create bidimensional array of random values
+	# Create two-dimensional array of random values
 	rng = np.random.default_rng() 
 	random2D = rng.uniform(size = (trainingSteps, image.shape[0]))
 
@@ -67,4 +67,5 @@ def poisson(image, dt, random2D, inputIntensity):
 	# Convert dt from milliseconds to seconds
 	dt = dt*1e-3
 
+	# Create the boolean array of spikes with Poisson distribution
 	return ((image*inputIntensity/8.0)*dt)[:] > random2D

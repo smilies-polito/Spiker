@@ -18,8 +18,6 @@ from runParameters import *
 imgArray, labelsArray = loadDataset(testImages, testLabels)
 
 
-
-
 # Create the network data structure
 network = createNetwork(networkList, weightFilename, thetaFilename, mode, 
 			excDictList, inhDictList, scaleFactors, exc2inhWeights,

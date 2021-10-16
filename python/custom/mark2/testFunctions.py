@@ -122,13 +122,14 @@ def singleImageTest(trainDuration, restTime, dt, image,	network, networkList,
 			labelsArray, 
 			assignments, 
 			startInputIntensity, 
-			mode
+			mode,
+			constSums
 			)
 
 
 	# Bring the network into a rest state
 	rest(network, networkList, restingSteps, image.shape[0], dt_tauDict,
-		None, mode)
+		None, mode, constSums)
 
 
 	return inputIntensity, currentIndex, accuracies
@@ -141,7 +142,7 @@ def singleImageTest(trainDuration, restTime, dt, image,	network, networkList,
 def test(network, networkList, spikesTrains, dt_tauDict, countThreshold,
 	inputIntensity, currentIndex, spikesEvolution, updateInterval,
 	printInterval, startTimeImage, startTimeTraining, accuracies,
-	labelsArray, assignments, startInputIntensity, mode):
+	labelsArray, assignments, startInputIntensity, mode, constSums):
 
 	'''
 	Test the network with the spikes sequences associated to the pixels.
@@ -215,7 +216,7 @@ def test(network, networkList, spikesTrains, dt_tauDict, countThreshold,
 	
 	# Train the network over the pixels' spikes train
 	spikesCounter = run(network, networkList, spikesTrains, dt_tauDict,
-				None, mode)
+				None, mode, constSums)
 
 	if np.sum(spikesCounter) < countThreshold:
 
@@ -243,3 +244,40 @@ def test(network, networkList, spikesTrains, dt_tauDict, countThreshold,
 			)
 
 	return inputIntensity, currentIndex, accuracies
+
+
+def rest(network, networkList, restingSteps, imageSize, dt_tauDict, stdpDict,
+		mode, constSums):
+
+	'''
+	Bring the network into a rest state.
+
+	INPUT:
+
+		1) network: dictionary of the network.
+
+		2) networkList: list of integer numbers. Each element of the 
+		list corresponds to a layer and identifies the number of nodes
+		in that layer.
+
+		3) restingSteps: time duration of the resting period expressed
+		in trainingSteps.
+
+		4) imageSize: total number of pixels composing the image.
+
+		5) dt_tauDict: dictionary containing the exponential constants
+		of the excitatory and inhibitory membrane and of the 
+		homeostasis parameter theta .
+
+		6) stdpDict: dictionary containing the STDP parameters.
+
+		7) mode: string. It can be "train" or "test".
+
+	'''
+
+	# Reset to zero the spikes trains
+	spikesTrains = np.zeros((restingSteps, imageSize)).astype(bool)
+
+	# Run the network for a resting period 
+	run(network, networkList, spikesTrains, dt_tauDict, stdpDict, mode,
+		constSums)

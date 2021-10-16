@@ -4,7 +4,7 @@ import timeit
 
 from mnist import loadDataset
 from createNetwork import createNetwork
-from testFunctions import singleImageTest
+from runFunctions import singleImageRun
 
 from utils import createDir
 from storeParameters import storeParameters, storePerformace
@@ -30,16 +30,16 @@ numberOfCycles = imgArray.shape[0]
 
 
 
-# Measure the training starting time
-startTimeTraining = timeit.default_timer()
+# Measure the run starting time
+startTimeRun = timeit.default_timer()
 
 
 while currentIndex < numberOfCycles:
 
 	
-	# Complete test cycle over a single image
+	# Complete cycle over a single image
 	inputIntensity, currentIndex, accuracies = \
-		singleImageTest(
+		singleImageRun(
 			trainDuration, 
 			restTime, 
 			imgArray[currentIndex], 
@@ -53,7 +53,7 @@ while currentIndex < numberOfCycles:
 			spikesEvolution, 
 			updateInterval,
 			printInterval, 
-			startTimeTraining, 
+			startTimeRun, 
 			accuracies, 
 			labelsArray,
 			assignments, 
@@ -62,5 +62,16 @@ while currentIndex < numberOfCycles:
 			constSum
 		)
 
+
+if mode == "train":
+
+	# Create the directory in which to store the parameters and the performance
+	createDir(paramDir)
+
+	# Store the network parameters into NumPy files
+	storeParameters(network, networkList, assignments, weightFilename, 
+			thetaFilename, assignmentsFile)
+
+
 # Store the performance of the network into a text file
-storePerformace(startTimeTraining, accuracies, testPerformanceFile)
+storePerformace(startTimeRun, accuracies, trainPerformanceFile)

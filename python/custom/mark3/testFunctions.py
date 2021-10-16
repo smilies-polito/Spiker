@@ -122,13 +122,13 @@ def singleImageTest(trainDuration, restTime, dt, image,	network, networkList,
 			labelsArray, 
 			assignments, 
 			startInputIntensity, 
-			mode
+			mode,
+			constSums
 			)
 
 
 	# Bring the network into a rest state
-	rest(network, networkList, restingSteps, image.shape[0], dt_tauDict,
-		None, mode)
+	rest(network, networkList)
 
 
 	return inputIntensity, currentIndex, accuracies
@@ -141,7 +141,7 @@ def singleImageTest(trainDuration, restTime, dt, image,	network, networkList,
 def test(network, networkList, spikesTrains, dt_tauDict, countThreshold,
 	inputIntensity, currentIndex, spikesEvolution, updateInterval,
 	printInterval, startTimeImage, startTimeTraining, accuracies,
-	labelsArray, assignments, startInputIntensity, mode):
+	labelsArray, assignments, startInputIntensity, mode, constSums):
 
 	'''
 	Test the network with the spikes sequences associated to the pixels.
@@ -215,7 +215,7 @@ def test(network, networkList, spikesTrains, dt_tauDict, countThreshold,
 	
 	# Train the network over the pixels' spikes train
 	spikesCounter = run(network, networkList, spikesTrains, dt_tauDict,
-				None, mode)
+				None, mode, constSums)
 
 	if np.sum(spikesCounter) < countThreshold:
 
@@ -243,3 +243,25 @@ def test(network, networkList, spikesTrains, dt_tauDict, countThreshold,
 			)
 
 	return inputIntensity, currentIndex, accuracies
+
+
+
+def rest(network, networkList):
+
+	'''
+	Bring the network into a rest state.
+
+	INPUT:
+
+		1) network: dictionary of the network.
+
+		2) networkList: list of integer numbers. Each element of the 
+		list corresponds to a layer and identifies the number of nodes
+		in that layer.
+	'''
+
+	for layer in range(1, len(networkList)):
+
+		# Reset the membrane potential to the rest value
+		network["excLayer" + str(layer)]["v"][0][:] = network["excLayer"
+			+ str(layer)]["vRest"]

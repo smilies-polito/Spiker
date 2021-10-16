@@ -12,7 +12,7 @@ from files import *
 # List of layer sizes
 networkList = [784, 400]
 
-mode = "train"
+mode = "test"
 
 
 # Training and resting periods in milliseconds
