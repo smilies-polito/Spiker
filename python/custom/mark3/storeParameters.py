@@ -4,7 +4,7 @@ from utils import seconds2hhmmss
 
 
 def storeParameters(network, networkList, assignments, weightFilename,
-			thetaFilename, assignmentsFile):
+			thresholdFilename, assignmentsFile):
 
 	'''
 	Store the parameters of the network inside NumPy files.
@@ -24,8 +24,8 @@ def storeParameters(network, networkList, assignments, weightFilename,
 		each layer. The function appends the number of the current 
 		layer to it.
 
-		5) thetaFilename: string. Root of the theta file name of
-		each layer. The function appends the number of the current 
+		5) thresholdFilename: string. Root of the threshold file name
+		of each layer. The function appends the number of the current
 		layer to it.
 
 		6) assignmentsFile: string. Complete name of the file in which
@@ -40,7 +40,7 @@ def storeParameters(network, networkList, assignments, weightFilename,
 			network["exc2exc" + str(layer)]["weights"])
 
 		# Store the dynamic homeostasis of the current layer
-		storeArray(thetaFilename + str(layer) + ".npy", 
+		storeArray(thresholdFilename + str(layer) + ".npy", 
 			network["excLayer" + str(layer)]["vThresh"])
 
 

@@ -75,5 +75,3 @@ storePerformace(startTimeTraining, accuracies, trainPerformanceFile)
 # Store the network parameters into NumPy files
 storeParameters(network, networkList, assignments, weightFilename, 
  		thresholdFilename, assignmentsFile)
- 
-

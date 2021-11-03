@@ -8,4 +8,4 @@ def createParamDir(dirName):
 	cmdString += "fi; "
 	cmdString += "mkdir " + dirName + "; "
 	
-	sp.Popen(cmdString, shell=True, executable="/bin/bash")
+	sp.run(cmdString, shell=True, executable="/bin/bash")

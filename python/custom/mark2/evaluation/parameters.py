@@ -24,8 +24,8 @@ inhDict = {
 stdpDict = {
 
 	# Learning rates
-	"eta_pre"	: 1e-4,
-	"eta_post"	: - 1e-3,
+	"eta_pre"	: 1e-3,
+	"eta_post"	: - 1e-4,
 
 	# Time constants
 	"ltp_tau"	: 80,		# ms

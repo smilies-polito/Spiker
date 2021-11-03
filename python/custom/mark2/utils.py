@@ -23,7 +23,7 @@ def createDir(dirName):
 	cmdString += "mkdir " + dirName + "; "
 	
 	# Run the complete bash command
-	sp.Popen(cmdString, shell=True, executable="/bin/bash")
+	sp.run(cmdString, shell=True, executable="/bin/bash")
 
 
 
