@@ -1,7 +1,0 @@
-# compile vhdl design source files
-vhdl xil_defaultlib  \
-"../../../../../../vhd/mux4to1.vhd" \
-"../../../../../../tb/mux4to1_tb.vhd" \
-
-# Do not sort compile order
-nosort

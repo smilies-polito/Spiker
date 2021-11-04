@@ -1,7 +1,0 @@
-Running: xsim.dir/cmp_gt_tb_behav/xsimk -simmode gui -wdb cmp_gt_tb_behav.wdb -simrunnum 0 -socket 42933
-Design successfully loaded
-Design Loading Memory Usage: 33568 KB (Peak: 33568 KB)
-Design Loading CPU Usage: 10 ms
-Simulation completed
-Simulation Memory Usage: 119404 KB (Peak: 172836 KB)
-Simulation CPU Usage: 10 ms

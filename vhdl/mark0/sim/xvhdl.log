@@ -1,2 +1,2 @@
-INFO: [VRFC 10-163] Analyzing VHDL file "/home/alessio/Documents/Poli/Dottorato/progetti/snn/spiker/vhdl/mark0/tb/add_sub_tb.vhd" into library work
-INFO: [VRFC 10-3107] analyzing entity 'add_sub_tb'
+INFO: [VRFC 10-163] Analyzing VHDL file "/home/alessio/Documents/Poli/Dottorato/progetti/snn/spiker/vhdl/mark0/vhd/shifter.vhd" into library work
+INFO: [VRFC 10-3107] analyzing entity 'shifter'
