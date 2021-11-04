@@ -8,7 +8,7 @@ entity shifter is
 	generic(
 		-- parallelism
 		N		: integer := 8;
-		
+	
 		-- shift
 		shift		: integer := 1	
 	);
