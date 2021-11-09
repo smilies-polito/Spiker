@@ -13,7 +13,7 @@ entity neuron_cu is
 		mask_neuron	: in std_logic;
 		input_spike	: in std_logic;
 
-		-- control input
+		-- input from datapath
 		exceed_v_th	: in std_logic;
 
 		-- control output
@@ -35,6 +35,7 @@ end entity neuron_cu;
 
 architecture behaviour of neuron_cu is
 
+
 	type states is (
 		reset,
 		idle,
@@ -50,8 +51,14 @@ architecture behaviour of neuron_cu is
 	);
 
 	signal present_state, next_state	: states;
+	signal masked_spike			: std_logic;
 
 begin
+
+
+	masked_spike <= input_spike and not mask_neuron;
+
+
 
 	-- state transition
 	state_transition	: process(clk, rst_n)
@@ -74,7 +81,9 @@ begin
 
 
 	-- state evaluation
-	state_evaluation	: process(present_state)
+	state_evaluation	: process(present_state, exp_exc_start,
+					exceed_v_th, rest_inh_start, 
+					input_spike, masked_spike)
 	begin
 
 		-- default case
@@ -94,7 +103,7 @@ begin
 					then
 						next_state <= fire;
 					else
-						next_state <= pause;
+						next_state <= exp_decay1;
 					end if;
 				else
 					if rest_inh_start = '1'
@@ -213,7 +222,7 @@ begin
 			when inh_spike =>
 				if rest_inh_start = '1'
 				then
-					if input_spike = '1'
+					if masked_spike = '1'
 					then
 						next_state <= inh_spike;
 					else
@@ -227,7 +236,7 @@ begin
 			when no_inh_spike =>
 				if rest_inh_start = '1'
 				then
-					if input_spike = '1'
+					if masked_spike = '1'
 					then
 						next_state <= inh_spike;
 					else

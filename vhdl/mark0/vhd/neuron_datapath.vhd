@@ -4,13 +4,13 @@ use ieee.numeric_std.all;
 
 
 entity neuron_datapath is
-	
+
 	generic(
 		-- parallelism
-		N		: integer := 8;
+		N			: integer := 8;
 
-		-- exponential shift
-		shift		: integer := 1		
+		-- shift amount
+		shift			: integer := 1
 	);
 
 	port(
@@ -33,15 +33,15 @@ entity neuron_datapath is
 		v_en		: in std_logic;
 		
 		-- output
-		exceed_v_th	: out std_logic
+		exceed_v_th	: out std_logic		
 	);
 
 end entity neuron_datapath;
 
 
-architecture behaviour of neuron_datapath is
+architecture test of neuron_datapath is
 
-
+	
 	signal v_update		: signed(N-1 downto 0);
 	signal update		: signed(N-1 downto 0);
 	signal prev_value	: signed(N-1 downto 0);
@@ -177,6 +177,7 @@ architecture behaviour of neuron_datapath is
 
 
 begin
+
 
 	v_rest_shifter	: shifter
 		generic map(
@@ -383,4 +384,4 @@ begin
 
 	
 
-end architecture behaviour;
+end architecture test;
