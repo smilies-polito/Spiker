@@ -52,10 +52,12 @@ architecture behaviour of neuron_cu_tb is
 	);
 
 	signal present_state, next_state	: states;
+	signal masked_spike			: std_logic;
 
 begin
 
 
+	masked_spike <= input_spike and not mask_neuron;
 
 	-- clock
 	clock_gen : process
@@ -131,9 +133,9 @@ begin
 		input_spike	<= '0';         -- 110 ns
 		wait for 12 ns;			          
 		input_spike	<= '1';         -- 122 ns
-		wait for 12 ns;			          
-		input_spike	<= '0';         -- 134 ns
-		wait for 60 ns;
+		wait for 24 ns;			          
+		input_spike	<= '0';         -- 146 ns
+		wait for 48 ns;
 		input_spike	<= '1';         -- 194 ns
 		wait for 12 ns;			          
 		input_spike	<= '0';         -- 206 ns
@@ -185,6 +187,20 @@ begin
 	end process exceed_v_th_gen;
 
 
+	-- mask_neuron
+	mask_neuron_gen : process
+	begin
+		mask_neuron	<= '0';		-- 0 ns
+		wait for 134 ns;
+		mask_neuron	<= '1';		-- 134 ns
+		wait for 12 ns;
+		mask_neuron	<= '0';		-- 146 ns
+		wait for 48 ns;
+		mask_neuron	<= '1';		-- 194 ns
+		wait;
+	end process mask_neuron_gen;
+
+
 
 
 
@@ -219,7 +235,7 @@ begin
 	-- state evaluation
 	state_evaluation	: process(present_state, exp_exc_start,
 					exceed_v_th, rest_inh_start, 
-					input_spike)
+					input_spike, masked_spike)
 	begin
 
 		-- default case
@@ -358,7 +374,7 @@ begin
 			when inh_spike =>
 				if rest_inh_start = '1'
 				then
-					if input_spike = '1'
+					if masked_spike = '1'
 					then
 						next_state <= inh_spike;
 					else
@@ -372,7 +388,7 @@ begin
 			when no_inh_spike =>
 				if rest_inh_start = '1'
 				then
-					if input_spike = '1'
+					if masked_spike = '1'
 					then
 						next_state <= inh_spike;
 					else
