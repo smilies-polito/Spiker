@@ -3,43 +3,48 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 
-entity neuron_datapath is
+entity neuron_datapath_tb is
+end entity neuron_datapath_tb;
+
+
+architecture test of neuron_datapath_tb is
+
+
 	
-	generic(
-		-- parallelism
-		N		: integer := 8;
+	-- parallelism
+	constant N		: integer := 8;
 
-		-- exponential shift
-		shift		: integer := 1		
-	);
+	-- exponential shift
+	constant shift		: integer := 1;
 
-	port(
-		-- input parameters
-		v_th_0		: in signed(N-1 downto 0);
-		v_rest		: in signed(N-1 downto 0);
-		v_reset		: in signed(N-1 downto 0);
-		v_th_plus	: in signed(N-1 downto 0);
-		inh_weight	: in signed(N-1 downto 0);
-		exc_weight	: in signed(N-1 downto 0);
+	-- model parameters
+	constant v_th_0_int	: integer := -52;	
+	constant v_rest_int	: integer := -65;	
+	constant v_reset_int	: integer := -60;	
+	constant v_th_plus_int	: integer := 1;	
+	constant inh_weight_int	: integer := -15;	
+	constant exc_weight_int	: integer := 3;	
 
-		-- input controls
-		clk		: in std_logic;
-		v_update_sel	: in std_logic_vector(1 downto 0);
-		v_or_v_th	: in std_logic;
-		add_or_sub	: in std_logic;
-		update_or_rest	: in std_logic;
-		v_reset_sel	: in std_logic;
-		v_th_en		: in std_logic;
-		v_en		: in std_logic;
-		
-		-- output
-		exceed_v_th	: out std_logic
-	);
+	-- input parameters
+	signal v_th_0		: signed(N-1 downto 0);
+	signal v_rest		: signed(N-1 downto 0);
+	signal v_reset		: signed(N-1 downto 0);
+	signal v_th_plus	: signed(N-1 downto 0);
+	signal inh_weight	: signed(N-1 downto 0);
+	signal exc_weight	: signed(N-1 downto 0);
 
-end entity neuron_datapath;
-
-
-architecture behaviour of neuron_datapath is
+	-- input controls
+	signal clk		: std_logic;
+	signal v_update_sel	: std_logic_vector(1 downto 0);
+	signal v_or_v_th	: std_logic;
+	signal add_or_sub	: std_logic;
+	signal update_or_rest	: std_logic;
+	signal v_reset_sel	: std_logic;
+	signal v_th_en		: std_logic;
+	signal v_en		: std_logic;
+	
+	-- output
+	signal exceed_v_th	: std_logic;
 
 
 	signal v_update		: signed(N-1 downto 0);
@@ -177,6 +182,115 @@ architecture behaviour of neuron_datapath is
 
 
 begin
+
+	-- model parameters binary conversion
+	v_th_0		<= to_signed(v_th_0_int, N);
+	v_rest		<= to_signed(v_rest_int, N);
+	v_reset		<= to_signed(v_reset_int, N);
+	v_th_plus	<= to_signed(v_th_plus_int, N);
+	inh_weight	<= to_signed(inh_weight_int, N);
+	exc_weight	<= to_signed(exc_weight_int, N);
+
+
+
+	clock			: process
+	begin
+		clk		<= '0';
+		wait for 6 ns;
+		clk		<= '1';
+		wait for 6 ns;
+	end process clock;
+
+
+
+	v_update_sel_process	: process
+	begin
+
+		v_update_sel	<= "00";
+		wait for 20 ns;
+		v_update_sel	<= "01";
+		wait for 10 ns;
+		v_update_sel	<= "10";
+		wait for 10 ns;
+		v_update_sel	<= "11";
+		wait;
+
+	end process v_update_sel_process;
+
+
+
+	v_or_v_th_process	: process
+	begin
+
+		v_or_v_th	<= '0';
+		wait for 50 ns;
+		v_or_v_th	<= '1';
+		wait;
+
+	end process v_or_v_th_process;
+
+
+	add_or_sub_process	: process
+	begin
+
+		add_or_sub	<= '0';
+		wait for 60 ns;
+		add_or_sub	<= '1';
+		wait;
+
+	end process add_or_sub_process;
+
+
+	update_or_rest_process	: process
+	begin
+
+		update_or_rest	<= '0';
+		wait for 70 ns;
+		update_or_rest	<= '1';
+		wait;
+
+	end process update_or_rest_process;
+
+	v_reset_sel_process	: process
+	begin
+
+		v_reset_sel	<= '0';
+		wait for 80 ns;
+		v_reset_sel	<= '1';
+		wait;
+
+	end process v_reset_sel_process;
+
+
+	v_th_en_process	: process
+	begin
+
+		v_th_en	<= '1';
+		wait for 10 ns;
+		v_th_en	<= '0';
+		wait for 80 ns;
+		v_th_en	<= '1';
+		wait;
+
+	end process v_th_en_process;
+
+
+
+
+	v_en_process	: process
+	begin
+
+		v_en	<= '1';
+		wait for 10 ns;
+		v_en	<= '0';
+		wait for 90 ns;
+		v_en	<= '1';
+		wait;
+
+	end process v_en_process;
+
+
+
 
 	v_rest_shifter	: shifter
 		generic map(
@@ -383,4 +497,4 @@ begin
 
 	
 
-end architecture behaviour;
+end architecture test;
