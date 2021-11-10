@@ -13,3 +13,6 @@ __pycache__
 
 # Numpy arrays
 *.npy
+
+# Vivado simulation files
+sim/
