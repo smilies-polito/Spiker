@@ -1,6 +1,8 @@
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
+use std.textio.all;
+use ieee.std_logic_textio.all;
 
 
 entity neuron_cu_dp_tb is
@@ -11,10 +13,10 @@ end entity neuron_cu_dp_tb;
 architecture behaviour of neuron_cu_dp_tb is
 
 	-- parallelism
-	constant N		: integer := 8;
+	constant N		: integer := 16;
 
 	-- exponential shift
-	constant shift		: integer := 1;
+	constant shift		: integer := 10;
 
 	-- model parameters
 	constant v_th_0_int	: integer := -52;	
@@ -69,6 +71,10 @@ architecture behaviour of neuron_cu_dp_tb is
 
 	-- output
 	signal out_spike	: std_logic;
+
+
+	-- file
+	signal w_en		: std_logic;
 
 
 	type states is (
@@ -243,31 +249,19 @@ begin
 	exp_exc_start_gen : process
 	begin
 		exp_exc_start	<= '0';		-- 0 ns
-		wait for 26 ns;			
-		exp_exc_start	<= '1';		-- 26 ns
-		wait for 12 ns;			          
-		exp_exc_start	<= '0';         -- 38 ns
-		wait for 12 ns;			          
-		exp_exc_start	<= '1';         -- 50 ns
-		wait for 60 ns;			          
-		exp_exc_start	<= '0';         -- 110 ns
-		wait for 60 ns;
-		exp_exc_start	<= '1';         -- 170 ns
-		wait for 12 ns;
-		exp_exc_start	<= '0';         -- 182 ns
-		wait for 12 ns;
-		exp_exc_start	<= '1';         -- 194 ns
-		wait for 36 ns;
-		exp_exc_start	<= '0';         -- 230 ns
-		wait for 24 ns;
-		exp_exc_start	<= '1';		-- 254 ns
-		wait for 12 ns;
-		exp_exc_start	<= '0';         -- 266 ns
-		wait for 36 ns;
-		exp_exc_start	<= '1';		-- 302 ns
-		wait for 12 ns;
-		exp_exc_start	<= '0';         -- 314 ns
+		wait for 26 ns;
+
+		for i in 0 to 10
+		loop		
+			exp_exc_start	<= '1';	-- 26 ns
+			wait for 12 ns;			          
+			exp_exc_start	<= '0';	-- 38 ns
+			wait for 24 ns;	
+		end loop;
+
+		exp_exc_start	<= '0';
 		wait;
+
 	end process exp_exc_start_gen;
 
 
@@ -275,73 +269,17 @@ begin
 	input_spike_gen: process
 	begin
 		input_spike	<= '0';		-- 0 ns	
-		wait for 50 ns;			
-		input_spike	<= '1';		-- 50 ns
-		wait for 12 ns;			          
-		input_spike	<= '0';         -- 62 ns
-		wait for 12 ns;			          
-		input_spike	<= '1';         -- 74 ns
-		wait for 12 ns;			          
-		input_spike	<= '0';         -- 86 ns
-		wait for 12 ns;			          
-		input_spike	<= '1';         -- 98 ns
-		wait for 12 ns;			          
-		input_spike	<= '0';         -- 110 ns
-		wait for 12 ns;			          
-		input_spike	<= '1';         -- 122 ns
-		wait for 24 ns;			          
-		input_spike	<= '0';         -- 146 ns
-		wait for 48 ns;
-		input_spike	<= '1';         -- 194 ns
-		wait for 12 ns;			          
-		input_spike	<= '0';         -- 206 ns
-		wait for 12 ns;			          
-		input_spike	<= '1';         -- 218 ns
-		wait for 12 ns;			          
-		input_spike	<= '0';         -- 230 ns	
-		wait for 48 ns;
-		input_spike	<= '1';		-- 278 ns
-		wait for 12 ns;			          
-		input_spike	<= '0';         -- 290 ns	
 		wait;
 	end process input_spike_gen;
 
 
 	-- rest_inh_start
-	rest_inh_start_gen : process
-	begin
-		rest_inh_start	<= '0';		-- 0 ns
-		wait for 110 ns;		
-		rest_inh_start	<= '1';		-- 110 ns
-		wait for 36 ns;			          
-		rest_inh_start	<= '0';         -- 146 ns
-		wait for 132 ns;		
-		rest_inh_start	<= '1';		-- 278 ns
-		wait for 12 ns;
-		rest_inh_start	<= '0';		-- 290 ns
-		wait for 48 ns;
-		rest_inh_start	<= '1';		-- 338 ns
-		wait for 12 ns;
-		rest_inh_start	<= '0';		-- 350 ns
-		wait;
-	end process rest_inh_start_gen;
-
-
+	rest_inh_start	<= '0';			-- 0 ns
+	
 
 	-- mask_neuron
-	mask_neuron_gen : process
-	begin
-		mask_neuron	<= '0';		-- 0 ns
-		wait for 134 ns;
-		mask_neuron	<= '1';		-- 134 ns
-		wait for 12 ns;
-		mask_neuron	<= '0';		-- 146 ns
-		wait for 48 ns;
-		mask_neuron	<= '1';		-- 194 ns
-		wait;
-	end process mask_neuron_gen;
-
-
+	mask_neuron	<= '0';			-- 0 ns
+	
 
 	-- model parameters binary conversion
 	v_th_0		<= to_signed(v_th_0_int, N);
@@ -867,6 +805,62 @@ begin
 			-- outpu
 			cmp_out	=> exceed_v_th
 		);
+
+
+
+	write_enable : process
+	begin
+		w_en <= '0';
+		wait for 26 ns;
+		w_en <= '1';
+		wait;
+
+	end process write_enable;
+
+
+
+	file_write : process(clk, w_en)
+
+		file in_spikes_file	: text open write_mode is "inSpikes.txt";
+		file out_spikes_file	: text open write_mode is "outSpikes.txt";
+		file v_file		: text open write_mode is "v.txt";
+		file v_th_file		: text open write_mode is "v_th.txt";
+
+		variable row		: line;
+		variable write_var	: integer;
+
+	begin
+
+		if clk'event and clk = '1'
+		then
+
+			if w_en = '1'
+			then
+
+				-- write the input spike
+				write(row, input_spike, right, 1);
+				writeline(in_spikes_file, row);
+
+				-- write the potential value
+				write_var := to_integer(v);
+				write(row, write_var);
+				writeline(v_file, row);
+
+				-- write the threshold potential
+				write_var := to_integer(v_th);
+				write(row, write_var);
+				writeline(v_th_file, row);
+
+				-- write the output spike
+				write(row, out_spike, right, 1);
+				writeline(out_spikes_file, row);
+
+
+			end if;
+
+		end if;
+
+	end process file_write;
 
 
 end architecture behaviour;
