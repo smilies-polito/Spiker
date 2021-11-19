@@ -13,7 +13,10 @@ entity neurons_layer is
 		N		: integer := 8;
 
 		-- number of neurons in the layer
-		layer_size	: integer := 3
+		layer_size	: integer := 3;
+
+		-- shift during the exponential decay
+		shift		: integer := 1
 	);
 
 	port(
@@ -24,6 +27,7 @@ entity neurons_layer is
 		start1		: in std_logic;		
 		start2		: in std_logic;		
 		rest_en		: in std_logic;
+		input_spike	: in std_logic;
 		neuron_cnt	: in std_logic_vector(N_cnt-1 downto 0);
 
 		-- input parameters
@@ -64,6 +68,25 @@ architecture behaviour of neurons_layer is
 
 
 
+	component generic_and is
+
+		generic(
+			N	: integer := 8		
+		);
+
+		port(
+			-- input
+			and_in	: in std_logic_vector(N-1 downto 0);
+
+			-- output
+			and_out	: out std_logic
+		);
+
+	end component generic_and;
+
+
+
+
 	component neuron is
 
 		generic(
@@ -101,6 +124,73 @@ architecture behaviour of neurons_layer is
 
 
 begin
+
+
+	neuron_decoder	: decoder
+		generic map(
+			N	=> N_cnt		
+		)
+		port map(
+			-- input
+			encoded_in	=> neuron_cnt,
+
+			-- output
+			decoded_out	=> mask_neuron
+		);
+
+	layer_ready_and	: generic_and
+		generic map(
+			N	=> layer_size
+		)
+
+		port map(
+			-- input=>
+			and_in	=> neuron_ready,
+
+			-- outpu=>
+			and_out	=> layer_ready
+		);
+
+
+	neurons	: for i in 0 to layer_size-1
+	generate
+
+		neuron_i	: neuron
+			generic map(
+			-- parallelism
+			N		=> N,
+                                                       
+			-- shift amount    
+			shift		=> shift
+			)                                      
+							       
+			port map(
+				-- input control
+				clk		=> clk,
+				rst_n		=> rst_n,
+				start		=> start,
+				start1		=> start1,
+				start2		=> start2,
+				rest_en		=> rest_en,
+				mask_neuron	=> mask_neuron(i),
+				input_spike	=> input_spike,
+							       
+				-- input parameters
+				v_th_0		=> v_th_0,
+				v_reset		=> v_reset,
+				inh_weight	=> inh_weight,
+				exc_weight	=> exc_weights((i+1)*N-1 downto
+							i*N),
+				v_th_plus	=> v_th_plus,
+							       
+				-- output         
+				out_spike	=> out_spikes(i),
+				neuron_ready	=> neuron_ready(i)
+			);
+
+
+	end generate neurons;
+		
 
 
 
