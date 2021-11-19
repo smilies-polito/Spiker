@@ -25,6 +25,7 @@ architecture behaviour of neuron_cu_tb is
 	signal exceed_v_th	: std_logic;
 
 	-- control output
+	signal no_update	: std_logic;
 	signal update_sel	: std_logic_vector(1 downto 0);
 	signal v_or_v_th	: std_logic;
 	signal add_or_sub	: std_logic;
@@ -460,6 +461,7 @@ begin
 	begin
 
 		-- default values
+		no_update	<= '0';
 		update_sel	<= "00";
 		v_or_v_th	<= '0';
 		add_or_sub	<= '0';
@@ -505,6 +507,7 @@ begin
 
 			-- no_exc_spike
 			when no_exc_spike	=>
+				no_update	<= '1';
 				update_sel	<= "10";
 				v_en		<= '0';
 				
@@ -515,6 +518,7 @@ begin
 
 			-- no_inh_spike
 			when no_inh_spike	=>
+				no_update	<= '1';
 				update_sel	<= "11";
 				v_en		<= '0';
 

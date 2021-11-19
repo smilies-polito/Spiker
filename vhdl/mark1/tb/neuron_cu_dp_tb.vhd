@@ -3,27 +3,27 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 
-entity neuron_cu_tb is
-end entity neuron_cu_tb;
+entity neuron_cu_dp_tb is
+end entity neuron_cu_dp_tb;
 
 
 
-architecture behaviour of neuron_cu_tb is
+architecture behaviour of neuron_cu_dp_tb is
 
 
 	-- parallelism
-	constant N		: integer := 8;
+	constant N		: integer := 16;
 
 	-- exponential shift
-	constant shift		: integer := 1;
+	constant shift		: integer := 10;
+
 
 	-- model parameters
-	constant v_th_0_int	: integer := 13;	
-	constant v_reset_int	: integer := 5;	
-	constant v_th_plus_int	: integer := 1;	
-	constant inh_weight_int	: integer := -15;	
-	constant exc_weight_int	: integer := 3;
-
+	constant v_th_0_int	: integer 	:= 13*(2**10);	
+	constant v_reset_int	: integer 	:= 5*(2**10);	
+	constant v_th_plus_int	: integer	:= 102; -- 0.1*2^11 rounded	
+	constant inh_weight_int	: integer 	:= -15*(2**10);	
+	constant exc_weight_int	: integer 	:= 3*(2**10);
 
 	-- input parameters
 	signal v_th_0		: signed(N-1 downto 0);
@@ -47,6 +47,7 @@ architecture behaviour of neuron_cu_tb is
 	signal exceed_v_th	: std_logic;
 
 	-- from cu to datapath
+	signal no_update	: std_logic;
 	signal update_sel	: std_logic_vector(1 downto 0);
 	signal v_or_v_th	: std_logic;
 	signal add_or_sub	: std_logic;
@@ -62,6 +63,8 @@ architecture behaviour of neuron_cu_tb is
 
 
 	-- datapath internal signals
+	signal inh_update	: signed(N-1 downto 0);
+	signal exc_update	: signed(N-1 downto 0);
 	signal update		: signed(N-1 downto 0);
 	signal prev_value	: signed(N-1 downto 0);
 	signal update_value	: signed(N-1 downto 0);
@@ -283,6 +286,10 @@ begin
 		start	<= '1';		-- 254 ns
 		wait for 12 ns;
 		start	<= '0';		-- 266 ns
+		wait for 144 ns;
+		start	<= '1';		-- 410 ns
+		wait for 12 ns;
+		start	<= '0';		-- 422 ns
 		wait;
 	end process start_gen;
 
@@ -307,6 +314,10 @@ begin
 		start1	<= '1';		-- 266 ns
 		wait for 60 ns;
 		start1	<= '0';		-- 326 ns
+		wait for 96 ns;
+		start1 <= '1';		-- 422 ns
+		wait for 60 ns;
+		start1 <= '0';		-- 482 ns
 		wait;
 	end process start1_gen;
 
@@ -352,6 +363,10 @@ begin
 		input_spike	<= '1'; -- 266 ns
 		wait for 60 ns;
 		input_spike	<= '0'; -- 326 ns
+		wait for 96 ns;
+		input_spike	<= '1'; -- 422 ns
+		wait for 48 ns;
+		input_spike	<= '0';	-- 470 ns
 		wait;
 	end process input_spike_gen;
 
@@ -373,6 +388,10 @@ begin
 		rest_en	<= '1';		-- 206 ns
 		wait for 12 ns;
 		rest_en <= '0';		-- 218 ns
+		wait for 156 ns;
+		rest_en <= '1';		-- 374 ns
+		wait for 12 ns;
+		rest_en <= '0';		-- 386 ns
 		wait;
 	end process rest_en_gen;
 
@@ -642,6 +661,7 @@ begin
 	begin
 
 		-- default values
+		no_update	<= '0';
 		update_sel	<= "00";
 		v_or_v_th	<= '0';
 		add_or_sub	<= '0';
@@ -687,6 +707,7 @@ begin
 
 			-- no_exc_spike
 			when no_exc_spike	=>
+				no_update	<= '1';
 				update_sel	<= "10";
 				v_en		<= '0';
 				
@@ -697,6 +718,7 @@ begin
 
 			-- no_inh_spike
 			when no_inh_spike	=>
+				no_update	<= '1';
 				update_sel	<= "11";
 				v_en		<= '0';
 
@@ -714,7 +736,7 @@ begin
 
 	end process output_evaluation;
 	
-
+	
 	v_shifter	: shifter
 		generic map(
 			-- parallelism
@@ -732,8 +754,46 @@ begin
 			shifted_out	=> v_shifted
 		);
 
+	
 
-	v_update_mux	: mux4to1
+	inh_mux		: mux2to1	
+		generic map(
+			-- parallelism
+			N	=> N
+		)
+
+		port map(	
+			-- inputs	
+			sel	=> no_update,
+			in0	=> inh_weight,
+			in1	=> (others => '0'),
+
+			-- output
+			mux_out	=> inh_update
+		);
+
+
+
+	exc_mux		: mux2to1	
+		generic map(
+			-- parallelism
+			N	=> N
+		)
+
+		port map(	
+			-- inputs	
+			sel	=> no_update,
+			in0	=> exc_weight,
+			in1	=> (others => '0'),
+
+			-- output
+			mux_out	=> exc_update
+		);
+
+
+
+
+	update_mux	: mux4to1
 		generic map(
 			-- parallelism
 			N	=> N		
@@ -743,8 +803,8 @@ begin
 			sel	=> update_sel,
 			in0	=> v_shifted,
 			in1	=> v_th_plus,
-			in2	=> exc_weight,
-			in3	=> inh_weight,
+			in2	=> exc_update,
+			in3	=> inh_update,
 		                               
 			-- output
 			mux_out	=> update
@@ -869,7 +929,7 @@ begin
 			cmp_out	=> exceed_v_th
 		);
 
-	
+
 
 
 end architecture behaviour;

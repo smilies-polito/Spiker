@@ -33,6 +33,7 @@ architecture test of neuron_datapath_tb is
 
 	-- input controls
 	signal clk		: std_logic;
+	signal no_update	: std_logic;
 	signal update_sel	: std_logic_vector(1 downto 0);
 	signal v_or_v_th	: std_logic;
 	signal add_or_sub	: std_logic;
@@ -45,7 +46,8 @@ architecture test of neuron_datapath_tb is
 	-- output
 	signal exceed_v_th	: std_logic;
 
-
+	signal inh_update	: signed(N-1 downto 0);
+	signal exc_update	: signed(N-1 downto 0);
 	signal update		: signed(N-1 downto 0);
 	signal prev_value	: signed(N-1 downto 0);
 	signal update_value	: signed(N-1 downto 0);
@@ -229,6 +231,8 @@ begin
 		update_sel	<= "10";	-- 30 ns
 		wait for 10 ns;
 		update_sel	<= "11";	-- 40 ns
+		wait for 110 ns;
+		update_sel	<= "10";	-- 150 ns
 		wait;
 
 	end process update_sel_process;
@@ -318,6 +322,24 @@ begin
 	end process v_rst_n_process;
 
 
+	no_update_process	: process
+	begin
+
+		no_update <= '0';		-- 0 ns
+		wait for 130 ns;
+		no_update <= '1';		-- 130 ns
+		wait for 20 ns;
+		no_update <= '0';		-- 150 ns
+		wait for 20 ns;
+		no_update <= '1';		-- 170 ns
+		wait for 20 ns;
+		no_update <= '0';		-- 190 ns
+		wait;
+
+	end process no_update_process;
+
+
+
 	v_shifter	: shifter
 		generic map(
 			-- parallelism
@@ -336,7 +358,44 @@ begin
 		);
 
 
-	v_update_mux	: mux4to1
+
+	inh_mux		: mux2to1	
+		generic map(
+			-- parallelism
+			N	=> N
+		)
+
+		port map(	
+			-- inputs	
+			sel	=> no_update,
+			in0	=> inh_weight,
+			in1	=> (others => '0'),
+
+			-- output
+			mux_out	=> inh_update
+		);
+
+
+
+	exc_mux		: mux2to1	
+		generic map(
+			-- parallelism
+			N	=> N
+		)
+
+		port map(	
+			-- inputs	
+			sel	=> no_update,
+			in0	=> exc_weight,
+			in1	=> (others => '0'),
+
+			-- output
+			mux_out	=> exc_update
+		);
+
+
+
+	update_mux	: mux4to1
 		generic map(
 			-- parallelism
 			N	=> N		
@@ -346,8 +405,8 @@ begin
 			sel	=> update_sel,
 			in0	=> v_shifted,
 			in1	=> v_th_plus,
-			in2	=> exc_weight,
-			in3	=> inh_weight,
+			in2	=> exc_update,
+			in3	=> inh_update,
 		                               
 			-- output
 			mux_out	=> update

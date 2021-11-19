@@ -43,6 +43,7 @@ architecture behaviour of neuron is
 
 
 	-- from control unit towards datapath
+	signal no_update	: std_logic;
 	signal update_sel	: std_logic_vector(1 downto 0);
 	signal v_or_v_th	: std_logic;
 	signal add_or_sub	: std_logic;
@@ -76,6 +77,7 @@ architecture behaviour of neuron is
 
 			-- input controls
 			clk		: in std_logic;
+			no_update	: in std_logic;
 			update_sel	: in std_logic_vector(1 downto 0);
 			v_or_v_th	: in std_logic;
 			add_or_sub	: in std_logic;
@@ -110,6 +112,7 @@ architecture behaviour of neuron is
 			exceed_v_th	: in std_logic;
 
 			-- control output
+			no_update	: out std_logic;
 			update_sel	: out std_logic_vector(1 downto 0);
 			v_or_v_th	: out std_logic;
 			add_or_sub	: out std_logic;
@@ -151,6 +154,7 @@ begin
 
 			-- input controls
 			clk		=> clk,
+			no_update	=> no_update,
 			update_sel	=> update_sel,		
 			v_or_v_th	=> v_or_v_th,	     
 			add_or_sub	=> add_or_sub,	     
@@ -181,6 +185,7 @@ begin
 			exceed_v_th	=> exceed_v_th,
 
 			-- control output
+			no_update	=> no_update,
 			update_sel	=> update_sel,		
 			v_or_v_th	=> v_or_v_th,	     
 			add_or_sub	=> add_or_sub,	     

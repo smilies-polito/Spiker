@@ -19,6 +19,7 @@ entity neuron_cu is
 		exceed_v_th	: in std_logic;
 
 		-- control output
+		no_update	: out std_logic;
 		update_sel	: out std_logic_vector(1 downto 0);
 		v_or_v_th	: out std_logic;
 		add_or_sub	: out std_logic;
@@ -320,6 +321,7 @@ begin
 	begin
 
 		-- default values
+		no_update	<= '0';
 		update_sel	<= "00";
 		v_or_v_th	<= '0';
 		add_or_sub	<= '0';
@@ -365,6 +367,7 @@ begin
 
 			-- no_exc_spike
 			when no_exc_spike	=>
+				no_update	<= '1';
 				update_sel	<= "10";
 				v_en		<= '0';
 				
@@ -375,6 +378,7 @@ begin
 
 			-- no_inh_spike
 			when no_inh_spike	=>
+				no_update	<= '1';
 				update_sel	<= "11";
 				v_en		<= '0';
 

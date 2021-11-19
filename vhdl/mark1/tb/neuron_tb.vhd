@@ -137,6 +137,10 @@ begin
 		start	<= '1';		-- 254 ns
 		wait for 12 ns;
 		start	<= '0';		-- 266 ns
+		wait for 144 ns;
+		start	<= '1';		-- 410 ns
+		wait for 12 ns;
+		start	<= '0';		-- 422 ns
 		wait;
 	end process start_gen;
 
@@ -161,6 +165,10 @@ begin
 		start1	<= '1';		-- 266 ns
 		wait for 60 ns;
 		start1	<= '0';		-- 326 ns
+		wait for 96 ns;
+		start1 <= '1';		-- 422 ns
+		wait for 60 ns;
+		start1 <= '0';		-- 482 ns
 		wait;
 	end process start1_gen;
 
@@ -206,6 +214,10 @@ begin
 		input_spike	<= '1'; -- 266 ns
 		wait for 60 ns;
 		input_spike	<= '0'; -- 326 ns
+		wait for 96 ns;
+		input_spike	<= '1'; -- 422 ns
+		wait for 48 ns;
+		input_spike	<= '0';	-- 470 ns
 		wait;
 	end process input_spike_gen;
 
@@ -227,8 +239,16 @@ begin
 		rest_en	<= '1';		-- 206 ns
 		wait for 12 ns;
 		rest_en <= '0';		-- 218 ns
+		wait for 156 ns;
+		rest_en <= '1';		-- 374 ns
+		wait for 12 ns;
+		rest_en <= '0';		-- 386 ns
 		wait;
 	end process rest_en_gen;
+
+
+
+
 
 
 

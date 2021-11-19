@@ -13,17 +13,17 @@ architecture behaviour of debug_neuron_tb is
 
 
 	-- parallelism
-	constant N		: integer := 8;
+	constant N		: integer 	:= 16;
 
 	-- exponential shift
-	constant shift		: integer := 1;
+	constant shift		: integer 	:= 10;
 
 	-- model parameters
-	constant v_th_0_int	: integer := 13;	
-	constant v_reset_int	: integer := 5;	
-	constant v_th_plus_int	: integer := 1;	
-	constant inh_weight_int	: integer := -15;	
-	constant exc_weight_int	: integer := 3;
+	constant v_th_0_int	: integer 	:= 13*(2**10);	
+	constant v_reset_int	: integer 	:= 5*(2**10);	
+	constant v_th_plus_int	: integer	:= 102; -- 0.1*2^10 rounded	
+	constant inh_weight_int	: integer 	:= -15*(2**10);	
+	constant exc_weight_int	: integer 	:= 3*(2**10);
 
 
 	-- input parameters
@@ -111,6 +111,7 @@ begin
 
 
 
+
 	-- clock
 	clock_gen : process
 	begin
@@ -147,6 +148,10 @@ begin
 		start	<= '1';		-- 254 ns
 		wait for 12 ns;
 		start	<= '0';		-- 266 ns
+		wait for 144 ns;
+		start	<= '1';		-- 410 ns
+		wait for 12 ns;
+		start	<= '0';		-- 422 ns
 		wait;
 	end process start_gen;
 
@@ -171,6 +176,10 @@ begin
 		start1	<= '1';		-- 266 ns
 		wait for 60 ns;
 		start1	<= '0';		-- 326 ns
+		wait for 96 ns;
+		start1 <= '1';		-- 422 ns
+		wait for 60 ns;
+		start1 <= '0';		-- 482 ns
 		wait;
 	end process start1_gen;
 
@@ -216,6 +225,10 @@ begin
 		input_spike	<= '1'; -- 266 ns
 		wait for 60 ns;
 		input_spike	<= '0'; -- 326 ns
+		wait for 96 ns;
+		input_spike	<= '1'; -- 422 ns
+		wait for 48 ns;
+		input_spike	<= '0';	-- 470 ns
 		wait;
 	end process input_spike_gen;
 
@@ -237,8 +250,13 @@ begin
 		rest_en	<= '1';		-- 206 ns
 		wait for 12 ns;
 		rest_en <= '0';		-- 218 ns
+		wait for 156 ns;
+		rest_en <= '1';		-- 374 ns
+		wait for 12 ns;
+		rest_en <= '0';		-- 386 ns
 		wait;
 	end process rest_en_gen;
+
 
 
 

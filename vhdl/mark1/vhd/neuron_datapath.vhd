@@ -23,6 +23,7 @@ entity neuron_datapath is
 
 		-- input controls
 		clk		: in std_logic;
+		no_update	: in std_logic;
 		update_sel	: in std_logic_vector(1 downto 0);
 		v_or_v_th	: in std_logic;
 		add_or_sub	: in std_logic;
@@ -42,6 +43,8 @@ end entity neuron_datapath;
 architecture test of neuron_datapath is
 
 	
+	signal inh_update	: signed(N-1 downto 0);
+	signal exc_update	: signed(N-1 downto 0);
 	signal update		: signed(N-1 downto 0);
 	signal prev_value	: signed(N-1 downto 0);
 	signal update_value	: signed(N-1 downto 0);
@@ -216,8 +219,46 @@ begin
 			shifted_out	=> v_shifted
 		);
 
+	
 
-	v_update_mux	: mux4to1
+	inh_mux		: mux2to1	
+		generic map(
+			-- parallelism
+			N	=> N
+		)
+
+		port map(	
+			-- inputs	
+			sel	=> no_update,
+			in0	=> inh_weight,
+			in1	=> (others => '0'),
+
+			-- output
+			mux_out	=> inh_update
+		);
+
+
+
+	exc_mux		: mux2to1	
+		generic map(
+			-- parallelism
+			N	=> N
+		)
+
+		port map(	
+			-- inputs	
+			sel	=> no_update,
+			in0	=> exc_weight,
+			in1	=> (others => '0'),
+
+			-- output
+			mux_out	=> exc_update
+		);
+
+
+
+
+	update_mux	: mux4to1
 		generic map(
 			-- parallelism
 			N	=> N		
@@ -227,8 +268,8 @@ begin
 			sel	=> update_sel,
 			in0	=> v_shifted,
 			in1	=> v_th_plus,
-			in2	=> exc_weight,
-			in3	=> inh_weight,
+			in2	=> exc_update,
+			in3	=> inh_update,
 		                               
 			-- output
 			mux_out	=> update
