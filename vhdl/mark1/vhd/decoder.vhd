@@ -14,7 +14,7 @@ entity decoder is
 		encoded_in	: in std_logic_vector(N-1 downto 0);
 
 		-- output
-		decoded_out	: out  std_logic_vector(0 to 2**N -1)
+		decoded_out	: out  std_logic_vector(2**N -1 downto 0)
 	);
 
 end entity decoder;

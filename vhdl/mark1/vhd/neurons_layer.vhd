@@ -29,6 +29,7 @@ entity neurons_layer is
 		rest_en		: in std_logic;
 		input_spike	: in std_logic;
 		neuron_cnt	: in std_logic_vector(N_cnt-1 downto 0);
+		inh_elaboration	: in std_logic;
 
 		-- input parameters
 		v_th_0		: in signed(N-1 downto 0);		
@@ -47,7 +48,8 @@ end entity neurons_layer;
 
 architecture behaviour of neurons_layer is
 
-	signal mask_neuron	: std_logic_vector(2**N_cnt-1 downto 0);
+	signal decoded_cnt	: std_logic_vector(2**N_cnt-1 downto 0);
+	signal mask_neuron	: std_logic_vector(layer_size downto 0);
 	signal neuron_ready	: std_logic_vector(layer_size-1 downto 0);
 
 	component decoder is
@@ -61,7 +63,7 @@ architecture behaviour of neurons_layer is
 			encoded_in	: in std_logic_vector(N-1 downto 0);
 
 			-- output
-			decoded_out	: out  std_logic_vector(0 to 2**N -1)
+			decoded_out	: out  std_logic_vector(2**N -1 downto 0)
 		);
 
 	end component decoder;
@@ -125,6 +127,17 @@ architecture behaviour of neurons_layer is
 
 begin
 
+	
+	mask_neuron_gen	: process(decoded_cnt, inh_elaboration)
+	begin
+		for i in 0 to layer_size-1
+		loop
+
+			mask_neuron(i)	<= decoded_cnt(i) and inh_elaboration;
+
+		end loop;
+	end process mask_neuron_gen;
+
 
 	neuron_decoder	: decoder
 		generic map(
@@ -135,7 +148,7 @@ begin
 			encoded_in	=> neuron_cnt,
 
 			-- output
-			decoded_out	=> mask_neuron
+			decoded_out	=> decoded_cnt
 		);
 
 	layer_ready_and	: generic_and

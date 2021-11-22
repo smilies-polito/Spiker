@@ -12,7 +12,7 @@ architecture test of decoder_tb is
 	constant N		: integer := 3;
 
 	signal encoded_in	: std_logic_vector(N-1 downto 0);
-	signal decoded_out	: std_logic_vector(0 to 2**N-1);
+	signal decoded_out	: std_logic_vector(2**N-1 downto 0);
 
 	component decoder is
 
@@ -25,7 +25,7 @@ architecture test of decoder_tb is
 			encoded_in	: in std_logic_vector(N-1 downto 0);
 
 			-- output
-			decoded_out	: out  std_logic_vector(0 to 2**N-1)
+			decoded_out	: out  std_logic_vector(2**N-1 downto 0)
 		);
 
 	end component decoder;

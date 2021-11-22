@@ -56,50 +56,83 @@ architecture behaviour of neurons_layer_tb is
 
 
 
-	component neurons_layer is
+	-- internal signals
+	signal decoded_cnt	: std_logic_vector(2**N_cnt-1 downto 0);
+	signal mask_neuron	: std_logic_vector(2**N_cnt-1 downto 0);
+	signal neuron_ready	: std_logic_vector(layer_size-1 downto 0);
+
+
+	component decoder is
 
 		generic(
-			-- neurons counter parallelism
-			N_cnt		: integer := 2;
+			N	: integer := 8		
+		);
 
-			-- internal parallelism
+		port(
+			-- input
+			encoded_in	: in std_logic_vector(N-1 downto 0);
+
+			-- output
+			decoded_out	: out  std_logic_vector(2**N -1 downto 0)
+		);
+
+	end component decoder;
+
+
+
+	component generic_and is
+
+		generic(
+			N	: integer := 8		
+		);
+
+		port(
+			-- input
+			and_in	: in std_logic_vector(N-1 downto 0);
+
+			-- output
+			and_out	: out std_logic
+		);
+
+	end component generic_and;
+
+
+
+
+	component neuron is
+
+		generic(
+			-- parallelism
 			N		: integer := 8;
 
-			-- number of neurons in the layer
-			layer_size	: integer := 3;
-
-			-- shift during the exponential decay
+			-- shift amount
 			shift		: integer := 1
 		);
 
 		port(
-			-- control input
+			-- input controls
 			clk		: in std_logic;
-			rst_n		: in std_logic;		
-			start		: in std_logic;		
-			start1		: in std_logic;		
-			start2		: in std_logic;		
+			rst_n		: in std_logic;
+			start		: in std_logic;
+			start1		: in std_logic;
+			start2		: in std_logic;
 			rest_en		: in std_logic;
+			mask_neuron	: in std_logic;
 			input_spike	: in std_logic;
-			neuron_cnt	: in std_logic_vector(N_cnt-1 downto 0);
-			inh_elaboration	: in std_logic;
 
 			-- input parameters
-			v_th_0		: in signed(N-1 downto 0);		
-			v_reset		: in signed(N-1 downto 0);		
-			inh_weight	: in signed(N-1 downto 0);		
-			v_th_plus	: in signed(N-1 downto 0);		
-			exc_weights	: in signed(layer_size*N-1 downto 0);
+			v_th_0		: in signed(N-1 downto 0);
+			v_reset		: in signed(N-1 downto 0);
+			inh_weight	: in signed(N-1 downto 0);
+			exc_weight	: in signed(N-1 downto 0);
+			v_th_plus	: in signed(N-1 downto 0);
 
 			-- output
-			out_spikes	: out std_logic_vector(layer_size-1 downto 0);
-			layer_ready	: out std_logic
+			out_spike	: out std_logic;
+			neuron_ready	: out std_logic
 		);
 
-	end component neurons_layer;
-
-
-
+	end component neuron;
 
 begin
 
@@ -285,45 +318,84 @@ begin
 
 
 
-	dut	: neurons_layer
+	mask_neuron_gen	: process(decoded_cnt, inh_elaboration)
+	begin
+		for i in 0 to layer_size-1
+		loop
+
+			mask_neuron(i)	<= decoded_cnt(i) and inh_elaboration;
+
+		end loop;
+	end process mask_neuron_gen;
+
+
+
+
+	neuron_decoder	: decoder
 		generic map(
-			-- neurons counter parallelism
-			N_cnt		=> N_cnt,
-
-			-- internal parallelism
-			N		=> N,
-
-			-- number of neurons in the layer
-			layer_size	=> layer_size,
-
-			-- shift during the exponential decay
-			shift		=> shift
-			)
-
+			N	=> N_cnt		
+		)
 		port map(
-			-- control input
-			clk		=> clk,
-			rst_n		=> rst_n,
-			start		=> start,
-			start1		=> start1,
-			start2		=> start2,
-			rest_en		=> rest_en,
-			input_spike	=> input_spike,
-			neuron_cnt	=> neuron_cnt,
-			inh_elaboration	=> inh_elaboration,
-
-			-- input parameters
-			v_th_0		=> v_th_0,
-			v_reset		=> v_reset,
-			inh_weight	=> inh_weight,
-			v_th_plus	=> v_th_plus,
-			exc_weights	=> exc_weights,
+			-- input
+			encoded_in	=> neuron_cnt,
 
 			-- output
-			out_spikes	=> out_spikes,
-			layer_ready	=> layer_ready
+			decoded_out	=> decoded_cnt
 		);
 
 
+	layer_ready_and	: generic_and
+		generic map(
+			N	=> layer_size
+		)
+
+		port map(
+			-- input=>
+			and_in	=> neuron_ready,
+
+			-- outpu=>
+			and_out	=> layer_ready
+		);
+
+
+	neurons	: for i in 0 to layer_size-1
+	generate
+
+		neuron_i	: neuron
+			generic map(
+			-- parallelism
+			N		=> N,
+                                                       
+			-- shift amount    
+			shift		=> shift
+			)                                      
+							       
+			port map(
+				-- input control
+				clk		=> clk,
+				rst_n		=> rst_n,
+				start		=> start,
+				start1		=> start1,
+				start2		=> start2,
+				rest_en		=> rest_en,
+				mask_neuron	=> mask_neuron(i),
+				input_spike	=> input_spike,
+							       
+				-- input parameters
+				v_th_0		=> v_th_0,
+				v_reset		=> v_reset,
+				inh_weight	=> inh_weight,
+				exc_weight	=> exc_weights((i+1)*N-1 downto
+							i*N),
+				v_th_plus	=> v_th_plus,
+							       
+				-- output         
+				out_spike	=> out_spikes(i),
+				neuron_ready	=> neuron_ready(i)
+			);
+
+
+	end generate neurons;
+	
 
 end architecture behaviour;
