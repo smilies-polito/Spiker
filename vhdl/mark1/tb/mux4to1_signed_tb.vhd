@@ -3,12 +3,12 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 
-entity mux4to1_tb is
-end entity mux4to1_tb;
+entity mux4to1_signed_tb is
+end entity mux4to1_signed_tb;
 
-architecture test of mux4to1_tb is
+architecture test of mux4to1_signed_tb is
 
-	component mux4to1 is
+	component mux4to1_signed is
 		
 		generic(
 			-- parallelism
@@ -27,7 +27,7 @@ architecture test of mux4to1_tb is
 			mux_out	: out signed(N-1 downto 0)
 		);
 
-	end component mux4to1;
+	end component mux4to1_signed;
 
 
 	constant N	: integer := 8;
@@ -104,7 +104,7 @@ begin
 	end process simulate;
 
 
-	mux	: mux4to1
+	mux	: mux4to1_signed
 		generic map(
 			N	=> 8		
 		)

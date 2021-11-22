@@ -1,13 +1,14 @@
 library ieee;
 use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
 
 
-entity mux2to1_tb is
-end entity mux2to1_tb;
+entity mux2to1_signed_tb is
+end entity mux2to1_signed_tb;
 
-architecture test of mux2to1_tb is
+architecture test of mux2to1_signed_tb is
 
-	component mux2to1 is
+	component mux2to1_signed is
 		
 		generic(
 			-- parallelism
@@ -17,22 +18,22 @@ architecture test of mux2to1_tb is
 		port(	
 			-- inputs	
 			sel	: in std_logic;
-			in0	: in std_logic_vector(N-1 downto 0);
-			in1	: in std_logic_vector(N-1 downto 0);
+			in0	: in signed(N-1 downto 0);
+			in1	: in signed(N-1 downto 0);
 
 			-- output
-			mux_out	: out std_logic_vector(N-1 downto 0)
+			mux_out	: out signed(N-1 downto 0)
 		);
 
-	end component mux2to1;
+	end component mux2to1_signed;
 
 
 	constant N	: integer := 8;
 
 	signal sel	: std_logic;
-	signal in0	: std_logic_vector(N-1 downto 0);
-	signal in1	: std_logic_vector(N-1 downto 0);
-	signal mux_out	: std_logic_vector(N-1 downto 0);
+	signal in0	: signed(N-1 downto 0);
+	signal in1	: signed(N-1 downto 0);
+	signal mux_out	: signed(N-1 downto 0);
 
 begin
 
@@ -65,7 +66,7 @@ begin
 	end process simulate;
 
 
-	mux	: mux2to1
+	mux	: mux2to1_signed
 		generic map(
 			N	=> 8		
 		)

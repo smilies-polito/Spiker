@@ -141,7 +141,7 @@ architecture behaviour of debug_neuron_datapath is
 	end component shifter;
 
 
-	component reg is
+	component reg_signed is
 
 		generic(
 			-- parallelism
@@ -158,10 +158,10 @@ architecture behaviour of debug_neuron_datapath is
 			reg_out	: out signed(N-1 downto 0)
 		);
 
-	end component reg;
+	end component reg_signed;
 
 
-	component reg_sync_rst is
+	component reg_signed_sync_rst is
 
 		generic(
 			-- parallelism
@@ -179,7 +179,7 @@ architecture behaviour of debug_neuron_datapath is
 			reg_out	: out signed(N-1 downto 0)
 		);
 
-	end component reg_sync_rst;
+	end component reg_signed_sync_rst;
 
 
 
@@ -352,7 +352,7 @@ begin
 
 
 
-	v_th_reg	: reg
+	v_th_reg	: reg_signed
 		generic map(
 			-- parallelism
 			N	=> N   
@@ -370,7 +370,7 @@ begin
 
 
 
-	v_reg		: reg_sync_rst
+	v_reg		: reg_signed_sync_rst
 		generic map(
 			-- parallelism
 			N	=> N   

@@ -58,7 +58,7 @@ architecture test of neuron_datapath_tb is
 	signal v_shifted	: signed(N-1 downto 0);
 
 
-	component mux2to1 is
+	component mux2to1_signed is
 
 		generic(
 			-- parallelism
@@ -75,10 +75,10 @@ architecture test of neuron_datapath_tb is
 			mux_out	: out signed(N-1 downto 0)
 		);
 
-	end component mux2to1;
+	end component mux2to1_signed;
 
 
-	component mux4to1 is
+	component mux4to1_signed is
 
 		generic(
 			-- parallelism
@@ -97,7 +97,7 @@ architecture test of neuron_datapath_tb is
 			mux_out	: out signed(N-1 downto 0)
 		);
 
-	end component mux4to1;
+	end component mux4to1_signed;
 
 
 	component add_sub is
@@ -140,7 +140,7 @@ architecture test of neuron_datapath_tb is
 	end component shifter;
 
 
-	component reg is
+	component reg_signed is
 
 		generic(
 			-- parallelism
@@ -157,10 +157,10 @@ architecture test of neuron_datapath_tb is
 			reg_out	: out signed(N-1 downto 0)
 		);
 
-	end component reg;
+	end component reg_signed;
 
 
-	component reg_sync_rst is
+	component reg_signed_sync_rst is
 
 		generic(
 			-- parallelism
@@ -178,7 +178,7 @@ architecture test of neuron_datapath_tb is
 			reg_out	: out signed(N-1 downto 0)
 		);
 
-	end component reg_sync_rst;
+	end component reg_signed_sync_rst;
 
 
 	component cmp_gt is
@@ -359,7 +359,7 @@ begin
 
 
 
-	inh_mux		: mux2to1	
+	inh_mux		: mux2to1_signed	
 		generic map(
 			-- parallelism
 			N	=> N
@@ -377,7 +377,7 @@ begin
 
 
 
-	exc_mux		: mux2to1	
+	exc_mux		: mux2to1_signed	
 		generic map(
 			-- parallelism
 			N	=> N
@@ -395,7 +395,7 @@ begin
 
 
 
-	update_mux	: mux4to1
+	update_mux	: mux4to1_signed
 		generic map(
 			-- parallelism
 			N	=> N		
@@ -413,7 +413,7 @@ begin
 		);
 
 
-	prev_mux	: mux2to1	
+	prev_mux	: mux2to1_signed	
 		generic map(
 			-- parallelism
 			N	=> N
@@ -446,7 +446,7 @@ begin
 		);
 
 
-	v_th_mux	: mux2to1
+	v_th_mux	: mux2to1_signed
 		generic map(
 			-- parallelism
 			N	=> N
@@ -463,7 +463,7 @@ begin
 		);
 
 
-	v_mux	: mux2to1
+	v_mux	: mux2to1_signed
 		generic map(
 			-- parallelism
 			N	=> N
@@ -481,7 +481,7 @@ begin
 
 
 
-	v_th_reg	: reg
+	v_th_reg	: reg_signed
 		generic map(
 			-- parallelism
 			N	=> N   
@@ -499,7 +499,7 @@ begin
 
 
 
-	v_reg		: reg_sync_rst
+	v_reg		: reg_signed_sync_rst
 		generic map(
 			-- parallelism
 			N	=> N   

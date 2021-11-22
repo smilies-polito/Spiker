@@ -2,7 +2,7 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
-entity mux4to1 is
+entity mux2to1_signed is
 
 	generic(
 		-- parallelism
@@ -11,39 +11,31 @@ entity mux4to1 is
 
 	port(	
 		-- inputs	
-		sel	: in std_logic_vector(1 downto 0);
+		sel	: in std_logic;
 		in0	: in signed(N-1 downto 0);
 		in1	: in signed(N-1 downto 0);
-		in2	: in signed(N-1 downto 0);
-		in3	: in signed(N-1 downto 0);
 
 		-- output
 		mux_out	: out signed(N-1 downto 0)
 	);
 
-end entity mux4to1;
+end entity mux2to1_signed;
 
 
 
-architecture behaviour of mux4to1 is
+architecture behaviour of mux2to1_signed is
 begin
 
-	selection	: process(sel, in0, in1, in2, in3)
+	selection	: process(sel, in0, in1)
 	begin
 	
 		case sel is
-		
-			when "00" =>
+			
+			when '0' =>
 				mux_out <= in0;
-
-			when "01" =>
-				mux_out <= in1;
-
-			when "10" =>
-				mux_out <= in2;
-
+		
 			when others =>
-				mux_out <= in3;
+				mux_out <= in1;
 
 		end case;
 
