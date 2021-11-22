@@ -67,7 +67,7 @@ begin
 
 	mux	: mux2to1
 		generic map(
-			N	=> 8		
+			N	=> N
 		)
 		port map(
 			-- inputs 	
