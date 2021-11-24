@@ -4,88 +4,83 @@ use ieee.numeric_std.all;
 
 
 entity layer_datapath is
-
-	generic(
-
-		-- internal parallelism
-		parallelism		: integer := 16;
-
-		-- excitatory spikes
-		input_parallelism	: integer := 8;
-		N_exc_cnt		: integer := 3;
-
-		-- inhibitory spikes
-		layer_size		: integer := 4;
-		N_inh_cnt		: integer := 2;
-
-		-- elaboration steps
-		N_cycles_cnt		: integer := 4;
-
-		-- exponential decay shift
-		shift			: integer := 1
-			
-	);
-
-	port(
-		-- control input
-		input_spikes		: in std_logic_vector
-						(input_parallelism-1 downto 0);
-		clk			: in std_logic;
-		exc_en			: in std_logic;	
-		anticipate_exc		: in std_logic;	
-		inh_en			: in std_logic;	
-		anticipate_inh		: in std_logic;	
-		exc_cnt_rst_n		: in std_logic;	
-		exc_cnt_en		: in std_logic;	
-		inh_cnt_rst_n		: in std_logic;	
-		inh_cnt_en		: in std_logic;	
-		cycles_cnt_rst_n	: in std_logic;	
-		cycles_cnt_en		: in std_logic;	
-		exc_or_inh_sel		: in std_logic;	
-		inh_elaboration		: in std_logic;	
-		rest_en			: in std_logic;	
-		rst_n			: in std_logic;	
-		start			: in std_logic;	
-		mask1			: in std_logic;	
-		mask2			: in std_logic;
-
-		-- input parameters
-		v_th_0			: in signed(parallelism-1 downto 0);		
-		v_reset			: in signed(parallelism-1 downto 0);	
-		inh_weight		: in signed(parallelism-1 downto 0);		
-		v_th_plus		: in signed(parallelism-1 downto 0);	
-		exc_weights		: in signed
-					(layer_size*parallelism-1 downto 0);
-
-		-- number of inputs, neurons and cycles
-		N_inputs		: in std_logic_vector
-						(N_exc_cnt-1 downto 0);
-		N_neurons		: in std_logic_vector
-						(N_inh_cnt-1 downto 0);
-		N_cycles		: in std_logic_vector
-						(N_cycles_cnt-1 downto 0);
-
-		-- control output
-		exc_or			: out std_logic;
-		exc_stop		: out std_logic;
-		inh_or			: out std_logic;
-		inh_stop		: out std_logic;
-		stop			: out std_logic;
-
-		-- output
-		out_spikes		: out std_logic_vector
-						(layer_size-1 downto 0);
-		layer_ready		: out std_logic;
-		exc_cnt			: out std_logic_vector
-						(N_exc_cnt-1 downto 0)
-	
-	);
-
 end entity layer_datapath;
 
 
 architecture behaviour of layer_datapath is
 
+
+	-- internal parallelism
+	constant parallelism		: integer := 8;
+
+	-- excitatory spikes
+	constant input_parallelism	: integer := 4;
+	constant N_exc_cnt		: integer := 2;
+
+	-- inhibitory spikes
+	constant layer_size		: integer := 4;
+	constant N_inh_cnt		: integer := 2;
+
+	-- elaboration steps
+	constant N_cycles_cnt		: integer := 4;
+
+	-- exponential decay shift
+	constant shift			: integer := 1;
+	
+	-- control input
+	signal input_spikes		: std_logic_vector
+	 				     (input_parallelism-1 downto 0);
+	signal clk			: std_logic;
+	signal exc_en			: std_logic;	
+	signal anticipate_exc		: std_logic;	
+	signal inh_en			: std_logic;	
+	signal anticipate_inh		: std_logic;	
+	signal exc_cnt_rst_n		: std_logic;	
+	signal exc_cnt_en		: std_logic;	
+	signal inh_cnt_rst_n		: std_logic;	
+	signal inh_cnt_en		: std_logic;	
+	signal cycles_cnt_rst_n		: std_logic;	
+	signal cycles_cnt_en		: std_logic;	
+	signal exc_or_inh_sel		: std_logic;	
+	signal inh_elaboration		: std_logic;	
+	signal rest_en			: std_logic;	
+	signal rst_n			: std_logic;	
+	signal start			: std_logic;	
+	signal mask1			: std_logic;	
+	signal mask2			: std_logic;
+
+	-- input parameters
+	signal v_th_0			: signed(parallelism-1 downto 0);		
+	signal v_reset			: signed(parallelism-1 downto 0);	
+	signal inh_weight		: signed(parallelism-1 downto 0);		
+	signal v_th_plus		: signed(parallelism-1 downto 0);	
+	signal exc_weights		: signed
+						(layer_size*parallelism-1 downto 0);
+
+	-- number of inputs, neurons and cycles
+	signal N_inputs			: std_logic_vector
+					     (N_exc_cnt-1 downto 0);
+	signal N_neurons		: std_logic_vector
+	 				     (layer_size-1 downto 0);
+	signal N_cycles			: std_logic_vector
+						(N_cycles_cnt-1 downto 0);
+
+	-- control output
+	signal exc_or			: std_logic;
+	signal exc_stop			: std_logic;
+	signal inh_or			: std_logic;
+	signal inh_stop			: std_logic;
+	signal stop			: std_logic;
+
+	-- output
+	signal out_spikes			: std_logic_vector
+					    (layer_size-1 downto 0);
+	signal layer_ready			: std_logic;
+	signal exc_cnt				: std_logic_vector;
+
+
+
+	-- internal signals
 	signal exc_spikes	: std_logic_vector(input_parallelism-1 downto 0);
 	signal inh_spikes	: std_logic_vector(layer_size-1 downto 0);
 	signal exc_spike	: std_logic;
@@ -245,6 +240,140 @@ architecture behaviour of layer_datapath is
 
 
 begin
+
+
+	-- clock
+	clock_gen 		: process
+	begin
+		clk	<= '0';			-- falling edge i*12ns
+		wait for 6 ns;			                    
+		clk	<= '1';         	-- rising edge 6ns + i*12ns
+		wait for 6 ns;			
+	end process clock_gen;
+
+
+	-- reset
+	reset_gen 		: process
+	begin
+		rst_n	<= '1';			-- 0 ns
+		wait for 14 ns;
+		rst_n	<= '0';			-- 14 ns
+		wait for 3 ns;
+		rst_n	<= '1';			-- 17 ns
+		wait;
+	end process reset_gen;
+
+
+	-- start
+	start_gen 		: process
+	begin
+		start	<= '0';			-- 0 ns
+		wait for 38 ns;
+		start	<= '1';			-- 38 ns
+		wait for 12 ns;
+		start	<= '0';			-- 50 ns
+		wait;
+	end process start_gen;
+
+
+	-- input_spikes
+	input_spikes_gen	: process
+	begin
+		wait for 50 ns;
+		input_spikes	<= "0000";
+		wait for 24 ns;
+		input_spikes	<= "0010";
+		wait;
+	end process input_spikes_gen;
+
+
+	-- exc_en
+	exc_en_gen 		: process
+	begin
+		exc_en	<= '0';			-- 0 ns
+		wait for 50 ns;			                    
+		exc_en	<= '1';         	-- 50 ns
+		wait for 36 ns;	
+		exc_en	<= '0';			-- 86 ns
+		wait;		
+	end process exc_en_gen;
+
+
+	
+	-- anticipate_exc
+	anticipate_exc_gen 	: process
+	begin
+		anticipate_exc	<= '0';			-- 0 ns
+		wait for 50 ns;			                    
+		anticipate_exc	<= '1';         	-- 50 ns
+		wait for 36 ns;	
+		anticipate_exc	<= '0';			-- 86 ns
+		wait;		
+	end process anticipate_exc_gen;
+
+
+	-- mask1
+	mask1_gen 	: process
+	begin
+		mask1	<= '0';			-- 0 ns
+		wait for 50 ns;			                    
+		mask1	<= '1';         	-- 50 ns
+		wait for 36 ns;	
+		mask1	<= '0';			-- 86 ns
+		wait;		
+	end process mask1_gen;
+
+	
+	-- mask2
+	mask2_gen 	: process
+	begin
+		mask2	<= '0';			-- 0 ns
+		wait for 50 ns;			                    
+		mask2	<= '1';         	-- 50 ns
+		wait for 36 ns;	
+		mask2	<= '0';			-- 86 ns
+		wait;		
+	end process mask2_gen;
+
+
+	-- inh_en
+	inh_en_gen 	: process
+	begin
+		inh_en	<= '0';			-- 0 ns
+		wait for 50 ns;			                    
+		inh_en	<= '1';         	-- 50 ns
+		wait for 36 ns;	
+		inh_en	<= '0';			-- 86 ns
+		wait;		
+	end process inh_en_gen;
+
+
+	-- anticipate_inh
+	anticipate_inh_gen 	: process
+	begin
+		anticipate_inh	<= '0';		-- 0 ns
+		wait for 50 ns;			                    
+		anticipate_inh	<= '1';         -- 50 ns
+		wait for 36 ns;	
+		anticipate_inh	<= '0';		-- 86 ns
+		wait;		
+	end process anticipate_inh_gen;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 	out_spikes	<= feedback_spikes;
 
