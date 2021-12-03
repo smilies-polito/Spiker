@@ -361,13 +361,15 @@ begin
 		wait for 24 ns;			
 		input_spikes	<= "0010";	-- 74 ns
 		wait for 12 ns;			
-		input_spikes	<= "1111";	-- 86 ns
+		input_spikes	<= "1000";	-- 86 ns
 		wait for 12 ns;			
 		input_spikes	<= "1001";	-- 98 ns
 		wait for 12 ns;			
 		input_spikes	<= "0110";	-- 110 ns
 		wait for 12 ns;			
 		input_spikes	<= "0001";	-- 122 ns
+		wait for 12 ns;		
+		input_spikes	<= "1111";	-- 146 ns
 		wait for 12 ns;			
 		input_spikes	<= "0000";	-- 134 ns
 		wait for 12 ns;			
@@ -681,6 +683,7 @@ begin
 				mask1			<= '0';
 				inh_cnt_en		<= '1';
 				inh_elaboration		<= '1';
+				exc_or_inh_sel		<= '1';
 
 			-- inh_end
 			when inh_end =>
@@ -689,6 +692,7 @@ begin
 				mask2			<= '0';
 				inh_cnt_rst_n		<= '0';
 				inh_elaboration		<= '1';
+				exc_or_inh_sel		<= '1';
 
 			-- rest
 			when rest =>
@@ -891,9 +895,6 @@ begin
 			out_spikes		=> feedback_spikes,
 			layer_ready		=> layer_ready
 		);
-
-
-
 
 
 end architecture test;
