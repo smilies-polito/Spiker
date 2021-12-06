@@ -24,12 +24,12 @@ entity neurons_layer is
 		clk		: in std_logic;
 		rst_n		: in std_logic;		
 		start		: in std_logic;		
-		start1		: in std_logic;		
-		start2		: in std_logic;		
-		rest_en		: in std_logic;
+		stop		: in std_logic;
+		exc_or		: in std_logic;
+		exc_stop	: in std_logic;
+		inh_or		: in std_logic;
+		inh_stop	: in std_logic;
 		input_spike	: in std_logic;
-		neuron_cnt	: in std_logic_vector(N_cnt-1 downto 0);
-		inh_elaboration	: in std_logic;
 
 		-- input parameters
 		v_th_0		: in signed(N-1 downto 0);		
@@ -40,7 +40,7 @@ entity neurons_layer is
 
 		-- output
 		out_spikes	: out std_logic_vector(layer_size-1 downto 0);
-		layer_ready	: out std_logic
+		neurons_ready	: out std_logic
 	);
 
 end entity neurons_layer;
@@ -48,27 +48,7 @@ end entity neurons_layer;
 
 architecture behaviour of neurons_layer is
 
-	signal decoded_cnt	: std_logic_vector(2**N_cnt-1 downto 0);
-	signal mask_neuron	: std_logic_vector(layer_size downto 0);
 	signal neuron_ready	: std_logic_vector(layer_size-1 downto 0);
-
-	component decoder is
-
-		generic(
-			N	: integer := 8		
-		);
-
-		port(
-			-- input
-			encoded_in	: in std_logic_vector(N-1 downto 0);
-
-			-- output
-			decoded_out	: out  std_logic_vector(2**N -1 downto 0)
-		);
-
-	end component decoder;
-
-
 
 	component generic_and is
 
@@ -104,10 +84,11 @@ architecture behaviour of neurons_layer is
 			clk		: in std_logic;
 			rst_n		: in std_logic;
 			start		: in std_logic;
-			start1		: in std_logic;
-			start2		: in std_logic;
-			rest_en		: in std_logic;
-			mask_neuron	: in std_logic;
+			stop		: in std_logic;
+			exc_or		: in std_logic;
+			exc_stop	: in std_logic;
+			inh_or		: in std_logic;
+			inh_stop	: in std_logic;
 			input_spike	: in std_logic;
 
 			-- input parameters
@@ -128,40 +109,18 @@ architecture behaviour of neurons_layer is
 begin
 
 	
-	mask_neuron_gen	: process(decoded_cnt, inh_elaboration)
-	begin
-		for i in 0 to layer_size-1
-		loop
 
-			mask_neuron(i)	<= decoded_cnt(i) and inh_elaboration;
-
-		end loop;
-	end process mask_neuron_gen;
-
-
-	neuron_decoder	: decoder
-		generic map(
-			N	=> N_cnt		
-		)
-		port map(
-			-- input
-			encoded_in	=> neuron_cnt,
-
-			-- output
-			decoded_out	=> decoded_cnt
-		);
-
-	layer_ready_and	: generic_and
+	neurons_ready_and	: generic_and
 		generic map(
 			N	=> layer_size
 		)
 
 		port map(
-			-- input=>
+			-- input
 			and_in	=> neuron_ready,
 
-			-- outpu=>
-			and_out	=> layer_ready
+			-- output
+			and_out	=> neurons_ready
 		);
 
 
@@ -182,10 +141,11 @@ begin
 				clk		=> clk,
 				rst_n		=> rst_n,
 				start		=> start,
-				start1		=> start1,
-				start2		=> start2,
-				rest_en		=> rest_en,
-				mask_neuron	=> mask_neuron(i),
+				stop		=> stop,
+				exc_or	       	=> exc_or,
+				exc_stop       	=> exc_stop,
+				inh_or	        => inh_or,
+				inh_stop        => inh_stop,
 				input_spike	=> input_spike,
 							       
 				-- input parameters

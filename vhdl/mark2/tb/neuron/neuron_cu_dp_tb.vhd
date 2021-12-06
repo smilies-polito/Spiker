@@ -22,8 +22,8 @@ architecture behaviour of neuron_cu_dp_tb is
 	constant v_th_0_int	: integer 	:= 13*(2**10);	
 	constant v_reset_int	: integer 	:= 5*(2**10);	
 	constant v_th_plus_int	: integer	:= 102; -- 0.1*2^11 rounded	
-	constant inh_weight_int	: integer 	:= -15*(2**10);	
-	constant exc_weight_int	: integer 	:= 3*(2**10);
+	constant inh_weight_int	: integer 	:= 7*(2**10);	
+	constant exc_weight_int	: integer 	:= 7*(2**10);
 
 	-- input parameters
 	signal v_th_0		: signed(N-1 downto 0);
@@ -37,11 +37,12 @@ architecture behaviour of neuron_cu_dp_tb is
 	signal clk		: std_logic;
 	signal rst_n		: std_logic;
 	signal start		: std_logic;
-	signal start1		: std_logic;
-	signal start2		: std_logic;
-	signal rest_en		: std_logic;
-	signal mask_neuron	: std_logic;
-	signal input_spike	: std_logic;
+	signal stop		: std_logic;
+	signal exc_or		: std_logic;
+	signal exc_stop		: std_logic;
+	signal inh_or		: std_logic;
+	signal inh_stop		: std_logic;
+        signal input_spike	: std_logic;
 
 	-- from datapath to cu
 	signal exceed_v_th	: std_logic;
@@ -80,17 +81,15 @@ architecture behaviour of neuron_cu_dp_tb is
 		reset,
 		idle,
 		exp_decay,
-		fire,
-		exc_spike,
 		no_exc_spike,
-		inh_spike,
+		exc_spike,
 		no_inh_spike,
-		rest
+		inh_spike,
+		fire
 	);
 
-	signal present_state, next_state	: states;
-	signal masked_spike			: std_logic;
 
+	signal present_state, next_state	: states;
 
 
 	component mux2to1_signed is
@@ -247,7 +246,6 @@ begin
 	exc_weight	<= to_signed(exc_weight_int, N);
 
 
-	masked_spike <= input_spike and not mask_neuron;
 
 
 	-- clock
@@ -278,127 +276,114 @@ begin
 	start_gen : process
 	begin
 		start	<= '0';		-- 0 ns
-		wait for 26 ns;
-		start	<= '1';		-- 26 ns
+		wait for 38 ns;
+		start	<= '1';		-- 38 ns
 		wait for 12 ns;
-		start	<= '0';		-- 38 ns
-		wait for 206 ns;
-		start	<= '1';		-- 254 ns
-		wait for 12 ns;
-		start	<= '0';		-- 266 ns
-		wait for 144 ns;
-		start	<= '1';		-- 410 ns
-		wait for 12 ns;
-		start	<= '0';		-- 422 ns
+		start	<= '0';		-- 50 ns
 		wait;
 	end process start_gen;
 
 
-	-- start1
-	start1_gen : process
+	-- exc_or
+	exc_or_gen : process
 	begin
-		start1	<= '0';		-- 0 ns
-		wait for 38 ns;			
-		start1	<= '1';		-- 38 ns
-		wait for 24 ns;			          
-		start1	<= '0';         -- 62 ns
+		exc_or	<= '0';		-- 0 ns
+		wait for 62 ns;			
+		exc_or	<= '1';         -- 62 ns
 		wait for 48 ns;			          
-		start1	<= '1';         -- 110 ns
-		wait for 12 ns;			          
-		start1	<= '0';         -- 122 ns
-		wait for 36 ns;
-		start1	<= '1';         -- 158 ns
-		wait for 12 ns;
-		start1	<= '0';         -- 170 ns
-		wait for 96 ns;
-		start1	<= '1';		-- 266 ns
-		wait for 60 ns;
-		start1	<= '0';		-- 326 ns
-		wait for 96 ns;
-		start1 <= '1';		-- 422 ns
-		wait for 60 ns;
-		start1 <= '0';		-- 482 ns
+		exc_or	<= '0';         -- 110 ns
+		wait for 48 ns;			          
+		exc_or	<= '1';         -- 158 ns
+		wait for 84 ns;			          
+		exc_or	<= '0';         -- 242 ns
 		wait;
-	end process start1_gen;
+	end process exc_or_gen;
 
 
-
-	-- start2
-	start2_gen : process
+	-- exc_stop
+	exc_stop_gen : process
 	begin
-		start2	<= '0';		-- 0 ns
-		wait for 62 ns;		
-		start2	<= '1';		-- 62 ns
-		wait for 24 ns;			          
-		start2	<= '0';         -- 86 ns
-		wait for 48 ns;		
-		start2	<= '1';		-- 134 ns
-		wait for 12 ns;
-		start2	<= '0';		-- 146 ns
-		wait for 24 ns;
-		start2	<= '1';		-- 170 ns
-		wait for 12 ns;
-		start2	<= '0';		-- 182 ns
+		exc_stop	<= '0';		-- 0 ns
+		wait for 98 ns;			
+		exc_stop	<= '1';         -- 98 ns
+		wait for 12 ns;			          
+		exc_stop	<= '0';         -- 110 ns
+		wait for 84 ns;			          
+		exc_stop	<= '1';         -- 194 ns
+		wait for 12 ns;			          
+		exc_stop	<= '0';         -- 206 ns
 		wait;
-	end process start2_gen;
+	end process exc_stop_gen;
+
+
+	-- inh_or
+	inh_or_gen : process
+	begin
+		inh_or	<= '0';		-- 0 ns
+		wait for 110 ns;			          
+		inh_or	<= '1';         -- 110 ns
+		wait for 132 ns;			          
+		inh_or	<= '0';         -- 242 ns
+		wait;
+	end process inh_or_gen;
+
+
+	-- inh_stop
+	inh_stop_gen : process
+	begin
+		inh_stop	<= '0';		-- 0 ns
+		wait for 146 ns;			
+		inh_stop	<= '1';         -- 146 ns
+		wait for 12 ns;			          
+		inh_stop	<= '0';         -- 158 ns
+		wait for 72 ns;			          
+		inh_stop	<= '1';         -- 230 ns
+		wait for 12 ns;			          
+		inh_stop	<= '0';         -- 242 ns
+		wait for 12 ns;
+		inh_stop	<= '1';		-- 254 ns
+		wait for 12 ns;			          
+		inh_stop	<= '0';         -- 266 ns
+		wait;
+	end process inh_stop_gen;
 
 
 	-- input_spike
 	input_spike_gen: process
 	begin
 		input_spike	<= '0';	-- 0 ns	
-		wait for 38 ns;			
-		input_spike	<= '1';	-- 38 ns
-		wait for 12 ns;			          
-		input_spike	<= '0'; -- 50 ns
-		wait for 12 ns;			          
+		wait for 62 ns;	          
 		input_spike	<= '1'; -- 62 ns
-		wait for 12 ns;			          
-		input_spike	<= '0'; -- 74 ns
-		wait for 36 ns;			          
-		input_spike	<= '1'; -- 110 ns
-		wait for 48 ns;			          
+		wait for 96 ns;			          
 		input_spike	<= '0'; -- 158 ns
-		wait for 108 ns;
-		input_spike	<= '1'; -- 266 ns
-		wait for 60 ns;
-		input_spike	<= '0'; -- 326 ns
-		wait for 96 ns;
-		input_spike	<= '1'; -- 422 ns
-		wait for 48 ns;
-		input_spike	<= '0';	-- 470 ns
+		wait for 24 ns;			          
+		input_spike	<= '1'; -- 182 ns
+		wait for 12 ns;			          
+		input_spike	<= '0'; -- 194 ns
+		wait for 12 ns;			          
+		input_spike	<= '1'; -- 206 ns
+		wait for 12 ns;			          
+		input_spike	<= '0'; -- 218 ns
+		wait for 12 ns;			          
+		input_spike	<= '1'; -- 230 ns
+		wait for 12 ns;			          
+		input_spike	<= '0'; -- 242 ns
 		wait;
 	end process input_spike_gen;
 
 
-	-- mask_neuron
-	mask_neuron_gen : process
+
+
+	-- stop
+	stop_gen : process
 	begin
-		mask_neuron	<= '0';	-- 0 ns
-		wait;
-	end process mask_neuron_gen;
-
-
-
-	-- rest_en
-	rest_en_gen : process
-	begin
-		rest_en	<= '0';		-- 0 ns
-		wait for 206 ns;
-		rest_en	<= '1';		-- 206 ns
+		stop	<= '0';		-- 0 ns
+		wait for 266 ns;
+		stop	<= '1';		-- 266 ns
 		wait for 12 ns;
-		rest_en <= '0';		-- 218 ns
-		wait for 156 ns;
-		rest_en <= '1';		-- 374 ns
-		wait for 12 ns;
-		rest_en <= '0';		-- 386 ns
+		stop <= '0';		-- 278 ns
 		wait;
-	end process rest_en_gen;
-
-
-
-
-
+	end process stop_gen;
 
 
 
@@ -424,91 +409,9 @@ begin
 
 
 	-- state evaluation
-	state_evaluation	: process(present_state, start, start1, start2,
-					exceed_v_th, input_spike, masked_spike,
-					rest_en)
-
-
-		procedure from_start2_on(
-			
-			-- input
-			signal start2		: in std_logic;
-			signal masked_spike	: in std_logic; 
-			signal rest_en		: in std_logic;
-			
-			-- output
-			signal next_state	: out states) is
-		begin
-
-			if start2 = '1'
-			then
-				-- inhibitory elaboration
-				if masked_spike = '1'
-				then
-					next_state <= inh_spike;
-				else
-					next_state <= no_inh_spike;
-				end if;
-			else
-				if rest_en = '1'
-				then
-					-- rest
-					next_state <= rest;
-				else
-					if exceed_v_th = '1'
-					then
-						-- exponential decay
-						next_state <= fire;
-					else
-						-- fire
-						next_state <= exp_decay;
-					end if;
-				end if;
-			end if;
-		
-		end procedure from_start2_on;
-	
-		
-		
-		procedure from_start1_on(
-			
-			-- input
-			signal start1		: in std_logic;
-			signal start2		: in std_logic;
-			signal masked_spike	: in std_logic; 
-			signal rest_en		: in std_logic;
-			
-			-- output
-			signal next_state	: out states) is
-		begin
-
-			if start1 = '1'
-			then
-				-- inhibitory elaboration
-				if masked_spike = '1'
-				then
-					next_state <= exc_spike;
-				else
-					next_state <= no_exc_spike;
-				end if;
-			else
-
-				from_start2_on(
-			
-					-- input
-					start2		=> start2,
-					masked_spike	=> masked_spike,
-					rest_en		=> rest_en,
-					                   
-					-- output          -- output
-					next_state	=> next_state
-				);
-
-			end if;
-
-		end procedure from_start1_on;
-
-
+	state_evaluation	: process(present_state, start, stop, exc_or,
+					inh_or, exc_stop, inh_stop, input_spike,
+					exceed_v_th)
 	begin
 
 
@@ -523,131 +426,155 @@ begin
 
 			-- idle
 			when idle =>
+
 				if start = '1'
 				then
-					if exceed_v_th = '1'
-					then
-						next_state <= fire;
-					else
-						next_state <= exp_decay;
-					end if;
+					next_state <= exp_decay;
 				else
-
 					next_state <= idle;
-
 				end if;
-
+			
 
 			-- exp_decay
 			when exp_decay =>
 
-				from_start1_on(
-			
-					-- input
-					start1		=> start1,
-					start2		=> start2,
-					masked_spike	=> masked_spike,
-					rest_en		=> rest_en,
+				if stop = '1'
+				then
+					next_state <= idle;
 
-					-- output
-					next_state	=> next_state	
-				);
+				elsif exc_or = '1'
+				then
+					next_state <= no_exc_spike;
 
-				
-			-- fire
-			when fire =>
+				elsif inh_or = '1'
+				then
+					next_state <= no_inh_spike;
 
-				from_start1_on(
-			
-					-- input
-					start1		=> start1,
-					start2		=> start2,
-					masked_spike	=> masked_spike,
-					rest_en		=> rest_en,
+				else
+					next_state <= exp_decay;
 
-					-- output
-					next_state	=> next_state	
-				);
-
-
-
-
-			-- exc_spike
-			when exc_spike =>
-		
-				from_start1_on(
-			
-					-- input
-					start1		=> start1,
-					start2		=> start2,
-					masked_spike	=> masked_spike,
-					rest_en		=> rest_en,
-
-					-- output
-					next_state	=> next_state	
-				);
-
-
+				end if;
 
 			-- no_exc_spike
 			when no_exc_spike =>
+
+				if exc_stop = '1'
+				then
+					if inh_or = '1'
+					then
+						next_state <= no_inh_spike;
+
+					elsif exceed_v_th = '1'
+					then
+						next_state <= fire;
+
+					else
+						next_state <= exp_decay;
+					end if;
+
+				elsif input_spike = '1'
+				then
+					next_state <= exc_spike;
+
+				else
+					next_state <= no_exc_spike;
+				end if;
 				
-				from_start1_on(
-			
-					-- input
-					start1		=> start1,
-					start2		=> start2,
-					masked_spike	=> masked_spike,
-					rest_en		=> rest_en,
 
-					-- output
-					next_state	=> next_state	
-				);
+			-- exc_spike
+			when exc_spike =>
 
+				if exc_stop = '1'
+				then
+					if inh_or = '1'
+					then
+						next_state <= no_inh_spike;
 
+					elsif exceed_v_th = '1'
+					then
+						next_state <= fire;
 
+					else
+						next_state <= exp_decay;
+					end if;
 
-			-- inh_spike
-			when inh_spike =>
-				
-				from_start2_on(
-			
-					-- input
-					start2		=> start2,
-					masked_spike	=> masked_spike,
-					rest_en		=> rest_en,
-					                   
-					-- output          -- output
-					next_state	=> next_state
-				);
+				elsif input_spike = '1'
+				then
+					next_state <= exc_spike;
 
-
+				else
+					next_state <= no_exc_spike;
+				end if;
 
 
 			-- no_inh_spike
 			when no_inh_spike =>
 				
-				from_start2_on(
+				if inh_stop = '1'
+				then
+					if exceed_v_th = '1'
+					then
+						next_state <= fire;
+
+					else
+						next_state <= exp_decay;
+					end if;
+
+				elsif input_spike = '1'
+				then
+					next_state <= inh_spike;
+
+				else
+					next_state <= no_inh_spike;
+				end if;
+
+
+
+			-- inh_spike
+			when inh_spike =>
+
+				if inh_stop = '1'
+				then
+					if exceed_v_th = '1'
+					then
+						next_state <= fire;
+
+					else
+						next_state <= exp_decay;
+					end if;
+
+				elsif input_spike = '1'
+				then
+					next_state <= inh_spike;
+
+				else
+					next_state <= no_inh_spike;
+				end if;
+
+				
+
 			
-					-- input
-					start2		=> start2,
-					masked_spike	=> masked_spike,
-					rest_en		=> rest_en,
-					                   
-					-- output          -- output
-					next_state	=> next_state
-				);
 
+			-- fire
+			when fire =>
 
+				if stop = '1'
+				then
+					next_state <= idle;
 
-			-- rest
-			when rest =>
-				next_state <= idle;
+				elsif exc_or = '1'
+				then
+					next_state <= no_exc_spike;
 
+				else
+					next_state <= no_inh_spike;
+
+				end if;
 
 			-- default case
 			when others =>
 				next_state <= reset;
+
 
 		end case;
 
@@ -655,20 +582,18 @@ begin
 
 
 
-
-
 	output_evaluation	: process(present_state)
 	begin
 
 		-- default values
-		no_update	<= '0';
+		no_update	<= '1';
 		update_sel	<= "00";
 		v_or_v_th	<= '0';
 		add_or_sub	<= '0';
 		v_th_update	<= '0';
 		v_update	<= '1';
 		v_th_en		<= '0';
-		v_en		<= '0';
+		v_en		<= '1';
 		v_rst_n		<= '1';
 		out_spike	<= '0';
 		neuron_ready	<= '0';
@@ -677,19 +602,46 @@ begin
 
 			-- reset
 			when reset =>
-				v_en 		<= '1';
+				v_en 		<= '0';
 				v_th_en		<= '1';
-				v_update	<= '0';
+				v_rst_n		<= '0';
 
 			-- idle
 			when idle =>
 				neuron_ready	<= '1';
+				v_en 		<= '0';
+				v_rst_n		<= '0';
 
 			-- exp_decay
 			when exp_decay =>
 				add_or_sub	<= '1';
-				v_en		<= '1';
 				
+
+			-- no_exc_spike
+			when no_exc_spike	=>
+				update_sel	<= "10";
+				v_en		<= '0';
+
+			-- exc_spike
+			when exc_spike =>
+				update_sel	<= "10";
+				v_en		<= '1';
+				no_update	<= '0';
+
+				
+			-- no_inh_spike
+			when no_inh_spike	=>
+				update_sel	<= "11";
+				v_en		<= '0';
+
+
+			-- inh_spike
+			when inh_spike		=>
+				update_sel	<= "11";
+				v_en		<= '1';
+				no_update	<= '0';
+
+
 			-- fire
 			when fire =>
 				update_sel	<= "01";
@@ -697,46 +649,20 @@ begin
 				v_th_update	<= '1';
 				v_update	<= '0';
 				v_th_en		<= '1';
-				v_en		<= '1';
 				out_spike	<= '1';
-
-			-- exc_spike
-			when exc_spike =>
-				update_sel	<= "10";
-				v_en		<= '1';
-
-			-- no_exc_spike
-			when no_exc_spike	=>
-				no_update	<= '1';
-				update_sel	<= "10";
-				v_en		<= '0';
-				
-			-- inh_spike
-			when inh_spike		=>
-				update_sel	<= "11";
-				v_en		<= '1';
-
-			-- no_inh_spike
-			when no_inh_spike	=>
-				no_update	<= '1';
-				update_sel	<= "11";
-				v_en		<= '0';
-
-			-- rest
-			when rest =>
-				v_rst_n		<= '0';
 
 			-- default case
 			when others =>
-				v_en 		<= '1';
+				v_en 		<= '0';
+				v_rst_n		<= '0';
 				v_th_en		<= '1';
-				v_update	<= '0';
 
 		end case;
 
 	end process output_evaluation;
 	
-	
+
+
 	v_shifter	: shifter
 		generic map(
 			-- parallelism

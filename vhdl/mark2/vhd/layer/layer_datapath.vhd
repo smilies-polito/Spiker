@@ -39,15 +39,12 @@ entity layer_datapath is
 		exc_cnt_en		: in std_logic;	
 		inh_cnt_rst_n		: in std_logic;	
 		inh_cnt_en		: in std_logic;	
+		exc_or_inh_sel		: in std_logic;	
+		inh			: in std_logic;	
 		cycles_cnt_rst_n	: in std_logic;	
 		cycles_cnt_en		: in std_logic;	
-		exc_or_inh_sel		: in std_logic;	
-		inh_elaboration		: in std_logic;	
-		rest_en			: in std_logic;	
 		rst_n			: in std_logic;	
 		start			: in std_logic;	
-		mask1			: in std_logic;	
-		mask2			: in std_logic;
 
 		-- input parameters
 		v_th_0			: in signed(parallelism-1 downto 0);		
@@ -75,7 +72,7 @@ entity layer_datapath is
 		-- output
 		out_spikes		: out std_logic_vector
 						(layer_size-1 downto 0);
-		layer_ready		: out std_logic;
+		neurons_ready		: out std_logic;
 		exc_cnt			: out std_logic_vector
 						(N_exc_cnt-1 downto 0)
 	
@@ -86,18 +83,19 @@ end entity layer_datapath;
 
 architecture behaviour of layer_datapath is
 
-	signal exc_spikes	: std_logic_vector(input_parallelism-1 downto 0);
-	signal inh_spikes	: std_logic_vector(layer_size-1 downto 0);
-	signal exc_spike	: std_logic;
-	signal inh_spike	: std_logic;
-	signal inh_cnt		: std_logic_vector(N_inh_cnt-1 downto 0);
-	signal cycles		: std_logic_vector(N_cycles_cnt-1 downto 0);
-	signal input_spike	: std_logic;
-	signal exc_or_internal	: std_logic;
-	signal inh_or_internal	: std_logic;
-	signal feedback_spikes	: std_logic_vector(layer_size-1 downto 0);
-	signal start1		: std_logic;
-	signal start2		: std_logic;
+	signal exc_spikes		: std_logic_vector(input_parallelism-1 downto 0);
+	signal inh_spikes		: std_logic_vector(layer_size-1 downto 0);
+	signal exc_spike		: std_logic;
+	signal inh_spike		: std_logic;
+	signal inh_cnt			: std_logic_vector(N_inh_cnt-1 downto 0);
+	signal cycles			: std_logic_vector(N_cycles_cnt-1 downto 0);
+	signal input_spike		: std_logic;
+	signal exc_or_internal		: std_logic;
+	signal exc_stop_internal	: std_logic;
+	signal inh_or_internal		: std_logic;
+	signal inh_stop_internal	: std_logic;
+	signal stop_internal		: std_logic;
+	signal feedback_spikes		: std_logic_vector(layer_size-1 downto 0);
 
 
 	component anticipate_bits is
@@ -200,6 +198,26 @@ architecture behaviour of layer_datapath is
 	end component mux2to1_std_logic;
 
 
+	component bitMask is
+
+		generic(
+			N_cnt		: integer :=3
+		);
+
+		port(
+			-- input
+			input_cnt	: in std_logic_vector(N_cnt-1 downto 0);
+			inh		: in std_logic;
+			input_bit	: in std_logic;
+
+			-- output
+			output_bits	: out std_logic_vector(2**N_cnt-1 downto 0)
+		);
+
+	end component bitMask;
+
+
+
 	component neurons_layer is
 
 		generic(
@@ -221,12 +239,12 @@ architecture behaviour of layer_datapath is
 			clk		: in std_logic;
 			rst_n		: in std_logic;		
 			start		: in std_logic;		
-			start1		: in std_logic;		
-			start2		: in std_logic;		
-			rest_en		: in std_logic;
+			stop		: in std_logic;
+			exc_or		: in std_logic;
+			exc_stop	: in std_logic;
+			inh_or		: in std_logic;
+			inh_stop	: in std_logic;
 			input_spike	: in std_logic;
-			neuron_cnt	: in std_logic_vector(N_cnt-1 downto 0);
-			inh_elaboration	: in std_logic;
 
 			-- input parameters
 			v_th_0		: in signed(N-1 downto 0);		
@@ -237,19 +255,23 @@ architecture behaviour of layer_datapath is
 
 			-- output
 			out_spikes	: out std_logic_vector(layer_size-1 downto 0);
-			layer_ready	: out std_logic
+			neurons_ready	: out std_logic
 		);
 
 	end component neurons_layer;
 
 
 
+
 begin
 
 	out_spikes	<= feedback_spikes;
+	exc_or		<= exc_or_internal;
+	exc_stop	<= exc_stop_internal;
+	inh_or		<= inh_or_internal;
+	inh_stop	<= inh_stop_internal;
+	stop		<= stop_internal;
 
-	start1		<= exc_or_internal and mask1;
-	start2		<= inh_or_internal and mask2;
 
 	anticipate_exc_spikes	: anticipate_bits
 		generic map(
@@ -267,6 +289,8 @@ begin
 			-- output
 			output_bits	=> exc_spikes
 		);
+
+
 
 	anticipate_inh_spikes	: anticipate_bits
 		generic map(
@@ -305,10 +329,10 @@ begin
 			N_inputs		=> N_inputs,
 
 			-- output
-			all_inputs		=> exc_or,
+			all_inputs		=> exc_or_internal,
 			selected_input		=> exc_spike,
 			input_index		=> exc_cnt,
-			stop			=> exc_stop
+			stop			=> exc_stop_internal
 		);
 
 
@@ -330,10 +354,10 @@ begin
 			N_inputs		=> N_neurons,
 
 			-- output
-			all_inputs		=> inh_or,
+			all_inputs		=> inh_or_internal,
 			selected_input		=> inh_spike,
 			input_index		=> inh_cnt,
-			stop			=> inh_stop
+			stop			=> inh_stop_internal
 		);
 
 
@@ -364,7 +388,7 @@ begin
 			in1			=> N_cycles,
 
 			-- output
-			cmp_out			=> stop
+			cmp_out			=> stop_internal
 		);
 
 
@@ -384,45 +408,42 @@ begin
 
 
 
-	bare_layer		: neurons_layer
-		generic map(
-			-- neurons counter parallelism
-			N_cnt			=> N_inh_cnt,
+	bare_layer : neurons_layer
 
-			-- internal parallelism
-			N			=> parallelism,
+		generic map(
+			-- parallelism
+			N		=> parallelism,	
 
 			-- number of neurons in the layer
-			layer_size		=> layer_size,
+			layer_size	=> layer_size,
 
-			-- shift during the exponential decay
-			shift			=> shift
+			-- shift amount
+			shift		=> shift
 		)
 
 		port map(
-			-- control input
-			clk			=> clk,
-			rst_n			=> rst_n,
-			start			=> start,
-			start1			=> start1,
-			start2			=> start2,
-			rest_en			=> rest_en,
-			input_spike		=> input_spike,
-			neuron_cnt		=> inh_cnt,
-			inh_elaboration		=> inh_elaboration,
+			-- input controls
+			clk		=> clk,
+			rst_n		=> rst_n,
+			start		=> start,
+			stop		=> stop_internal,
+			exc_or	       	=> exc_or_internal,
+			exc_stop       	=> exc_stop_internal,
+			inh_or	        => inh_or_internal,
+			inh_stop        => inh_stop_internal,
+                       	input_spike	=> input_spike,
 
 			-- input parameters
-			v_th_0		 	=> v_th_0,
-			v_reset			=> v_reset,
-			inh_weight		=> inh_weight,
-			v_th_plus		=> v_th_plus,
-			exc_weights		=> exc_weights,
-
-			-- output
-			out_spikes		=> feedback_spikes,
-			layer_ready		=> layer_ready
+			v_th_0		=> v_th_0,
+			v_reset		=> v_reset,
+			inh_weight	=> inh_weight,
+			exc_weights	=> exc_weights,
+			v_th_plus	=> v_th_plus,
+                                                       
+			-- output          
+			out_spikes	=> feedback_spikes,
+			neurons_ready	=> neurons_ready
 		);
-
 
 
 end architecture behaviour;

@@ -18,10 +18,11 @@ entity neuron is
 		clk		: in std_logic;
 		rst_n		: in std_logic;
 		start		: in std_logic;
-		start1		: in std_logic;
-		start2		: in std_logic;
-		rest_en		: in std_logic;
-		mask_neuron	: in std_logic;
+		stop		: in std_logic;
+		exc_or		: in std_logic;
+		exc_stop	: in std_logic;
+		inh_or		: in std_logic;
+		inh_stop	: in std_logic;
 		input_spike	: in std_logic;
 
 		-- input parameters
@@ -94,7 +95,6 @@ architecture behaviour of neuron is
 	end component neuron_datapath;
 
 
-
 	component neuron_cu is
 
 		port(
@@ -102,10 +102,11 @@ architecture behaviour of neuron is
 			clk		: in std_logic;
 			rst_n		: in std_logic;
 			start		: in std_logic;
-			start1		: in std_logic;
-			start2		: in std_logic;
-			rest_en		: in std_logic;
-			mask_neuron	: in std_logic;
+			stop		: in std_logic;
+			exc_or		: in std_logic;
+			exc_stop	: in std_logic;
+			inh_or		: in std_logic;
+			inh_stop	: in std_logic;
 			input_spike	: in std_logic;
 
 			-- input from datapath
@@ -175,10 +176,11 @@ begin
 			clk		=> clk,		
 			rst_n		=> rst_n,
    			start		=> start,			
-			start1		=> start1,	     
-			start2		=> start2,	     
-			rest_en		=> rest_en,	     
-			mask_neuron	=> mask_neuron,	     
+			stop		=> stop,	     
+			exc_or		=> exc_or,	     
+			exc_stop	=> exc_stop,	     
+			inh_or		=> inh_or,	     
+			inh_stop	=> inh_stop,	     
 			input_spike	=> input_spike,	     
 
 			-- input from datapath

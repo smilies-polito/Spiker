@@ -46,11 +46,11 @@ architecture behaviour of neuron_cu is
 		reset,
 		idle,
 		exp_decay,
-		fire,
-		exc_spike,
 		no_exc_spike,
+		exc_spike,
+		no_inh_spike,
 		inh_spike,
-		no_inh_spike
+		fire
 	);
 
 	signal present_state, next_state	: states;
@@ -100,9 +100,9 @@ begin
 
 				if start = '1'
 				then
-					next_state <= idle;
-				else
 					next_state <= exp_decay;
+				else
+					next_state <= idle;
 				end if;
 			
 
@@ -178,6 +178,29 @@ begin
 				end if;
 
 
+			-- no_inh_spike
+			when no_inh_spike =>
+				
+				if inh_stop = '1'
+				then
+					if exceed_v_th = '1'
+					then
+						next_state <= fire;
+
+					else
+						next_state <= exp_decay;
+					end if;
+
+				elsif input_spike = '1'
+				then
+					next_state <= inh_spike;
+
+				else
+					next_state <= no_inh_spike;
+				end if;
+
+
+
 			-- inh_spike
 			when inh_spike =>
 
@@ -201,27 +224,7 @@ begin
 
 				
 
-			-- no_inh_spike
-			when no_inh_spike =>
-				
-				if inh_stop = '1'
-				then
-					if exceed_v_th = '1'
-					then
-						next_state <= fire;
-
-					else
-						next_state <= exp_decay;
-					end if;
-
-				elsif input_spike = '1'
-				then
-					next_state <= inh_spike;
-
-				else
-					next_state <= no_inh_spike;
-				end if;
-
+			
 
 			-- fire
 			when fire =>

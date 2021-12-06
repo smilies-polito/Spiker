@@ -12,17 +12,17 @@ architecture behaviour of neuron_tb is
 
 
 	-- parallelism
-	constant N		: integer := 8;
+	constant N		: integer := 16;
 
 	-- exponential shift
-	constant shift		: integer := 1;
+	constant shift		: integer := 10;
 
 	-- model parameters
-	constant v_th_0_int	: integer := 13;	
-	constant v_reset_int	: integer := 5;	
-	constant v_th_plus_int	: integer := 1;	
-	constant inh_weight_int	: integer := -15;	
-	constant exc_weight_int	: integer := 3;
+	constant v_th_0_int	: integer 	:= 13*(2**10);	
+	constant v_reset_int	: integer 	:= 5*(2**10);	
+	constant v_th_plus_int	: integer	:= 102; -- 0.1*2^11 rounded	
+	constant inh_weight_int	: integer 	:= 7*(2**10);	
+	constant exc_weight_int	: integer 	:= 7*(2**10);
 
 
 	-- input parameters
@@ -37,15 +37,18 @@ architecture behaviour of neuron_tb is
 	signal clk		: std_logic;
 	signal rst_n		: std_logic;
 	signal start		: std_logic;
-	signal start1		: std_logic;
-	signal start2		: std_logic;
-	signal rest_en		: std_logic;
-	signal mask_neuron	: std_logic;
-	signal input_spike	: std_logic;
+	signal stop	        : std_logic;
+	signal exc_or	        : std_logic;
+	signal exc_stop		: std_logic;
+	signal inh_or		: std_logic;
+	signal inh_stop		: std_logic;
+        signal input_spike	: std_logic;
+
 
 	-- output
 	signal out_spike	: std_logic;
 	signal neuron_ready	: std_logic;
+
 
 
 
@@ -65,10 +68,11 @@ architecture behaviour of neuron_tb is
 			clk		: in std_logic;
 			rst_n		: in std_logic;
 			start		: in std_logic;
-			start1		: in std_logic;
-			start2		: in std_logic;
-			rest_en		: in std_logic;
-			mask_neuron	: in std_logic;
+			stop		: in std_logic;
+			exc_or		: in std_logic;
+			exc_stop	: in std_logic;
+			inh_or		: in std_logic;
+			inh_stop	: in std_logic;
 			input_spike	: in std_logic;
 
 			-- input parameters
@@ -101,6 +105,7 @@ begin
 
 
 
+
 	-- clock
 	clock_gen : process
 	begin
@@ -129,122 +134,114 @@ begin
 	start_gen : process
 	begin
 		start	<= '0';		-- 0 ns
-		wait for 26 ns;
-		start	<= '1';		-- 26 ns
+		wait for 38 ns;
+		start	<= '1';		-- 38 ns
 		wait for 12 ns;
-		start	<= '0';		-- 38 ns
-		wait for 206 ns;
-		start	<= '1';		-- 254 ns
-		wait for 12 ns;
-		start	<= '0';		-- 266 ns
-		wait for 144 ns;
-		start	<= '1';		-- 410 ns
-		wait for 12 ns;
-		start	<= '0';		-- 422 ns
+		start	<= '0';		-- 50 ns
 		wait;
 	end process start_gen;
 
 
-	-- start1
-	start1_gen : process
+	-- exc_or
+	exc_or_gen : process
 	begin
-		start1	<= '0';		-- 0 ns
-		wait for 38 ns;			
-		start1	<= '1';		-- 38 ns
-		wait for 24 ns;			          
-		start1	<= '0';         -- 62 ns
+		exc_or	<= '0';		-- 0 ns
+		wait for 62 ns;			
+		exc_or	<= '1';         -- 62 ns
 		wait for 48 ns;			          
-		start1	<= '1';         -- 110 ns
-		wait for 12 ns;			          
-		start1	<= '0';         -- 122 ns
-		wait for 36 ns;
-		start1	<= '1';         -- 158 ns
-		wait for 12 ns;
-		start1	<= '0';         -- 170 ns
-		wait for 96 ns;
-		start1	<= '1';		-- 266 ns
-		wait for 60 ns;
-		start1	<= '0';		-- 326 ns
-		wait for 96 ns;
-		start1 <= '1';		-- 422 ns
-		wait for 60 ns;
-		start1 <= '0';		-- 482 ns
+		exc_or	<= '0';         -- 110 ns
+		wait for 48 ns;			          
+		exc_or	<= '1';         -- 158 ns
+		wait for 84 ns;			          
+		exc_or	<= '0';         -- 242 ns
 		wait;
-	end process start1_gen;
+	end process exc_or_gen;
 
 
-
-	-- start2
-	start2_gen : process
+	-- exc_stop
+	exc_stop_gen : process
 	begin
-		start2	<= '0';		-- 0 ns
-		wait for 62 ns;		
-		start2	<= '1';		-- 62 ns
-		wait for 24 ns;			          
-		start2	<= '0';         -- 86 ns
-		wait for 48 ns;		
-		start2	<= '1';		-- 134 ns
-		wait for 12 ns;
-		start2	<= '0';		-- 146 ns
-		wait for 24 ns;
-		start2	<= '1';		-- 170 ns
-		wait for 12 ns;
-		start2	<= '0';		-- 182 ns
+		exc_stop	<= '0';		-- 0 ns
+		wait for 98 ns;			
+		exc_stop	<= '1';         -- 98 ns
+		wait for 12 ns;			          
+		exc_stop	<= '0';         -- 110 ns
+		wait for 84 ns;			          
+		exc_stop	<= '1';         -- 194 ns
+		wait for 12 ns;			          
+		exc_stop	<= '0';         -- 206 ns
 		wait;
-	end process start2_gen;
+	end process exc_stop_gen;
+
+
+	-- inh_or
+	inh_or_gen : process
+	begin
+		inh_or	<= '0';		-- 0 ns
+		wait for 110 ns;			          
+		inh_or	<= '1';         -- 110 ns
+		wait for 132 ns;			          
+		inh_or	<= '0';         -- 242 ns
+		wait;
+	end process inh_or_gen;
+
+
+	-- inh_stop
+	inh_stop_gen : process
+	begin
+		inh_stop	<= '0';		-- 0 ns
+		wait for 146 ns;			
+		inh_stop	<= '1';         -- 146 ns
+		wait for 12 ns;			          
+		inh_stop	<= '0';         -- 158 ns
+		wait for 72 ns;			          
+		inh_stop	<= '1';         -- 230 ns
+		wait for 12 ns;			          
+		inh_stop	<= '0';         -- 242 ns
+		wait for 12 ns;
+		inh_stop	<= '1';		-- 254 ns
+		wait for 12 ns;			          
+		inh_stop	<= '0';         -- 266 ns
+		wait;
+	end process inh_stop_gen;
 
 
 	-- input_spike
 	input_spike_gen: process
 	begin
 		input_spike	<= '0';	-- 0 ns	
-		wait for 38 ns;			
-		input_spike	<= '1';	-- 38 ns
-		wait for 12 ns;			          
-		input_spike	<= '0'; -- 50 ns
-		wait for 12 ns;			          
+		wait for 62 ns;	          
 		input_spike	<= '1'; -- 62 ns
-		wait for 12 ns;			          
-		input_spike	<= '0'; -- 74 ns
-		wait for 36 ns;			          
-		input_spike	<= '1'; -- 110 ns
-		wait for 48 ns;			          
+		wait for 96 ns;			          
 		input_spike	<= '0'; -- 158 ns
-		wait for 108 ns;
-		input_spike	<= '1'; -- 266 ns
-		wait for 60 ns;
-		input_spike	<= '0'; -- 326 ns
-		wait for 96 ns;
-		input_spike	<= '1'; -- 422 ns
-		wait for 48 ns;
-		input_spike	<= '0';	-- 470 ns
+		wait for 24 ns;			          
+		input_spike	<= '1'; -- 182 ns
+		wait for 12 ns;			          
+		input_spike	<= '0'; -- 194 ns
+		wait for 12 ns;			          
+		input_spike	<= '1'; -- 206 ns
+		wait for 12 ns;			          
+		input_spike	<= '0'; -- 218 ns
+		wait for 12 ns;			          
+		input_spike	<= '1'; -- 230 ns
+		wait for 12 ns;			          
+		input_spike	<= '0'; -- 242 ns
 		wait;
 	end process input_spike_gen;
 
 
-	-- mask_neuron
-	mask_neuron_gen : process
+
+
+	-- stop
+	stop_gen : process
 	begin
-		mask_neuron	<= '0';	-- 0 ns
-		wait;
-	end process mask_neuron_gen;
-
-
-
-	-- rest_en
-	rest_en_gen : process
-	begin
-		rest_en	<= '0';		-- 0 ns
-		wait for 206 ns;
-		rest_en	<= '1';		-- 206 ns
+		stop	<= '0';		-- 0 ns
+		wait for 266 ns;
+		stop	<= '1';		-- 266 ns
 		wait for 12 ns;
-		rest_en <= '0';		-- 218 ns
-		wait for 156 ns;
-		rest_en <= '1';		-- 374 ns
-		wait for 12 ns;
-		rest_en <= '0';		-- 386 ns
+		stop <= '0';		-- 278 ns
 		wait;
-	end process rest_en_gen;
+	end process stop_gen;
 
 
 
@@ -267,11 +264,12 @@ begin
 			clk		=> clk,
 			rst_n		=> rst_n,
 			start		=> start,
-			start1		=> start1,
-			start2		=> start2,
-			rest_en		=> rest_en,
-			mask_neuron	=> mask_neuron,
-			input_spike	=> input_spike,
+			stop		=> stop,
+			exc_or	       	=> exc_or,
+			exc_stop       	=> exc_stop,
+			inh_or	        => inh_or,
+			inh_stop        => inh_stop,
+                       	input_spike	=> input_spike,
 
 			-- input parameters
 			v_th_0		=> v_th_0,
