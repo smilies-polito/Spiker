@@ -9,10 +9,11 @@ entity neuron_cu is
 		clk		: in std_logic;
 		rst_n		: in std_logic;
 		start		: in std_logic;
-		start1		: in std_logic;
-		start2		: in std_logic;
-		rest_en		: in std_logic;
-		mask_neuron	: in std_logic;
+		stop		: in std_logic;
+		exc_or		: in std_logic;
+		exc_stop	: in std_logic;
+		inh_or		: in std_logic;
+		inh_stop	: in std_logic;
 		input_spike	: in std_logic;
 
 		-- input from datapath
@@ -49,17 +50,12 @@ architecture behaviour of neuron_cu is
 		exc_spike,
 		no_exc_spike,
 		inh_spike,
-		no_inh_spike,
-		rest
+		no_inh_spike
 	);
 
 	signal present_state, next_state	: states;
-	signal masked_spike			: std_logic;
 
 begin
-
-
-	masked_spike <= input_spike and not mask_neuron;
 
 
 
@@ -84,91 +80,9 @@ begin
 
 
 	-- state evaluation
-	state_evaluation	: process(present_state, start, start1, start2,
-					exceed_v_th, input_spike, masked_spike,
-					rest_en)
-
-
-		procedure from_start2_on(
-			
-			-- input
-			signal start2		: in std_logic;
-			signal masked_spike	: in std_logic; 
-			signal rest_en		: in std_logic;
-			
-			-- output
-			signal next_state	: out states) is
-		begin
-
-			if start2 = '1'
-			then
-				-- inhibitory elaboration
-				if masked_spike = '1'
-				then
-					next_state <= inh_spike;
-				else
-					next_state <= no_inh_spike;
-				end if;
-			else
-				if rest_en = '1'
-				then
-					-- rest
-					next_state <= rest;
-				else
-					if exceed_v_th = '1'
-					then
-						-- exponential decay
-						next_state <= fire;
-					else
-						-- fire
-						next_state <= exp_decay;
-					end if;
-				end if;
-			end if;
-		
-		end procedure from_start2_on;
-	
-		
-		
-		procedure from_start1_on(
-			
-			-- input
-			signal start1		: in std_logic;
-			signal start2		: in std_logic;
-			signal masked_spike	: in std_logic; 
-			signal rest_en		: in std_logic;
-			
-			-- output
-			signal next_state	: out states) is
-		begin
-
-			if start1 = '1'
-			then
-				-- inhibitory elaboration
-				if masked_spike = '1'
-				then
-					next_state <= exc_spike;
-				else
-					next_state <= no_exc_spike;
-				end if;
-			else
-
-				from_start2_on(
-			
-					-- input
-					start2		=> start2,
-					masked_spike	=> masked_spike,
-					rest_en		=> rest_en,
-					                   
-					-- output          -- output
-					next_state	=> next_state
-				);
-
-			end if;
-
-		end procedure from_start1_on;
-
-
+	state_evaluation	: process(present_state, start, stop, exc_or,
+					inh_or, exc_stop, inh_stop, input_spike,
+					exceed_v_th)
 	begin
 
 
@@ -183,131 +97,152 @@ begin
 
 			-- idle
 			when idle =>
+
 				if start = '1'
 				then
-					if exceed_v_th = '1'
-					then
-						next_state <= fire;
-					else
-						next_state <= exp_decay;
-					end if;
-				else
-
 					next_state <= idle;
-
+				else
+					next_state <= exp_decay;
 				end if;
-
+			
 
 			-- exp_decay
 			when exp_decay =>
 
-				from_start1_on(
-			
-					-- input
-					start1		=> start1,
-					start2		=> start2,
-					masked_spike	=> masked_spike,
-					rest_en		=> rest_en,
+				if stop = '1'
+				then
+					next_state <= idle;
 
-					-- output
-					next_state	=> next_state	
-				);
+				elsif exc_or = '1'
+				then
+					next_state <= no_exc_spike;
 
-				
-			-- fire
-			when fire =>
+				elsif inh_or = '1'
+				then
+					next_state <= no_inh_spike;
 
-				from_start1_on(
-			
-					-- input
-					start1		=> start1,
-					start2		=> start2,
-					masked_spike	=> masked_spike,
-					rest_en		=> rest_en,
+				else
+					next_state <= exp_decay;
 
-					-- output
-					next_state	=> next_state	
-				);
-
-
-
-
-			-- exc_spike
-			when exc_spike =>
-		
-				from_start1_on(
-			
-					-- input
-					start1		=> start1,
-					start2		=> start2,
-					masked_spike	=> masked_spike,
-					rest_en		=> rest_en,
-
-					-- output
-					next_state	=> next_state	
-				);
-
-
+				end if;
 
 			-- no_exc_spike
 			when no_exc_spike =>
+
+				if exc_stop = '1'
+				then
+					if inh_or = '1'
+					then
+						next_state <= no_inh_spike;
+
+					elsif exceed_v_th = '1'
+					then
+						next_state <= fire;
+
+					else
+						next_state <= exp_decay;
+					end if;
+
+				elsif input_spike = '1'
+				then
+					next_state <= exc_spike;
+
+				else
+					next_state <= no_exc_spike;
+				end if;
 				
-				from_start1_on(
-			
-					-- input
-					start1		=> start1,
-					start2		=> start2,
-					masked_spike	=> masked_spike,
-					rest_en		=> rest_en,
 
-					-- output
-					next_state	=> next_state	
-				);
+			-- exc_spike
+			when exc_spike =>
 
+				if exc_stop = '1'
+				then
+					if inh_or = '1'
+					then
+						next_state <= no_inh_spike;
 
+					elsif exceed_v_th = '1'
+					then
+						next_state <= fire;
+
+					else
+						next_state <= exp_decay;
+					end if;
+
+				elsif input_spike = '1'
+				then
+					next_state <= exc_spike;
+
+				else
+					next_state <= no_exc_spike;
+				end if;
 
 
 			-- inh_spike
 			when inh_spike =>
+
+				if inh_stop = '1'
+				then
+					if exceed_v_th = '1'
+					then
+						next_state <= fire;
+
+					else
+						next_state <= exp_decay;
+					end if;
+
+				elsif input_spike = '1'
+				then
+					next_state <= inh_spike;
+
+				else
+					next_state <= no_inh_spike;
+				end if;
+
 				
-				from_start2_on(
-			
-					-- input
-					start2		=> start2,
-					masked_spike	=> masked_spike,
-					rest_en		=> rest_en,
-					                   
-					-- output          -- output
-					next_state	=> next_state
-				);
-
-
-
 
 			-- no_inh_spike
 			when no_inh_spike =>
 				
-				from_start2_on(
-			
-					-- input
-					start2		=> start2,
-					masked_spike	=> masked_spike,
-					rest_en		=> rest_en,
-					                   
-					-- output          -- output
-					next_state	=> next_state
-				);
+				if inh_stop = '1'
+				then
+					if exceed_v_th = '1'
+					then
+						next_state <= fire;
+
+					else
+						next_state <= exp_decay;
+					end if;
+
+				elsif input_spike = '1'
+				then
+					next_state <= inh_spike;
+
+				else
+					next_state <= no_inh_spike;
+				end if;
 
 
+			-- fire
+			when fire =>
 
-			-- rest
-			when rest =>
-				next_state <= idle;
+				if stop = '1'
+				then
+					next_state <= idle;
 
+				elsif exc_or = '1'
+				then
+					next_state <= no_exc_spike;
+
+				else
+					next_state <= no_inh_spike;
+
+				end if;
 
 			-- default case
 			when others =>
 				next_state <= reset;
+
 
 		end case;
 
@@ -315,20 +250,18 @@ begin
 
 
 
-
-
 	output_evaluation	: process(present_state)
 	begin
 
 		-- default values
-		no_update	<= '0';
+		no_update	<= '1';
 		update_sel	<= "00";
 		v_or_v_th	<= '0';
 		add_or_sub	<= '0';
 		v_th_update	<= '0';
 		v_update	<= '1';
 		v_th_en		<= '0';
-		v_en		<= '0';
+		v_en		<= '1';
 		v_rst_n		<= '1';
 		out_spike	<= '0';
 		neuron_ready	<= '0';
@@ -337,19 +270,46 @@ begin
 
 			-- reset
 			when reset =>
-				v_en 		<= '1';
+				v_en 		<= '0';
 				v_th_en		<= '1';
-				v_update	<= '0';
+				v_rst_n		<= '0';
 
 			-- idle
 			when idle =>
 				neuron_ready	<= '1';
+				v_en 		<= '0';
+				v_rst_n		<= '0';
 
 			-- exp_decay
 			when exp_decay =>
 				add_or_sub	<= '1';
-				v_en		<= '1';
 				
+
+			-- no_exc_spike
+			when no_exc_spike	=>
+				update_sel	<= "10";
+				v_en		<= '0';
+
+			-- exc_spike
+			when exc_spike =>
+				update_sel	<= "10";
+				v_en		<= '1';
+				no_update	<= '0';
+
+				
+			-- no_inh_spike
+			when no_inh_spike	=>
+				update_sel	<= "11";
+				v_en		<= '0';
+
+
+			-- inh_spike
+			when inh_spike		=>
+				update_sel	<= "11";
+				v_en		<= '1';
+				no_update	<= '0';
+
+
 			-- fire
 			when fire =>
 				update_sel	<= "01";
@@ -357,40 +317,13 @@ begin
 				v_th_update	<= '1';
 				v_update	<= '0';
 				v_th_en		<= '1';
-				v_en		<= '1';
 				out_spike	<= '1';
-
-			-- exc_spike
-			when exc_spike =>
-				update_sel	<= "10";
-				v_en		<= '1';
-
-			-- no_exc_spike
-			when no_exc_spike	=>
-				no_update	<= '1';
-				update_sel	<= "10";
-				v_en		<= '0';
-				
-			-- inh_spike
-			when inh_spike		=>
-				update_sel	<= "11";
-				v_en		<= '1';
-
-			-- no_inh_spike
-			when no_inh_spike	=>
-				no_update	<= '1';
-				update_sel	<= "11";
-				v_en		<= '0';
-
-			-- rest
-			when rest =>
-				v_rst_n		<= '0';
 
 			-- default case
 			when others =>
-				v_en 		<= '1';
+				v_en 		<= '0';
+				v_rst_n		<= '0';
 				v_th_en		<= '1';
-				v_update	<= '0';
 
 		end case;
 
