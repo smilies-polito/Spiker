@@ -99,6 +99,9 @@ architecture behaviour of layer_datapath is
 	signal spikes			: std_logic_vector(2**N_inh_cnt-1 downto 0);
 
 
+
+
+
 	component anticipate_bits is
 
 		generic(
@@ -461,6 +464,7 @@ begin
 			out_spikes	=> feedback_spikes,
 			neurons_ready	=> neurons_ready
 		);
+
 
 
 end architecture behaviour;

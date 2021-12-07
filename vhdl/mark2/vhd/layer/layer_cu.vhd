@@ -53,6 +53,8 @@ architecture behaviour of layer_cu is
 begin
 
 
+
+
 	-- state transition
 	state_transition	: process(clk, rst_n)
 	begin
@@ -154,7 +156,7 @@ begin
 
 
 
-
+	-- output evaluation
 	output_evaluation	: process(present_state)
 	begin
 
@@ -220,6 +222,7 @@ begin
 		end case;
 
 	end process output_evaluation;
+
 
 
 end architecture behaviour;
