@@ -96,6 +96,7 @@ architecture behaviour of layer_datapath is
 	signal inh_stop_internal	: std_logic;
 	signal stop_internal		: std_logic;
 	signal feedback_spikes		: std_logic_vector(layer_size-1 downto 0);
+	signal spikes			: std_logic_vector(2**N_inh_cnt-1 downto 0);
 
 
 	component anticipate_bits is
@@ -218,6 +219,7 @@ architecture behaviour of layer_datapath is
 
 
 
+
 	component neurons_layer is
 
 		generic(
@@ -244,7 +246,7 @@ architecture behaviour of layer_datapath is
 			exc_stop	: in std_logic;
 			inh_or		: in std_logic;
 			inh_stop	: in std_logic;
-			input_spike	: in std_logic;
+			input_spikes	: in std_logic_vector(layer_size-1 downto 0);
 
 			-- input parameters
 			v_th_0		: in signed(N-1 downto 0);		
@@ -259,7 +261,6 @@ architecture behaviour of layer_datapath is
 		);
 
 	end component neurons_layer;
-
 
 
 
@@ -406,6 +407,22 @@ begin
 		);
 
 
+	generate_spikes		: bitMask
+
+		generic map(
+			N_cnt			=> N_inh_cnt
+		)
+
+		port map(
+			-- input
+			input_cnt		=> inh_cnt,
+			inh			=> inh,
+			input_bit		=> input_spike,
+
+			-- output
+			output_bits		=> spikes
+		);
+
 
 
 	bare_layer : neurons_layer
@@ -431,7 +448,7 @@ begin
 			exc_stop       	=> exc_stop_internal,
 			inh_or	        => inh_or_internal,
 			inh_stop        => inh_stop_internal,
-                       	input_spike	=> input_spike,
+                       	input_spikes	=> spikes(layer_size-1 downto 0),
 
 			-- input parameters
 			v_th_0		=> v_th_0,

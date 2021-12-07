@@ -43,7 +43,7 @@ architecture behaviour of neurons_layer_tb is
 	signal exc_stop		: std_logic;
 	signal inh_or		: std_logic;
 	signal inh_stop		: std_logic;
-        signal input_spike	: std_logic;
+        signal input_spikes	: std_logic_vector(layer_size-1 downto 0);
 
 
 	-- output
@@ -78,7 +78,8 @@ architecture behaviour of neurons_layer_tb is
 			exc_stop	: in std_logic;
 			inh_or		: in std_logic;
 			inh_stop	: in std_logic;
-			input_spike	: in std_logic;
+			input_spikes	: in std_logic_vector(layer_size-1
+						  downto 0);
 
 			-- input parameters
 			v_th_0		: in signed(N-1 downto 0);		
@@ -88,7 +89,8 @@ architecture behaviour of neurons_layer_tb is
 			exc_weights	: in signed(layer_size*N-1 downto 0);
 
 			-- output
-			out_spikes	: out std_logic_vector(layer_size-1 downto 0);
+			out_spikes	: out std_logic_vector(layer_size-1 
+						downto 0);
 			neurons_ready	: out std_logic
 		);
 
@@ -219,28 +221,28 @@ begin
 	end process inh_stop_gen;
 
 
-	-- input_spike
-	input_spike_gen: process
+	-- input_spikes
+	input_spikes_gen: process
 	begin
-		input_spike	<= '0';	-- 0 ns	
-		wait for 62 ns;	          
-		input_spike	<= '1'; -- 62 ns
-		wait for 96 ns;			          
-		input_spike	<= '0'; -- 158 ns
-		wait for 24 ns;			          
-		input_spike	<= '1'; -- 182 ns
-		wait for 12 ns;			          
-		input_spike	<= '0'; -- 194 ns
-		wait for 12 ns;			          
-		input_spike	<= '1'; -- 206 ns
-		wait for 12 ns;			          
-		input_spike	<= '0'; -- 218 ns
-		wait for 12 ns;			          
-		input_spike	<= '1'; -- 230 ns
-		wait for 12 ns;			          
-		input_spike	<= '0'; -- 242 ns
+		input_spikes	<= (others => '0');	-- 0 ns	
+		wait for 62 ns;
+		input_spikes	<= (others => '1'); -- 62 ns
+		wait for 96 ns;
+		input_spikes	<= (others => '0'); -- 158 ns
+		wait for 24 ns;
+		input_spikes	<= (others => '1'); -- 182 ns
+		wait for 12 ns;
+		input_spikes	<= (others => '0'); -- 194 ns
+		wait for 12 ns;
+		input_spikes	<= (others => '1'); -- 206 ns
+		wait for 12 ns;
+		input_spikes	<= (others => '0'); -- 218 ns
+		wait for 12 ns;
+		input_spikes	<= (others => '1'); -- 230 ns
+		wait for 12 ns;
+		input_spikes	<= (others => '0'); -- 242 ns
 		wait;
-	end process input_spike_gen;
+	end process input_spikes_gen;
 
 
 
@@ -285,7 +287,7 @@ begin
 			exc_stop       	=> exc_stop,
 			inh_or	        => inh_or,
 			inh_stop        => inh_stop,
-                       	input_spike	=> input_spike,
+                       	input_spikes	=> input_spikes,
 
 			-- input parameters
 			v_th_0		=> v_th_0,

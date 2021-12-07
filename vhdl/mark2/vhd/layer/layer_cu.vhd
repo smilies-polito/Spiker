@@ -10,11 +10,11 @@ entity layer_cu is
 		start			: in std_logic;
 
 		-- signals from datapath
-		stop			: in std_logic;		
 		exc_or			: in std_logic;		
 		exc_stop		: in std_logic;		
 		inh_or			: in std_logic;		
 		inh_stop		: in std_logic;
+		stop			: in std_logic;		
 
 		-- towards datapath
 		exc_en			: out std_logic;	
@@ -25,17 +25,14 @@ entity layer_cu is
 		exc_cnt_en		: out std_logic;	
 		inh_cnt_rst_n		: out std_logic;	
 		inh_cnt_en		: out std_logic;	
+		exc_or_inh_sel		: out std_logic;	
+		inh			: out std_logic;	
 		cycles_cnt_rst_n	: out std_logic;	
 		cycles_cnt_en		: out std_logic;	
-		exc_or_inh_sel		: out std_logic;	
-		inh_elaboration		: out std_logic;	
-		rest_en			: out std_logic;	
-		mask1			: out std_logic;	
-		mask2			: out std_logic;
 
 		-- output
 		sample			: out std_logic;
-		snn_ready		: out std_logic
+		layer_ready		: out std_logic
 	);
 
 end entity layer_cu;
@@ -48,10 +45,7 @@ architecture behaviour of layer_cu is
 		idle,
 		sample_spikes,
 		exc_update,
-		exc_end,
-		inh_update,
-		inh_end,
-		rest		
+		inh_update
 	);
 
 	signal present_state, next_state	: states;
@@ -78,110 +72,6 @@ begin
 	-- state evaluation
 	state_evaluation	: process(present_state, start, stop, exc_or,
 					exc_stop, inh_or, inh_stop)
-
-		procedure from_inh_stop_on(
-
-			-- input
-			signal inh_stop		: in std_logic;
-
-			-- output
-			signal next_state	: out states) is
-		begin
-
-			if inh_stop = '1'
-			then
-				next_state <= inh_end;
-			else
-				next_state <= inh_update;
-			end if;
-
-		end procedure from_inh_stop_on;
-
-
-		procedure from_inh_or_on(
-			
-			-- input
-			signal inh_or		: in std_logic;
-			signal inh_stop		: in std_logic;
-
-			-- output
-			signal next_state	: out states) is
-		begin
-
-			if inh_or ='1'
-			then
-				from_inh_stop_on(
-
-					-- input
-					inh_stop	=> inh_stop,
-
-					-- output
-					next_state	=> next_state		
-				);
-			else
-				next_state <= sample_spikes;
-			end if;
-
-		end procedure from_inh_or_on;
-
-
-		procedure from_exc_stop_on(
-
-			-- input
-			signal exc_stop		: in std_logic;
-
-			-- output
-			signal next_state	: out states) is
-		begin
-
-			if exc_stop = '1'
-			then
-				next_state <= exc_end;
-			else
-				next_state <= exc_update;
-			end if;
-
-		end procedure from_exc_stop_on;
-
-
-		procedure from_exc_or_on(
-			
-			-- input
-			signal exc_or		: in std_logic;
-			signal exc_stop		: in std_logic;
-			signal inh_or		: in std_logic;
-			signal inh_stop		: in std_logic;
-
-			-- output
-			signal next_state	: out states) is
-		begin
-
-			if exc_or ='1'
-			then
-				from_exc_stop_on(
-
-					-- input
-					exc_stop	=> exc_stop,
-
-					-- output
-					next_state	=> next_state		
-				);
-			else
-				
-				from_inh_or_on(
-			
-					-- input
-					inh_or		=> inh_or,
-					inh_stop	=> inh_stop,
-
-					-- output
-					next_state	=> next_state
-				);
-			end if;
-
-		end procedure from_exc_or_on;
-
-
 	begin
 
 		-- default case
@@ -211,71 +101,52 @@ begin
 
 				if stop = '1'
 				then
-					next_state <= rest;
+					next_state <= idle;
 				else
-					from_exc_or_on(
-						-- input
-						exc_or		=> exc_or,
-						exc_stop	=> exc_stop,
-						inh_or		=> inh_or,
-						inh_stop	=> inh_stop,
-                                                                           
-						-- output          
-						next_state	=> next_state
-	
-					);
+					if exc_or = '1'
+					then
+						next_state <= exc_update;
+
+					elsif inh_or = '1'
+					then
+						next_state <= inh_update;
+					
+					else
+						next_state <= sample_spikes;
+					end if;
 				end if;
+
 
 			-- exc_update
 			when exc_update =>
 
-				from_exc_stop_on(
+				if exc_stop = '0'
+				then
+					next_state <= exc_update;
 
-					-- input
-					exc_stop	=> exc_stop,
+				elsif inh_or = '1'
+				then
+					next_state <= inh_update;
 
-					-- output
-					next_state	=> next_state		
-				);		
+				else
+					next_state <= sample_spikes;
+				end if;
 
-			-- exc_end
-			when exc_end =>		
-
-				from_inh_or_on(
-			
-					-- input
-					inh_or		=> inh_or,
-					inh_stop	=> inh_stop,
-
-					-- output
-					next_state	=> next_state
-				);
 
 			-- inh_update
 			when inh_update =>
+				
+				if inh_stop = '1'
+				then
+					next_state <= sample_spikes;
+				else
+					next_state <= inh_update;
+				end if;
 
-				from_inh_stop_on(
-
-					-- input
-					inh_stop	=> inh_stop,
-
-					-- output
-					next_state	=> next_state		
-				);		
-
-			-- inh_end
-			when inh_end =>
-
-				next_state <= sample_spikes;		
-
-			-- rest
-			when rest =>
-
-				next_state <= idle;
 
 			when others =>
 
-				next_state <= reset;
+				next_state <= reset;		
 
 		end case;
 
@@ -288,23 +159,20 @@ begin
 	begin
 
 		-- default values
-		sample			<= '0';
-		snn_ready		<= '0';
 		exc_en			<= '0';
 		anticipate_exc		<= '0';
 		inh_en			<= '0';
 		anticipate_inh		<= '0';
 		exc_cnt_en		<= '0';
-		exc_cnt_rst_n		<= '1';
+		exc_cnt_rst_n		<= '0';
 		inh_cnt_en		<= '0';
-		inh_cnt_rst_n		<= '1';
+		inh_cnt_rst_n		<= '0';
 		exc_or_inh_sel		<= '0';
-		mask1			<= '0';
-		mask2			<= '0';
+		inh			<= '0';
+		layer_ready		<= '0';
+		sample			<= '0';
 		cycles_cnt_en		<= '0';
 		cycles_cnt_rst_n	<= '1';
-		rest_en			<= '0';
-		inh_elaboration		<= '0';
 
 
 		case present_state is
@@ -312,68 +180,42 @@ begin
 			-- reset
 			when reset =>
 
-				exc_cnt_rst_n		<= '0';
-				inh_cnt_rst_n		<= '0';
 				cycles_cnt_rst_n	<= '0';
-				mask1			<= '0';
-				mask2			<= '0';
 
 			-- idle
 			when idle =>
 
-				snn_ready		<= '1';
-				mask1			<= '0';
-				mask2			<= '0';
+				layer_ready		<= '1';
+				cycles_cnt_rst_n	<= '0';
 
 			-- sample_spikes
 			when sample_spikes =>
 
 				sample			<= '1';
 				exc_en			<= '1';
+				anticipate_exc		<= '1';
 				inh_en			<= '1';
+				anticipate_inh		<= '1';
 				cycles_cnt_en		<= '1';
 
 			-- exc_update
 			when exc_update =>
 
-				mask2			<= '0';
 				exc_cnt_en		<= '1';
+				exc_cnt_rst_n		<= '1';
 
-			-- exc_end
-			when exc_end =>
-
-				mask1			<= '0';
-				mask2			<= '0';
-				exc_cnt_rst_n		<= '0';
 
 			-- inh_update
 			when inh_update =>
 
-				mask1			<= '0';
 				inh_cnt_en		<= '1';
-				inh_elaboration		<= '1';
-
-			-- inh_end
-			when inh_end =>
-
-				mask1			<= '0';
-				mask2			<= '0';
-				inh_cnt_rst_n		<= '0';
-				inh_elaboration		<= '1';
-
-			-- rest
-			when rest =>
-
-				rest_en			<= '1';
-				cycles_cnt_rst_n	<= '0';
+				inh_cnt_rst_n		<= '1';
+				exc_or_inh_sel		<= '1';
+				inh			<= '1';
 
 			when others =>
 
-				exc_cnt_rst_n		<= '0';
-				inh_cnt_rst_n		<= '0';
 				cycles_cnt_rst_n	<= '0';
-				mask1			<= '0';
-				mask2			<= '0';
 
 		end case;
 

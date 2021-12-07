@@ -131,13 +131,14 @@ begin
 	inputs_mux	: generic_mux_1bit
 
 		generic map(
-			N_sel				=> N_cnt	
+			N_sel				=> N_cnt-1	
 		)
 
 		port map(
 			-- input
 			mux_in(N_bit-1 downto 0)	=> input_bits,
-			mux_sel				=> cnt_out,
+			mux_sel				=> cnt_out(N_cnt-2
+								downto 0),
 
 			-- outpu
 			mux_out				=> selected_input

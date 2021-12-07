@@ -11,7 +11,7 @@ architecture behaviour of bit_selection_explicit_tb is
 
 
 	-- number of input bits
-	constant N_bit			: integer := 5;
+	constant N_bit			: integer := 3;
 
 	-- selction counter parallelism
 	constant N_cnt			: integer := 3;		
@@ -31,7 +31,7 @@ architecture behaviour of bit_selection_explicit_tb is
 
 	-- internal signals
 	signal cnt_out	: std_logic_vector(N_cnt-1 downto 0);
-	signal mux_in	: std_logic_vector(2**N_cnt-1 downto 0);
+	signal mux_in	: std_logic_vector(2**(N_cnt-1)-1 downto 0);
 
 
 	component generic_or is
@@ -192,13 +192,13 @@ begin
 	inputs_mux	: generic_mux_1bit
 
 		generic map(
-			N_sel		=> N_cnt	
+			N_sel		=> N_cnt-1	
 		)
 
 		port map(
 			-- input
 			mux_in		=> mux_in,
-			mux_sel		=> cnt_out,
+			mux_sel		=> cnt_out(N_cnt-2 downto 0),
 
 			-- outpu
 			mux_out		=> selected_input

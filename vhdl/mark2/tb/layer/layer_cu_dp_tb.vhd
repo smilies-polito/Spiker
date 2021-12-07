@@ -2,76 +2,66 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
-
 entity layer_cu_dp_tb is
 end entity layer_cu_dp_tb;
 
 
 architecture test of layer_cu_dp_tb is
 
-
 	-- internal parallelism
 	constant parallelism		: integer := 16;
 
 	-- excitatory spikes
-	constant input_parallelism	: integer := 4;
-	constant N_exc_cnt		: integer := 2;
+	constant input_parallelism	: integer := 2;
+	constant N_exc_cnt		: integer := 3;
 
 	-- inhibitory spikes
-	constant layer_size		: integer := 4;
+	constant layer_size		: integer := 2;
 	constant N_inh_cnt		: integer := 2;
 
 	-- elaboration steps
-	constant cycles_number		: integer := 50;
-	constant N_cycles_cnt		: integer := 6;
+	constant N_cycles_cnt		: integer := 4;
 
 	-- exponential decay shift
 	constant shift			: integer := 1;
-
 
 	-- model parameters
 	constant v_th_0_int	: integer 	:= 13*(2**10);	
 	constant v_reset_int	: integer 	:= 5*(2**10);	
 	constant v_th_plus_int	: integer	:= 102; -- 0.1*2^11 rounded	
-	constant inh_weight_int	: integer 	:= -15*(2**10);	
-	constant exc_weight_int	: integer 	:= 4*(2**10);
+	constant inh_weight_int	: integer 	:= 7*(2**10);	
+	constant exc_weight_int	: integer 	:= 7*(2**10);
 
-
-
-	-- common inputs
-	signal clk			: std_logic;
-	signal rst_n			: std_logic;
-	signal start			: std_logic;
-
-	-- input parameters
-	signal v_th_0			: signed(parallelism-1 downto 0);		
-	signal v_reset			: signed(parallelism-1 downto 0);	
-	signal inh_weight		: signed(parallelism-1 downto 0);		
-	signal v_th_plus		: signed(parallelism-1 downto 0);	
-	signal exc_weights		: signed(layer_size*
-						parallelism-1 downto 0);
-
-	-- datapath input
-	signal input_spikes		: std_logic_vector(input_parallelism-1
-						downto 0);
 
 	-- number of inputs, neurons and cycles
 	signal N_inputs			: std_logic_vector
-					     (N_exc_cnt-1 downto 0);
-	signal N_neurons			: std_logic_vector
-					     (N_inh_cnt-1 downto 0);
+						(N_exc_cnt-1 downto 0);
+	signal N_neurons		: std_logic_vector
+						(N_inh_cnt-1 downto 0);
 	signal N_cycles			: std_logic_vector
 						(N_cycles_cnt-1 downto 0);
+	-- input parameters
+	signal v_th_0		: signed(parallelism-1 downto 0);
+	signal v_reset		: signed(parallelism-1 downto 0);
+	signal v_th_plus	: signed(parallelism-1 downto 0);
+	signal inh_weight	: signed(parallelism-1 downto 0);
+	signal exc_weights	: signed(layer_size*parallelism-1 downto 0);
 
+	-- input
+	signal clk			: std_logic;
+	signal rst_n			: std_logic;
+	signal start			: std_logic;
+	signal input_spikes		: std_logic_vector
+						(input_parallelism-1 downto 0);
 
-	-- from datapath towards control unit
-	signal stop			: std_logic;		
+	-- signals from datapath
 	signal exc_or			: std_logic;		
 	signal exc_stop			: std_logic;		
 	signal inh_or			: std_logic;		
 	signal inh_stop			: std_logic;
+	signal stop			: std_logic;		
 
-	-- from control unit towards datapath
+	-- towards datapath
 	signal exc_en			: std_logic;	
 	signal anticipate_exc		: std_logic;	
 	signal inh_en			: std_logic;	
@@ -80,27 +70,17 @@ architecture test of layer_cu_dp_tb is
 	signal exc_cnt_en		: std_logic;	
 	signal inh_cnt_rst_n		: std_logic;	
 	signal inh_cnt_en		: std_logic;	
+	signal exc_or_inh_sel		: std_logic;	
+	signal inh			: std_logic;	
 	signal cycles_cnt_rst_n		: std_logic;	
 	signal cycles_cnt_en		: std_logic;	
-	signal exc_or_inh_sel		: std_logic;	
-	signal inh_elaboration		: std_logic;	
-	signal rest_en			: std_logic;	
-	signal mask1			: std_logic;	
-	signal mask2			: std_logic;
 
-	-- control unit output
+	-- output
 	signal sample			: std_logic;
-	signal snn_ready		: std_logic;
-
-
-	-- datapath output
-	signal out_spikes		: std_logic_vector
-					    (layer_size-1 downto 0);
 	signal layer_ready		: std_logic;
+	signal out_spikes		: std_logic_vector(layer_size-1 downto 0);
 	signal exc_cnt			: std_logic_vector
 						(N_exc_cnt-1 downto 0);
-
-
 
 	-- control unit internal signals
 	type states is(
@@ -108,29 +88,27 @@ architecture test of layer_cu_dp_tb is
 		idle,
 		sample_spikes,
 		exc_update,
-		exc_end,
-		inh_update,
-		inh_end,
-		rest		
+		inh_update
 	);
 
 	signal present_state, next_state	: states;
 
-
-
 	-- datapath internal signals
-	signal exc_spikes	: std_logic_vector(input_parallelism-1 downto 0);
-	signal inh_spikes	: std_logic_vector(layer_size-1 downto 0);
-	signal exc_spike	: std_logic;
-	signal inh_spike	: std_logic;
-	signal inh_cnt		: std_logic_vector(N_inh_cnt-1 downto 0);
-	signal cycles		: std_logic_vector(N_cycles_cnt-1 downto 0);
-	signal input_spike	: std_logic;
-	signal exc_or_internal	: std_logic;
-	signal inh_or_internal	: std_logic;
-	signal feedback_spikes	: std_logic_vector(layer_size-1 downto 0);
-	signal start1		: std_logic;
-	signal start2		: std_logic;
+	signal exc_spikes		: std_logic_vector(input_parallelism-1 downto 0);
+	signal inh_spikes		: std_logic_vector(layer_size-1 downto 0);
+	signal exc_spike		: std_logic;
+	signal inh_spike		: std_logic;
+	signal inh_cnt			: std_logic_vector(N_inh_cnt-1 downto 0);
+	signal cycles			: std_logic_vector(N_cycles_cnt-1 downto 0);
+	signal input_spike		: std_logic;
+	signal exc_or_internal		: std_logic;
+	signal exc_stop_internal	: std_logic;
+	signal inh_or_internal		: std_logic;
+	signal inh_stop_internal	: std_logic;
+	signal stop_internal		: std_logic;
+	signal feedback_spikes		: std_logic_vector(layer_size-1 downto 0);
+	signal spikes			: std_logic_vector(2**N_inh_cnt-1 downto 0);
+	signal neurons_ready		: std_logic;
 
 
 
@@ -234,6 +212,27 @@ architecture test of layer_cu_dp_tb is
 	end component mux2to1_std_logic;
 
 
+	component bitMask is
+
+		generic(
+			N_cnt		: integer :=3
+		);
+
+		port(
+			-- input
+			input_cnt	: in std_logic_vector(N_cnt-1 downto 0);
+			inh		: in std_logic;
+			input_bit	: in std_logic;
+
+			-- output
+			output_bits	: out std_logic_vector(2**N_cnt-1 downto 0)
+		);
+
+	end component bitMask;
+
+
+
+
 	component neurons_layer is
 
 		generic(
@@ -255,12 +254,12 @@ architecture test of layer_cu_dp_tb is
 			clk		: in std_logic;
 			rst_n		: in std_logic;		
 			start		: in std_logic;		
-			start1		: in std_logic;		
-			start2		: in std_logic;		
-			rest_en		: in std_logic;
-			input_spike	: in std_logic;
-			neuron_cnt	: in std_logic_vector(N_cnt-1 downto 0);
-			inh_elaboration	: in std_logic;
+			stop		: in std_logic;
+			exc_or		: in std_logic;
+			exc_stop	: in std_logic;
+			inh_or		: in std_logic;
+			inh_stop	: in std_logic;
+			input_spikes	: in std_logic_vector(layer_size-1 downto 0);
 
 			-- input parameters
 			v_th_0		: in signed(N-1 downto 0);		
@@ -270,12 +269,12 @@ architecture test of layer_cu_dp_tb is
 			exc_weights	: in signed(layer_size*N-1 downto 0);
 
 			-- output
-			out_spikes	: out std_logic_vector
-						(layer_size-1 downto 0);
-			layer_ready	: out std_logic
+			out_spikes	: out std_logic_vector(layer_size-1 downto 0);
+			neurons_ready	: out std_logic
 		);
 
 	end component neurons_layer;
+
 
 
 
@@ -290,22 +289,11 @@ begin
 	v_th_plus	<= to_signed(v_th_plus_int, parallelism);
 	inh_weight	<= to_signed(inh_weight_int, parallelism);
 
-
-	N_inputs	<= std_logic_vector(to_unsigned(input_parallelism - 2,
-				N_exc_cnt));
-	
-	N_neurons	<= std_logic_vector(to_unsigned(layer_size - 2,
-				N_inh_cnt));
-
-	N_cycles	<= std_logic_vector(to_unsigned(cycles_number - 2,
-				N_cycles_cnt));
-
-
 	exc_weights_init	: process
 	begin
 		init	: for i in 0 to layer_size-1
 		loop
-			exc_weights((i+1)*parallelism-1 downto i*parallelism) <=
+			exc_weights((i+1)*parallelism-1 downto i*parallelism) <= 
 					to_signed(exc_weight_int, parallelism);
 		end loop init;
 
@@ -314,26 +302,31 @@ begin
 	end process exc_weights_init;
 
 
+
+
+
+
+
+
 	-- clock
 	clock_gen : process
 	begin
-		clk	<= '0';			-- falling edge i*12ns
-		wait for 6 ns;						    
-		clk	<= '1';			-- rising edge 6ns + i*12ns
-		wait for 6 ns;				
+		clk	<= '0';		-- falling edge i*12ns
+		wait for 6 ns;			                    
+		clk	<= '1';         -- rising edge 6ns + i*12ns
+		wait for 6 ns;			
 	end process clock_gen;
-
 
 
 
 	-- reset
 	reset_gen : process
 	begin
-		rst_n	<= '1';			-- 0 ns
+		rst_n	<= '1';		-- 0 ns
 		wait for 14 ns;
-		rst_n	<= '0';			-- 14 ns
+		rst_n	<= '0';		-- 14 ns
 		wait for 3 ns;
-		rst_n	<= '1';			-- 17 ns
+		rst_n	<= '1';		-- 17 ns
 		wait;
 	end process reset_gen;
 
@@ -342,46 +335,33 @@ begin
 	-- start
 	start_gen : process
 	begin
-		start	<= '0';			-- 0 ns
+		start	<= '0';		-- 0 ns
 		wait for 38 ns;
-		start	<= '1';			-- 38 ns
+		start	<= '1';		-- 38 ns
 		wait for 12 ns;
-		start	<= '0';			-- 50 ns
+		start	<= '0';		-- 50 ns
 		wait;
 	end process start_gen;
-
-
 
 
 	-- input_spikes
 	input_spikes_gen: process
 	begin
-		wait for 50 ns;
-		input_spikes	<= "0000";	-- 50 ns	
-		wait for 24 ns;			
-		input_spikes	<= "0010";	-- 74 ns
-		wait for 12 ns;			
-		input_spikes	<= "1000";	-- 86 ns
-		wait for 12 ns;			
-		input_spikes	<= "1001";	-- 98 ns
-		wait for 12 ns;			
-		input_spikes	<= "0110";	-- 110 ns
-		wait for 12 ns;			
-		input_spikes	<= "0001";	-- 122 ns
-		wait for 12 ns;		
-		input_spikes	<= "1111";	-- 146 ns
-		wait for 12 ns;			
-		input_spikes	<= "0000";	-- 134 ns
-		wait for 12 ns;			
-		input_spikes	<= "1111";	-- 146 ns
-		wait for 12 ns;			
-		input_spikes	<= "1011";	-- 158 ns
-		wait for 12 ns;			
-		input_spikes	<= "0100";	-- 170 ns
-		wait for 12 ns;			
-		input_spikes	<= "0000";	-- 182 ns
+		input_spikes	<= "00"; -- 0 ns	
+		wait for 62 ns;
+		input_spikes	<= "11"; -- 62 ns
+		wait for 48 ns;
+		input_spikes	<= "00"; -- 110 ns
+		wait for 48 ns;
+		input_spikes	<= "01"; -- 158 ns
+		wait for 84 ns;
+		input_spikes	<= "00"; -- 242 ns
 		wait;
 	end process input_spikes_gen;
+
+
+
+
 
 
 
@@ -407,110 +387,6 @@ begin
 	-- state evaluation
 	state_evaluation	: process(present_state, start, stop, exc_or,
 					exc_stop, inh_or, inh_stop)
-
-		procedure from_inh_stop_on(
-
-			-- input
-			signal inh_stop		: in std_logic;
-
-			-- output
-			signal next_state	: out states) is
-		begin
-
-			if inh_stop = '1'
-			then
-				next_state <= inh_end;
-			else
-				next_state <= inh_update;
-			end if;
-
-		end procedure from_inh_stop_on;
-
-
-		procedure from_inh_or_on(
-			
-			-- input
-			signal inh_or		: in std_logic;
-			signal inh_stop		: in std_logic;
-
-			-- output
-			signal next_state	: out states) is
-		begin
-
-			if inh_or ='1'
-			then
-				from_inh_stop_on(
-
-					-- input
-					inh_stop	=> inh_stop,
-
-					-- output
-					next_state	=> next_state		
-				);
-			else
-				next_state <= sample_spikes;
-			end if;
-
-		end procedure from_inh_or_on;
-
-
-		procedure from_exc_stop_on(
-
-			-- input
-			signal exc_stop		: in std_logic;
-
-			-- output
-			signal next_state	: out states) is
-		begin
-
-			if exc_stop = '1'
-			then
-				next_state <= exc_end;
-			else
-				next_state <= exc_update;
-			end if;
-
-		end procedure from_exc_stop_on;
-
-
-		procedure from_exc_or_on(
-			
-			-- input
-			signal exc_or		: in std_logic;
-			signal exc_stop		: in std_logic;
-			signal inh_or		: in std_logic;
-			signal inh_stop		: in std_logic;
-
-			-- output
-			signal next_state	: out states) is
-		begin
-
-			if exc_or ='1'
-			then
-				from_exc_stop_on(
-
-					-- input
-					exc_stop	=> exc_stop,
-
-					-- output
-					next_state	=> next_state		
-				);
-			else
-				
-				from_inh_or_on(
-			
-					-- input
-					inh_or		=> inh_or,
-					inh_stop	=> inh_stop,
-
-					-- output
-					next_state	=> next_state
-				);
-			end if;
-
-		end procedure from_exc_or_on;
-
-
 	begin
 
 		-- default case
@@ -540,71 +416,52 @@ begin
 
 				if stop = '1'
 				then
-					next_state <= rest;
+					next_state <= idle;
 				else
-					from_exc_or_on(
-						-- input
-						exc_or		=> exc_or,
-						exc_stop	=> exc_stop,
-						inh_or		=> inh_or,
-						inh_stop	=> inh_stop,
-                                                                           
-						-- output          
-						next_state	=> next_state
-	
-					);
+					if exc_or = '1'
+					then
+						next_state <= exc_update;
+
+					elsif inh_or = '1'
+					then
+						next_state <= inh_update;
+					
+					else
+						next_state <= sample_spikes;
+					end if;
 				end if;
+
 
 			-- exc_update
 			when exc_update =>
 
-				from_exc_stop_on(
+				if exc_stop = '0'
+				then
+					next_state <= exc_update;
 
-					-- input
-					exc_stop	=> exc_stop,
+				elsif inh_or = '1'
+				then
+					next_state <= inh_update;
 
-					-- output
-					next_state	=> next_state		
-				);		
+				else
+					next_state <= sample_spikes;
+				end if;
 
-			-- exc_end
-			when exc_end =>		
-
-				from_inh_or_on(
-			
-					-- input
-					inh_or		=> inh_or,
-					inh_stop	=> inh_stop,
-
-					-- output
-					next_state	=> next_state
-				);
 
 			-- inh_update
 			when inh_update =>
+				
+				if inh_stop = '1'
+				then
+					next_state <= sample_spikes;
+				else
+					next_state <= inh_update;
+				end if;
 
-				from_inh_stop_on(
-
-					-- input
-					inh_stop	=> inh_stop,
-
-					-- output
-					next_state	=> next_state		
-				);		
-
-			-- inh_end
-			when inh_end =>
-
-				next_state <= sample_spikes;		
-
-			-- rest
-			when rest =>
-
-				next_state <= idle;
 
 			when others =>
 
-				next_state <= reset;
+				next_state <= reset;		
 
 		end case;
 
@@ -617,23 +474,20 @@ begin
 	begin
 
 		-- default values
-		sample			<= '0';
-		snn_ready		<= '0';
 		exc_en			<= '0';
 		anticipate_exc		<= '0';
 		inh_en			<= '0';
 		anticipate_inh		<= '0';
 		exc_cnt_en		<= '0';
-		exc_cnt_rst_n		<= '1';
+		exc_cnt_rst_n		<= '0';
 		inh_cnt_en		<= '0';
-		inh_cnt_rst_n		<= '1';
+		inh_cnt_rst_n		<= '0';
 		exc_or_inh_sel		<= '0';
-		mask1			<= '1';
-		mask2			<= '1';
+		inh			<= '0';
+		layer_ready		<= '0';
+		sample			<= '0';
 		cycles_cnt_en		<= '0';
 		cycles_cnt_rst_n	<= '1';
-		rest_en			<= '0';
-		inh_elaboration		<= '0';
 
 
 		case present_state is
@@ -641,72 +495,42 @@ begin
 			-- reset
 			when reset =>
 
-				exc_cnt_rst_n		<= '0';
-				inh_cnt_rst_n		<= '0';
 				cycles_cnt_rst_n	<= '0';
-				mask1			<= '0';
-				mask2			<= '0';
 
 			-- idle
 			when idle =>
 
-				snn_ready		<= '1';
-				mask1			<= '0';
-				mask2			<= '0';
+				layer_ready		<= '1';
+				cycles_cnt_rst_n	<= '0';
 
 			-- sample_spikes
 			when sample_spikes =>
 
 				sample			<= '1';
 				exc_en			<= '1';
-				inh_en			<= '1';
-				cycles_cnt_en		<= '1';
 				anticipate_exc		<= '1';
+				inh_en			<= '1';
 				anticipate_inh		<= '1';
+				cycles_cnt_en		<= '1';
 
 			-- exc_update
 			when exc_update =>
 
-				mask2			<= '0';
 				exc_cnt_en		<= '1';
+				exc_cnt_rst_n		<= '1';
 
-			-- exc_end
-			when exc_end =>
-
-				mask1			<= '0';
-				mask2			<= '0';
-				exc_cnt_rst_n		<= '0';
 
 			-- inh_update
 			when inh_update =>
 
-				mask1			<= '0';
 				inh_cnt_en		<= '1';
-				inh_elaboration		<= '1';
+				inh_cnt_rst_n		<= '1';
 				exc_or_inh_sel		<= '1';
-
-			-- inh_end
-			when inh_end =>
-
-				mask1			<= '0';
-				mask2			<= '0';
-				inh_cnt_rst_n		<= '0';
-				inh_elaboration		<= '1';
-				exc_or_inh_sel		<= '1';
-
-			-- rest
-			when rest =>
-
-				rest_en			<= '1';
-				cycles_cnt_rst_n	<= '0';
+				inh			<= '1';
 
 			when others =>
 
-				exc_cnt_rst_n		<= '0';
-				inh_cnt_rst_n		<= '0';
 				cycles_cnt_rst_n	<= '0';
-				mask1			<= '0';
-				mask2			<= '0';
 
 		end case;
 
@@ -715,14 +539,16 @@ begin
 
 
 
+	
+
 
 	out_spikes	<= feedback_spikes;
-
-	start1		<= exc_or_internal and mask1;
-	start2		<= inh_or_internal and mask2;
-
 	exc_or		<= exc_or_internal;
+	exc_stop	<= exc_stop_internal;
 	inh_or		<= inh_or_internal;
+	inh_stop	<= inh_stop_internal;
+	stop		<= stop_internal;
+
 
 	anticipate_exc_spikes	: anticipate_bits
 		generic map(
@@ -740,6 +566,8 @@ begin
 			-- output
 			output_bits	=> exc_spikes
 		);
+
+
 
 	anticipate_inh_spikes	: anticipate_bits
 		generic map(
@@ -781,7 +609,7 @@ begin
 			all_inputs		=> exc_or_internal,
 			selected_input		=> exc_spike,
 			input_index		=> exc_cnt,
-			stop			=> exc_stop
+			stop			=> exc_stop_internal
 		);
 
 
@@ -806,7 +634,7 @@ begin
 			all_inputs		=> inh_or_internal,
 			selected_input		=> inh_spike,
 			input_index		=> inh_cnt,
-			stop			=> inh_stop
+			stop			=> inh_stop_internal
 		);
 
 
@@ -837,7 +665,7 @@ begin
 			in1			=> N_cycles,
 
 			-- output
-			cmp_out			=> stop
+			cmp_out			=> stop_internal
 		);
 
 
@@ -855,46 +683,62 @@ begin
 		);
 
 
+	generate_spikes		: bitMask
 
-
-	bare_layer		: neurons_layer
 		generic map(
-			-- neurons counter parallelism
-			N_cnt			=> N_inh_cnt,
-
-			-- internal parallelism
-			N			=> parallelism,
-
-			-- number of neurons in the layer
-			layer_size		=> layer_size,
-
-			-- shift during the exponential decay
-			shift			=> shift
+			N_cnt			=> N_inh_cnt
 		)
 
 		port map(
-			-- control input
-			clk			=> clk,
-			rst_n			=> rst_n,
-			start			=> start,
-			start1			=> start1,
-			start2			=> start2,
-			rest_en			=> rest_en,
-			input_spike		=> input_spike,
-			neuron_cnt		=> inh_cnt,
-			inh_elaboration		=> inh_elaboration,
-
-			-- input parameters
-			v_th_0		 	=> v_th_0,
-			v_reset			=> v_reset,
-			inh_weight		=> inh_weight,
-			v_th_plus		=> v_th_plus,
-			exc_weights		=> exc_weights,
+			-- input
+			input_cnt		=> inh_cnt,
+			inh			=> inh,
+			input_bit		=> input_spike,
 
 			-- output
-			out_spikes		=> feedback_spikes,
-			layer_ready		=> layer_ready
+			output_bits		=> spikes
 		);
+
+
+
+	bare_layer : neurons_layer
+
+		generic map(
+			-- parallelism
+			N		=> parallelism,	
+
+			-- number of neurons in the layer
+			layer_size	=> layer_size,
+
+			-- shift amount
+			shift		=> shift
+		)
+
+		port map(
+			-- input controls
+			clk		=> clk,
+			rst_n		=> rst_n,
+			start		=> start,
+			stop		=> stop_internal,
+			exc_or	       	=> exc_or_internal,
+			exc_stop       	=> exc_stop_internal,
+			inh_or	        => inh_or_internal,
+			inh_stop        => inh_stop_internal,
+                       	input_spikes	=> spikes(layer_size-1 downto 0),
+
+			-- input parameters
+			v_th_0		=> v_th_0,
+			v_reset		=> v_reset,
+			inh_weight	=> inh_weight,
+			exc_weights	=> exc_weights,
+			v_th_plus	=> v_th_plus,
+                                                       
+			-- output          
+			out_spikes	=> feedback_spikes,
+			neurons_ready	=> neurons_ready
+		);
+
+
 
 
 end architecture test;
