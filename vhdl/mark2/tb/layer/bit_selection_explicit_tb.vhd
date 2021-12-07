@@ -11,7 +11,7 @@ architecture behaviour of bit_selection_explicit_tb is
 
 
 	-- number of input bits
-	constant N_bit			: integer := 3;
+	constant N_bit			: integer := 4;
 
 	-- selction counter parallelism
 	constant N_cnt			: integer := 3;		
@@ -162,13 +162,11 @@ begin
 	end process simulation;
 
 
-	mux_input_connection	: process(input_bits)
-	begin
 
-		mux_in	<= (others => '0');
-		mux_in(N_bit-1 downto 0) <= input_bits;
+	-- zero padding of the input to fill all the multiplexer's inputs
+	mux_in(N_bit-1 downto 0) 		<= input_bits;
+	mux_in(2**(N_cnt-1)-1 downto N_bit) 	<= (others => '0');
 
-	end process mux_input_connection;
 
 
 	input_index	<= cnt_out;
@@ -200,7 +198,7 @@ begin
 			mux_in		=> mux_in,
 			mux_sel		=> cnt_out(N_cnt-2 downto 0),
 
-			-- outpu
+			-- output
 			mux_out		=> selected_input
 		);
 

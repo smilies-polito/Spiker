@@ -13,17 +13,17 @@ architecture test of layer_cu_dp_tb is
 
 	-- excitatory spikes
 	constant input_parallelism	: integer := 2;
-	constant N_exc_cnt		: integer := 3;
+	constant N_exc_cnt		: integer := 2;
 
 	-- inhibitory spikes
-	constant layer_size		: integer := 2;
-	constant N_inh_cnt		: integer := 2;
+	constant layer_size		: integer := 3;
+	constant N_inh_cnt		: integer := 3;
 
 	-- elaboration steps
 	constant N_cycles_cnt		: integer := 4;
 
 	-- exponential decay shift
-	constant shift			: integer := 1;
+	constant shift			: integer := 10;
 
 	-- model parameters
 	constant v_th_0_int	: integer 	:= 13*(2**10);	
@@ -281,6 +281,11 @@ architecture test of layer_cu_dp_tb is
 
 
 begin
+
+
+	N_neurons	<= "011";
+	N_inputs	<= "10";
+	N_cycles	<= "1000";
 
 
 	-- model parameters binary conversion
