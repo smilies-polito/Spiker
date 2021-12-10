@@ -68,3 +68,6 @@ assignments = initAssignments(mode, networkList, assignmentsFile)
 
 # Minimum acceptable number of output spikes generated during the training.
 countThreshold = 5
+
+# NumPy default random generator.
+rng = np.random.default_rng()

@@ -3,7 +3,7 @@
 import numpy as np
 
 
-def imgToSpikeTrain(image, dt, trainingSteps, inputIntensity):
+def imgToSpikeTrain(image, dt, trainingSteps, inputIntensity, rng):
 
 	''' 
 	Convert a black and white image into spike trains using the Poisson
@@ -21,6 +21,8 @@ def imgToSpikeTrain(image, dt, trainingSteps, inputIntensity):
 
 		4) inputIntensity: current value of the pixel's intensity.
 
+		5) rng: NumPy random generator.
+
 
 	OUTPUT:
 
@@ -29,8 +31,7 @@ def imgToSpikeTrain(image, dt, trainingSteps, inputIntensity):
 	'''
 
 	# Create two-dimensional array of random values
-	rng = np.random.default_rng() 
-	random2D = rng.uniform(size = (trainingSteps, image.shape[0]))
+	random2D = rng.uniform(size = (trainingSteps, 1)) 
 
 	# Convert the image into spikes trains
 	return poisson(image, dt, random2D, inputIntensity)

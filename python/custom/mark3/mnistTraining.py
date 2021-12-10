@@ -61,7 +61,8 @@ while currentIndex < numberOfCycles:
 			assignments,
 			startInputIntensity,
 			mode,
-			constSums
+			constSums,
+			rng
 		)
 
 
