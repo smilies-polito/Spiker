@@ -31,7 +31,7 @@ def imgToSpikeTrain(image, dt, trainingSteps, inputIntensity, rng):
 	'''
 
 	# Create two-dimensional array of random values
-	random2D = rng.uniform(size = (trainingSteps, 1)) 
+	random2D = rng.uniform(size = (trainingSteps, 1))
 
 	# Convert the image into spikes trains
 	return poisson(image, dt, random2D, inputIntensity)
