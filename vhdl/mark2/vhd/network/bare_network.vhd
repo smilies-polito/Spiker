@@ -13,10 +13,10 @@ entity bare_network is
 
 		-- load weights inputs
 		weights_wr_en		: in std_logic;
-		weights_values		: in signed(16*400-1 downto 0);
+		weights_values		: in signed(16*2-1 downto 0);
 
 		-- output
-		out_spikes		: out std_logic_vector(399 downto 0);
+		out_spikes		: out std_logic_vector(1 downto 0);
 		sample			: out std_logic;
 		ready			: out std_logic
 	);
@@ -31,8 +31,8 @@ architecture behaviour of bare_network is
 	constant parallelism		: integer := 16;
 	constant input_parallelism	: integer := 784;
 	constant N_exc_cnt		: integer := 11;
-	constant layer_size		: integer := 400;
-	constant N_inh_cnt		: integer := 10;
+	constant layer_size		: integer := 2;
+	constant N_inh_cnt		: integer := 2;
 	constant total_cycles		: integer := 3500;
 	constant N_cycles_cnt		: integer := 12;
 	constant shift			: integer := 10;
