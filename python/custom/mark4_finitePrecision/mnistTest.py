@@ -4,6 +4,7 @@ from mnist import loadDataset
 from createNetwork import createNetwork
 from testFunctions import singleImageTest
 from storeParameters import *
+from utils import checkParallelism
 
 
 
@@ -25,6 +26,7 @@ network = createNetwork(networkList, weightFilename, thresholdFilename, mode,
 			excDictList, scaleFactors, inh2excWeights,
 			fixed_point_decimals, trainPrecision, rng)
 
+checkParallelism(network["exc2exc1"]["weights"], weights_parallelism)
 
 
 currentIndex = 0
@@ -62,7 +64,8 @@ while currentIndex < numberOfCycles:
 			mode,
 			constSums,
 			rng,
-			exp_shift
+			exp_shift,
+			neuron_parallelism
 		)
 
 # Store the performance of the network into a text file

@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 
 
 def run(network, networkList, spikesTrains, dt_tauDict, exp_shift, stdpDict,
-		mode, constSums):
+		mode, constSums, neuron_parallelism):
 
 
 	'''
@@ -36,6 +36,8 @@ def run(network, networkList, spikesTrains, dt_tauDict, exp_shift, stdpDict,
 
 		7) mode: string. It can be "train" or "test".
 
+		8) neuron_parallelism: number of bits on which the neuron works.
+
 	OUTPUT:
 
 		spikesCounter: NumPy array containing the total amount of 
@@ -54,7 +56,8 @@ def run(network, networkList, spikesTrains, dt_tauDict, exp_shift, stdpDict,
 
 		# Train the network over a single step
 		updateNetwork(networkList, network, spikesTrains[i], dt_tauDict,
-				exp_shift, stdpDict, mode)
+				exp_shift, stdpDict, mode, neuron_parallelism)
+
 
 		# Update the output spikes counter
 		spikesCounter[0][network["excLayer" +
@@ -71,7 +74,7 @@ def run(network, networkList, spikesTrains, dt_tauDict, exp_shift, stdpDict,
 
 
 def updateNetwork(networkList, network, inputSpikes, dt_tauDict, exp_shift,
-		stdpDict, mode):
+		stdpDict, mode, neuron_parallelism):
 
 	'''
 	One training step update for the entire network.
@@ -99,10 +102,12 @@ def updateNetwork(networkList, network, inputSpikes, dt_tauDict, exp_shift,
 
 		8) mode: string. It can be "train" or "test".
 
+		9) neuron_parallelism: number of bits on which the neuron works.
+
 	'''	
 
 	# Update the first excitatory layer
-	updateExcLayer(network, 1, exp_shift, inputSpikes)
+	updateExcLayer(network, 1, exp_shift, inputSpikes, neuron_parallelism)
 
 	# Update the first inhibitory layer
 	updateInhLayer(network, 1)
@@ -117,7 +122,8 @@ def updateNetwork(networkList, network, inputSpikes, dt_tauDict, exp_shift,
 		
 		# Update the excitatory layer
 		updateExcLayer(network, layer, exp_shift,
-			network["excLayer" + str(layer - 1)]["outSpikes"][0])
+			network["excLayer" + str(layer - 1)]["outSpikes"][0],
+			neuron_parallelism)
 		
 		# Update the inhibitory layer
 		updateInhLayer(network, layer)

@@ -13,7 +13,7 @@ def singleImageTest(trainDuration, restTime, dt, image,	network, networkList,
 			currentIndex, spikesEvolution, updateInterval,
 			printInterval, startTimeTraining, accuracies,
 			labelsArray, assignments, startInputIntensity, mode,
-			constSums):
+			constSums, rng):
 
 	'''
 	Test the network over an image of the dataset.
@@ -80,6 +80,8 @@ def singleImageTest(trainDuration, restTime, dt, image,	network, networkList,
 		value corresponding to the sum of all the weights of a single 
 		neuron in the specific layer.
 
+		21) rng: NumPy random generator.
+
 	
 	OUTPUT:
 
@@ -101,7 +103,8 @@ def singleImageTest(trainDuration, restTime, dt, image,	network, networkList,
 	startTimeImage = timeit.default_timer()
 
 	# Convert the image into spikes trains
-	spikesTrains = imgToSpikeTrain(image, dt, trainingSteps, inputIntensity)
+	spikesTrains = imgToSpikeTrain(image, dt, trainingSteps, inputIntensity,
+			rng)
 
 	# Test the network with the spikes sequences associated to the pixels.
 	inputIntensity, currentIndex, accuracies = \

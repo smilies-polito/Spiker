@@ -1,5 +1,6 @@
 import subprocess as sp
 import numpy as np
+import sys
 
 
 def createDir(dirName):
@@ -143,3 +144,26 @@ def fixedPointArray(numpyArray, fixed_point_decimals):
 
 	numpyArray = numpyArray * 2**fixed_point_decimals
 	return numpyArray.astype(int)
+
+
+
+def checkParallelism(numpyArray, parallelism):
+
+	'''
+	Check that values inside NumPy array don't exceed a threshold.
+
+	INPUT:
+
+		1) numpyArray: array of values to check.
+
+		2) parallelism: number of bits on which the neuron works.
+	'''
+	
+
+	if (numpyArray > 2**(parallelism-1)-1).any():
+		print("Value too high")
+		sys.exit()
+
+	elif (numpyArray < -2**(parallelism-1)).any():
+		print("Value too low")
+		sys.exit()

@@ -59,7 +59,8 @@ while currentIndex < numberOfCycles:
 			assignments,
 			startInputIntensity,
 			mode,
-			constSums
+			constSums,
+			rng
 		)
 
 # Store the performance of the network into a text file

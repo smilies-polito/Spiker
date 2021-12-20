@@ -13,7 +13,7 @@ def singleImageTest(trainDuration, restTime, dt, image,	network, networkList,
 			currentIndex, spikesEvolution, updateInterval,
 			printInterval, startTimeTraining, accuracies,
 			labelsArray, assignments, startInputIntensity, mode,
-			constSums, rng, exp_shift):
+			constSums, rng, exp_shift, neuron_parallelism):
 
 	'''
 	Test the network over an image of the dataset.
@@ -84,6 +84,8 @@ def singleImageTest(trainDuration, restTime, dt, image,	network, networkList,
 		
 		22) exp_shift: bit shift for the exponential decay.
 
+		23) neuron_parallelism: number of bits on which the neuron works.
+
 	
 	OUTPUT:
 
@@ -129,8 +131,10 @@ def singleImageTest(trainDuration, restTime, dt, image,	network, networkList,
 			startInputIntensity, 
 			mode,
 			constSums,
-			exp_shift
+			exp_shift,
+			neuron_parallelism
 			)
+
 
 
 	# Bring the network into a rest state
@@ -148,7 +152,7 @@ def test(network, networkList, spikesTrains, dt_tauDict, countThreshold,
 	inputIntensity, currentIndex, spikesEvolution, updateInterval,
 	printInterval, startTimeImage, startTimeTraining, accuracies,
 	labelsArray, assignments, startInputIntensity, mode, constSums,
-	exp_shift):
+	exp_shift, neuron_parallelism):
 
 	'''
 	Test the network with the spikes sequences associated to the pixels.
@@ -208,6 +212,8 @@ def test(network, networkList, spikesTrains, dt_tauDict, countThreshold,
 		
 		18) exp_shift: bit shift for the exponential decay.
 
+		19) neuron_parallelism: number of bits on which the neuron works.
+
 	OUTPUT:
 
 		1) inputIntensity: update value of the pixel's intensity.
@@ -224,7 +230,8 @@ def test(network, networkList, spikesTrains, dt_tauDict, countThreshold,
 	
 	# Train the network over the pixels' spikes train
 	spikesCounter = run(network, networkList, spikesTrains, dt_tauDict,
-			exp_shift, None, mode, constSums)
+			exp_shift, None, mode, constSums, neuron_parallelism)
+
 
 	if np.sum(spikesCounter) < countThreshold:
 

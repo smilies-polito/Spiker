@@ -1,10 +1,10 @@
 #!/Users/alessio/anaconda3/bin/python3
 
 import numpy as np
-from utils import expDecay
+from utils import expDecay, checkParallelism
 
 
-def updateExcLayer(network, layer, exp_shift, inputSpikes):
+def updateExcLayer(network, layer, exp_shift, inputSpikes, neuron_parallelism):
 
 	'''
 	One training step update of the excitatory layer.
@@ -18,6 +18,8 @@ def updateExcLayer(network, layer, exp_shift, inputSpikes):
 		3) exp_shift: bit shift for the exponential decay.
 		
 		4) inputSpikes: boolean NumPy array containing the input spikes.
+
+		5) neuron_parallelism: number of bits on which the neuron works.
 
 	'''
 
@@ -42,6 +44,9 @@ def updateExcLayer(network, layer, exp_shift, inputSpikes):
 		# Update membrane potential with the spikes from the inhibitory layer
 		all2othersUpdate(network, layerName, "inh2exc" +
 			str(layer))
+
+	checkParallelism(network["excLayer" + str(layer)]["v"],
+			neuron_parallelism)
 
 	# Increase threshold for active neurons. Decrease it for inactive ones.
 	homeostasis(network, layerName)
