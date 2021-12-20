@@ -1,5 +1,7 @@
 import numpy as np
 import sys
+from utils import fixedPoint, fixedPointArray
+from storeParameters import storeArray
 
 
 def createNetwork(networkList, weightFilename, thresholdFilename, mode,
@@ -133,7 +135,8 @@ def createLayer(network, layerType, initDict, networkList, layer, mode,
 
 
 
-def initializeThreshold(mode, thresholdFile, initDict, numberOfNeurons):
+def initializeThreshold(mode, thresholdFile, initDict, numberOfNeurons,
+		fixed_point_decimals, trainPrecision):
 
 	'''
 	Initialize the dynamic homeostasis parameter theta.
@@ -150,6 +153,11 @@ def initializeThreshold(mode, thresholdFile, initDict, numberOfNeurons):
 
 		4) numberOfNeurons: number of neurons in the layer.
 
+		5) fixed_point_decimals: number of decimal bits in the fixed
+		point representation.
+
+		6) trainPrecision: string. Numerical precision of the training.
+		It can be "fixedPoint" or "float". Needed only in test mode. 
 
 	The function initialize the theta parameter depending on the mode in
 	which the network will be run, train or test.
@@ -166,7 +174,21 @@ def initializeThreshold(mode, thresholdFile, initDict, numberOfNeurons):
 
 		# Load thresholds values from file
 		with open(thresholdFile, 'rb') as fp: 
-			return np.load(fp)
+			thresholds = np.load(fp)
+
+		# Check if the thresholds are already in fixed point or not
+		if trainPrecision == "fixedPoint":
+			return thresholds
+
+		elif trainPrecision == "float":
+			return fixedPointArray(thresholds, fixed_point_decimals)
+
+		else:
+			# Invalid mode, print error and exit
+			print('Invalid  training precision. Accepted values:\
+				\n\t1) fixedPoint \n\t2) float')
+			sys.exit()
+
 	else:
 
 		# Invalid mode, print error and exit
@@ -234,7 +256,8 @@ def intraLayersSynapses(network, synapseName, mode, networkList, weightFile,
 
 
 
-def initializeWeights(mode, networkList, weightFile, layer, scaleFactor):
+def initializeWeights(mode, networkList, weightFile, layer, scaleFactor,
+		fixed_point_decimals, trainPrecision):
 
 	'''
 	Initialize the weights of the connections between two layers.
@@ -257,6 +280,11 @@ def initializeWeights(mode, networkList, weightFile, layer, scaleFactor):
 		generated weights. Needed in training mode. In test mode "None" 
 		can be used.
 
+		6) fixed_point_decimals: number of decimal bits in the fixed
+		point representation.
+
+		7) trainPrecision: string. Numerical precision of the training.
+		It can be "fixedPoint" or "float". Needed only in test mode. 
 
 	The function initializes the weights depending on the mode in
 	which the network will be run, train or test.
@@ -266,16 +294,30 @@ def initializeWeights(mode, networkList, weightFile, layer, scaleFactor):
 	if mode == "train":
 
 		# Randomly initialize the weights
-		weights = np.random.rand(networkList[layer],
+		weights = (np.random.rand(networkList[layer],
 				networkList[layer - 1]) + 0.01)*scaleFactor
-		return weit
+
+		return fixedPointArray(weights, fixed_point_decimals)
 
 
 	elif mode == "test":
 
 		# Load weights from file
 		with open(weightFile, 'rb') as fp:
-			return np.load(fp)
+			weights = np.load(fp)
+
+		# Check if the weights are already in fixed point or not
+		if trainPrecision == "fixedPoint":
+			return weights
+
+		elif trainPrecision == "float":
+			return fixedPointArray(weights, fixed_point_decimals)
+
+		else:
+			# Invalid mode, print error and exit
+			print('Invalid  training precision. Accepted values:\
+			\n\t1) fixedPoint \n\t2) float')
+			sys.exit()
 	
 	else:
 		# Invalid mode, print error and exit

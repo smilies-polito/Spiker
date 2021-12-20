@@ -116,4 +116,35 @@ def expDecay(dictionary, key, dt_tau, steadyStateValue, variable):
 
 def fixedPoint(value, fixed_point_decimals):
 
+	'''
+	Convert a value into fixed point notation.
+
+	INPUT:
+
+		1) value: floating point value to convert.
+
+		2) fixed_point_decimals: number of decimal bits in the fixed
+		point representation.
+
+	'''
 	return int(value * 2**fixed_point_decimals)
+
+
+
+
+def fixedPointArray(numpyArray, fixed_point_decimals):
+
+	'''
+	Convert a NumPy array into fixed point notation.
+
+	INPUT:
+
+		1) numpyArray: floating point array to convert.
+
+		2) fixed_point_decimals: number of decimal bits in the fixed
+		point representation.
+
+	'''
+
+	numpyArray = numpyArray * 2**fixed_point_decimals
+	return numpyArray.astype(int)
