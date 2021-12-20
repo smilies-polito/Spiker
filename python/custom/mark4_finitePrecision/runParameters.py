@@ -9,6 +9,7 @@ from files import *
 networkList = [784, 400]
 
 mode = "train"
+trainPrecision = "float"
 
 # List of dictionaries of parameters for the layers
 excDictList = [excDict] * (len(networkList) - 1)

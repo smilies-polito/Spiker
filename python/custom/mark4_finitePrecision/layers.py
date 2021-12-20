@@ -4,7 +4,7 @@ import numpy as np
 from utils import expDecay
 
 
-def updateExcLayer(network, layer, dt_tau_exc, inputSpikes):
+def updateExcLayer(network, layer, exp_shift, inputSpikes):
 
 	'''
 	One training step update of the excitatory layer.
@@ -15,9 +15,8 @@ def updateExcLayer(network, layer, dt_tau_exc, inputSpikes):
 
 		2) layer: index of the current layer. The count starts from 1.
 
-		3) dt_tau_exc: ratio of the time step and the membrane exponential
-		time constant.
-
+		3) exp_shift: bit shift for the exponential decay.
+		
 		4) inputSpikes: boolean NumPy array containing the input spikes.
 
 	'''
@@ -31,8 +30,8 @@ def updateExcLayer(network, layer, dt_tau_exc, inputSpikes):
 	resetPotentials(network, layerName)
 
 	# Exponentially decrease the membrane potential
-	expDecay(network, layerName, dt_tau_exc, 
-		network[layerName]["vRest"], "v")
+	expDecay(network, layerName, exp_shift, "v")
+	print(network[layerName]["v"])
 
 
 	if np.sum(inputSpikes) != 0:

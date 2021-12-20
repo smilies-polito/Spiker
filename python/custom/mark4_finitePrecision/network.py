@@ -7,8 +7,8 @@ from synapses import stdp
 import matplotlib.pyplot as plt
 
 
-def run(network, networkList, spikesTrains, dt_tauDict, stdpDict, mode,
-	constSums):
+def run(network, networkList, spikesTrains, dt_tauDict, exp_shift, stdpDict,
+		mode, constSums):
 
 
 	'''
@@ -30,9 +30,11 @@ def run(network, networkList, spikesTrains, dt_tauDict, stdpDict, mode,
 		of the excitatory and inhibitory membrane and of the 
 		homeostasis parameter theta .
 
-		5) stdpDict: dictionary containing the STDP parameters.
+		5) exp_shift: bit shift for the exponential decay.
 
-		6) mode: string. It can be "train" or "test".
+		6) stdpDict: dictionary containing the STDP parameters.
+
+		7) mode: string. It can be "train" or "test".
 
 	OUTPUT:
 
@@ -52,7 +54,7 @@ def run(network, networkList, spikesTrains, dt_tauDict, stdpDict, mode,
 
 		# Train the network over a single step
 		updateNetwork(networkList, network, spikesTrains[i], dt_tauDict,
-			stdpDict, mode)
+				exp_shift, stdpDict, mode)
 
 		# Update the output spikes counter
 		spikesCounter[0][network["excLayer" +
@@ -67,8 +69,8 @@ def run(network, networkList, spikesTrains, dt_tauDict, stdpDict, mode,
 
 
 
-def updateNetwork(networkList, network, inputSpikes, dt_tauDict, stdpDict, 
-			mode):
+def updateNetwork(networkList, network, inputSpikes, dt_tauDict, exp_shift,
+		stdpDict, mode):
 
 	'''
 	One training step update for the entire network.
@@ -90,14 +92,16 @@ def updateNetwork(networkList, network, inputSpikes, dt_tauDict, stdpDict,
 
 		5) stdpDict: dictionary containing the STDP parameters.
 
-		6) currentStep: current value of the training loop index. 
+		6) exp_shift: bit shift for the exponential decay.
 
-		7) mode: string. It can be "train" or "test".
+		7) currentStep: current value of the training loop index. 
+
+		8) mode: string. It can be "train" or "test".
 
 	'''	
 
 	# Update the first excitatory layer
-	updateExcLayer(network, 1, dt_tauDict["exc"], inputSpikes)
+	updateExcLayer(network, 1, exp_shift, inputSpikes)
 
 	# Update the first inhibitory layer
 	updateInhLayer(network, 1)
@@ -111,7 +115,7 @@ def updateNetwork(networkList, network, inputSpikes, dt_tauDict, stdpDict,
 	for layer in range(2, len(networkList)):
 		
 		# Update the excitatory layer
-		updateExcLayer(network, layer, dt_tauDict["exc"],
+		updateExcLayer(network, layer, exp_shift,
 			network["excLayer" + str(layer - 1)]["outSpikes"][0])
 		
 		# Update the inhibitory layer

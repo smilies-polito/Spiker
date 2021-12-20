@@ -5,7 +5,8 @@ from storeParameters import storeArray
 
 
 def createNetwork(networkList, weightFilename, thresholdFilename, mode,
-			excDictList, scaleFactors, inh2excWeights):
+			excDictList, scaleFactors, inh2excWeights,
+			fixed_point_decimals, trainPrecision):
 
 	'''
 	Create the complete network dictionary.
@@ -37,6 +38,11 @@ def createNetwork(networkList, weightFilename, thresholdFilename, mode,
 		each layer. This is the same for all the connections within the
 		layer.
 
+		9) fixed_point_decimals: number of decimal bits in the fixed
+		point representation.
+
+		9) trainPrecision: string. Numerical precision of the training.
+		It can be "fixedPoint" or "float". Needed only in test mode. 
 	'''
 
 	network = {}
@@ -52,11 +58,13 @@ def createNetwork(networkList, weightFilename, thresholdFilename, mode,
 
 		# Create the excitatory layer
 		createLayer(network, "exc", excDictList[layer-1], networkList,
-				layer, mode, thresholdFile)
+				layer, mode, thresholdFile,
+				fixed_point_decimals, trainPrecision)
 
 		# Create the excitatory to excitatory connection
 		intraLayersSynapses(network, "exc2exc", mode, networkList,
-				weightFile, layer, scaleFactors[layer-1])
+				weightFile, layer, scaleFactors[layer-1],
+				fixed_point_decimals, trainPrecision)
 
 		# Create the inhibitory to excitatory connection
 		interLayerSynapses(network, "inh2exc", inh2excWeights[layer-1],
@@ -70,7 +78,7 @@ def createNetwork(networkList, weightFilename, thresholdFilename, mode,
 
 
 def createLayer(network, layerType, initDict, networkList, layer, mode,
-		thresholdFile):
+		thresholdFile, fixed_point_decimals, trainPrecision):
 
 	'''
 	Create the layer dictionary and add it to the network dictionary.
@@ -94,6 +102,11 @@ def createLayer(network, layerType, initDict, networkList, layer, mode,
 		7) thresholdFile: complete name of the file containing the
 		thresholds for the current layers.
 	
+		8) fixed_point_decimals: number of decimal bits in the fixed
+		point representation.
+
+		9) trainPrecision: string. Numerical precision of the training.
+		It can be "fixedPoint" or "float". Needed only in test mode. 
 	'''
 
 	# Create the name for the layer
@@ -119,7 +132,9 @@ def createLayer(network, layerType, initDict, networkList, layer, mode,
 
 		# Initialize the dynamic homeostasis
 		"vThresh" 	: initializeThreshold(mode, thresholdFile,
-						initDict, networkList[layer]),
+						initDict, networkList[layer],
+						fixed_point_decimals,
+						trainPrecision),
 
 		# Initialize the output spikes
 		"outSpikes"	: np.zeros((1,
@@ -201,7 +216,7 @@ def initializeThreshold(mode, thresholdFile, initDict, numberOfNeurons,
 
 
 def intraLayersSynapses(network, synapseName, mode, networkList, weightFile,
-			layer, scaleFactor):
+			layer, scaleFactor, fixed_point_decimals, trainPrecision):
 
 	'''	
 	Initialize the intra layer synapses and add it to the network dictionary.
@@ -231,6 +246,11 @@ def intraLayersSynapses(network, synapseName, mode, networkList, weightFile,
 		generated weights. Needed in training mode. In test mode "None" 
 		can be used.
 		
+		8) fixed_point_decimals: number of decimal bits in the fixed
+		point representation.
+
+		9) trainPrecision: string. Numerical precision of the training.
+		It can be "fixedPoint" or "float". Needed only in test mode. 
 	'''
 	
 	# Append the number of the current layer to the name
@@ -239,8 +259,9 @@ def intraLayersSynapses(network, synapseName, mode, networkList, weightFile,
 	network[synapseName] = {
 
 		# Initialize the synapses weights
-		"weights"	: initializeWeights(mode, networkList, 
-					weightFile, layer, scaleFactor),
+		"weights"	: initializeWeights(mode, networkList,
+					weightFile, layer, scaleFactor,
+					fixed_point_decimals, trainPrecision),
 
 		# Initialize the pre-synaptic trace
 		"pre"		: np.zeros((1, networkList[layer - 1])),

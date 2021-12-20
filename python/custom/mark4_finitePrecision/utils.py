@@ -86,10 +86,10 @@ def seconds2hhmmss(seconds):
 
 
 
-def expDecay(dictionary, key, dt_tau, steadyStateValue, variable): 
+def expDecay(dictionary, key, exp_shift, variable): 
 	
 	''' 
-	Decrease the desired variable belonging to an entry of the dictionary
+	Decrease the desired integer variable belonging to an entry of the dictionary
 	with exponential decay.
 
 	INPUT: 
@@ -98,18 +98,13 @@ def expDecay(dictionary, key, dt_tau, steadyStateValue, variable):
 
 		2) key: string. Name of the dictionary entry toupdate		
 
-		3) dt_tau: ratio of the time step and the exponential time
-		constant.
+		3) exp_shift: bit shift for the exponential decay.
 
-		4) steadyStateValue: value towards which the decreasing
-		exponential tends.
-
-		5) variable: string. Name of the variable to update. This is the
+		4) variable: string. Name of the variable to update. This is the
 		key of dictionary[key].
 	'''
 
-	dictionary[key][variable] -= dt_tau *(dictionary[key][variable] -
-		steadyStateValue)
+	dictionary[key][variable] -= dictionary[key][variable] >> exp_shift
 
 
 

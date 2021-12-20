@@ -13,7 +13,7 @@ def singleImageTraining(trainDuration, restTime, dt, image, network,
 			inputIntensity, currentIndex, spikesEvolution,
 			updateInterval, printInterval, startTimeTraining,
 			accuracies, labelsArray, assignments,
-			startInputIntensity, mode, constSums, rng):
+			startInputIntensity, mode, constSums, rng, exp_shift):
 
 	'''
 	Train the network over an image of the dataset.
@@ -83,6 +83,8 @@ def singleImageTraining(trainDuration, restTime, dt, image, network,
 		neuron in the specific layer.
 
 		22) rng: NumPy random generator.
+		
+		23) exp_shift: bit shift for the exponential decay.
 
 	
 	OUTPUT:
@@ -129,7 +131,8 @@ def singleImageTraining(trainDuration, restTime, dt, image, network,
 			assignments, 
 			startInputIntensity, 
 			mode,
-			constSums
+			constSums,
+			exp_shift
 			)
 
 
@@ -148,7 +151,7 @@ def train(network, networkList, spikesTrains, dt_tauDict, stdpDict,
 		countThreshold, inputIntensity, currentIndex, spikesEvolution,
 		updateInterval, printInterval, startTimeImage,
 		startTimeTraining, accuracies, labelsArray, assignments,
-		startInputIntensity, mode, constSums):
+		startInputIntensity, mode, constSums, exp_shift):
 
 	'''
 	Train the network with the spikes sequences associated to the pixels.
@@ -208,6 +211,8 @@ def train(network, networkList, spikesTrains, dt_tauDict, stdpDict,
 
 		18) mode: string. It can be "train" or "test".
 
+		19) exp_shift: bit shift for the exponential decay.
+
 	OUTPUT:
 
 		1) inputIntensity: update value of the pixel's intensity.
@@ -224,7 +229,7 @@ def train(network, networkList, spikesTrains, dt_tauDict, stdpDict,
 	
 	# Train the network over the pixels' spikes train
 	spikesCounter = run(network, networkList, spikesTrains, dt_tauDict,
-				stdpDict, mode, constSums)
+			exp_shift, stdpDict, mode, constSums)
 
 	if np.sum(spikesCounter) < countThreshold:
 

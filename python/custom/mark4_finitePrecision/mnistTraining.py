@@ -23,7 +23,8 @@ imgArray, labelsArray = loadDataset(trainImages, trainLabels)
 
 # Create the network data structure
 network = createNetwork(networkList, weightFilename, thresholdFilename, mode, 
-			excDictList, scaleFactors, inh2excWeights)
+			excDictList, scaleFactors, inh2excWeights,
+			fixed_point_decimals, trainPrecision)
 
 
 
@@ -62,7 +63,8 @@ while currentIndex < numberOfCycles:
 			startInputIntensity,
 			mode,
 			constSums,
-			rng
+			rng,
+			exp_shift
 		)
 
 
