@@ -13,7 +13,7 @@ def singleImageTest(trainDuration, restTime, dt, image,	network, networkList,
 			currentIndex, spikesEvolution, updateInterval,
 			printInterval, startTimeTraining, accuracies,
 			labelsArray, assignments, startInputIntensity, mode,
-			constSums):
+			constSums, rng, exp_shift):
 
 	'''
 	Test the network over an image of the dataset.
@@ -79,6 +79,10 @@ def singleImageTest(trainDuration, restTime, dt, image,	network, networkList,
 		20) constSums: NumPy array. Each element represents the constant
 		value corresponding to the sum of all the weights of a single 
 		neuron in the specific layer.
+		
+		21) rng: NumPy random generator.
+		
+		22) exp_shift: bit shift for the exponential decay.
 
 	
 	OUTPUT:
@@ -101,7 +105,8 @@ def singleImageTest(trainDuration, restTime, dt, image,	network, networkList,
 	startTimeImage = timeit.default_timer()
 
 	# Convert the image into spikes trains
-	spikesTrains = imgToSpikeTrain(image, dt, trainingSteps, inputIntensity)
+	spikesTrains = imgToSpikeTrain(image, dt, trainingSteps, inputIntensity,
+			rng)
 
 	# Test the network with the spikes sequences associated to the pixels.
 	inputIntensity, currentIndex, accuracies = \
@@ -123,7 +128,8 @@ def singleImageTest(trainDuration, restTime, dt, image,	network, networkList,
 			assignments, 
 			startInputIntensity, 
 			mode,
-			constSums
+			constSums,
+			exp_shift
 			)
 
 
@@ -141,7 +147,8 @@ def singleImageTest(trainDuration, restTime, dt, image,	network, networkList,
 def test(network, networkList, spikesTrains, dt_tauDict, countThreshold,
 	inputIntensity, currentIndex, spikesEvolution, updateInterval,
 	printInterval, startTimeImage, startTimeTraining, accuracies,
-	labelsArray, assignments, startInputIntensity, mode, constSums):
+	labelsArray, assignments, startInputIntensity, mode, constSums,
+	exp_shift):
 
 	'''
 	Test the network with the spikes sequences associated to the pixels.
@@ -198,6 +205,8 @@ def test(network, networkList, spikesTrains, dt_tauDict, countThreshold,
 		The default value is 2.
 
 		17) mode: string. It can be "train" or "test".
+		
+		18) exp_shift: bit shift for the exponential decay.
 
 	OUTPUT:
 
@@ -215,7 +224,7 @@ def test(network, networkList, spikesTrains, dt_tauDict, countThreshold,
 	
 	# Train the network over the pixels' spikes train
 	spikesCounter = run(network, networkList, spikesTrains, dt_tauDict,
-				None, mode, constSums)
+			exp_shift, None, mode, constSums)
 
 	if np.sum(spikesCounter) < countThreshold:
 

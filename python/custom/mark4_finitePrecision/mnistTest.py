@@ -22,7 +22,8 @@ imgArray, labelsArray = loadDataset(testImages, testLabels)
 
 # Create the network data structure
 network = createNetwork(networkList, weightFilename, thresholdFilename, mode, 
-			excDictList, scaleFactors, inh2excWeights)
+			excDictList, scaleFactors, inh2excWeights,
+			fixed_point_decimals, trainPrecision, rng)
 
 
 
@@ -59,7 +60,9 @@ while currentIndex < numberOfCycles:
 			assignments,
 			startInputIntensity,
 			mode,
-			constSums
+			constSums,
+			rng,
+			exp_shift
 		)
 
 # Store the performance of the network into a text file

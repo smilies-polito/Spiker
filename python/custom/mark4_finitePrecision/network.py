@@ -60,8 +60,9 @@ def run(network, networkList, spikesTrains, dt_tauDict, exp_shift, stdpDict,
 		spikesCounter[0][network["excLayer" +
 			str(lastLayerIndex)]["outSpikes"][0]] += 1
 
-	# Normalize the weights
-	normalizeWeights(network, networkList, constSums)
+	if mode == "train":
+		# Normalize the weights
+		normalizeWeights(network, networkList, constSums)
 	
 	return spikesCounter
 

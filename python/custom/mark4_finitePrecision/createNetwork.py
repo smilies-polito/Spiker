@@ -6,7 +6,7 @@ from storeParameters import storeArray
 
 def createNetwork(networkList, weightFilename, thresholdFilename, mode,
 			excDictList, scaleFactors, inh2excWeights,
-			fixed_point_decimals, trainPrecision):
+			fixed_point_decimals, trainPrecision, rng):
 
 	'''
 	Create the complete network dictionary.
@@ -43,6 +43,8 @@ def createNetwork(networkList, weightFilename, thresholdFilename, mode,
 
 		9) trainPrecision: string. Numerical precision of the training.
 		It can be "fixedPoint" or "float". Needed only in test mode. 
+
+		10) rng: NumPy random generator.
 	'''
 
 	network = {}
@@ -64,7 +66,7 @@ def createNetwork(networkList, weightFilename, thresholdFilename, mode,
 		# Create the excitatory to excitatory connection
 		intraLayersSynapses(network, "exc2exc", mode, networkList,
 				weightFile, layer, scaleFactors[layer-1],
-				fixed_point_decimals, trainPrecision)
+				fixed_point_decimals, trainPrecision, rng)
 
 		# Create the inhibitory to excitatory connection
 		interLayerSynapses(network, "inh2exc", inh2excWeights[layer-1],
@@ -216,7 +218,8 @@ def initializeThreshold(mode, thresholdFile, initDict, numberOfNeurons,
 
 
 def intraLayersSynapses(network, synapseName, mode, networkList, weightFile,
-			layer, scaleFactor, fixed_point_decimals, trainPrecision):
+			layer, scaleFactor, fixed_point_decimals,
+			trainPrecision, rng):
 
 	'''	
 	Initialize the intra layer synapses and add it to the network dictionary.
@@ -251,6 +254,8 @@ def intraLayersSynapses(network, synapseName, mode, networkList, weightFile,
 
 		9) trainPrecision: string. Numerical precision of the training.
 		It can be "fixedPoint" or "float". Needed only in test mode. 
+
+		10) rng: NumPy random generator.
 	'''
 	
 	# Append the number of the current layer to the name
@@ -261,7 +266,8 @@ def intraLayersSynapses(network, synapseName, mode, networkList, weightFile,
 		# Initialize the synapses weights
 		"weights"	: initializeWeights(mode, networkList,
 					weightFile, layer, scaleFactor,
-					fixed_point_decimals, trainPrecision),
+					fixed_point_decimals, trainPrecision,
+					rng),
 
 		# Initialize the pre-synaptic trace
 		"pre"		: np.zeros((1, networkList[layer - 1])),
@@ -278,7 +284,7 @@ def intraLayersSynapses(network, synapseName, mode, networkList, weightFile,
 
 
 def initializeWeights(mode, networkList, weightFile, layer, scaleFactor,
-		fixed_point_decimals, trainPrecision):
+		fixed_point_decimals, trainPrecision, rng):
 
 	'''
 	Initialize the weights of the connections between two layers.
@@ -307,6 +313,8 @@ def initializeWeights(mode, networkList, weightFile, layer, scaleFactor,
 		7) trainPrecision: string. Numerical precision of the training.
 		It can be "fixedPoint" or "float". Needed only in test mode. 
 
+		8) rng: NumPy random generator.
+
 	The function initializes the weights depending on the mode in
 	which the network will be run, train or test.
 
@@ -315,7 +323,7 @@ def initializeWeights(mode, networkList, weightFile, layer, scaleFactor,
 	if mode == "train":
 
 		# Randomly initialize the weights
-		weights = (np.random.rand(networkList[layer],
+		weights = (rng.uniform(networkList[layer],
 				networkList[layer - 1]) + 0.01)*scaleFactor
 
 		return fixedPointArray(weights, fixed_point_decimals)

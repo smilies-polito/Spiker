@@ -8,7 +8,7 @@ from files import *
 # List of layer sizes
 networkList = [784, 400]
 
-mode = "train"
+mode = "test"
 trainPrecision = "float"
 
 # List of dictionaries of parameters for the layers

@@ -31,7 +31,6 @@ def updateExcLayer(network, layer, exp_shift, inputSpikes):
 
 	# Exponentially decrease the membrane potential
 	expDecay(network, layerName, exp_shift, "v")
-	print(network[layerName]["v"])
 
 
 	if np.sum(inputSpikes) != 0:
@@ -160,15 +159,15 @@ def all2othersUpdate(network, layerName, synapseName):
 
 	# Update the potential of the neurons excluded from one spike
 	network[layerName]["v"][0][network[layerName]["inhSpikes"][0]] += \
-		network[synapseName]["weight"] * \
-		unconnectedSpikes(network[layerName]["inhSpikes"][0])
+		int(network[synapseName]["weight"] * 
+		unconnectedSpikes(network[layerName]["inhSpikes"][0]))
 
 	
 	# Update the potential of all the other neurons
 	network[layerName]["v"][0]\
 		[np.logical_not(network[layerName]["inhSpikes"][0])] +=\
-		network[synapseName]["weight"] * \
-		allSpikes(network[layerName]["inhSpikes"][0])
+		int(network[synapseName]["weight"] * 
+		allSpikes(network[layerName]["inhSpikes"][0]))
 
 
 
