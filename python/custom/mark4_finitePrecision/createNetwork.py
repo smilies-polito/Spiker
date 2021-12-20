@@ -101,7 +101,7 @@ def createLayer(network, layerType, initDict, networkList, layer, mode,
 
 		# Initialize the membrane potentials at the reset voltage		
 		"v"		: initDict["vReset"]*np.ones((1, 
-					networkList[layer])),
+					networkList[layer])).astype(int),
 
 		# Initialize the threshold potential
 		"vThresh0"	: initDict["vThresh0"],
@@ -159,7 +159,8 @@ def initializeThreshold(mode, thresholdFile, initDict, numberOfNeurons):
 	if mode == "train":
 
 		# Initialize the thresholds to a starting value
-		return np.ones((1, numberOfNeurons))*initDict["vThresh0"]
+		return initDict["vThresh0"]*np.ones((1,
+			numberOfNeurons)).astype(int)
 
 	elif mode == "test":
 
@@ -265,8 +266,9 @@ def initializeWeights(mode, networkList, weightFile, layer, scaleFactor):
 	if mode == "train":
 
 		# Randomly initialize the weights
-		return (np.random.rand(networkList[layer],
+		weights = np.random.rand(networkList[layer],
 				networkList[layer - 1]) + 0.01)*scaleFactor
+		return weit
 
 
 	elif mode == "test":

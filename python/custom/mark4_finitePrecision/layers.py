@@ -34,6 +34,7 @@ def updateExcLayer(network, layer, dt_tau_exc, inputSpikes):
 	expDecay(network, layerName, dt_tau_exc, 
 		network[layerName]["vRest"], "v")
 
+
 	if np.sum(inputSpikes) != 0:
 
 		# Update membrane potential with the spikes from the previous layer

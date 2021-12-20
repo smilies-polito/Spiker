@@ -110,3 +110,10 @@ def expDecay(dictionary, key, dt_tau, steadyStateValue, variable):
 
 	dictionary[key][variable] -= dt_tau *(dictionary[key][variable] -
 		steadyStateValue)
+
+
+
+
+def fixedPoint(value, fixed_point_decimals):
+
+	return int(value * 2**fixed_point_decimals)
