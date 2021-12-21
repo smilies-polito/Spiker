@@ -5,7 +5,7 @@ from utils import expDecay, checkParallelism
 
 
 def updateExcLayer(network, layer, exp_shift, inputSpikes, neuron_parallelism,
-		maxOutputSpikes):
+		maxOutputSpikes, errorCounter):
 
 	'''
 	One training step update of the excitatory layer.
@@ -57,13 +57,13 @@ def updateExcLayer(network, layer, exp_shift, inputSpikes, neuron_parallelism,
 		all2othersUpdate(network, layerName, "inh2exc" +
 			str(layer))
 
-	checkParallelism(network["excLayer" + str(layer)]["v"],
-			neuron_parallelism)
+	errorCounter = checkParallelism(network["excLayer" + str(layer)]["v"],
+			neuron_parallelism, errorCounter)
 
 	# Increase threshold for active neurons. Decrease it for inactive ones.
 	homeostasis(network, layerName)
 
-	return maxOutputSpikes
+	return maxOutputSpikes, errorCounter
 
 
 

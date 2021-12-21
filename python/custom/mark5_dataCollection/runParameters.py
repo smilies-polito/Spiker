@@ -72,3 +72,7 @@ countThreshold = 5
 
 # NumPy default random generator.
 rng = np.random.default_rng()
+
+# Parallelism errors
+weightsErrors = 0
+errorCounter = 0

@@ -22,3 +22,6 @@ maxOutputSpikesFile = paramDir + "/maxOutputSpikes.npy"
 
 # Name of the active cycles counter file
 cyclesCounterFile = paramDir + "/cyclesCounter.npy"
+
+# Name of the parallelism error file
+errorFile = paramDir + "/errors.txt"

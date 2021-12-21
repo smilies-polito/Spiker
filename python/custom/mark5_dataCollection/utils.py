@@ -147,7 +147,7 @@ def fixedPointArray(numpyArray, fixed_point_decimals):
 
 
 
-def checkParallelism(numpyArray, parallelism):
+def checkParallelism(numpyArray, parallelism, errorCounter):
 
 	'''
 	Check that values inside NumPy array don't exceed a threshold.
@@ -160,10 +160,11 @@ def checkParallelism(numpyArray, parallelism):
 	'''
 	
 
-	if (numpyArray > 2**(parallelism-1)-1).any():
-		print("Value too high")
-		sys.exit()
+	if (numpyArray > 2**(parallelism-1)-1).any() or (numpyArray < 
+		-2**(parallelism-1)).any():
 
-	elif (numpyArray < -2**(parallelism-1)).any():
-		print("Value too low")
-		sys.exit()
+			return errorCounter + np.sum(numpyArray >
+				2**(parallelism-1)-1) + np.sum(numpyArray <
+				-2**(parallelism-1))
+	else:
+		return errorCounter

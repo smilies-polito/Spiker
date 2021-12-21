@@ -26,11 +26,12 @@ network = createNetwork(networkList, weightFilename, thresholdFilename, mode,
 			excDictList, scaleFactors, inh2excWeights,
 			fixed_point_decimals, trainPrecision, rng)
 
-checkParallelism(network["exc2exc1"]["weights"], weights_parallelism)
+weightsErrors = checkParallelism(network["exc2exc1"]["weights"], weights_parallelism,
+		weightsErrors)
 
 
 currentIndex = 0
-numberOfCycles = imgArray.shape[0]
+numberOfCycles = 2#imgArray.shape[0]
 
 
 maxInputSpikes = np.zeros(numberOfCycles+1)
@@ -46,8 +47,9 @@ startTimeTraining = timeit.default_timer()
 while currentIndex < numberOfCycles:
 
 	# Complete test cycle over a single image
-	inputIntensity, currentIndex, accuracies, maxInputSpikes[currentIndex], \
-	maxOutputSpikes[currentIndex], cyclesCounter[currentIndex] = \
+	inputIntensity, currentIndex, accuracies, \
+	maxInputSpikes[currentIndex], maxOutputSpikes[currentIndex], \
+	cyclesCounter[currentIndex], errorCounter = \
 		singleImageTest(
 			trainDuration,
 			restTime,
@@ -73,7 +75,8 @@ while currentIndex < numberOfCycles:
 			exp_shift,
 			neuron_parallelism,
 			maxInputSpikes[currentIndex], 
-			maxOutputSpikes[currentIndex]
+			maxOutputSpikes[currentIndex],
+			errorCounter
 		)
 
 
@@ -88,3 +91,23 @@ storeArray(maxOutputSpikesFile, maxOutputSpikes)
 
 # Store the array of cycles counts
 storeArray(cyclesCounterFile, cyclesCounter)
+
+decimalsString = "Decimals: " + str(fixed_point_decimals)
+neuronParallelismString = "Parallelism: " + str(neuron_parallelism)
+weightsParallelismString = "Weights parallelism: " + str(weights_parallelism)
+weightsString = "Parallelism exceeded in " + str(weightsErrors) + " weights"
+neuronString = "Parallelism exceeded in the neurons " + str(errorCounter) + \
+			" times"
+
+# Store the errors with a specific parallelism
+with open(errorFile, 'a') as fp:
+	fp.write(decimalsString)
+	fp.write("\n")
+	fp.write(neuronParallelismString)
+	fp.write("\n")
+	fp.write(weightsParallelismString)
+	fp.write("\n")
+	fp.write(weightsString)
+	fp.write("\n")
+	fp.write(neuronString)
+	fp.write("\n\n")

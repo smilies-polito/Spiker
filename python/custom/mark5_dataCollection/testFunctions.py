@@ -14,7 +14,7 @@ def singleImageTest(trainDuration, restTime, dt, image,	network, networkList,
 			printInterval, startTimeTraining, accuracies,
 			labelsArray, assignments, startInputIntensity, mode,
 			constSums, rng, exp_shift, neuron_parallelism,
-			maxInputSpikes, maxOutputSpikes):
+			maxInputSpikes, maxOutputSpikes, errorCounter):
 
 	'''
 	Test the network over an image of the dataset.
@@ -113,7 +113,7 @@ def singleImageTest(trainDuration, restTime, dt, image,	network, networkList,
 
 	# Test the network with the spikes sequences associated to the pixels.
 	inputIntensity, currentIndex, accuracies, maxInputSpikes, \
-	maxOutputSpikes, cyclesCounter = \
+	maxOutputSpikes, cyclesCounter, errorCounter = \
 		test(
 			network, 
 			networkList, 
@@ -136,7 +136,8 @@ def singleImageTest(trainDuration, restTime, dt, image,	network, networkList,
 			exp_shift,
 			neuron_parallelism, 
 			maxInputSpikes, 
-			maxOutputSpikes
+			maxOutputSpikes,
+			errorCounter
 			)
 
 
@@ -146,7 +147,7 @@ def singleImageTest(trainDuration, restTime, dt, image,	network, networkList,
 
 
 	return inputIntensity, currentIndex, accuracies, maxInputSpikes, \
-		maxOutputSpikes, cyclesCounter
+		maxOutputSpikes, cyclesCounter, errorCounter
 
 
 
@@ -157,7 +158,8 @@ def test(network, networkList, spikesTrains, dt_tauDict, countThreshold,
 	inputIntensity, currentIndex, spikesEvolution, updateInterval,
 	printInterval, startTimeImage, startTimeTraining, accuracies,
 	labelsArray, assignments, startInputIntensity, mode, constSums,
-	exp_shift, neuron_parallelism, maxInputSpikes, maxOutputSpikes):
+	exp_shift, neuron_parallelism, maxInputSpikes, maxOutputSpikes,
+	errorCounter):
 
 	'''
 	Test the network with the spikes sequences associated to the pixels.
@@ -234,11 +236,12 @@ def test(network, networkList, spikesTrains, dt_tauDict, countThreshold,
 
 	
 	# Train the network over the pixels' spikes train
-	spikesCounter, maxInputSpikes, maxOutputSpikes, cyclesCounter = \
+	spikesCounter, maxInputSpikes, maxOutputSpikes, cyclesCounter, \
+	errorCounter = \
 			run(network, networkList, spikesTrains, dt_tauDict,
 					exp_shift, None, mode, constSums,
 					neuron_parallelism, maxInputSpikes,
-					maxOutputSpikes)
+					maxOutputSpikes, errorCounter)
 
 
 	if np.sum(spikesCounter) < countThreshold:
@@ -267,7 +270,7 @@ def test(network, networkList, spikesTrains, dt_tauDict, countThreshold,
 			)
 
 	return inputIntensity, currentIndex, accuracies, maxInputSpikes, \
-		maxOutputSpikes, cyclesCounter
+		maxOutputSpikes, cyclesCounter, errorCounter
 
 
 
