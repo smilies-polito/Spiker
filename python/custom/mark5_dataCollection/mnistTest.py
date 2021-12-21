@@ -35,6 +35,7 @@ numberOfCycles = imgArray.shape[0]
 
 maxInputSpikes = np.zeros(numberOfCycles+1)
 maxOutputSpikes = np.zeros((numberOfCycles+1, len(networkList)-1))
+cyclesCounter = np.zeros(numberOfCycles+1)
 
 
 # Measure the test starting time
@@ -46,7 +47,7 @@ while currentIndex < numberOfCycles:
 
 	# Complete test cycle over a single image
 	inputIntensity, currentIndex, accuracies, maxInputSpikes[currentIndex], \
-	maxOutputSpikes[currentIndex] = \
+	maxOutputSpikes[currentIndex], cyclesCounter[currentIndex] = \
 		singleImageTest(
 			trainDuration,
 			restTime,
@@ -84,3 +85,6 @@ storeArray(maxInputSpikesFile, maxInputSpikes)
 
 # Store the array of maximum output spikes counts
 storeArray(maxOutputSpikesFile, maxOutputSpikes)
+
+# Store the array of cycles counts
+storeArray(cyclesCounterFile, cyclesCounter)

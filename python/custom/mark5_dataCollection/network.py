@@ -53,13 +53,18 @@ def run(network, networkList, spikesTrains, dt_tauDict, exp_shift, stdpDict,
 	# Initialize the output spikes counter to 0
 	spikesCounter = np.zeros((1, lastLayerSize))
 
+	cyclesCounter = 0
+
 	for i in range(trainDuration):
 
 		# Train the network over a single step
-		maxInputSpikes, maxOutputSpikes = updateNetwork(networkList,
-				network, spikesTrains[i], dt_tauDict, exp_shift,
-				stdpDict, mode, neuron_parallelism,
-				maxInputSpikes, maxOutputSpikes)
+		maxInputSpikes, maxOutputSpikes, cyclesCounter = \
+				updateNetwork(networkList, network,
+						spikesTrains[i], dt_tauDict,
+						exp_shift, stdpDict, mode,
+						neuron_parallelism,
+						maxInputSpikes, maxOutputSpikes,
+						cyclesCounter)
 
 
 		# Update the output spikes counter
@@ -70,7 +75,7 @@ def run(network, networkList, spikesTrains, dt_tauDict, exp_shift, stdpDict,
 		# Normalize the weights
 		normalizeWeights(network, networkList, constSums)
 	
-	return spikesCounter, maxInputSpikes, maxOutputSpikes
+	return spikesCounter, maxInputSpikes, maxOutputSpikes, cyclesCounter
 
 
 
@@ -78,7 +83,7 @@ def run(network, networkList, spikesTrains, dt_tauDict, exp_shift, stdpDict,
 
 def updateNetwork(networkList, network, inputSpikes, dt_tauDict, exp_shift,
 		stdpDict, mode, neuron_parallelism, maxInputSpikes,
-		maxOutputSpikes):
+		maxOutputSpikes, cyclesCounter):
 
 	'''
 	One training step update for the entire network.
@@ -111,6 +116,12 @@ def updateNetwork(networkList, network, inputSpikes, dt_tauDict, exp_shift,
 	'''	
 
 	N_inputSpikes = np.sum(inputSpikes)
+
+	if N_inputSpikes != 0:
+
+		# Update the counter of the active cycles
+		cyclesCounter += 1
+
 
 	# Update the maximum count of active inputs
 	if N_inputSpikes > maxInputSpikes:
@@ -145,7 +156,7 @@ def updateNetwork(networkList, network, inputSpikes, dt_tauDict, exp_shift,
 			stdp(network, layer, stdpDict, network["excLayer" + 
 				str(layer - 1)]["outSpikes"][0])
 
-	return maxInputSpikes, maxOutputSpikes
+	return maxInputSpikes, maxOutputSpikes, cyclesCounter
 
 
 

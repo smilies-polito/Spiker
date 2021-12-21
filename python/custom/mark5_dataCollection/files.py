@@ -19,3 +19,6 @@ testPerformanceFile = paramDir + "/testPerformance.txt"
 # Name of the maximum pulses count files
 maxInputSpikesFile = paramDir + "/maxInputSpikes.npy"
 maxOutputSpikesFile = paramDir + "/maxOutputSpikes.npy"
+
+# Name of the active cycles counter file
+cyclesCounterFile = paramDir + "/cyclesCounter.npy"

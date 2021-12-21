@@ -113,7 +113,7 @@ def singleImageTest(trainDuration, restTime, dt, image,	network, networkList,
 
 	# Test the network with the spikes sequences associated to the pixels.
 	inputIntensity, currentIndex, accuracies, maxInputSpikes, \
-	maxOutputSpikes = \
+	maxOutputSpikes, cyclesCounter = \
 		test(
 			network, 
 			networkList, 
@@ -146,7 +146,7 @@ def singleImageTest(trainDuration, restTime, dt, image,	network, networkList,
 
 
 	return inputIntensity, currentIndex, accuracies, maxInputSpikes, \
-		maxOutputSpikes
+		maxOutputSpikes, cyclesCounter
 
 
 
@@ -234,10 +234,11 @@ def test(network, networkList, spikesTrains, dt_tauDict, countThreshold,
 
 	
 	# Train the network over the pixels' spikes train
-	spikesCounter, maxInputSpikes, maxOutputSpikes = run(network,
-			networkList, spikesTrains, dt_tauDict, exp_shift, None,
-			mode, constSums, neuron_parallelism, maxInputSpikes,
-			maxOutputSpikes)
+	spikesCounter, maxInputSpikes, maxOutputSpikes, cyclesCounter = \
+			run(network, networkList, spikesTrains, dt_tauDict,
+					exp_shift, None, mode, constSums,
+					neuron_parallelism, maxInputSpikes,
+					maxOutputSpikes)
 
 
 	if np.sum(spikesCounter) < countThreshold:
@@ -266,7 +267,7 @@ def test(network, networkList, spikesTrains, dt_tauDict, countThreshold,
 			)
 
 	return inputIntensity, currentIndex, accuracies, maxInputSpikes, \
-		maxOutputSpikes
+		maxOutputSpikes, cyclesCounter
 
 
 
