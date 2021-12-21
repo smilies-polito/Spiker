@@ -1,4 +1,4 @@
-weights_parallelism	= 5
-neuron_parallelism	= 10
-fixed_point_decimals 	= 0
+weights_parallelism	= 32
+neuron_parallelism	= 32
+fixed_point_decimals 	= 10
 exp_shift		= 10

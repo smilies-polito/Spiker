@@ -15,3 +15,7 @@ assignmentsFile = paramDir + "/assignments.npy"
 # Name of the performance files
 trainPerformanceFile = paramDir + "/trainPerformance.txt"
 testPerformanceFile = paramDir + "/testPerformance.txt"
+
+# Name of the maximum pulses count files
+maxInputSpikesFile = paramDir + "/maxInputSpikes.npy"
+maxOutputSpikesFile = paramDir + "/maxOutputSpikes.npy"

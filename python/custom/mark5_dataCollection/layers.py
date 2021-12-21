@@ -4,7 +4,8 @@ import numpy as np
 from utils import expDecay, checkParallelism
 
 
-def updateExcLayer(network, layer, exp_shift, inputSpikes, neuron_parallelism):
+def updateExcLayer(network, layer, exp_shift, inputSpikes, neuron_parallelism,
+		maxOutputSpikes):
 
 	'''
 	One training step update of the excitatory layer.
@@ -25,8 +26,18 @@ def updateExcLayer(network, layer, exp_shift, inputSpikes, neuron_parallelism):
 
 	layerName = "excLayer" + str(layer)
 	
+	# Active spikes
+	N_outSpikes = np.sum(network[layerName]["outSpikes"])
+	N_inputSpikes = np.sum(inputSpikes)
+
+
 	# Generate spikes if the potential exceeds the dynamic threshold	
 	generateOutputSpikes(network, layerName)
+
+
+	# Update the maximum count of active outputs
+	if  N_outSpikes > maxOutputSpikes:
+		maxOutputSpikes = N_outSpikes
 
 	# Reset the potential of the active neurons	
 	resetPotentials(network, layerName)
@@ -35,10 +46,11 @@ def updateExcLayer(network, layer, exp_shift, inputSpikes, neuron_parallelism):
 	expDecay(network, layerName, exp_shift, "v")
 
 
-	if np.sum(inputSpikes) != 0:
+	if  N_inputSpikes != 0:
 
 		# Update membrane potential with the spikes from the previous layer
 		all2allUpdate(network, layerName, "exc2exc" + str(layer), inputSpikes)
+
 
 	if np.sum(network["excLayer" + str(layer)]["inhSpikes"]) != 0:
 		# Update membrane potential with the spikes from the inhibitory layer
@@ -50,6 +62,8 @@ def updateExcLayer(network, layer, exp_shift, inputSpikes, neuron_parallelism):
 
 	# Increase threshold for active neurons. Decrease it for inactive ones.
 	homeostasis(network, layerName)
+
+	return maxOutputSpikes
 
 
 

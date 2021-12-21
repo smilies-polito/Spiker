@@ -33,6 +33,10 @@ currentIndex = 0
 numberOfCycles = imgArray.shape[0]
 
 
+maxInputSpikes = np.zeros(numberOfCycles+1)
+maxOutputSpikes = np.zeros((numberOfCycles+1, len(networkList)-1))
+
+
 # Measure the test starting time
 startTimeTraining = timeit.default_timer()
 
@@ -41,7 +45,8 @@ startTimeTraining = timeit.default_timer()
 while currentIndex < numberOfCycles:
 
 	# Complete test cycle over a single image
-	inputIntensity, currentIndex, accuracies = \
+	inputIntensity, currentIndex, accuracies, maxInputSpikes[currentIndex], \
+	maxOutputSpikes[currentIndex] = \
 		singleImageTest(
 			trainDuration,
 			restTime,
@@ -65,8 +70,17 @@ while currentIndex < numberOfCycles:
 			constSums,
 			rng,
 			exp_shift,
-			neuron_parallelism
+			neuron_parallelism,
+			maxInputSpikes[currentIndex], 
+			maxOutputSpikes[currentIndex]
 		)
+
 
 # Store the performance of the network into a text file
 storePerformace(startTimeTraining, accuracies, testPerformanceFile)
+
+# Store the array of maximum input spikes counts
+storeArray(maxInputSpikesFile, maxInputSpikes)
+
+# Store the array of maximum output spikes counts
+storeArray(maxOutputSpikesFile, maxOutputSpikes)
