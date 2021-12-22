@@ -7,8 +7,6 @@ from storeParameters import *
 from utils import checkParallelism
 
 
-
-
 # Initialize the training parameters
 from files import *
 from runParameters import *
@@ -31,7 +29,7 @@ weightsErrors = checkParallelism(network["exc2exc1"]["weights"], weights_paralle
 
 
 currentIndex = 0
-numberOfCycles = 2#imgArray.shape[0]
+numberOfCycles = imgArray.shape[0]
 
 
 maxInputSpikes = np.zeros(numberOfCycles+1)
