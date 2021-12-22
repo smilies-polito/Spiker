@@ -8,7 +8,7 @@ from neuronsParameters import *
 from mnist import loadDataset
 from createNetwork import createNetwork
 from trainTestFunctions import *
-from utils import createParamDir
+from utils import createDir
 
 
 images = "../../mnist/t10k-images-idx3-ubyte"
@@ -19,10 +19,10 @@ paramDir = "./parameters"
 weightFilename = paramDir + "/weights"
 thetaFilename = paramDir + "/theta"
 performanceFilename = paramDir + "/performance"
-assignementsFile = paramDir + "/assignements"
+assignementsFilename = paramDir + "/assignements"
+assignementsFile = assignementsFilename + ".npy"
 
 
-createParamDir(paramDir)
 
 
 networkList = [784, 400]
@@ -73,7 +73,9 @@ while i < numberOfCycles:
 		assignements,inputIntensity, startInputIntensity, i, mode)
 
 
-storeParameters(networkList, network, assigmenets, weightFilename, 
+createDir(paramDir)
+
+storeParameters(networkList, network, assignements, weightFilename, 
 		thetaFilename, assignementsFilename)
 
 storePerformace(startTimeTraining, accuracies, performanceFilename)
