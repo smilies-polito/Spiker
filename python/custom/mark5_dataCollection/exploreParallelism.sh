@@ -17,6 +17,8 @@ minNeuronParallelism=5
 maxNeuronParallelism=32
 fixedIntegerParallelism=13
 
+
+
 # Remove error file before starting: mnistTest.py works in append on it
 if [[ -f $errorFile ]]
 then
@@ -50,6 +52,8 @@ do
 	echo -e "--------------------------------------------------\n"
 	python $mnistTest
 	echo -e "\n"
+
+	touch $paramDir"/*"
 done
 
 
@@ -84,4 +88,6 @@ do
 	python $mnistTest
 	mv $accuracyFile "${accuracyFile%%$extension}""_"$i"_bits""$extension"
 	echo -e "\n"
+
+	touch $paramDir"/*"
 done
