@@ -1,13 +1,25 @@
 import subprocess as sp
 
+def createDir(dirName):
 
-def createParamDir(dirName):
+	'''
+	Create a new directory. If it already exists it is firstly remove.
 
+	INPUT:
+
+		dirName: string. Name of the directory to create
+	'''
+
+	# Check if the directory exists
 	cmdString = "if [[ -d " + dirName + " ]]; then "
+
+	# If it exists remove it
 	cmdString += "rm -r " + dirName + "; "
+	cmdString += "fi; "
+
+	# Create the directory
 	cmdString += "mkdir " + dirName + "; "
-	cmdString += "else "
-	cmdString += "mkdir " + dirName + "; "
-	cmdString += "fi"
 	
-	sp.Popen(cmdString, shell=True, executable = "/bin/bash")
+	# Run the complete bash command
+	sp.run(cmdString, shell=True, executable="/bin/bash")
+
