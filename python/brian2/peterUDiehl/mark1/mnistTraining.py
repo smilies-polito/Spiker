@@ -11,8 +11,8 @@ from trainTestFunctions import *
 from utils import createDir
 
 
-images = "../../mnist/t10k-images-idx3-ubyte"
-labels = "../../mnist/t10k-labels-idx1-ubyte"
+images = "../../mnist/train-images-idx3-ubyte"
+labels = "../../mnist/train-labels-idx1-ubyte"
 
 paramDir = "./parameters"
 
