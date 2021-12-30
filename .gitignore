@@ -19,3 +19,6 @@ sim/
 
 # Files on iCloud
 *.icloud
+
+# Temporary files
+tmp.*
