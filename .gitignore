@@ -16,3 +16,9 @@ __pycache__
 
 # Vivado simulation files
 sim/
+
+# Files on iCloud
+*.icloud
+
+# Temporary files
+tmp.*
