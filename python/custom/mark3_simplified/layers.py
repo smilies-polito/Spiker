@@ -44,10 +44,7 @@ def updateExcLayer(network, layer, dt_tau_exc, inputSpikes):
 		all2othersUpdate(network, layerName, "inh2exc" +
 			str(layer))
 
-	# Increase threshold for active neurons. Decrease it for inactive ones.
-	homeostasis(network, layerName)
-
-
+	
 
 
 

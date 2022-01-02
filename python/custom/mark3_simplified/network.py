@@ -1,6 +1,6 @@
 import numpy as np
 
-from layers import updateExcLayer, updateInhLayer
+from layers import updateExcLayer, updateInhLayer, homeostasis
 from synapses import stdp 
 
 
@@ -58,8 +58,11 @@ def run(network, networkList, spikesTrains, dt_tauDict, stdpDict, mode,
 		spikesCounter[0][network["excLayer" +
 			str(lastLayerIndex)]["outSpikes"][0]] += 1
 
-	# Normalize the weights
-	normalizeWeights(network, networkList, constSums)
+
+	if mode == "train":
+		
+		# Normalize the weights
+		normalizeWeights(network, networkList, constSums)
 	
 	return spikesCounter
 
@@ -107,6 +110,11 @@ def updateNetwork(networkList, network, inputSpikes, dt_tauDict, stdpDict,
 		# Update the first layer weights 
 		stdp(network, 1, stdpDict, inputSpikes)
 
+		# Increase threshold for active neurons. 
+		homeostasis(network, layerName)
+
+
+
 
 	for layer in range(2, len(networkList)):
 		
@@ -121,6 +129,10 @@ def updateNetwork(networkList, network, inputSpikes, dt_tauDict, stdpDict,
 			# Update the layer weights
 			stdp(network, layer, stdpDict, network["excLayer" + 
 				str(layer - 1)]["outSpikes"][0])
+
+		# Increase threshold for active neurons. 
+		homeostasis(network, layerName)
+
 
 
 
