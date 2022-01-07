@@ -7,13 +7,13 @@ entity neurons_layer is
 
 	generic(
 		-- neurons counter parallelism
-		N_cnt		: integer := 2;
+		N_cnt		: integer := 10;
 
 		-- internal parallelism
-		N		: integer := 8;
+		N		: integer := 16;
 
 		-- number of neurons in the layer
-		layer_size	: integer := 3;
+		layer_size	: integer := 400;
 
 		-- shift during the exponential decay
 		shift		: integer := 1
@@ -32,10 +32,9 @@ entity neurons_layer is
 		input_spikes	: in std_logic_vector(layer_size-1 downto 0);
 
 		-- input parameters
-		v_th_0		: in signed(N-1 downto 0);		
+		v_th_value	: in signed(N-1 downto 0);		
 		v_reset		: in signed(N-1 downto 0);		
 		inh_weight	: in signed(N-1 downto 0);		
-		v_th_plus	: in signed(N-1 downto 0);		
 		exc_weights	: in signed(layer_size*N-1 downto 0);
 
 		-- output
@@ -92,11 +91,10 @@ architecture behaviour of neurons_layer is
 			input_spike	: in std_logic;
 
 			-- input parameters
-			v_th_0		: in signed(N-1 downto 0);
+			v_th_value	: in signed(N-1 downto 0);
 			v_reset		: in signed(N-1 downto 0);
 			inh_weight	: in signed(N-1 downto 0);
 			exc_weight	: in signed(N-1 downto 0);
-			v_th_plus	: in signed(N-1 downto 0);
 
 			-- output
 			out_spike	: out std_logic;
@@ -149,12 +147,11 @@ begin
 				input_spike	=> input_spikes(i),
 							       
 				-- input parameters
-				v_th_0		=> v_th_0,
+				v_th_value	=> v_th_value,
 				v_reset		=> v_reset,
 				inh_weight	=> inh_weight,
 				exc_weight	=> exc_weights((i+1)*N-1 downto
 							i*N),
-				v_th_plus	=> v_th_plus,
 							       
 				-- output         
 				out_spike	=> out_spikes(i),

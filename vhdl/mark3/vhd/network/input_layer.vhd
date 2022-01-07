@@ -11,6 +11,7 @@ entity input_layer is
 		en		: in std_logic;
 		load_n		: in std_logic;
 		pixels		: in std_logic_vector(784*8-1 downto 0);
+		lfsr_in		: in std_logic_vector(12 downto 0);
 
 		-- output
 		spikes		: out std_logic_vector(783 downto 0)
@@ -22,11 +23,9 @@ end entity input_layer;
 
 architecture behaviour of input_layer is
 
-	type matrix is array(783 downto 0) of std_logic_vector(12 downto 0);
-	type pixel_matrix is array(783 downto 0) of std_logic_vector(7 downto 0);
+	type pixel_matrix is array(783 downto 0) of std_logic_vector(12 downto 0);
 
-	signal lfsr_in		: matrix;
-	signal lfsr_out		: matrix;
+	signal lfsr_out		: std_logic_vector(12 downto 0);
 
 	signal pixels_sig	: pixel_matrix;
 
@@ -74,28 +73,26 @@ begin
 	begin
 		for i in 0 to 783
 		loop
-			pixels_sig(i)	<= pixels((i+1)*8-1 downto i*8);
+			pixels_sig(i)(12 downto 8) <= (others => '0');	
+			pixels_sig(i)(7 downto 0)	
+				<= pixels((i+1)*8-1 downto i*8);
 		end loop;
 	end process split_pixels;
 
 
-	lfsr_layer	: for i in 0 to 783
-	generate
-	
-		lfsr	: lfsr_13bit 
+	lfsr		: lfsr_13bit 
 
 			port map(
 				-- input
 				clk		=> clk,
 				en		=> en,
 				load_n		=> load_n,
-				lfsr_in		=> lfsr_in(i),
+				lfsr_in		=> lfsr_in,
 
 				-- output
-				lfsr_out	=> lfsr_out(i)
+				lfsr_out	=> lfsr_out
 			);
 
-	end generate lfsr_layer;
 
 
 	cmp_layer	: for i in 0 to 783
@@ -104,13 +101,13 @@ begin
 		cmp	: unsigned_cmp_gt 
 		
 			generic map(
-				N		=> 8
+				N		=> 13 
 			)
 
 
 			port map(
 				-- input
-				in0		=> unsigned(lfsr_out(i)),
+				in0		=> unsigned(lfsr_out),
 				in1		=> unsigned(pixels_sig(i)),
 
 				-- output		

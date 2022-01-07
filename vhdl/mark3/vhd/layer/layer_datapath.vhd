@@ -12,11 +12,11 @@ entity layer_datapath is
 
 		-- excitatory spikes
 		input_parallelism	: integer := 8;
-		N_exc_cnt		: integer := 3;
+		N_exc_cnt		: integer := 4;
 
 		-- inhibitory spikes
 		layer_size		: integer := 4;
-		N_inh_cnt		: integer := 2;
+		N_inh_cnt		: integer := 3;
 
 		-- elaboration steps
 		N_cycles_cnt		: integer := 4;
@@ -47,10 +47,9 @@ entity layer_datapath is
 		start			: in std_logic;	
 
 		-- input parameters
-		v_th_0			: in signed(parallelism-1 downto 0);		
+		v_th_value		: in signed(parallelism-1 downto 0);		
 		v_reset			: in signed(parallelism-1 downto 0);	
 		inh_weight		: in signed(parallelism-1 downto 0);		
-		v_th_plus		: in signed(parallelism-1 downto 0);	
 		exc_weights		: in signed
 					(layer_size*parallelism-1 downto 0);
 
@@ -252,10 +251,9 @@ architecture behaviour of layer_datapath is
 			input_spikes	: in std_logic_vector(layer_size-1 downto 0);
 
 			-- input parameters
-			v_th_0		: in signed(N-1 downto 0);		
+			v_th_value	: in signed(N-1 downto 0);		
 			v_reset		: in signed(N-1 downto 0);		
 			inh_weight	: in signed(N-1 downto 0);		
-			v_th_plus	: in signed(N-1 downto 0);		
 			exc_weights	: in signed(layer_size*N-1 downto 0);
 
 			-- output
@@ -454,11 +452,10 @@ begin
                        	input_spikes	=> spikes(layer_size-1 downto 0),
 
 			-- input parameters
-			v_th_0		=> v_th_0,
+			v_th_value	=> v_th_value,
 			v_reset		=> v_reset,
 			inh_weight	=> inh_weight,
 			exc_weights	=> exc_weights,
-			v_th_plus	=> v_th_plus,
                                                        
 			-- output          
 			out_spikes	=> feedback_spikes,

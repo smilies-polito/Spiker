@@ -11,15 +11,15 @@ entity layer is
 		parallelism		: integer := 16;
 
 		-- excitatory spikes
-		input_parallelism	: integer := 8;
-		N_exc_cnt		: integer := 3;
+		input_parallelism	: integer := 784;
+		N_exc_cnt		: integer := 11;
 
 		-- inhibitory spikes
-		layer_size		: integer := 4;
-		N_inh_cnt		: integer := 2;
+		layer_size		: integer := 400;
+		N_inh_cnt		: integer := 10;
 
 		-- elaboration steps
-		N_cycles_cnt		: integer := 4;
+		N_cycles_cnt		: integer := 3500;
 
 		-- exponential decay shift
 		shift			: integer := 1
@@ -35,10 +35,9 @@ entity layer is
 						(input_parallelism-1 downto 0);
 
 		-- input parameters
-		v_th_0			: in signed(parallelism-1 downto 0);		
+		v_th_value		: in signed(parallelism-1 downto 0);		
 		v_reset			: in signed(parallelism-1 downto 0);	
 		inh_weight		: in signed(parallelism-1 downto 0);		
-		v_th_plus		: in signed(parallelism-1 downto 0);	
 		exc_weights		: in signed
 					(layer_size*parallelism-1 downto 0);
 
@@ -140,10 +139,9 @@ architecture behaviour of layer is
 			cycles_cnt_en		: in std_logic;	
 
 			-- input parameters
-			v_th_0			: in signed(parallelism-1 downto 0);		
+			v_th_value		: in signed(parallelism-1 downto 0);		
 			v_reset			: in signed(parallelism-1 downto 0);	
 			inh_weight		: in signed(parallelism-1 downto 0);		
-			v_th_plus		: in signed(parallelism-1 downto 0);	
 			exc_weights		: in signed
 						(layer_size*parallelism-1 downto 0);
 
@@ -263,10 +261,9 @@ begin
 			cycles_cnt_en		=> cycles_cnt_en,
                                                                    
 			-- input parameters        
-			v_th_0			=> v_th_0,
+			v_th_value		=> v_th_value,
 			v_reset			=> v_reset,
 			inh_weight		=> inh_weight,
-			v_th_plus		=> v_th_plus,
 			exc_weights		=> exc_weights,
 						   		
                                                                    

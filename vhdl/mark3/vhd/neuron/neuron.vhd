@@ -7,7 +7,7 @@ entity neuron is
 
 	generic(
 		-- parallelism
-		N		: integer := 8;
+		N		: integer := 16;
 
 		-- shift amount
 		shift		: integer := 1
@@ -26,11 +26,10 @@ entity neuron is
 		input_spike	: in std_logic;
 
 		-- input parameters
-		v_th_0		: in signed(N-1 downto 0);
+		v_th_value	: in signed(N-1 downto 0);
 		v_reset		: in signed(N-1 downto 0);
 		inh_weight	: in signed(N-1 downto 0);
 		exc_weight	: in signed(N-1 downto 0);
-		v_th_plus	: in signed(N-1 downto 0);
 
 		-- output
 		out_spike	: out std_logic;
@@ -44,11 +43,8 @@ architecture behaviour of neuron is
 
 
 	-- from control unit towards datapath
-	signal no_update	: std_logic;
 	signal update_sel	: std_logic_vector(1 downto 0);
-	signal v_or_v_th	: std_logic;
 	signal add_or_sub	: std_logic;
-	signal v_th_update	: std_logic;
 	signal v_update		: std_logic;
 	signal v_th_en		: std_logic;
 	signal v_en		: std_logic;
@@ -70,19 +66,15 @@ architecture behaviour of neuron is
 
 		port(
 			-- input parameters
-			v_th_0		: in signed(N-1 downto 0);
+			v_th_value	: in signed(N-1 downto 0);
 			v_reset		: in signed(N-1 downto 0);
 			inh_weight	: in signed(N-1 downto 0);
 			exc_weight	: in signed(N-1 downto 0);
-			v_th_plus	: in signed(N-1 downto 0);
 
 			-- input controls
 			clk		: in std_logic;
-			no_update	: in std_logic;
 			update_sel	: in std_logic_vector(1 downto 0);
-			v_or_v_th	: in std_logic;
 			add_or_sub	: in std_logic;
-			v_th_update	: in std_logic;
 			v_update	: in std_logic;
 			v_th_en		: in std_logic;
 			v_en		: in std_logic;
@@ -113,11 +105,8 @@ architecture behaviour of neuron is
 			exceed_v_th	: in std_logic;
 
 			-- control output
-			no_update	: out std_logic;
 			update_sel	: out std_logic_vector(1 downto 0);
-			v_or_v_th	: out std_logic;
 			add_or_sub	: out std_logic;
-			v_th_update	: out std_logic;
 			v_update	: out std_logic;
 			v_th_en		: out std_logic;
 			v_en		: out std_logic;
@@ -147,20 +136,16 @@ begin
 
 		port map(
 			-- input parameters
-			v_th_0		=> v_th_0,	   	
+			v_th_value	=> v_th_value,	   	
 			v_reset		=> v_reset,	       
 			inh_weight	=> inh_weight,     
 			exc_weight	=> exc_weight,    
-			v_th_plus	=> v_th_plus,      
 
 			-- input controls
 			clk		=> clk,
-			no_update	=> no_update,
 			update_sel	=> update_sel,		
-			v_or_v_th	=> v_or_v_th,	     
 			add_or_sub	=> add_or_sub,	     
 			v_update	=> v_update,	     
-			v_th_update	=> v_th_update,	     
 			v_th_en		=> v_th_en,	     
 			v_en		=> v_en,
 			v_rst_n		=> v_rst_n,
@@ -187,12 +172,9 @@ begin
 			exceed_v_th	=> exceed_v_th,
 
 			-- control output
-			no_update	=> no_update,
 			update_sel	=> update_sel,		
-			v_or_v_th	=> v_or_v_th,	     
 			add_or_sub	=> add_or_sub,	     
 			v_update	=> v_update,	     
-			v_th_update	=> v_th_update,	     
 			v_th_en		=> v_th_en,	     
 			v_en		=> v_en,
 			v_rst_n		=> v_rst_n,
