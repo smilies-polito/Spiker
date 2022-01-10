@@ -17,6 +17,9 @@ entity spiker is
 		pixel_in		: in std_logic_vector(7 downto 0);
 		lfsr_in			: in std_logic_vector(12 downto 0);
 		outSel			: in std_logic_vector(8 downto 0);
+		weights_in		: in std_logic_vector(17 downto 0);
+		wraddr			: in std_logic_vector(15 downto 0);
+		bram_sel		: in std_logic_vector(5 downto 0);
 
 		-- input parameters
 		v_th_value		: in signed(15 downto 0);		
@@ -49,7 +52,7 @@ architecture behaviour of spiker is
 	constant inh_weight		: integer := -15;
 
 	signal input_spikes		: std_logic_vector(N_inputs-1 downto 0);
-	signal exc_weights		: signed(N_neurons*weightParallelism-1 downto 0);
+	signal exc_weights		: std_logic_vector(N_neurons*weightParallelism-1 downto 0);
 	signal exc_cnt			: std_logic_vector(N_exc_cnt-1 
 						downto 0);
 	signal outSpikes		: std_logic_vector(N_neurons-1 
@@ -68,6 +71,9 @@ architecture behaviour of spiker is
 	signal outCounts		: std_logic_vector(9*2**9-1 downto 0);
 
 
+	signal rdaddr			: std_logic_vector(15 downto 0);
+	signal rden			: std_logic;
+	signal weights_input		: std_logic_vector(71 downto 0);
 
 	component input_layer is
 
@@ -148,6 +154,26 @@ architecture behaviour of spiker is
 	end component layer;
 
 
+	component weights_bram is
+
+		port(
+			-- input
+			clk		: in std_logic;
+			di		: in std_logic_vector(71 downto 0);
+			rdaddr		: in std_logic_vector(15 downto 0);
+			rden		: in std_logic;
+			wraddr		: in std_logic_vector(15 downto 0);
+			bram_sel	: in std_logic_vector(5 downto 0);
+
+			-- output
+			do		: out std_logic_vector(400*5-1 downto 0)
+					
+		);
+
+	end component weights_bram;
+
+
+
 	component cnt is
 
 		generic(
@@ -206,6 +232,18 @@ begin
 	N_cycles_sig	<= std_logic_vector(to_signed(N_cycles,
 				N_cycles_cnt));
 
+	process(weights_in)
+	begin
+
+		for i in 0 to 3
+		loop
+
+			weights_input((i+1)*18-1 downto i*18)	<= weights_in;
+
+		end loop;
+
+	end process;
+
 
 	poissonLayer	: input_layer 
 
@@ -227,60 +265,61 @@ begin
 
 	layer_1		: layer 
 
-			generic map(
+		generic map(
 
-				-- internal parallelism
-				parallelism		=> neuronParallelism,
-				weightParallelism	=> weightParallelism,
+			-- internal parallelism
+			parallelism		=> neuronParallelism,
+			weightParallelism	=> weightParallelism,
 
-				-- excitatory spikes
-				input_parallelism	=> N_inputs,
-				N_exc_cnt		=> N_exc_cnt,
+			-- excitatory spikes
+			input_parallelism	=> N_inputs,
+			N_exc_cnt		=> N_exc_cnt,
 
-				-- inhibitory spikes
-				layer_size		=> N_neurons,
-				N_inh_cnt		=> N_inh_cnt,
+			-- inhibitory spikes
+			layer_size		=> N_neurons,
+			N_inh_cnt		=> N_inh_cnt,
 
-				-- elaboration steps
-				N_cycles_cnt		=> N_cycles_cnt,
+			-- elaboration steps
+			N_cycles_cnt		=> N_cycles_cnt,
 
-				-- exponential decay shift
-				shift			=> shift
-					
-			)
+			-- exponential decay shift
+			shift			=> shift
+				
+		)
 
-			port map(
-				-- input
-				clk			=> clk,
-				rst_n			=> rst_n,
-				start			=> start,
-				input_spikes		=> input_spikes,
-							
+		port map(
+			-- input
+			clk			=> clk,
+			rst_n			=> rst_n,
+			start			=> start,
+			input_spikes		=> input_spikes,
+						
 
-				-- input parameters
-				v_th_value		=> v_th_value,
-				v_reset			=> v_reset_sig,
-				inh_weight		=> inh_weight_sig,
-				exc_weights		=> exc_weights,
-							
+			-- input parameters
+			v_th_value		=> v_th_value,
+			v_reset			=> v_reset_sig,
+			inh_weight		=> inh_weight_sig,
+			exc_weights		=> signed(exc_weights),
+						
 
-				-- number of inputs, neurons and cycles
-				N_inputs		=> N_inputs_sig,
-				N_neurons		=> N_neurons_sig,
-				N_cycles		=> N_cycles_sig,
-							
+			-- number of inputs, neurons and cycles
+			N_inputs		=> N_inputs_sig,
+			N_neurons		=> N_neurons_sig,
+			N_cycles		=> N_cycles_sig,
+						
 
-				-- output
-				exc_cnt			=> exc_cnt,
-							
-				out_spikes		=> outSpikes,
-							
-				sample			=> sample,
-				ready			=> ready
-			);
+			-- output
+			exc_cnt			=> exc_cnt,
+						
+			out_spikes		=> outSpikes,
+						
+			sample			=> sample,
+			ready			=> ready
+		);
 
 
-		output_layer	: for i in 0 to 399
+
+	output_layer	: for i in 0 to 399
 		generate
 
 			out_counter	: cnt
@@ -301,7 +340,7 @@ begin
 		end generate output_layer;
 
 
-		megaOutSignal	: process(cnt_out)
+	megaOutSignal	: process(cnt_out)
 		begin
 
 			outCounts(9*2**9-1 downto 400*9)	<= (others =>
@@ -319,7 +358,7 @@ begin
 
 
 
-		output_mux	: generic_mux_signed
+	output_mux	: generic_mux_signed
 
 		generic map(
 
@@ -339,7 +378,24 @@ begin
 			output_data	=> spikesCount
 		);
 
+	weights_memory	: weights_bram
+
+		port map(
+			-- input
+			clk		=> clk,
+			di		=> weights_input,
+			rdaddr		=> rdaddr,
+			rden		=> rden,
+			wraddr		=> wraddr,
+			bram_sel	=> bram_sel,
+
+			-- output
+			do		=> exc_weights
+					
+		);
 
 
 
-end architecture behaviour;
+
+
+	end architecture behaviour;
