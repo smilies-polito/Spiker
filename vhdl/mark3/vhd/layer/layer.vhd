@@ -9,6 +9,7 @@ entity layer is
 
 		-- internal parallelism
 		parallelism		: integer := 16;
+		weightParallelism	: integer := 5;
 
 		-- excitatory spikes
 		input_parallelism	: integer := 784;
@@ -39,7 +40,7 @@ entity layer is
 		v_reset			: in signed(parallelism-1 downto 0);	
 		inh_weight		: in signed(parallelism-1 downto 0);		
 		exc_weights		: in signed
-					(layer_size*parallelism-1 downto 0);
+					(layer_size*weightParallelism-1 downto 0);
 
 		-- number of inputs, neurons and cycles
 		N_inputs		: in std_logic_vector
@@ -98,6 +99,7 @@ architecture behaviour of layer is
 
 			-- internal parallelism
 			parallelism		: integer := 16;
+			weightParallelism	: integer := 5;
 
 			-- excitatory spikes
 			input_parallelism	: integer := 8;
@@ -143,7 +145,7 @@ architecture behaviour of layer is
 			v_reset			: in signed(parallelism-1 downto 0);	
 			inh_weight		: in signed(parallelism-1 downto 0);		
 			exc_weights		: in signed
-						(layer_size*parallelism-1 downto 0);
+						(layer_size*weightParallelism-1 downto 0);
 
 			-- number of inputs, neurons and cycles
 			N_inputs		: in std_logic_vector
@@ -221,6 +223,7 @@ begin
 
 			-- internal parallelism
 			parallelism		=> parallelism,
+			weightParallelism	=> weightParallelism,
                                                                    
 			-- excitatory spikes       
 			input_parallelism	=> input_parallelism,

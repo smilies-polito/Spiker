@@ -11,6 +11,7 @@ entity neurons_layer is
 
 		-- internal parallelism
 		N		: integer := 16;
+		N_weights	: integer := 5;
 
 		-- number of neurons in the layer
 		layer_size	: integer := 400;
@@ -35,7 +36,7 @@ entity neurons_layer is
 		v_th_value	: in signed(N-1 downto 0);		
 		v_reset		: in signed(N-1 downto 0);		
 		inh_weight	: in signed(N-1 downto 0);		
-		exc_weights	: in signed(layer_size*N-1 downto 0);
+		exc_weights	: in signed(layer_size*N_weights-1 downto 0);
 
 		-- output
 		out_spikes	: out std_logic_vector(layer_size-1 downto 0);
@@ -129,6 +130,7 @@ begin
 			generic map(
 			-- parallelism
 			N		=> N,
+			N_weights	=> N_weights,
                                                        
 			-- shift amount    
 			shift		=> shift
@@ -150,7 +152,7 @@ begin
 				v_th_value	=> v_th_value,
 				v_reset		=> v_reset,
 				inh_weight	=> inh_weight,
-				exc_weight	=> exc_weights((i+1)*N-1 downto
+				exc_weight	=> exc_weights((i+1)*N_weights-1 downto
 							i*N),
 							       
 				-- output         

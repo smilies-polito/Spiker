@@ -9,6 +9,7 @@ entity layer_datapath is
 
 		-- internal parallelism
 		parallelism		: integer := 16;
+		weightParallelism	: integer := 16;
 
 		-- excitatory spikes
 		input_parallelism	: integer := 8;
@@ -51,7 +52,7 @@ entity layer_datapath is
 		v_reset			: in signed(parallelism-1 downto 0);	
 		inh_weight		: in signed(parallelism-1 downto 0);		
 		exc_weights		: in signed
-					(layer_size*parallelism-1 downto 0);
+					(layer_size*weightParallelism-1 downto 0);
 
 		-- number of inputs, neurons and cycles
 		N_inputs		: in std_logic_vector
