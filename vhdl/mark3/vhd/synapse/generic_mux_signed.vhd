@@ -7,7 +7,7 @@ entity generic_mux_signed is
 	generic(
 
 		-- parallelism of the inputs selector
-		N_sel	: integer := 4;
+		N_sel		: integer := 4;
 
 		-- parallelism
 		N		: integer := 16

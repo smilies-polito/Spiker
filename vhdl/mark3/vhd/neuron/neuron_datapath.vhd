@@ -8,6 +8,7 @@ entity neuron_datapath is
 	generic(
 		-- parallelism
 		N			: integer := 8;
+		N_weight		: integer := 5;
 
 		-- shift amount
 		shift			: integer := 1
@@ -18,7 +19,7 @@ entity neuron_datapath is
 		v_th_value	: in signed(N-1 downto 0);
 		v_reset		: in signed(N-1 downto 0);
 		inh_weight	: in signed(N-1 downto 0);
-		exc_weight	: in signed(N-1 downto 0);
+		exc_weight	: in signed(N_weight-1 downto 0);
 
 		-- input controls
 		clk		: in std_logic;
@@ -220,11 +221,12 @@ begin
 		)
 		port map(
 			-- input
-			sel	=> update_sel,
-			in0	=> (others => '0'),
-			in1	=> v_shifted,
-			in2	=> exc_weight,
-			in3	=> inh_weight,
+			sel				=> update_sel,
+			in0				=> (others => '0'),
+			in1				=> v_shifted,
+			in2(N-1 downto N_weight)	=> (others => '0'),
+			in2(N_weight-1 downto 0)	=> exc_weight,
+			in3				=> inh_weight,
 		                               
 			-- output
 			mux_out	=> update

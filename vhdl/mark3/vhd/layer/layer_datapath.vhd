@@ -9,7 +9,7 @@ entity layer_datapath is
 
 		-- internal parallelism
 		parallelism		: integer := 16;
-		weightParallelism	: integer := 16;
+		weightParallelism	: integer := 5;
 
 		-- excitatory spikes
 		input_parallelism	: integer := 8;
@@ -231,6 +231,7 @@ architecture behaviour of layer_datapath is
 
 			-- internal parallelism
 			N		: integer := 8;
+			N_weights	: integer := 5;
 
 			-- number of neurons in the layer
 			layer_size	: integer := 3;
@@ -255,7 +256,7 @@ architecture behaviour of layer_datapath is
 			v_th_value	: in signed(N-1 downto 0);		
 			v_reset		: in signed(N-1 downto 0);		
 			inh_weight	: in signed(N-1 downto 0);		
-			exc_weights	: in signed(layer_size*N-1 downto 0);
+			exc_weights	: in signed(layer_size*N_weights-1 downto 0);
 
 			-- output
 			out_spikes	: out std_logic_vector(layer_size-1 downto 0);
@@ -430,8 +431,12 @@ begin
 	bare_layer : neurons_layer
 
 		generic map(
+
+			N_cnt		=> N_inh_cnt,
+
 			-- parallelism
 			N		=> parallelism,	
+			N_weights	=> weightParallelism,
 
 			-- number of neurons in the layer
 			layer_size	=> layer_size,

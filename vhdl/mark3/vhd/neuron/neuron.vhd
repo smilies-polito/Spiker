@@ -8,6 +8,7 @@ entity neuron is
 	generic(
 		-- parallelism
 		N		: integer := 16;
+		N_weight	: integer := 5;
 
 		-- shift amount
 		shift		: integer := 1
@@ -29,7 +30,7 @@ entity neuron is
 		v_th_value	: in signed(N-1 downto 0);
 		v_reset		: in signed(N-1 downto 0);
 		inh_weight	: in signed(N-1 downto 0);
-		exc_weight	: in signed(N-1 downto 0);
+		exc_weight	: in signed(N_weight-1 downto 0);
 
 		-- output
 		out_spike	: out std_logic;
@@ -69,7 +70,7 @@ architecture behaviour of neuron is
 			v_th_value	: in signed(N-1 downto 0);
 			v_reset		: in signed(N-1 downto 0);
 			inh_weight	: in signed(N-1 downto 0);
-			exc_weight	: in signed(N-1 downto 0);
+			exc_weight	: in signed(N_weight-1 downto 0);
 
 			-- input controls
 			clk		: in std_logic;

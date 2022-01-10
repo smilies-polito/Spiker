@@ -73,7 +73,8 @@ architecture behaviour of neurons_layer is
 
 		generic(
 			-- parallelism
-			N		: integer := 8;
+			N		: integer := 16;
+			N_weight	: integer := 5;
 
 			-- shift amount
 			shift		: integer := 1
@@ -95,7 +96,7 @@ architecture behaviour of neurons_layer is
 			v_th_value	: in signed(N-1 downto 0);
 			v_reset		: in signed(N-1 downto 0);
 			inh_weight	: in signed(N-1 downto 0);
-			exc_weight	: in signed(N-1 downto 0);
+			exc_weight	: in signed(N_weight-1 downto 0);
 
 			-- output
 			out_spike	: out std_logic;
@@ -130,7 +131,7 @@ begin
 			generic map(
 			-- parallelism
 			N		=> N,
-			N_weights	=> N_weights,
+			N_weight	=> N_weights,
                                                        
 			-- shift amount    
 			shift		=> shift
@@ -153,7 +154,7 @@ begin
 				v_reset		=> v_reset,
 				inh_weight	=> inh_weight,
 				exc_weight	=> exc_weights((i+1)*N_weights-1 downto
-							i*N),
+							i*N_weights),
 							       
 				-- output         
 				out_spike	=> out_spikes(i),
