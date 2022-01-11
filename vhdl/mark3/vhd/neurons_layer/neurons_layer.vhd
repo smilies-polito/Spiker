@@ -6,9 +6,6 @@ use ieee.numeric_std.all;
 entity neurons_layer is
 
 	generic(
-		-- neurons counter parallelism
-		N_cnt		: integer := 10;
-
 		-- internal parallelism
 		N		: integer := 16;
 		N_weights	: integer := 5;

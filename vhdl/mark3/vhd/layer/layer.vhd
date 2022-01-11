@@ -20,7 +20,7 @@ entity layer is
 		N_inh_cnt		: integer := 10;
 
 		-- elaboration steps
-		N_cycles_cnt		: integer := 3500;
+		N_cycles_cnt		: integer := 12;
 
 		-- exponential decay shift
 		shift			: integer := 1

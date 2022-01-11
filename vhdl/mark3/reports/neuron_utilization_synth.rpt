@@ -1,7 +1,7 @@
 Copyright 1986-2020 Xilinx, Inc. All Rights Reserved.
 -------------------------------------------------------------------------------------------------------
 | Tool Version : Vivado v.2020.2 (lin64) Build 3064766 Wed Nov 18 09:12:47 MST 2020
-| Date         : Fri Jan  7 12:02:34 2022
+| Date         : Tue Jan 11 09:02:34 2022
 | Host         : MacBookProDiAlessio running 64-bit Ubuntu 20.04.1 LTS
 | Command      : report_utilization -file neuron_utilization_synth.rpt -pb neuron_utilization_synth.pb
 | Design       : neuron
@@ -30,8 +30,8 @@ Table of Contents
 +-------------------------+------+-------+-----------+-------+
 |        Site Type        | Used | Fixed | Available | Util% |
 +-------------------------+------+-------+-----------+-------+
-| Slice LUTs*             |   72 |     0 |     53200 |  0.14 |
-|   LUT as Logic          |   72 |     0 |     53200 |  0.14 |
+| Slice LUTs*             |   62 |     0 |     53200 |  0.12 |
+|   LUT as Logic          |   62 |     0 |     53200 |  0.12 |
 |   LUT as Memory         |    0 |     0 |     17400 |  0.00 |
 | Slice Registers         |   40 |     0 |    106400 |  0.04 |
 |   Register as Flip Flop |   40 |     0 |    106400 |  0.04 |
@@ -90,7 +90,7 @@ Table of Contents
 +-----------------------------+------+-------+-----------+-------+
 |          Site Type          | Used | Fixed | Available | Util% |
 +-----------------------------+------+-------+-----------+-------+
-| Bonded IOB                  |   75 |     0 |       125 | 60.00 |
+| Bonded IOB                  |   64 |     0 |       125 | 51.20 |
 | Bonded IPADs                |    0 |     0 |         2 |  0.00 |
 | Bonded IOPADs               |    0 |     0 |       130 |  0.00 |
 | PHY_CONTROL                 |    0 |     0 |         4 |  0.00 |
@@ -146,15 +146,16 @@ Table of Contents
 +----------+------+---------------------+
 | Ref Name | Used | Functional Category |
 +----------+------+---------------------+
-| IBUF     |   73 |                  IO |
-| LUT6     |   42 |                 LUT |
+| IBUF     |   62 |                  IO |
+| LUT6     |   41 |                 LUT |
 | FDRE     |   32 |        Flop & Latch |
-| LUT2     |   20 |                 LUT |
 | LUT3     |   17 |                 LUT |
+| LUT2     |   10 |                 LUT |
 | FDCE     |    7 |        Flop & Latch |
 | CARRY4   |    6 |          CarryLogic |
 | LUT4     |    4 |                 LUT |
 | OBUF     |    2 |                  IO |
+| LUT5     |    1 |                 LUT |
 | LUT1     |    1 |                 LUT |
 | FDPE     |    1 |        Flop & Latch |
 | BUFG     |    1 |               Clock |

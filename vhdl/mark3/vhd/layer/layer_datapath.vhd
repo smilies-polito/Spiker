@@ -226,8 +226,6 @@ architecture behaviour of layer_datapath is
 	component neurons_layer is
 
 		generic(
-			-- neurons counter parallelism
-			N_cnt		: integer := 2;
 
 			-- internal parallelism
 			N		: integer := 8;
@@ -431,8 +429,6 @@ begin
 	bare_layer : neurons_layer
 
 		generic map(
-
-			N_cnt		=> N_inh_cnt,
 
 			-- parallelism
 			N		=> parallelism,	
