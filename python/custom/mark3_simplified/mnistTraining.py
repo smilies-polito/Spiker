@@ -1,3 +1,5 @@
+# Provo a fare il merge di due file
+
 import timeit
 
 from mnist import loadDataset
