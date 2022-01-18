@@ -1,3 +1,5 @@
+# Prova server merge multiplo
+
 import timeit
 
 from mnist import loadDataset
