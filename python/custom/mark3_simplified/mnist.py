@@ -1,5 +1,7 @@
 #!/Users/alessio/anaconda3/bin/python3
 
+# Prova di merge
+
 import numpy as np
 
 dictDecoder = {
