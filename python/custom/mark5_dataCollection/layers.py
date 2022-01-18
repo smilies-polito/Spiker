@@ -5,7 +5,7 @@ from utils import expDecay, checkParallelism
 
 
 def updateExcLayer(network, layer, exp_shift, inputSpikes, neuron_parallelism,
-		maxOutputSpikes, errorCounter):
+		maxOutputSpikes, errorCounter, activeOutSpikes):
 
 	'''
 	One training step update of the excitatory layer.
@@ -24,11 +24,16 @@ def updateExcLayer(network, layer, exp_shift, inputSpikes, neuron_parallelism,
 
 	'''
 
+
 	layerName = "excLayer" + str(layer)
 	
 	# Active spikes
 	N_outSpikes = np.sum(network[layerName]["outSpikes"])
 	N_inputSpikes = np.sum(inputSpikes)
+
+
+	if N_outSpikes > 0:
+		activeOutSpikes += 1
 
 
 	# Generate spikes if the potential exceeds the dynamic threshold	
@@ -63,7 +68,7 @@ def updateExcLayer(network, layer, exp_shift, inputSpikes, neuron_parallelism,
 	# Increase threshold for active neurons. Decrease it for inactive ones.
 	homeostasis(network, layerName)
 
-	return maxOutputSpikes, errorCounter
+	return maxOutputSpikes, errorCounter, activeOutSpikes
 
 
 

@@ -12,10 +12,8 @@ from files import *
 from runParameters import *
 
 
-
 # Load the MNIST dataset
 imgArray, labelsArray = loadDataset(testImages, testLabels)
-
 
 
 
@@ -44,10 +42,12 @@ startTimeTraining = timeit.default_timer()
 
 while currentIndex < numberOfCycles:
 
+	activeOutSpikes = 0
+
 	# Complete test cycle over a single image
 	inputIntensity, currentIndex, accuracies, \
 	maxInputSpikes[currentIndex], maxOutputSpikes[currentIndex], \
-	cyclesCounter[currentIndex], errorCounter = \
+	cyclesCounter[currentIndex], errorCounter, activeOutSpikes = \
 		singleImageTest(
 			trainDuration,
 			restTime,
@@ -74,8 +74,11 @@ while currentIndex < numberOfCycles:
 			neuron_parallelism,
 			maxInputSpikes[currentIndex], 
 			maxOutputSpikes[currentIndex],
-			errorCounter
+			errorCounter,
+			activeOutSpikes
 		)
+
+	print(activeOutSpikes)
 
 
 # Store the performance of the network into a text file

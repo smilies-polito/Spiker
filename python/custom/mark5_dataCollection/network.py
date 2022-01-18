@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 
 def run(network, networkList, spikesTrains, dt_tauDict, exp_shift, stdpDict,
 		mode, constSums, neuron_parallelism, maxInputSpikes,
-		maxOutputSpikes, errorCounter):
+		maxOutputSpikes, errorCounter, activeOutSpikes):
 
 
 	'''
@@ -58,13 +58,14 @@ def run(network, networkList, spikesTrains, dt_tauDict, exp_shift, stdpDict,
 	for i in range(trainDuration):
 
 		# Train the network over a single step
-		maxInputSpikes, maxOutputSpikes, cyclesCounter, errorCounter = \
-				updateNetwork(networkList, network,
+		maxInputSpikes, maxOutputSpikes, cyclesCounter, errorCounter,\
+		activeOutSpikes = updateNetwork(networkList, network,
 						spikesTrains[i], dt_tauDict,
 						exp_shift, stdpDict, mode,
 						neuron_parallelism,
 						maxInputSpikes, maxOutputSpikes,
-						cyclesCounter, errorCounter)
+						cyclesCounter, errorCounter,
+						activeOutSpikes)
 
 
 		# Update the output spikes counter
@@ -76,7 +77,7 @@ def run(network, networkList, spikesTrains, dt_tauDict, exp_shift, stdpDict,
 		normalizeWeights(network, networkList, constSums)
 	
 	return spikesCounter, maxInputSpikes, maxOutputSpikes, cyclesCounter, \
-		errorCounter
+		errorCounter, activeOutSpikes
 
 
 
@@ -84,7 +85,7 @@ def run(network, networkList, spikesTrains, dt_tauDict, exp_shift, stdpDict,
 
 def updateNetwork(networkList, network, inputSpikes, dt_tauDict, exp_shift,
 		stdpDict, mode, neuron_parallelism, maxInputSpikes,
-		maxOutputSpikes, cyclesCounter, errorCounter):
+		maxOutputSpikes, cyclesCounter, errorCounter, activeOutSpikes):
 
 	'''
 	One training step update for the entire network.
@@ -129,8 +130,10 @@ def updateNetwork(networkList, network, inputSpikes, dt_tauDict, exp_shift,
 		maxInputSpikes = N_inputSpikes
 
 	# Update the first excitatory layer
-	maxOutputSpikes[0], errorCounter = updateExcLayer(network, 1, exp_shift, inputSpikes,
-			neuron_parallelism, maxOutputSpikes[0], errorCounter)
+	maxOutputSpikes[0], errorCounter, activeOutSpikes = \
+			updateExcLayer(network, 1, exp_shift, inputSpikes,
+			neuron_parallelism, maxOutputSpikes[0],
+			errorCounter, activeOutSpikes)
 
 	# Update the first inhibitory layer
 	updateInhLayer(network, 1)
@@ -157,7 +160,8 @@ def updateNetwork(networkList, network, inputSpikes, dt_tauDict, exp_shift,
 			stdp(network, layer, stdpDict, network["excLayer" + 
 				str(layer - 1)]["outSpikes"][0])
 
-	return maxInputSpikes, maxOutputSpikes, cyclesCounter, errorCounter
+	return maxInputSpikes, maxOutputSpikes, cyclesCounter, errorCounter,\
+		activeOutSpikes
 
 
 
