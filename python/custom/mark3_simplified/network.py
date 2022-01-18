@@ -60,10 +60,10 @@ def run(network, networkList, spikesTrains, dt_tauDict, stdpDict, mode,
 
 
 	if mode == "train":
-		
+
 		# Normalize the weights
 		normalizeWeights(network, networkList, constSums)
-	
+
 	return spikesCounter
 
 
@@ -99,6 +99,8 @@ def updateNetwork(networkList, network, inputSpikes, dt_tauDict, stdpDict,
 
 	'''	
 
+	layerName = "excLayer1"
+
 	# Update the first excitatory layer
 	updateExcLayer(network, 1, dt_tauDict["exc"], inputSpikes)
 
@@ -117,6 +119,8 @@ def updateNetwork(networkList, network, inputSpikes, dt_tauDict, stdpDict,
 
 
 	for layer in range(2, len(networkList)):
+
+		layerName = "excLayer" + str(layer)
 		
 		# Update the excitatory layer
 		updateExcLayer(network, layer, dt_tauDict["exc"],
@@ -130,8 +134,8 @@ def updateNetwork(networkList, network, inputSpikes, dt_tauDict, stdpDict,
 			stdp(network, layer, stdpDict, network["excLayer" + 
 				str(layer - 1)]["outSpikes"][0])
 
-		# Increase threshold for active neurons. 
-		homeostasis(network, layerName)
+			# Increase threshold for active neurons. 
+			homeostasis(network, layerName)
 
 
 
