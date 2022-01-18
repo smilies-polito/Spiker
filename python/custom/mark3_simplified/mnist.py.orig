@@ -1,6 +1,10 @@
 #!/Users/alessio/anaconda3/bin/python3
 
+<<<<<<< HEAD
+# Prova di merge 2
+=======
 # Prova server eheheh 2
+>>>>>>> 8b57564cab0480831d5ecac66a97fa40bce411d9
 
 import numpy as np
 
