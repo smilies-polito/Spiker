@@ -84,7 +84,7 @@ begin
 
 
 		-- default case
-		next_state	<= reset;
+		-- next_state	<= reset;
 
 		case present_state is
 			
@@ -280,11 +280,11 @@ begin
 			-- exp_decay
 			when exp_decay =>
 				add_or_sub	<= '1';
+				update_sel	<= "01";
 				
 
 			-- no_exc_spike
 			when no_exc_spike	=>
-				update_sel	<= "10";
 				v_en		<= '0';
 
 			-- exc_spike
@@ -295,7 +295,6 @@ begin
 				
 			-- no_inh_spike
 			when no_inh_spike	=>
-				update_sel	<= "11";
 				v_en		<= '0';
 
 
@@ -307,9 +306,7 @@ begin
 
 			-- fire
 			when fire =>
-				update_sel	<= "01";
 				v_update	<= '0';
-				v_th_en		<= '1';
 				out_spike	<= '1';
 
 			-- default case
