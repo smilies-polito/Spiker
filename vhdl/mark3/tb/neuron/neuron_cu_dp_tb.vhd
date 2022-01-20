@@ -22,7 +22,6 @@ architecture behaviour of neuron_cu_dp_tb is
 	-- model parameters
 	constant v_th_value_int	: integer 	:= 13*(2**10);	
 	constant v_reset_int	: integer 	:= 5*(2**10);	
-	constant v_th_plus_int	: integer	:= 102; -- 0.1*2^11 rounded	
 	constant inh_weight_int	: integer 	:= 7*(2**10);	
 	constant exc_weight_int	: integer 	:= 7*(2**10);
 
