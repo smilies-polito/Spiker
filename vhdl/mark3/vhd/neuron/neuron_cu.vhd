@@ -23,7 +23,6 @@ entity neuron_cu is
 		update_sel	: out std_logic_vector(1 downto 0);
 		add_or_sub	: out std_logic;
 		v_update	: out std_logic;
-		v_th_en		: out std_logic;
 		v_en		: out std_logic;
 		v_rst_n		: out std_logic;
 
@@ -257,7 +256,6 @@ begin
 		update_sel	<= "00";
 		add_or_sub	<= '0';
 		v_update	<= '1';
-		v_th_en		<= '0';
 		v_en		<= '1';
 		v_rst_n		<= '1';
 		out_spike	<= '0';
@@ -268,7 +266,6 @@ begin
 			-- reset
 			when reset =>
 				v_en 		<= '0';
-				v_th_en		<= '1';
 				v_rst_n		<= '0';
 
 			-- idle
@@ -313,7 +310,6 @@ begin
 			when others =>
 				v_en 		<= '0';
 				v_rst_n		<= '0';
-				v_th_en		<= '1';
 
 		end case;
 
