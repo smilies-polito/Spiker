@@ -27,6 +27,9 @@ entity neurons_layer is
 		exc_stop	: in std_logic;
 		inh_or		: in std_logic;
 		inh_stop	: in std_logic;
+		v_th_en		: in std_logic_vector(layer_size-1 downto 0);
+
+		-- input
 		input_spikes	: in std_logic_vector(layer_size-1 downto 0);
 
 		-- input parameters
@@ -37,7 +40,7 @@ entity neurons_layer is
 
 		-- output
 		out_spikes	: out std_logic_vector(layer_size-1 downto 0);
-		neurons_ready	: out std_logic
+		all_ready	: out std_logic
 	);
 
 end entity neurons_layer;
@@ -45,7 +48,7 @@ end entity neurons_layer;
 
 architecture behaviour of neurons_layer is
 
-	signal neuron_ready	: std_logic_vector(layer_size-1 downto 0);
+	signal neurons_ready	: std_logic_vector(layer_size-1 downto 0);
 
 	component generic_and is
 
@@ -89,6 +92,9 @@ architecture behaviour of neurons_layer is
 			inh_stop	: in std_logic;
 			input_spike	: in std_logic;
 
+			-- to load the threshold
+			v_th_en		: in std_logic;
+
 			-- input parameters
 			v_th_value	: in signed(N-1 downto 0);
 			v_reset		: in signed(N-1 downto 0);
@@ -114,10 +120,10 @@ begin
 
 		port map(
 			-- input
-			and_in	=> neuron_ready,
+			and_in	=> neurons_ready,
 
 			-- output
-			and_out	=> neurons_ready
+			and_out	=> all_ready
 		);
 
 
@@ -152,10 +158,13 @@ begin
 				inh_weight	=> inh_weight,
 				exc_weight	=> exc_weights((i+1)*N_weights-1 downto
 							i*N_weights),
+				
+				-- to load the threshold
+				v_th_en		=> v_th_en(i),
 							       
 				-- output         
 				out_spike	=> out_spikes(i),
-				neuron_ready	=> neuron_ready(i)
+				neuron_ready	=> neurons_ready(i)
 			);
 
 
