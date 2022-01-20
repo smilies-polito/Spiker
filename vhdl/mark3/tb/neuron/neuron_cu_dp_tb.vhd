@@ -13,7 +13,7 @@ architecture behaviour of neuron_cu_dp_tb is
 
 	-- parallelism
 	constant N		: integer := 16;
-	constant N_weight	: integer := 5;
+	constant N_weight	: integer := 15;
 
 	-- exponential shift
 	constant shift		: integer := 10;
@@ -44,6 +44,9 @@ architecture behaviour of neuron_cu_dp_tb is
 	signal inh_stop		: std_logic;
         signal input_spike	: std_logic;
 
+	-- input for the initial load
+	signal v_th_en		: std_logic;
+
 	-- from datapath to cu
 	signal exceed_v_th	: std_logic;
 
@@ -51,7 +54,6 @@ architecture behaviour of neuron_cu_dp_tb is
 	signal update_sel	: std_logic_vector(1 downto 0);
 	signal add_or_sub	: std_logic;
 	signal v_update		: std_logic;
-	signal v_th_en		: std_logic;
 	signal v_en		: std_logic;
 	signal v_rst_n		: std_logic;
 
@@ -242,7 +244,6 @@ begin
 
 
 
-
 	-- clock
 	clock_gen : process
 	begin
@@ -264,6 +265,20 @@ begin
 		rst_n	<= '1';		-- 17 ns
 		wait;
 	end process reset_gen;
+
+
+
+	-- v_th_en
+	v_th_en_gen : process
+	begin
+		v_th_en	<= '0';		-- 0 ns
+		wait for 26 ns;
+		v_th_en	<= '1';		-- 26 ns
+		wait for 12 ns;
+		v_th_en	<= '0';		-- 38 ns
+		wait;
+	end process v_th_en_gen;
+
 
 
 
@@ -586,7 +601,6 @@ begin
 		update_sel	<= "00";
 		add_or_sub	<= '0';
 		v_update	<= '1';
-		v_th_en		<= '0';
 		v_en		<= '1';
 		v_rst_n		<= '1';
 		out_spike	<= '0';
@@ -597,7 +611,6 @@ begin
 			-- reset
 			when reset =>
 				v_en 		<= '0';
-				v_th_en		<= '1';
 				v_rst_n		<= '0';
 
 			-- idle
@@ -642,7 +655,6 @@ begin
 			when others =>
 				v_en 		<= '0';
 				v_rst_n		<= '0';
-				v_th_en		<= '1';
 
 		end case;
 
@@ -680,8 +692,8 @@ begin
 			sel				=> update_sel,
 			in0				=> (others => '0'),
 			in1				=> v_shifted,
-			in2(N-1 downto N_weight)	=> (others => '0'),
 			in2(N_weight-1 downto 0)	=> exc_weight,
+			in2(N-1 downto N_weight)	=> (others => '0'),
 			in3				=> inh_weight,
 		                               
 			-- output
