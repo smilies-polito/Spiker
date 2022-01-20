@@ -22,7 +22,7 @@ architecture behaviour of debug_neuron_tb is
 	-- model parameters
 	constant v_th_value_int	: integer 	:= 13*(2**10);	
 	constant v_reset_int	: integer 	:= 5*(2**10);	
-	constant inh_weight_int	: integer 	:= 7*(2**10);	
+	constant inh_weight_int	: integer 	:= -7*(2**10);	
 	constant exc_weight_int	: integer 	:= 7*(2**10);
 
 
@@ -166,18 +166,15 @@ begin
 	end process start_gen;
 
 
+
 	-- exc_or
 	exc_or_gen : process
 	begin
 		exc_or	<= '0';		-- 0 ns
 		wait for 62 ns;			
 		exc_or	<= '1';         -- 62 ns
-		wait for 48 ns;			          
-		exc_or	<= '0';         -- 110 ns
-		wait for 48 ns;			          
-		exc_or	<= '1';         -- 158 ns
-		wait for 84 ns;			          
-		exc_or	<= '0';         -- 242 ns
+		wait for 12 ns;			
+		exc_or	<= '0';         -- 74 ns
 		wait;
 	end process exc_or_gen;
 
@@ -186,14 +183,10 @@ begin
 	exc_stop_gen : process
 	begin
 		exc_stop	<= '0';		-- 0 ns
-		wait for 98 ns;			
-		exc_stop	<= '1';         -- 98 ns
-		wait for 12 ns;			          
-		exc_stop	<= '0';         -- 110 ns
-		wait for 84 ns;			          
-		exc_stop	<= '1';         -- 194 ns
-		wait for 12 ns;			          
-		exc_stop	<= '0';         -- 206 ns
+		wait for 98 ns;
+		exc_stop	<= '1';		-- 98 ns
+		wait for 12 ns;
+		exc_stop	<= '0';		-- 110 ns
 		wait;
 	end process exc_stop_gen;
 
@@ -202,10 +195,10 @@ begin
 	inh_or_gen : process
 	begin
 		inh_or	<= '0';		-- 0 ns
-		wait for 110 ns;			          
-		inh_or	<= '1';         -- 110 ns
-		wait for 132 ns;			          
-		inh_or	<= '0';         -- 242 ns
+		wait for 10000 ns;
+		inh_or	<= '1';		-- 10000 ns
+		wait for 12 ns;
+		inh_or	<= '0';		-- 10012 ns
 		wait;
 	end process inh_or_gen;
 
@@ -214,18 +207,14 @@ begin
 	inh_stop_gen : process
 	begin
 		inh_stop	<= '0';		-- 0 ns
-		wait for 146 ns;			
-		inh_stop	<= '1';         -- 146 ns
-		wait for 12 ns;			          
-		inh_stop	<= '0';         -- 158 ns
-		wait for 72 ns;			          
-		inh_stop	<= '1';         -- 230 ns
-		wait for 12 ns;			          
-		inh_stop	<= '0';         -- 242 ns
+		wait for 122 ns;
+		inh_stop	<= '1';		-- 122 ns
 		wait for 12 ns;
-		inh_stop	<= '1';		-- 254 ns
-		wait for 12 ns;			          
-		inh_stop	<= '0';         -- 266 ns
+		inh_stop	<= '0';		-- 134 ns
+		wait for 9890 ns;
+		inh_stop	<= '1';		-- 10024 ns
+		wait for 24 ns;
+		inh_stop	<= '0';		-- 10048 ns
 		wait;
 	end process inh_stop_gen;
 
@@ -234,22 +223,14 @@ begin
 	input_spike_gen: process
 	begin
 		input_spike	<= '0';	-- 0 ns	
-		wait for 62 ns;	          
-		input_spike	<= '1'; -- 62 ns
-		wait for 96 ns;			          
-		input_spike	<= '0'; -- 158 ns
-		wait for 24 ns;			          
-		input_spike	<= '1'; -- 182 ns
-		wait for 12 ns;			          
-		input_spike	<= '0'; -- 194 ns
-		wait for 12 ns;			          
-		input_spike	<= '1'; -- 206 ns
-		wait for 12 ns;			          
-		input_spike	<= '0'; -- 218 ns
-		wait for 12 ns;			          
-		input_spike	<= '1'; -- 230 ns
-		wait for 12 ns;			          
-		input_spike	<= '0'; -- 242 ns
+		wait for 74 ns;
+		input_spike	<= '1';	-- 74 ns	
+		wait for 12 ns;
+		input_spike	<= '0';	-- 86 ns	
+		wait for 9926 ns;
+		input_spike	<= '1';	-- 10012 ns	
+		wait for 12 ns;
+		input_spike	<= '0';	-- 10024 ns	
 		wait;
 	end process input_spike_gen;
 
@@ -260,10 +241,6 @@ begin
 	stop_gen : process
 	begin
 		stop	<= '0';		-- 0 ns
-		wait for 266 ns;
-		stop	<= '1';		-- 266 ns
-		wait for 12 ns;
-		stop <= '0';		-- 278 ns
 		wait;
 	end process stop_gen;
 
@@ -312,63 +289,58 @@ begin
 
 
 
---	write_enable : process
---	begin
---		w_en <= '0';
---		wait for 26 ns;
---		w_en <= '1';
---		wait;
---
---	end process write_enable;
---
---
---
---
---	file_write : process(clk, w_en)
---
---		file in_spikes_file	: text open write_mode is
---			"/home/alessio/Documents/Poli/Dottorato/progetti/snn" &
---			"/spiker/vhdl/mark1/sim/files/inSpikes.txt";
---		file out_spikes_file	: text open write_mode is
---			"/home/alessio/Documents/Poli/Dottorato/progetti/snn" &
---			"/spiker/vhdl/mark1/sim/files/outSpikes.txt";
---		file v_file		: text open write_mode is 
---			"/home/alessio/Documents/Poli/Dottorato/progetti/snn" &
---			"/spiker/vhdl/mark1/sim/files/v.txt";
---		file v_th_file		: text open write_mode is 
---			"/home/alessio/Documents/Poli/Dottorato/progetti/snn" &
---			"/spiker/vhdl/mark1/sim/files/v_th.txt";
---
---		variable row		: line;
---		variable write_var	: integer;
---
---	begin
---
---		if clk'event and clk = '1'
---		then
---
---			if w_en = '1'
---			then
---
---				-- write the input spike
---				write(row, input_spike, right, 1);
---				writeline(in_spikes_file, row);
---
---				-- write the potential value
---				write_var := to_integer(v_out);
---				write(row, write_var);
---				writeline(v_file, row);
---
---				-- write the output spike
---				write(row, out_spike, right, 1);
---				writeline(out_spikes_file, row);
---
---
---			end if;
---
---		end if;
---
---	end process file_write;
+	write_enable : process
+	begin
+		w_en <= '0';
+		wait for 26 ns;
+		w_en <= '1';
+		wait;
+
+	end process write_enable;
+
+
+
+
+	file_write : process(clk, w_en)
+
+		file in_spikes_file	: text open write_mode is
+			"/home/alessio/Documents/Poli/Dottorato/progetti/snn/spiker/vhdl/mark3/plot/data/inSpikes.txt";
+
+		file out_spikes_file	: text open write_mode is
+			"/home/alessio/Documents/Poli/Dottorato/progetti/snn/spiker/vhdl/mark3/plot/data/outSpikes.txt";
+
+		file v_file		: text open write_mode is 
+			"/home/alessio/Documents/Poli/Dottorato/progetti/snn/spiker/vhdl/mark3/plot/data/v.txt";
+
+		variable row		: line;
+		variable write_var	: integer;
+
+	begin
+
+		if clk'event and clk = '1'
+		then
+
+			if w_en = '1'
+			then
+
+				-- write the input spike
+				write(row, input_spike, right, 1);
+				writeline(in_spikes_file, row);
+
+				-- write the potential value
+				write_var := to_integer(v_out);
+				write(row, write_var);
+				writeline(v_file, row);
+
+				-- write the output spike
+				write(row, out_spike, right, 1);
+				writeline(out_spikes_file, row);
+
+			end if;
+
+		end if;
+
+	end process file_write;
 
 
 
