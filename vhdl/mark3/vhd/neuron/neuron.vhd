@@ -26,6 +26,9 @@ entity neuron is
 		inh_stop	: in std_logic;
 		input_spike	: in std_logic;
 
+		-- to load the threshold
+		v_th_en		: in std_logic;
+
 		-- input parameters
 		v_th_value	: in signed(N-1 downto 0);
 		v_reset		: in signed(N-1 downto 0);
@@ -47,7 +50,6 @@ architecture behaviour of neuron is
 	signal update_sel	: std_logic_vector(1 downto 0);
 	signal add_or_sub	: std_logic;
 	signal v_update		: std_logic;
-	signal v_th_en		: std_logic;
 	signal v_en		: std_logic;
 	signal v_rst_n		: std_logic;
 
@@ -59,7 +61,8 @@ architecture behaviour of neuron is
 
 		generic(
 			-- parallelism
-			N			: integer := 8;
+			N			: integer := 16;
+			N_weight		: integer := 5;
 
 			-- shift amount
 			shift			: integer := 1
@@ -109,7 +112,6 @@ architecture behaviour of neuron is
 			update_sel	: out std_logic_vector(1 downto 0);
 			add_or_sub	: out std_logic;
 			v_update	: out std_logic;
-			v_th_en		: out std_logic;
 			v_en		: out std_logic;
 			v_rst_n		: out std_logic;
 
@@ -130,6 +132,7 @@ begin
 		generic map(
 			-- parallelism
 			N		=> N,
+			N_weight	=> N_weight,
 
 			-- shift amount
 			shift		=> shift
@@ -176,7 +179,6 @@ begin
 			update_sel	=> update_sel,		
 			add_or_sub	=> add_or_sub,	     
 			v_update	=> v_update,	     
-			v_th_en		=> v_th_en,	     
 			v_en		=> v_en,
 			v_rst_n		=> v_rst_n,
                                                            

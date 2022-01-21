@@ -13,24 +13,23 @@ architecture behaviour of neuron_cu_dp_tb is
 
 	-- parallelism
 	constant N		: integer := 16;
+	constant N_weight	: integer := 15;
 
 	-- exponential shift
 	constant shift		: integer := 10;
 
 
 	-- model parameters
-	constant v_th_0_int	: integer 	:= 13*(2**10);	
+	constant v_th_value_int	: integer 	:= 13*(2**10);	
 	constant v_reset_int	: integer 	:= 5*(2**10);	
-	constant v_th_plus_int	: integer	:= 102; -- 0.1*2^11 rounded	
 	constant inh_weight_int	: integer 	:= 7*(2**10);	
 	constant exc_weight_int	: integer 	:= 7*(2**10);
 
 	-- input parameters
-	signal v_th_0		: signed(N-1 downto 0);
+	signal v_th_value	: signed(N-1 downto 0);
 	signal v_reset		: signed(N-1 downto 0);
-	signal v_th_plus	: signed(N-1 downto 0);
 	signal inh_weight	: signed(N-1 downto 0);
-	signal exc_weight	: signed(N-1 downto 0);
+	signal exc_weight	: signed(N_weight-1 downto 0);
 
 
 	-- input
@@ -44,17 +43,16 @@ architecture behaviour of neuron_cu_dp_tb is
 	signal inh_stop		: std_logic;
         signal input_spike	: std_logic;
 
+	-- input for the initial load
+	signal v_th_en		: std_logic;
+
 	-- from datapath to cu
 	signal exceed_v_th	: std_logic;
 
 	-- from cu to datapath
-	signal no_update	: std_logic;
 	signal update_sel	: std_logic_vector(1 downto 0);
-	signal v_or_v_th	: std_logic;
 	signal add_or_sub	: std_logic;
-	signal v_th_update	: std_logic;
 	signal v_update		: std_logic;
-	signal v_th_en		: std_logic;
 	signal v_en		: std_logic;
 	signal v_rst_n		: std_logic;
 
@@ -64,12 +62,8 @@ architecture behaviour of neuron_cu_dp_tb is
 
 
 	-- datapath internal signals
-	signal inh_update	: signed(N-1 downto 0);
-	signal exc_update	: signed(N-1 downto 0);
 	signal update		: signed(N-1 downto 0);
-	signal prev_value	: signed(N-1 downto 0);
 	signal update_value	: signed(N-1 downto 0);
-	signal v_th_value	: signed(N-1 downto 0);
 	signal v_th		: signed(N-1 downto 0);
 	signal v_value		: signed(N-1 downto 0);
 	signal v		: signed(N-1 downto 0);
@@ -92,24 +86,25 @@ architecture behaviour of neuron_cu_dp_tb is
 	signal present_state, next_state	: states;
 
 
-	component mux2to1_signed is
+	component shifter is
 
 		generic(
 			-- parallelism
-			N	: integer		
+			N		: integer := 8;
+		
+			-- shift
+			shift		: integer := 1	
 		);
 
-		port(	
-			-- inputs	
-			sel	: in std_logic;
-			in0	: in signed(N-1 downto 0);
-			in1	: in signed(N-1 downto 0);
+		port(
+			-- input
+			shifter_in	: in signed(N-1 downto 0);
 
 			-- output
-			mux_out	: out signed(N-1 downto 0)
+			shifted_out	: out signed(N-1 downto 0)
 		);
 
-	end component mux2to1_signed;
+	end component shifter;
 
 
 	component mux4to1_signed is
@@ -153,27 +148,27 @@ architecture behaviour of neuron_cu_dp_tb is
 	end component add_sub;
 
 
-	component shifter is
+	component mux2to1_signed is
 
 		generic(
 			-- parallelism
-			N		: integer := 8;
-		
-			-- shift
-			shift		: integer := 1	
+			N	: integer		
 		);
 
-		port(
-			-- input
-			shifter_in	: in signed(N-1 downto 0);
+		port(	
+			-- inputs	
+			sel	: in std_logic;
+			in0	: in signed(N-1 downto 0);
+			in1	: in signed(N-1 downto 0);
 
 			-- output
-			shifted_out	: out signed(N-1 downto 0)
+			mux_out	: out signed(N-1 downto 0)
 		);
 
-	end component shifter;
+	end component mux2to1_signed;
 
 
+	
 	component reg_signed is
 
 		generic(
@@ -192,6 +187,7 @@ architecture behaviour of neuron_cu_dp_tb is
 		);
 
 	end component reg_signed;
+
 
 
 	component reg_signed_sync_rst is
@@ -213,6 +209,7 @@ architecture behaviour of neuron_cu_dp_tb is
 		);
 
 	end component reg_signed_sync_rst;
+
 
 
 	component cmp_gt is
@@ -239,12 +236,10 @@ begin
 
 
 	-- model parameters binary conversion
-	v_th_0		<= to_signed(v_th_0_int, N);
+	v_th_value	<= to_signed(v_th_value_int, N);
 	v_reset		<= to_signed(v_reset_int, N);
-	v_th_plus	<= to_signed(v_th_plus_int, N);
 	inh_weight	<= to_signed(inh_weight_int, N);
-	exc_weight	<= to_signed(exc_weight_int, N);
-
+	exc_weight	<= to_signed(exc_weight_int, N_weight);
 
 
 
@@ -269,6 +264,20 @@ begin
 		rst_n	<= '1';		-- 17 ns
 		wait;
 	end process reset_gen;
+
+
+
+	-- v_th_en
+	v_th_en_gen : process
+	begin
+		v_th_en	<= '0';		-- 0 ns
+		wait for 26 ns;
+		v_th_en	<= '1';		-- 26 ns
+		wait for 12 ns;
+		v_th_en	<= '0';		-- 38 ns
+		wait;
+	end process v_th_en_gen;
+
 
 
 
@@ -388,6 +397,8 @@ begin
 
 
 
+
+
 	-- state transition
 	state_transition	: process(clk, rst_n)
 	begin
@@ -416,7 +427,7 @@ begin
 
 
 		-- default case
-		next_state	<= reset;
+		-- next_state	<= reset;
 
 		case present_state is
 			
@@ -586,13 +597,9 @@ begin
 	begin
 
 		-- default values
-		no_update	<= '1';
 		update_sel	<= "00";
-		v_or_v_th	<= '0';
 		add_or_sub	<= '0';
-		v_th_update	<= '0';
 		v_update	<= '1';
-		v_th_en		<= '0';
 		v_en		<= '1';
 		v_rst_n		<= '1';
 		out_spike	<= '0';
@@ -603,7 +610,6 @@ begin
 			-- reset
 			when reset =>
 				v_en 		<= '0';
-				v_th_en		<= '1';
 				v_rst_n		<= '0';
 
 			-- idle
@@ -615,23 +621,21 @@ begin
 			-- exp_decay
 			when exp_decay =>
 				add_or_sub	<= '1';
+				update_sel	<= "01";
 				
 
 			-- no_exc_spike
 			when no_exc_spike	=>
-				update_sel	<= "10";
 				v_en		<= '0';
 
 			-- exc_spike
 			when exc_spike =>
 				update_sel	<= "10";
 				v_en		<= '1';
-				no_update	<= '0';
 
 				
 			-- no_inh_spike
 			when no_inh_spike	=>
-				update_sel	<= "11";
 				v_en		<= '0';
 
 
@@ -639,28 +643,24 @@ begin
 			when inh_spike		=>
 				update_sel	<= "11";
 				v_en		<= '1';
-				no_update	<= '0';
 
 
 			-- fire
 			when fire =>
-				update_sel	<= "01";
-				v_or_v_th	<= '1';
-				v_th_update	<= '1';
 				v_update	<= '0';
-				v_th_en		<= '1';
 				out_spike	<= '1';
 
 			-- default case
 			when others =>
 				v_en 		<= '0';
 				v_rst_n		<= '0';
-				v_th_en		<= '1';
 
 		end case;
 
 	end process output_evaluation;
 	
+
+
 
 
 	v_shifter	: shifter
@@ -681,44 +681,6 @@ begin
 		);
 
 	
-
-	inh_mux		: mux2to1_signed	
-		generic map(
-			-- parallelism
-			N	=> N
-		)
-
-		port map(	
-			-- inputs	
-			sel	=> no_update,
-			in0	=> inh_weight,
-			in1	=> (others => '0'),
-
-			-- output
-			mux_out	=> inh_update
-		);
-
-
-
-	exc_mux		: mux2to1_signed	
-		generic map(
-			-- parallelism
-			N	=> N
-		)
-
-		port map(	
-			-- inputs	
-			sel	=> no_update,
-			in0	=> exc_weight,
-			in1	=> (others => '0'),
-
-			-- output
-			mux_out	=> exc_update
-		);
-
-
-
-
 	update_mux	: mux4to1_signed
 		generic map(
 			-- parallelism
@@ -726,34 +688,18 @@ begin
 		)
 		port map(
 			-- input
-			sel	=> update_sel,
-			in0	=> v_shifted,
-			in1	=> v_th_plus,
-			in2	=> exc_update,
-			in3	=> inh_update,
+			sel				=> update_sel,
+			in0				=> (others => '0'),
+			in1				=> v_shifted,
+			in2(N_weight-1 downto 0)	=> exc_weight,
+			in2(N-1 downto N_weight)	=> (others => '0'),
+			in3				=> inh_weight,
 		                               
 			-- output
 			mux_out	=> update
 		);
 
 
-	prev_mux	: mux2to1_signed	
-		generic map(
-			-- parallelism
-			N	=> N
-		)
-
-		port map(	
-			-- inputs	
-			sel	=> v_or_v_th,
-			in0	=> v,
-			in1	=> v_th,
-
-			-- outpu
-			mux_out	=> prev_value
-		);
-
-	
 	update_add_sub	: add_sub
 		generic map(
 			N		=> N	
@@ -761,29 +707,12 @@ begin
 
 		port map(
 			-- input
-			in0		=> prev_value,
+			in0		=> v,
 			in1		=> update,
 			add_or_sub	=> add_or_sub,
 
 			-- output
 			add_sub_out	=> update_value
-		);
-
-
-	v_th_mux	: mux2to1_signed
-		generic map(
-			-- parallelism
-			N	=> N
-		)
-
-		port map(	
-			-- input	
-			sel	=> v_th_update,
-			in0	=> v_th_0,
-			in1	=> update_value,
-
-			-- output
-			mux_out	=> v_th_value
 		);
 
 
@@ -851,7 +780,7 @@ begin
 			in0	=> v_value, 
 			in1	=> v_th,
 
-			-- outpu
+			-- output
 			cmp_out	=> exceed_v_th
 		);
 

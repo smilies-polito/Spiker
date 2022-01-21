@@ -6,8 +6,8 @@ use ieee.numeric_std.all;
 entity neuron_datapath is
 
 	generic(
-		-- parallelism
-		N			: integer := 8;
+		-- parallelisms
+		N			: integer := 16;
 		N_weight		: integer := 5;
 
 		-- shift amount
@@ -41,7 +41,6 @@ architecture test of neuron_datapath is
 
 	
 	signal update		: signed(N-1 downto 0);
-	signal prev_value	: signed(N-1 downto 0);
 	signal update_value	: signed(N-1 downto 0);
 	signal v_th		: signed(N-1 downto 0);
 	signal v_value		: signed(N-1 downto 0);
@@ -49,24 +48,26 @@ architecture test of neuron_datapath is
 	signal v_shifted	: signed(N-1 downto 0);
 
 
-	component mux2to1_signed is
+
+	component shifter is
 
 		generic(
 			-- parallelism
-			N	: integer		
+			N		: integer := 8;
+		
+			-- shift
+			shift		: integer := 1	
 		);
 
-		port(	
-			-- inputs	
-			sel	: in std_logic;
-			in0	: in signed(N-1 downto 0);
-			in1	: in signed(N-1 downto 0);
+		port(
+			-- input
+			shifter_in	: in signed(N-1 downto 0);
 
 			-- output
-			mux_out	: out signed(N-1 downto 0)
+			shifted_out	: out signed(N-1 downto 0)
 		);
 
-	end component mux2to1_signed;
+	end component shifter;
 
 
 	component mux4to1_signed is
@@ -110,27 +111,27 @@ architecture test of neuron_datapath is
 	end component add_sub;
 
 
-	component shifter is
+	component mux2to1_signed is
 
 		generic(
 			-- parallelism
-			N		: integer := 8;
-		
-			-- shift
-			shift		: integer := 1	
+			N	: integer		
 		);
 
-		port(
-			-- input
-			shifter_in	: in signed(N-1 downto 0);
+		port(	
+			-- inputs	
+			sel	: in std_logic;
+			in0	: in signed(N-1 downto 0);
+			in1	: in signed(N-1 downto 0);
 
 			-- output
-			shifted_out	: out signed(N-1 downto 0)
+			mux_out	: out signed(N-1 downto 0)
 		);
 
-	end component shifter;
+	end component mux2to1_signed;
 
 
+	
 	component reg_signed is
 
 		generic(
@@ -149,6 +150,7 @@ architecture test of neuron_datapath is
 		);
 
 	end component reg_signed;
+
 
 
 	component reg_signed_sync_rst is
@@ -313,7 +315,7 @@ begin
 			in0	=> v_value, 
 			in1	=> v_th,
 
-			-- outpu
+			-- output
 			cmp_out	=> exceed_v_th
 		);
 

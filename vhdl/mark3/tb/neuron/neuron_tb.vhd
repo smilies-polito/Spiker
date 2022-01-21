@@ -13,24 +13,23 @@ architecture behaviour of neuron_tb is
 
 	-- parallelism
 	constant N		: integer := 16;
+	constant N_weight	: integer := 15;
 
 	-- exponential shift
 	constant shift		: integer := 10;
 
 	-- model parameters
-	constant v_th_0_int	: integer 	:= 13*(2**10);	
+	constant v_th_value_int	: integer 	:= 13*(2**10);	
 	constant v_reset_int	: integer 	:= 5*(2**10);	
-	constant v_th_plus_int	: integer	:= 102; -- 0.1*2^11 rounded	
 	constant inh_weight_int	: integer 	:= 7*(2**10);	
 	constant exc_weight_int	: integer 	:= 7*(2**10);
 
 
 	-- input parameters
-	signal v_th_0		: signed(N-1 downto 0);
+	signal v_th_value	: signed(N-1 downto 0);
 	signal v_reset		: signed(N-1 downto 0);
-	signal v_th_plus	: signed(N-1 downto 0);
 	signal inh_weight	: signed(N-1 downto 0);
-	signal exc_weight	: signed(N-1 downto 0);
+	signal exc_weight	: signed(N_weight-1 downto 0);
 
 
 	-- input
@@ -44,6 +43,8 @@ architecture behaviour of neuron_tb is
 	signal inh_stop		: std_logic;
         signal input_spike	: std_logic;
 
+	-- to load the threshold
+	signal v_th_en		: std_logic;
 
 	-- output
 	signal out_spike	: std_logic;
@@ -57,7 +58,8 @@ architecture behaviour of neuron_tb is
 
 		generic(
 			-- parallelism
-			N		: integer := 8;
+			N		: integer := 16;
+			N_weight	: integer := 5;
 
 			-- shift amount
 			shift		: integer := 1
@@ -75,12 +77,14 @@ architecture behaviour of neuron_tb is
 			inh_stop	: in std_logic;
 			input_spike	: in std_logic;
 
+			-- to load the threshold
+			v_th_en		: in std_logic;
+
 			-- input parameters
-			v_th_0		: in signed(N-1 downto 0);
+			v_th_value	: in signed(N-1 downto 0);
 			v_reset		: in signed(N-1 downto 0);
 			inh_weight	: in signed(N-1 downto 0);
-			exc_weight	: in signed(N-1 downto 0);
-			v_th_plus	: in signed(N-1 downto 0);
+			exc_weight	: in signed(N_weight-1 downto 0);
 
 			-- output
 			out_spike	: out std_logic;
@@ -95,14 +99,12 @@ architecture behaviour of neuron_tb is
 begin
 
 
+
 	-- model parameters binary conversion
-	v_th_0		<= to_signed(v_th_0_int, N);
+	v_th_value	<= to_signed(v_th_value_int, N);
 	v_reset		<= to_signed(v_reset_int, N);
-	v_th_plus	<= to_signed(v_th_plus_int, N);
 	inh_weight	<= to_signed(inh_weight_int, N);
-	exc_weight	<= to_signed(exc_weight_int, N);
-
-
+	exc_weight	<= to_signed(exc_weight_int, N_weight);
 
 
 
@@ -127,6 +129,20 @@ begin
 		rst_n	<= '1';		-- 17 ns
 		wait;
 	end process reset_gen;
+
+
+
+	-- v_th_en
+	v_th_en_gen : process
+	begin
+		v_th_en	<= '0';		-- 0 ns
+		wait for 26 ns;
+		v_th_en	<= '1';		-- 26 ns
+		wait for 12 ns;
+		v_th_en	<= '0';		-- 38 ns
+		wait;
+	end process v_th_en_gen;
+
 
 
 
@@ -246,14 +262,12 @@ begin
 
 
 
-
-
-
 	dut : neuron 
 
 		generic map(
 			-- parallelism
 			N		=> N,	
+			N_weight	=> N_weight,
 
 			-- shift amount
 			shift		=> shift
@@ -271,12 +285,14 @@ begin
 			inh_stop        => inh_stop,
                        	input_spike	=> input_spike,
 
+			-- to load the threshold
+			v_th_en		=> v_th_en,
+
 			-- input parameters
-			v_th_0		=> v_th_0,
+			v_th_value	=> v_th_value,
 			v_reset		=> v_reset,
 			inh_weight	=> inh_weight,
 			exc_weight	=> exc_weight,
-			v_th_plus	=> v_th_plus,
                                                        
 			-- output          
 			out_spike	=> out_spike,

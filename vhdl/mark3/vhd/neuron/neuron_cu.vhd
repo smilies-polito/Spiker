@@ -23,7 +23,6 @@ entity neuron_cu is
 		update_sel	: out std_logic_vector(1 downto 0);
 		add_or_sub	: out std_logic;
 		v_update	: out std_logic;
-		v_th_en		: out std_logic;
 		v_en		: out std_logic;
 		v_rst_n		: out std_logic;
 
@@ -84,7 +83,7 @@ begin
 
 
 		-- default case
-		next_state	<= reset;
+		-- next_state	<= reset;
 
 		case present_state is
 			
@@ -257,7 +256,6 @@ begin
 		update_sel	<= "00";
 		add_or_sub	<= '0';
 		v_update	<= '1';
-		v_th_en		<= '0';
 		v_en		<= '1';
 		v_rst_n		<= '1';
 		out_spike	<= '0';
@@ -268,7 +266,6 @@ begin
 			-- reset
 			when reset =>
 				v_en 		<= '0';
-				v_th_en		<= '1';
 				v_rst_n		<= '0';
 
 			-- idle
@@ -280,11 +277,11 @@ begin
 			-- exp_decay
 			when exp_decay =>
 				add_or_sub	<= '1';
+				update_sel	<= "01";
 				
 
 			-- no_exc_spike
 			when no_exc_spike	=>
-				update_sel	<= "10";
 				v_en		<= '0';
 
 			-- exc_spike
@@ -295,7 +292,6 @@ begin
 				
 			-- no_inh_spike
 			when no_inh_spike	=>
-				update_sel	<= "11";
 				v_en		<= '0';
 
 
@@ -307,16 +303,13 @@ begin
 
 			-- fire
 			when fire =>
-				update_sel	<= "01";
 				v_update	<= '0';
-				v_th_en		<= '1';
 				out_spike	<= '1';
 
 			-- default case
 			when others =>
 				v_en 		<= '0';
 				v_rst_n		<= '0';
-				v_th_en		<= '1';
 
 		end case;
 
