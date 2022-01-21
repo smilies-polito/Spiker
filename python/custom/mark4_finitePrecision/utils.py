@@ -162,8 +162,8 @@ def checkParallelism(numpyArray, parallelism):
 
 	if (numpyArray > 2**(parallelism-1)-1).any():
 		print("Value too high")
-		sys.exit()
+		# sys.exit()
 
 	elif (numpyArray < -2**(parallelism-1)).any():
 		print("Value too low")
-		sys.exit()
+		# sys.exit()
