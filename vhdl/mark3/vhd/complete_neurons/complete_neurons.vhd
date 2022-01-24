@@ -47,6 +47,7 @@ entity complete_neurons is
 	
 end entity complete_neurons;
 
+
 architecture behaviour of complete_neurons is
 
 	signal unmasked_select	: std_logic_vector(2**N_addr-1 downto 0);
