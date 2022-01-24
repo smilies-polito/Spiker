@@ -3,12 +3,12 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 
-entity neurons_layer_tb is
-end entity neurons_layer_tb;
+entity bare_neurons_tb is
+end entity bare_neurons_tb;
 
 
 
-architecture behaviour of neurons_layer_tb is
+architecture test of bare_neurons_tb is
 
 	-- parallelism
 	constant N		: integer := 16;
@@ -56,7 +56,7 @@ architecture behaviour of neurons_layer_tb is
 
 
 
-	component neurons_layer is
+	component bare_neurons is
 
 		generic(
 			-- internal parallelism
@@ -96,7 +96,7 @@ architecture behaviour of neurons_layer_tb is
 			all_ready	: out std_logic
 		);
 
-	end component neurons_layer;
+	end component bare_neurons;
 
 
 
@@ -276,7 +276,7 @@ begin
 
 
 
-	dut : neurons_layer
+	dut : bare_neurons
 
 		generic map(
 			-- parallelism
@@ -319,4 +319,4 @@ begin
 		);
 
 
-end architecture behaviour;
+end architecture test;

@@ -3,7 +3,7 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 
-entity neurons_layer is
+entity bare_neurons is
 
 	generic(
 		-- internal parallelism
@@ -43,10 +43,10 @@ entity neurons_layer is
 		all_ready	: out std_logic
 	);
 
-end entity neurons_layer;
+end entity bare_neurons;
 
 
-architecture behaviour of neurons_layer is
+architecture behaviour of bare_neurons is
 
 	signal neurons_ready	: std_logic_vector(layer_size-1 downto 0);
 
