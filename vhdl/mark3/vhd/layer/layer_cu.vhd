@@ -21,16 +21,16 @@ entity layer_cu is
 		anticipate_exc		: out std_logic;	
 		inh_en			: out std_logic;	
 		anticipate_inh		: out std_logic;	
-		exc_cnt_rst_n		: out std_logic;	
 		exc_cnt_en		: out std_logic;	
-		inh_cnt_rst_n		: out std_logic;	
+		exc_cnt_rst_n		: out std_logic;	
 		inh_cnt_en		: out std_logic;	
+		inh_cnt_rst_n		: out std_logic;	
 		exc_or_inh_sel		: out std_logic;	
 		inh			: out std_logic;	
-		cycles_cnt_rst_n	: out std_logic;	
-		cycles_cnt_en		: out std_logic;	
 
 		-- output
+		cycles_cnt_rst_n	: out std_logic;	
+		cycles_cnt_en		: out std_logic;	
 		sample			: out std_logic;
 		layer_ready		: out std_logic
 	);
@@ -51,8 +51,6 @@ architecture behaviour of layer_cu is
 	signal present_state, next_state	: states;
 
 begin
-
-
 
 
 	-- state transition
