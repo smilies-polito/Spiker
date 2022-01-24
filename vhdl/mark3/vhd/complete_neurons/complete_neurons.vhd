@@ -14,7 +14,7 @@ entity complete_neurons is
 		N_addr			: integer := 9;
 
 		-- shift during the exponential decay
-		shift			: integer := 1
+		shift			: integer := 10
 	);
 
 	port(
@@ -66,7 +66,7 @@ architecture behaviour of complete_neurons is
 			N_neurons		: integer := 400;
 
 			-- shift during the exponential decay
-			shift			: integer := 1
+			shift			: integer := 10
 		);
 
 		port(

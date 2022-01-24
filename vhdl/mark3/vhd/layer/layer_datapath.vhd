@@ -12,21 +12,21 @@ entity layer_datapath is
 		weightsParallelism	: integer := 5;
 
 		-- input spikes
-		N_inputs		: integer := 8;
+		N_inputs		: integer := 784;
 
 		-- must be one bit larger that the parallelism required to count
 		-- up to N_inputs
-		N_inputs_cnt		: integer := 4;
+		N_inputs_cnt		: integer := 11;
 
 		-- inhibitory spikes
-		N_neurons		: integer := 4;
+		N_neurons		: integer := 400;
 
 		-- must be one bit larger that the parallelism required to count
 		-- up to N_neurons
-		N_neurons_cnt		: integer := 3;
+		N_neurons_cnt		: integer := 10;
 
 		-- exponential decay shift
-		shift			: integer := 1
+		shift			: integer := 10
 			
 	);
 
@@ -195,7 +195,7 @@ architecture behaviour of layer_datapath is
 	component complete_neurons is
 
 		generic(
-			-- int parallelism
+			-- int parallelism_
 			parallelism		: integer := 16;
 			weightsParallelism	: integer := 5;
 
@@ -204,7 +204,7 @@ architecture behaviour of layer_datapath is
 			N_addr			: integer := 9;
 
 			-- shift during the exponential decay
-			shift			: integer := 1
+			shift			: integer := 10
 		);
 
 		port(

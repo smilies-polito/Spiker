@@ -14,7 +14,7 @@ entity bare_neurons is
 		N_neurons		: integer := 400;
 
 		-- shift during the exponential decay
-		shift			: integer := 1
+		shift			: integer := 10
 	);
 
 	port(
@@ -58,7 +58,7 @@ architecture behaviour of bare_neurons is
 
 		port(
 			-- input
-			and_in	: in std_logic_vector(parallelism-1 downto 0);
+			and_in	: in std_logic_vector(N-1 downto 0);
 
 			-- output
 			and_out	: out std_logic
@@ -77,33 +77,33 @@ architecture behaviour of bare_neurons is
 			weightsParallelism	: integer := 5;
 
 			-- shift amount
-			shift		: integer := 1
+			shift			: integer := 10
 		);
 
 		port(
 			-- input controls
-			clk		: in std_logic;
-			rst_n		: in std_logic;
-			start		: in std_logic;
-			stop		: in std_logic;
-			exc_or		: in std_logic;
-			exc_stop	: in std_logic;
-			inh_or		: in std_logic;
-			inh_stop	: in std_logic;
-			input_spike	: in std_logic;
+			clk			: in std_logic;
+			rst_n			: in std_logic;
+			start			: in std_logic;
+			stop			: in std_logic;
+			exc_or			: in std_logic;
+			exc_stop		: in std_logic;
+			inh_or			: in std_logic;
+			inh_stop		: in std_logic;
+			input_spike		: in std_logic;
 
 			-- to load the threshold
-			v_th_en		: in std_logic;
+			v_th_en			: in std_logic;
 
 			-- input parameters
-			v_th_value	: in signed(parallelism-1 downto 0);
-			v_reset		: in signed(parallelism-1 downto 0);
-			inh_weight	: in signed(parallelism-1 downto 0);
-			exc_weight	: in signed(weightsParallelism-1 downto 0);
+			v_th_value		: in signed(parallelism-1 downto 0);
+			v_reset			: in signed(parallelism-1 downto 0);
+			inh_weight		: in signed(parallelism-1 downto 0);
+			exc_weight		: in signed(weightsParallelism-1 downto 0);
 
 			-- output
-			out_spike	: out std_logic;
-			neuron_ready	: out std_logic
+			out_spike		: out std_logic;
+			neuron_ready		: out std_logic
 		);
 
 	end component neuron;
