@@ -2,85 +2,94 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
+
 entity layer_cu_dp_tb is
 end entity layer_cu_dp_tb;
 
-
 architecture test of layer_cu_dp_tb is
 
-	-- internal parallelism
-	constant parallelism		: integer := 16;
 
-	-- excitatory spikes
-	constant input_parallelism	: integer := 2;
-	constant N_exc_cnt		: integer := 2;
+	-- int parallelism
+	constant parallelism		: integer := 16;
+	constant weightsParallelism	: integer := 5;
+
+	-- input spikes
+	constant N_inputs		: integer := 784;
+
+	-- must be one bit larger that the parallelism required to count
+	-- up to N_inputs
+	constant N_inputs_cnt		: integer := 11;
 
 	-- inhibitory spikes
-	constant layer_size		: integer := 3;
-	constant N_inh_cnt		: integer := 3;
+	constant N_neurons		: integer := 400;
 
-	-- elaboration steps
-	constant N_cycles_cnt		: integer := 4;
+	-- must be one bit larger that the parallelism required to count
+	-- up to N_neurons
+	constant N_neurons_cnt		: integer := 10;
 
 	-- exponential decay shift
 	constant shift			: integer := 10;
 
-	-- model parameters
-	constant v_th_0_int	: integer 	:= 13*(2**10);	
-	constant v_reset_int	: integer 	:= 5*(2**10);	
-	constant v_th_plus_int	: integer	:= 102; -- 0.1*2^11 rounded	
-	constant inh_weight_int	: integer 	:= 7*(2**10);	
-	constant exc_weight_int	: integer 	:= 7*(2**10);
 
-
-	-- number of inputs, neurons and cycles
-	signal N_inputs			: std_logic_vector
-						(N_exc_cnt-1 downto 0);
-	signal N_neurons		: std_logic_vector
-						(N_inh_cnt-1 downto 0);
-	signal N_cycles			: std_logic_vector
-						(N_cycles_cnt-1 downto 0);
-	-- input parameters
-	signal v_th_0		: signed(parallelism-1 downto 0);
-	signal v_reset		: signed(parallelism-1 downto 0);
-	signal v_th_plus	: signed(parallelism-1 downto 0);
-	signal inh_weight	: signed(parallelism-1 downto 0);
-	signal exc_weights	: signed(layer_size*parallelism-1 downto 0);
-
-	-- input
+	-- control input
 	signal clk			: std_logic;
 	signal rst_n			: std_logic;
 	signal start			: std_logic;
-	signal input_spikes		: std_logic_vector
-						(input_parallelism-1 downto 0);
+	signal stop			: std_logic;		
+	signal init_v_th		: std_logic;
 
-	-- signals from datapath
+	-- address to select the neurons
+	signal v_th_addr		: std_logic_vector(N_neurons_cnt-1
+						downto 0);
+
+	-- data input
+	signal input_spikes		: std_logic_vector(N_inputs-1 downto 0);
+
+
+	-- input parameters
+	signal v_th_value		: signed(parallelism-1 downto 0);		
+	signal v_reset			: signed(parallelism-1 downto 0);	
+	signal inh_weight		: signed(parallelism-1 downto 0);		
+	signal exc_weights		: signed
+						(N_neurons*weightsParallelism-1 
+						 downto 0);
+
+	-- terminal counters 
+	signal N_inputs_tc		: std_logic_vector
+					     (N_inputs_cnt-1 downto 0);
+	signal N_neurons_tc		: std_logic_vector
+						(N_neurons_cnt-1 downto 0);
+
+	-- from datapath towards control unit
 	signal exc_or			: std_logic;		
 	signal exc_stop			: std_logic;		
 	signal inh_or			: std_logic;		
 	signal inh_stop			: std_logic;
-	signal stop			: std_logic;		
 
-	-- towards datapath
+	-- from control unit towards datapath
 	signal exc_en			: std_logic;	
 	signal anticipate_exc		: std_logic;	
 	signal inh_en			: std_logic;	
 	signal anticipate_inh		: std_logic;	
-	signal exc_cnt_rst_n		: std_logic;	
 	signal exc_cnt_en		: std_logic;	
-	signal inh_cnt_rst_n		: std_logic;	
+	signal exc_cnt_rst_n		: std_logic;	
 	signal inh_cnt_en		: std_logic;	
+	signal inh_cnt_rst_n		: std_logic;	
 	signal exc_or_inh_sel		: std_logic;	
 	signal inh			: std_logic;	
-	signal cycles_cnt_rst_n		: std_logic;	
-	signal cycles_cnt_en		: std_logic;	
 
 	-- output
+	signal cycles_cnt_rst_n		: std_logic;	
+	signal cycles_cnt_en		: std_logic;	
 	signal sample			: std_logic;
 	signal layer_ready		: std_logic;
-	signal out_spikes		: std_logic_vector(layer_size-1 downto 0);
+	signal all_ready		: std_logic;
+	signal out_spikes		: std_logic_vector(N_neurons-1 downto 0);
+
+	-- output address to select the excitatory weights
 	signal exc_cnt			: std_logic_vector
-						(N_exc_cnt-1 downto 0);
+						(N_inputs_cnt-1 downto 0);
+
 
 	-- control unit internal signals
 	type states is(
@@ -93,23 +102,21 @@ architecture test of layer_cu_dp_tb is
 
 	signal present_state, next_state	: states;
 
+
 	-- datapath internal signals
-	signal exc_spikes		: std_logic_vector(input_parallelism-1 downto 0);
-	signal inh_spikes		: std_logic_vector(layer_size-1 downto 0);
+	signal exc_spikes		: std_logic_vector(N_inputs-1 downto 0);
+	signal inh_spikes		: std_logic_vector(N_neurons-1 downto 0);
 	signal exc_spike		: std_logic;
 	signal inh_spike		: std_logic;
-	signal inh_cnt			: std_logic_vector(N_inh_cnt-1 downto 0);
-	signal cycles			: std_logic_vector(N_cycles_cnt-1 downto 0);
-	signal input_spike		: std_logic;
-	signal exc_or_internal		: std_logic;
-	signal exc_stop_internal	: std_logic;
-	signal inh_or_internal		: std_logic;
-	signal inh_stop_internal	: std_logic;
-	signal stop_internal		: std_logic;
-	signal feedback_spikes		: std_logic_vector(layer_size-1 downto 0);
-	signal spikes			: std_logic_vector(2**N_inh_cnt-1 downto 0);
-	signal neurons_ready		: std_logic;
-
+	signal inh_cnt			: std_logic_vector(N_neurons_cnt-1 downto 0);
+	signal spike			: std_logic;
+	signal exc_or_int		: std_logic;
+	signal exc_stop_int		: std_logic;
+	signal inh_or_int		: std_logic;
+	signal inh_stop_int		: std_logic;
+	signal feedback_spikes		: std_logic_vector(N_neurons-1 downto 0);
+	signal neuron_addr		: std_logic_vector(N_neurons_cnt-1
+						downto 0);
 
 
 	component anticipate_bits is
@@ -161,42 +168,6 @@ architecture test of layer_cu_dp_tb is
 	end component bit_selection;
 
 
-	component cnt is
-
-		generic(
-			N		: integer := 8		
-		);
-
-		port(
-			-- input
-			clk		: in std_logic;
-			cnt_en		: in std_logic;
-			cnt_rst_n	: in std_logic;
-
-			-- output
-			cnt_out		: out std_logic_vector(N-1 downto 0)		
-		);
-
-	end component cnt;
-
-
-	component cmp_eq is
-
-		generic(
-			N	: integer := 8		
-		);
-
-		port(
-			-- input
-			in0	: in std_logic_vector(N-1 downto 0);
-			in1	: in std_logic_vector(N-1 downto 0);
-
-			-- output
-			cmp_out	: out std_logic
-		);
-
-	end component cmp_eq;
-
 
 	component mux2to1_std_logic is
 		port(	
@@ -212,162 +183,82 @@ architecture test of layer_cu_dp_tb is
 	end component mux2to1_std_logic;
 
 
-	component bitMask is
+
+	component mux2to1 is
 
 		generic(
-			N_cnt		: integer :=3
+			-- parallelism
+			N	: integer		
 		);
 
-		port(
-			-- input
-			input_cnt	: in std_logic_vector(N_cnt-1 downto 0);
-			inh		: in std_logic;
-			input_bit	: in std_logic;
+		port(	
+			-- inputs	
+			sel	: in std_logic;
+			in0	: in std_logic_vector(N-1 downto 0);
+			in1	: in std_logic_vector(N-1 downto 0);
 
 			-- output
-			output_bits	: out std_logic_vector(2**N_cnt-1 downto 0)
+			mux_out	: out std_logic_vector(N-1 downto 0)
 		);
 
-	end component bitMask;
+	end component mux2to1;
 
 
 
-
-	component neurons_layer is
+	component complete_neurons is
 
 		generic(
-			-- neurons counter parallelism
-			N_cnt		: integer := 2;
-
-			-- internal parallelism
-			N		: integer := 8;
+			-- int parallelism_
+			parallelism		: integer := 16;
+			weightsParallelism	: integer := 5;
 
 			-- number of neurons in the layer
-			layer_size	: integer := 3;
+			N_neurons		: integer := 400;
+			N_addr			: integer := 9;
 
 			-- shift during the exponential decay
-			shift		: integer := 1
+			shift			: integer := 10
 		);
 
 		port(
 			-- control input
-			clk		: in std_logic;
-			rst_n		: in std_logic;		
-			start		: in std_logic;		
-			stop		: in std_logic;
-			exc_or		: in std_logic;
-			exc_stop	: in std_logic;
-			inh_or		: in std_logic;
-			inh_stop	: in std_logic;
-			input_spikes	: in std_logic_vector(layer_size-1 downto 0);
+			clk			: in std_logic;
+			rst_n			: in std_logic;		
+			start			: in std_logic;		
+			stop			: in std_logic;
+			exc_or			: in std_logic;
+			exc_stop		: in std_logic;
+			inh_or			: in std_logic;
+			inh_stop		: in std_logic;
+			inh			: in std_logic;
+			load_v_th		: in std_logic;
+			neuron_addr		: in std_logic_vector(N_addr-1 downto 0);
+
+			-- input
+			input_spike		: in std_logic;
 
 			-- input parameters
-			v_th_0		: in signed(N-1 downto 0);		
-			v_reset		: in signed(N-1 downto 0);		
-			inh_weight	: in signed(N-1 downto 0);		
-			v_th_plus	: in signed(N-1 downto 0);		
-			exc_weights	: in signed(layer_size*N-1 downto 0);
+			v_th_value		: in signed(parallelism-1 downto 0);		
+			v_reset			: in signed(parallelism-1 downto 0);		
+			inh_weight		: in signed(parallelism-1 downto 0);		
+			exc_weights		: in signed(N_neurons*
+							weightsParallelism-1 downto 0);
 
 			-- output
-			out_spikes	: out std_logic_vector(layer_size-1 downto 0);
-			neurons_ready	: out std_logic
+			out_spikes		: out std_logic_vector(N_neurons-1 downto 0);
+			all_ready		: out std_logic
 		);
-
-	end component neurons_layer;
-
-
-
-
+		
+	end component complete_neurons;
 
 
 begin
 
-
-	N_neurons	<= "011";
-	N_inputs	<= "10";
-	N_cycles	<= "1000";
-
-
-	-- model parameters binary conversion
-	v_th_0		<= to_signed(v_th_0_int, parallelism);
-	v_reset		<= to_signed(v_reset_int, parallelism);
-	v_th_plus	<= to_signed(v_th_plus_int, parallelism);
-	inh_weight	<= to_signed(inh_weight_int, parallelism);
-
-	exc_weights_init	: process
-	begin
-		init	: for i in 0 to layer_size-1
-		loop
-			exc_weights((i+1)*parallelism-1 downto i*parallelism) <= 
-					to_signed(exc_weight_int, parallelism);
-		end loop init;
-
-		wait;
-
-	end process exc_weights_init;
-
-
-
-
-
-
-
-
-	-- clock
-	clock_gen : process
-	begin
-		clk	<= '0';		-- falling edge i*12ns
-		wait for 6 ns;			                    
-		clk	<= '1';         -- rising edge 6ns + i*12ns
-		wait for 6 ns;			
-	end process clock_gen;
-
-
-
-	-- reset
-	reset_gen : process
-	begin
-		rst_n	<= '1';		-- 0 ns
-		wait for 14 ns;
-		rst_n	<= '0';		-- 14 ns
-		wait for 3 ns;
-		rst_n	<= '1';		-- 17 ns
-		wait;
-	end process reset_gen;
-
-
-
-	-- start
-	start_gen : process
-	begin
-		start	<= '0';		-- 0 ns
-		wait for 38 ns;
-		start	<= '1';		-- 38 ns
-		wait for 12 ns;
-		start	<= '0';		-- 50 ns
-		wait;
-	end process start_gen;
-
-
-	-- input_spikes
-	input_spikes_gen: process
-	begin
-		input_spikes	<= "00"; -- 0 ns	
-		wait for 62 ns;
-		input_spikes	<= "11"; -- 62 ns
-		wait for 48 ns;
-		input_spikes	<= "00"; -- 110 ns
-		wait for 48 ns;
-		input_spikes	<= "01"; -- 158 ns
-		wait for 84 ns;
-		input_spikes	<= "00"; -- 242 ns
-		wait;
-	end process input_spikes_gen;
-
-
-
-
-
+	out_spikes	<= feedback_spikes;
+	exc_or		<= exc_or_int;
+	exc_stop	<= exc_stop_int;
+	inh_or		<= inh_or_int;
+	inh_stop	<= inh_stop_int;
 
 
 
@@ -474,7 +365,7 @@ begin
 
 
 
-
+	-- output evaluation
 	output_evaluation	: process(present_state)
 	begin
 
@@ -543,22 +434,10 @@ begin
 
 
 
-
-	
-
-
-	out_spikes	<= feedback_spikes;
-	exc_or		<= exc_or_internal;
-	exc_stop	<= exc_stop_internal;
-	inh_or		<= inh_or_internal;
-	inh_stop	<= inh_stop_internal;
-	stop		<= stop_internal;
-
-
 	anticipate_exc_spikes	: anticipate_bits
 		generic map(
 			-- parallelism
-			N		=> input_parallelism		
+			N		=> N_inputs		
 		)
 
 		port map(
@@ -577,7 +456,7 @@ begin
 	anticipate_inh_spikes	: anticipate_bits
 		generic map(
 			-- parallelism
-			N		=> layer_size	
+			N		=> N_neurons	
 		)
 
 		port map(
@@ -596,10 +475,10 @@ begin
 	select_exc_spike	: bit_selection 
 		generic map(
 			-- number of input bits
-			N_bit			=> input_parallelism,
+			N_bit			=> N_inputs,
 
 			-- selection counter parallelism
-			N_cnt			=> N_exc_cnt
+			N_cnt			=> N_inputs_cnt
 		)
 
 		port map(
@@ -608,23 +487,23 @@ begin
 			input_bits		=> exc_spikes,
 			select_cnt_en		=> exc_cnt_en,
 			select_cnt_rst_n	=> exc_cnt_rst_n,
-			N_inputs		=> N_inputs,
+			N_inputs		=> N_inputs_tc,
 
 			-- output
-			all_inputs		=> exc_or_internal,
+			all_inputs		=> exc_or_int,
 			selected_input		=> exc_spike,
 			input_index		=> exc_cnt,
-			stop			=> exc_stop_internal
+			stop			=> exc_stop_int
 		);
 
 
 	select_inh_spike	: bit_selection 
 		generic map(
 			-- number of input bits
-			N_bit			=> layer_size,
+			N_bit			=> N_neurons,
 
 			-- selection counter parallelism
-			N_cnt			=> N_inh_cnt
+			N_cnt			=> N_neurons_cnt
 		)
 
 		port map(
@@ -633,44 +512,13 @@ begin
 			input_bits		=> inh_spikes,
 			select_cnt_en		=> inh_cnt_en,
 			select_cnt_rst_n	=> inh_cnt_rst_n,
-			N_inputs		=> N_neurons,
+			N_inputs		=> N_neurons_tc,
 
 			-- output
-			all_inputs		=> inh_or_internal,
+			all_inputs		=> inh_or_int,
 			selected_input		=> inh_spike,
 			input_index		=> inh_cnt,
-			stop			=> inh_stop_internal
-		);
-
-
-	cycles_cnt		: cnt
-		generic map(
-			N			=> N_cycles_cnt
-		)
-
-		port map(
-			-- input
-			clk			=> clk,
-			cnt_en			=> cycles_cnt_en,
-			cnt_rst_n		=> cycles_cnt_rst_n,
-
-			-- output
-			cnt_out			=> cycles
-		);
-
-
-	cycles_cmp		: cmp_eq
-		generic map(
-			N			=> N_cycles_cnt
-		)
-
-		port map(
-			-- input
-			in0			=> cycles,
-			in1			=> N_cycles,
-
-			-- output
-			cmp_out			=> stop_internal
+			stop			=> inh_stop_int
 		);
 
 
@@ -684,65 +532,71 @@ begin
 			in1			=> inh_spike,
 
 			-- output
-			mux_out			=> input_spike
+			mux_out			=> spike
 		);
 
 
-	generate_spikes		: bitMask
+	addr_mux		:  mux2to1
 
 		generic map(
-			N_cnt			=> N_inh_cnt
+			N			=> N_neurons_cnt		
 		)
 
 		port map(
-			-- input
-			input_cnt		=> inh_cnt,
-			inh			=> inh,
-			input_bit		=> input_spike,
+			-- inputs
+			sel			=> init_v_th,
+			in0			=> inh_cnt,
+			in1			=> v_th_addr,
 
 			-- output
-			output_bits		=> spikes
+			mux_out			=> neuron_addr
 		);
 
 
 
-	bare_layer : neurons_layer
+	bare_layer : complete_neurons
 
 		generic map(
+
 			-- parallelism
-			N		=> parallelism,	
+			parallelism		=> parallelism,	
+			weightsParallelism	=> weightsParallelism,
 
 			-- number of neurons in the layer
-			layer_size	=> layer_size,
+			N_neurons		=> N_neurons,
+			N_addr			=> N_neurons_cnt,
 
 			-- shift amount
-			shift		=> shift
+			shift			=> shift
 		)
 
 		port map(
 			-- input controls
-			clk		=> clk,
-			rst_n		=> rst_n,
-			start		=> start,
-			stop		=> stop_internal,
-			exc_or	       	=> exc_or_internal,
-			exc_stop       	=> exc_stop_internal,
-			inh_or	        => inh_or_internal,
-			inh_stop        => inh_stop_internal,
-                       	input_spikes	=> spikes(layer_size-1 downto 0),
+			clk			=> clk,
+			rst_n			=> rst_n,
+			start			=> start,
+			stop			=> stop,
+			exc_or			=> exc_or_int,
+			exc_stop		=> exc_stop_int,
+			inh_or			=> inh_or_int,
+			inh_stop		=> inh_stop_int,
+			inh			=> inh,
+			load_v_th		=> init_v_th,
+			neuron_addr		=> neuron_addr,
+
+			-- input
+                       	input_spike		=> spike,
 
 			-- input parameters
-			v_th_0		=> v_th_0,
-			v_reset		=> v_reset,
-			inh_weight	=> inh_weight,
-			exc_weights	=> exc_weights,
-			v_th_plus	=> v_th_plus,
-                                                       
-			-- output          
-			out_spikes	=> feedback_spikes,
-			neurons_ready	=> neurons_ready
+			v_th_value		=> v_th_value,
+			v_reset			=> v_reset,
+			inh_weight		=> inh_weight,
+			exc_weights		=> exc_weights,
+							       
+			-- output		   
+			out_spikes		=> feedback_spikes,
+			all_ready		=> all_ready
 		);
-
 
 
 
