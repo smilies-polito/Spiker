@@ -61,7 +61,8 @@ entity layer_datapath is
 		v_reset			: in signed(parallelism-1 downto 0);	
 		inh_weight		: in signed(parallelism-1 downto 0);		
 		exc_weights		: in signed
-					(N_neurons*weightsParallelism-1 downto 0);
+						(N_neurons*weightsParallelism-1
+						 downto 0);
 
 		-- terminal counters 
 		N_inputs_tc		: in std_logic_vector
@@ -92,16 +93,19 @@ end entity layer_datapath;
 architecture behaviour of layer_datapath is
 
 	signal exc_spikes		: std_logic_vector(N_inputs-1 downto 0);
-	signal inh_spikes		: std_logic_vector(N_neurons-1 downto 0);
+	signal inh_spikes		: std_logic_vector(N_neurons-1 
+						downto 0);
 	signal exc_spike		: std_logic;
 	signal inh_spike		: std_logic;
-	signal inh_cnt			: std_logic_vector(N_neurons_cnt-1 downto 0);
+	signal inh_cnt			: std_logic_vector(N_neurons_cnt-1 
+						downto 0);
 	signal spike			: std_logic;
 	signal exc_or_int		: std_logic;
 	signal exc_stop_int		: std_logic;
 	signal inh_or_int		: std_logic;
 	signal inh_stop_int		: std_logic;
-	signal feedback_spikes		: std_logic_vector(N_neurons-1 downto 0);
+	signal feedback_spikes		: std_logic_vector(N_neurons-1 
+						downto 0);
 	signal neuron_addr		: std_logic_vector(N_neurons_cnt-1
 						downto 0);
 
@@ -140,15 +144,18 @@ architecture behaviour of layer_datapath is
 		port(
 			-- input
 			clk			: in std_logic;
-			input_bits		: in std_logic_vector(N_bit-1 downto 0);
+			input_bits		: in std_logic_vector(N_bit-1 
+							  downto 0);
 			select_cnt_en		: in std_logic;
 			select_cnt_rst_n	: in std_logic;
-			N_inputs		: in std_logic_vector(N_cnt-1 downto 0);
+			N_inputs		: in std_logic_vector(N_cnt-1 
+							  downto 0);
 
 			-- output
 			all_inputs		: out std_logic;
 			selected_input		: out std_logic;
-			input_index		: out std_logic_vector(N_cnt-1 downto 0);
+			input_index		: out std_logic_vector(N_cnt-1
+							  downto 0);
 			stop			: out std_logic		
 		);
 
@@ -219,20 +226,26 @@ architecture behaviour of layer_datapath is
 			inh_stop		: in std_logic;
 			inh			: in std_logic;
 			load_v_th		: in std_logic;
-			neuron_addr		: in std_logic_vector(N_addr-1 downto 0);
+			neuron_addr		: in std_logic_vector(N_addr-1
+							  downto 0);
 
 			-- input
 			input_spike		: in std_logic;
 
 			-- input parameters
-			v_th_value		: in signed(parallelism-1 downto 0);		
-			v_reset			: in signed(parallelism-1 downto 0);		
-			inh_weight		: in signed(parallelism-1 downto 0);		
+			v_th_value		: in signed(parallelism-1 
+							downto 0);		
+			v_reset			: in signed(parallelism-1 
+							downto 0);		
+			inh_weight		: in signed(parallelism-1 
+							downto 0);		
 			exc_weights		: in signed(N_neurons*
-							weightsParallelism-1 downto 0);
+							weightsParallelism-1
+							downto 0);
 
 			-- output
-			out_spikes		: out std_logic_vector(N_neurons-1 downto 0);
+			out_spikes		: out std_logic_vector
+							(N_neurons-1 downto 0);
 			all_ready		: out std_logic
 		);
 		
