@@ -57,17 +57,18 @@ architecture test of complete_neurons_tb is
 	component complete_neurons is
 
 		generic(
+
 			-- internal parallelism
-			N		: integer := 16;
-			N_weights	: integer := 5;
+			parallelism		: integer := 16;
+			weightsParallelism	: integer := 5;
 
 			-- number of neurons in the layer
-			layer_size	: integer := 400;
-			N_addr		: integer := 9;
+			N_neurons		: integer := 400;
+			N_addr			: integer := 9;
 
 			-- shift during the exponential decay
-			shift		: integer := 1
-		);
+			shift			: integer := 10
+			);
 
 		port(
 			-- control input
@@ -87,13 +88,14 @@ architecture test of complete_neurons_tb is
 			input_spike	: in std_logic;
 
 			-- input parameters
-			v_th_value	: in signed(N-1 downto 0);		
-			v_reset		: in signed(N-1 downto 0);		
-			inh_weight	: in signed(N-1 downto 0);		
-			exc_weights	: in signed(layer_size*N_weights-1 downto 0);
+			v_th_value	: in signed(parallelism-1 downto 0);		
+			v_reset		: in signed(parallelism-1 downto 0);		
+			inh_weight	: in signed(parallelism-1 downto 0);		
+			exc_weights	: in signed(N_neurons*
+						weightsParallelism-1 downto 0);
 
 			-- output
-			out_spikes	: out std_logic_vector(layer_size-1 downto 0);
+			out_spikes	: out std_logic_vector(N_neurons-1 downto 0);
 			all_ready	: out std_logic
 		);
 		
@@ -175,8 +177,13 @@ begin
 
 		wait for 156 ns;
 
-		neuron_addr	<= "11";	-- 230 ns
+		for i in 0 to layer_size-1
+		loop
 
+			neuron_addr <= std_logic_vector(to_unsigned(i, N_addr));
+			wait for 12 ns;
+
+		end loop;
 		wait;
 	end process neuron_addr_gen;
 
@@ -223,9 +230,9 @@ begin
 	inh_gen		: process
 	begin
 		inh	<= '0';
-		wait for 242 ns;	
+		wait for 230 ns;	
 		inh	<= '1';		-- 242 ns
-		wait for 12 ns;		          
+		wait for 36 ns;		          
 		inh	<= '0';         -- 254 ns
 		wait;
 	end process inh_gen;
@@ -277,11 +284,11 @@ begin
 
 		generic map(
 			-- internal parallelism
-			N		=> N,
-			N_weights	=> N_weights,
+			parallelism		=> N,
+			weightsParallelism	=> N_weights,
 
 			-- number of neurons in the layer
-			layer_size	=> layer_size,
+			N_neurons	=> layer_size,
 			N_addr		=> N_addr,
 
 			-- shift during the exponential decay
