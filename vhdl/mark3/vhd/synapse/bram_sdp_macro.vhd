@@ -1,97 +1,107 @@
 library ieee;
 use ieee.std_logic_1164.all;
 
-
---  RAMB36E1   : In order to incorporate this function into the design,
---    VHDL     : the following instance declaration needs to be placed
---  instance   : in the body of the design code.  The instance name
--- declaration : (RAMB36E1_inst) and/or the port declarations after the
---    code     : "=>" declaration maybe changed to properly reference and
---             : connect this function to the design.  All inputs and outputs
---             : must be connected.
-
---   Library   : In addition to adding the instance declaration, a use
--- declaration : statement for the UNISIM.vcomponents library needs to be
---     for     : added before the entity declaration.  This library
---   Xilinx    : contains the component declarations for all Xilinx
--- primitives  : primitives and points to the models that will be used
---             : for simulation.
-
---  Copy the following two statements and paste them before the
---  Entity declaration, unless they already exist.
-
-library UNISIM;
+Library UNISIM;
 use UNISIM.vcomponents.all;
 
+Library UNIMACRO;
+use UNIMACRO.vcomponents.all;
 
 entity bram_sdp is
 
 	port(
-		-- input
-		clk		: in std_logic;
-		di		: in std_logic_vector(71 downto 0);
-		rdaddr		: in std_logic_vector(8 downto 0);
-		rden		: in std_logic;
-		wraddr		: in std_logic_vector(8 downto 0);
-		wren		: in std_logic;
+		-- read input
+		rst	: in std_logic;
+		rdclk	: in std_logic;
+		rden	: in std_logic;
+		regce	: in std_logic;
+		rdaddr	: in std_logic_vector(8 downto 0);
+
+		-- write input
+		we	: in std_logic_vector(7 downto 0);
+		wrclk	: in std_logic;
+		wren	: in std_logic;
+		wraddr	: in std_logic_vector(8 downto 0);
+		di	: in std_logic_vector(71 downto 0);
 
 		-- output
-		do		: out std_logic_vector(71 downto 0)
-				
+		do	: out std_logic_vector(71 downto 0)
 	);
 
 end entity bram_sdp;
 
 
 architecture behaviour of bram_sdp is
-
 begin
 
 
-	-- RAMB36E1: 36K-bit Configurable Synchronous Block RAM
-	--           Artix-7
-	-- Xilinx HDL Language Template, version 2020.2
+   -- BRAM_SDP_MACRO: Simple Dual Port RAM
+   --                 Artix-7
+   -- Xilinx HDL Language Template, version 2020.2
+   
+   -- Note: 	This Unimacro model assumes the port directions to be "downto". 
+   --         	Simulation of this model with "to" in the port directions could
+   --		lead to erroneous results.
 
-	RAMB36E1_inst : RAMB36E1
+   -----------------------------------------------------------------------
+   --  READ_WIDTH | BRAM_SIZE | READ Depth  | RDADDR Width |            --
+   -- WRITE_WIDTH |           | WRITE Depth | WRADDR Width |  WE Width  --
+   -- ============|===========|=============|==============|============--
+   --    37-72    |  "36Kb"   |      512    |     9-bit    |    8-bit   --
+   --    19-36    |  "36Kb"   |     1024    |    10-bit    |    4-bit   --
+   --    19-36    |  "18Kb"   |      512    |     9-bit    |    4-bit   --
+   --    10-18    |  "36Kb"   |     2048    |    11-bit    |    2-bit   --
+   --    10-18    |  "18Kb"   |     1024    |    10-bit    |    2-bit   --
+   --     5-9     |  "36Kb"   |     4096    |    12-bit    |    1-bit   --
+   --     5-9     |  "18Kb"   |     2048    |    11-bit    |    1-bit   --
+   --     3-4     |  "36Kb"   |     8192    |    13-bit    |    1-bit   --
+   --     3-4     |  "18Kb"   |     4096    |    12-bit    |    1-bit   --
+   --       2     |  "36Kb"   |    16384    |    14-bit    |    1-bit   --
+   --       2     |  "18Kb"   |     8192    |    13-bit    |    1-bit   --
+   --       1     |  "36Kb"   |    32768    |    15-bit    |    1-bit   --
+   --       1     |  "18Kb"   |    16384    |    14-bit    |    1-bit   --
+   -----------------------------------------------------------------------
+
+
+	BRAM_SDP_MACRO_inst : BRAM_SDP_MACRO
 		generic map (
-			-- Address Collision Mode: "PERFORMANCE" or
-			-- "DELAYED_WRITE" 
-			RDADDR_COLLISION_HWCONFIG => "DELAYED_WRITE",
 
-			-- Collision check: Values ("ALL", "WARNING_ONLY",
-			-- "GENERATE_X_ONLY" or "NONE")
-			SIM_COLLISION_CHECK => "ALL",
+			-- Target BRAM, "18Kb" or "36Kb" 
+			BRAM_SIZE 		=> "36Kb", 
+
+			-- Target device: "VIRTEX5", "VIRTEX6", "7SERIES",
+			-- "SPARTAN6" 
+			DEVICE 			=> "7SERIES", 
+
+			-- Valid values are 1-72 (37-72 only valid when
+			-- BRAM_SIZE="36Kb")
+			WRITE_WIDTH 		=> 72,
+
+			-- Valid values are 1-72 (37-72 only valid when
+			-- BRAM_SIZE="36Kb")
+			READ_WIDTH 		=> 72,     
+
+			-- Optional output register (0 or 1)
+			DO_REG 			=> 0, 
+			INIT_FILE 		=> "NONE",
+
+			-- Collision check enable "ALL", "WARNING_ONLY",
+			-- "GENERATE_X_ONLY" or "NONE" 
+			SIM_COLLISION_CHECK 	=> "ALL", 
 			
-			-- DOA_REG, DOB_REG: Optional output register (0 or 1)
-			DOA_REG => 0,
-			DOB_REG => 0,
+			--  Set/Reset value for port output
+			SRVAL 			=> X"000000000000000000", 
 
-			-- Enable ECC decoder,
-			EN_ECC_READ => FALSE, 
+			-- Specify "READ_FIRST" for same clock or synchronous
+			-- clocks. Specify "WRITE_FIRST for asynchrononous
+			-- clocks on ports
+			WRITE_MODE 		=> "READ_FIRST", 
+						   
+			--  Initial values on output port
+			INIT 			=> X"000000000000000000", 
 
-			-- Enable ECC encoder: FALSE, TRUE
-			EN_ECC_WRITE => FALSE,                                                           
-
-			-- INITP_00 to INITP_0F: Initial contents of the parity
-			-- memory array
-			INITP_00 => X"0000000000000000000000000000000000000000000000000000000000000000",
-			INITP_01 => X"0000000000000000000000000000000000000000000000000000000000000000",
-			INITP_02 => X"0000000000000000000000000000000000000000000000000000000000000000",
-			INITP_03 => X"0000000000000000000000000000000000000000000000000000000000000000",
-			INITP_04 => X"0000000000000000000000000000000000000000000000000000000000000000",
-			INITP_05 => X"0000000000000000000000000000000000000000000000000000000000000000",
-			INITP_06 => X"0000000000000000000000000000000000000000000000000000000000000000",
-			INITP_07 => X"0000000000000000000000000000000000000000000000000000000000000000",
-			INITP_08 => X"0000000000000000000000000000000000000000000000000000000000000000",
-			INITP_09 => X"0000000000000000000000000000000000000000000000000000000000000000",
-			INITP_0A => X"0000000000000000000000000000000000000000000000000000000000000000",
-			INITP_0B => X"0000000000000000000000000000000000000000000000000000000000000000",
-			INITP_0C => X"0000000000000000000000000000000000000000000000000000000000000000",
-			INITP_0D => X"0000000000000000000000000000000000000000000000000000000000000000",
-			INITP_0E => X"0000000000000000000000000000000000000000000000000000000000000000",
-			INITP_0F => X"0000000000000000000000000000000000000000000000000000000000000000",
-
-			-- INIT_00 to INIT_7F: Initial contents of the data memory array
+			-- The following INIT_xx declarations specify the
+			-- initial contents of the RAM
 			INIT_00 => X"0000000000000000000000000000000000000000000000000000000000000000",
 			INIT_01 => X"0000000000000000000000000000000000000000000000000000000000000000",
 			INIT_02 => X"0000000000000000000000000000000000000000000000000000000000000000",
@@ -156,6 +166,9 @@ begin
 			INIT_3D => X"0000000000000000000000000000000000000000000000000000000000000000",
 			INIT_3E => X"0000000000000000000000000000000000000000000000000000000000000000",
 			INIT_3F => X"0000000000000000000000000000000000000000000000000000000000000000",
+
+			-- The next set of INIT_xx are valid when configured as
+			-- 36Kb
 			INIT_40 => X"0000000000000000000000000000000000000000000000000000000000000000",
 			INIT_41 => X"0000000000000000000000000000000000000000000000000000000000000000",
 			INIT_42 => X"0000000000000000000000000000000000000000000000000000000000000000",
@@ -221,192 +234,65 @@ begin
 			INIT_7E => X"0000000000000000000000000000000000000000000000000000000000000000",
 			INIT_7F => X"0000000000000000000000000000000000000000000000000000000000000000",
 
-			-- INIT_A, INIT_B: Initial values on output ports
-			INIT_A => X"000000000",
-			INIT_B => X"000000000",
+			-- The next set of INITP_xx are for the parity bits
+			INITP_00 => X"0000000000000000000000000000000000000000000000000000000000000000",
+			INITP_01 => X"0000000000000000000000000000000000000000000000000000000000000000",
+			INITP_02 => X"0000000000000000000000000000000000000000000000000000000000000000",
+			INITP_03 => X"0000000000000000000000000000000000000000000000000000000000000000",
+			INITP_04 => X"0000000000000000000000000000000000000000000000000000000000000000",
+			INITP_05 => X"0000000000000000000000000000000000000000000000000000000000000000",
+			INITP_06 => X"0000000000000000000000000000000000000000000000000000000000000000",
+			INITP_07 => X"0000000000000000000000000000000000000000000000000000000000000000",
 
-			-- Initialization File: RAM initialization file
-			INIT_FILE => "NONE",
-
-			-- RAM Mode: "SDP" or "TDP" 
-			RAM_MODE => "SDP",
-			
-			-- RAM_EXTENSION_A, RAM_EXTENSION_B: Selects cascade
-			-- mode ("UPPER", "LOWER", or "NONE")
-			RAM_EXTENSION_A => "NONE",
-			RAM_EXTENSION_B => "NONE",
-
-			-- READ_WIDTH_A/B, WRITE_WIDTH_A/B: Read/write width per
-			-- port
-
-			-- 0-72
-			READ_WIDTH_A => 72, 
-			-- 0-36
-			READ_WIDTH_B => 0, 
-			-- 0-72
-			WRITE_WIDTH_A => 72, 
-			-- 0-36
-			WRITE_WIDTH_B => 0, 
-
-			-- RSTREG_PRIORITY_A, RSTREG_PRIORITY_B: Reset or enable
-			-- priority ("RSTREG" or "REGCE")
-			RSTREG_PRIORITY_A => "RSTREG",
-			RSTREG_PRIORITY_B => "RSTREG",
-			
-			-- SRVAL_A, SRVAL_B: Set/reset value for output
-			SRVAL_A => X"000000000",
-			SRVAL_B => X"000000000",
-
-			-- Simulation Device: Must be set to "7SERIES" for
-			-- simulation behavior
-			SIM_DEVICE => "7SERIES",
-
-			-- WriteMode: Value on output upon a write
-			-- ("WRITE_FIRST", "READ_FIRST", or "NO_CHANGE")
-			WRITE_MODE_A => "WRITE_FIRST",
-			WRITE_MODE_B => "WRITE_FIRST" 
+			-- The next set of INIT_xx are valid when configured as
+			-- 36Kb
+			INITP_08 => X"0000000000000000000000000000000000000000000000000000000000000000",
+			INITP_09 => X"0000000000000000000000000000000000000000000000000000000000000000",
+			INITP_0A => X"0000000000000000000000000000000000000000000000000000000000000000",
+			INITP_0B => X"0000000000000000000000000000000000000000000000000000000000000000",
+			INITP_0C => X"0000000000000000000000000000000000000000000000000000000000000000",
+			INITP_0D => X"0000000000000000000000000000000000000000000000000000000000000000",
+			INITP_0E => X"0000000000000000000000000000000000000000000000000000000000000000"
 		)
 
+
 		port map (
-			-- Cascade Signals: 1-bit (each) output: BRAM cascade
-			-- ports (to create 64kx1)
-
-			-- 1-bit output: A port cascade
-			CASCADEOUTA => open, 
-			-- 1-bit output: B port cascade
-			CASCADEOUTB => open, 
-
-
-			-- ECC Signals: 1-bit (each) output: Error Correction
-			-- Circuitry ports
-
-			-- 1-bit output: Double bit error status
-			DBITERR => open, 
-
-			-- 8-bit output: Generated error correction parity
-			ECCPARITY => open, 
 			
-			-- 9-bit output: ECC read address
-			RDADDRECC => open, 
-			
-			-- 1-bit output: Single bit error status
-			SBITERR => open, 
+			-- Output read data port, width defined by READ_WIDTH
+			-- parameter
+			DO 	=> DO,         
 
+			-- Input write data port, width defined by WRITE_WIDTH
+			-- parameter
+			DI 	=> DI,         
 
-			-- Port A Data: 32-bit (each) output: Port A data
+			-- Input read address, width defined by read port depth
+			RDADDR 	=> RDADDR, 
 
-			-- 32-bit output: A port data/LSB data
-			DOADO => do(39 downto 8), 
-			
-			-- 4-bit output: A port parity/LSB parity
-			DOPADOP => do(3 downto 0), 
-			
+			-- 1-bit input read clock
+			RDCLK 	=> RDCLK,   
 
-			-- Port B Data: 32-bit (each) output: Port B data
+			-- 1-bit input read port enable
+			RDEN 	=> RDEN,     
 
-			-- 32-bit output: B port data/MSB data
-			DOBDO => do(71 downto 40), 
-			
-			-- 4-bit output: B port parity/MSB parity
-			DOPBDOP => do(7 downto 4), 
+			-- 1-bit input read output register enable
+			REGCE 	=> REGCE,   
 
+			-- 1-bit input reset 
+			RST 	=> RST,       
 
-			-- Cascade Signals: 1-bit (each) input: BRAM cascade
-			-- ports (to create 64kx1)
+			-- Input write enable, width defined by write port depth
+			WE 	=> WE,         
 
-			-- 1-bit input: A port cascade
-			CASCADEINA => '0', 
-			
-			-- 1-bit input: B port cascade
-			CASCADEINB => '0', 
+			-- Input write address, width defined by write port
+			-- depth
+			WRADDR 	=> WRADDR, 
 
+			-- 1-bit input write clock
+			WRCLK 	=> WRCLK,   
 
-			-- ECC Signals: 1-bit (each) input: Error Correction
-			-- Circuitry ports
-
-			-- 1-bit input: Inject a double bit error
-			INJECTDBITERR => '0', 
-			-- 1-bit input: Inject a single bit error
-			INJECTSBITERR => '0', 
-
-			-- Port A Address/Control Signals: 16-bit (each) input:
-			-- Port A address and control signals (read port -- when
-			-- RAM_MODE="SDP")
-
-			-- 16-bit input: A port address/Read address
-			ADDRARDADDR(15) => '1', 
-			ADDRARDADDR(14 downto 6) => rdaddr, 
-			ADDRARDADDR(5 downto 0) => (others => '1'),
-
-			-- 1-bit input: A port clock/Read clock
-			CLKARDCLK => clk, 
-
-			-- 1-bit input: A port enable/Read enable
-			ENARDEN => rden, 
-
-			-- 1-bit input: A port register enable/Register enable
-			REGCEAREGCE => '0', 
-
-			-- 1-bit input: A port set/reset
-			RSTRAMARSTRAM => '0', 
-
-			-- 1-bit input: A port register set/reset
-			RSTREGARSTREG => '0', 
-
-			-- 4-bit input: A port write enable
-			WEA => (others => '0'), 
-
-
-			-- Port A Data: 32-bit (each) input: Port A data
-
-			-- 32-bit input: A port data/LSB data
-			DIADI => di(39 downto 8), 
-			-- 4-bit input: A port parity/LSB parity
-			DIPADIP => di(3 downto 0), 
-
-
-			-- Port B Address/Control Signals: 16-bit (each) input:
-			-- Port B address and control signals (write port 
-			-- when RAM_MODE="SDP")
-
-			-- 16-bit input: B port address/Write address
-			ADDRBWRADDR(15) => '1', 
-			ADDRBWRADDR(14 downto 6) => wraddr, 
-			ADDRBWRADDR(5 downto 0) => (others => '1'), 
-
-			-- 1-bit input: B port clock/Write clock
-			CLKBWRCLK => clk, 
-			
-			-- 1-bit input: B port enable/Write enable
-			ENBWREN => wren, 
-			
-			-- 1-bit input: B port register enable
-			REGCEB => '0', 
-			
-			-- 1-bit input: B port set/reset
-			RSTRAMB => '0', 
-			
-			-- 1-bit input: B port register set/reset
-			RSTREGB => '0', 
-			
-			-- 8-bit input: B port write enable/Write enable
-			WEBWE(7) => wren, 
-			WEBWE(6) => wren, 
-			WEBWE(5) => wren, 
-			WEBWE(4) => wren, 
-			WEBWE(3) => wren, 
-			WEBWE(2) => wren, 
-			WEBWE(1) => wren, 
-			WEBWE(0) => wren, 
-
-
-			-- Port B Data: 32-bit (each) input: Port B data
-
-			-- 32-bit input: B port data/MSB data
-			DIBDI => di(71 downto 40), 
-			-- 4-bit input: B port parity/MSB parity
-			DIPBDIP => di(7 downto 4)              
+			-- 1-bit input write port enable
+			WREN 	=> WREN      
 		);
 
-					
-end architecture behaviour;	
+end architecture behaviour;
