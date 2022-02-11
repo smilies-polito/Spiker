@@ -33,10 +33,14 @@ excPotential = np.zeros((N_sim, networkList[1]))
 
 threshold = np.zeros((N_sim, networkList[1]))
 
+network["exc2exc1"]["weights"][0] *= 2
+network["exc2exc1"]["weights"][1] *= 2.5
+
+
+
 for i in range(N_sim):
 
-	updateExcLayer(network, 1, dt_tauDict["exc"], dt_tauDict["thresh"],
-			inputSpikes[i])
+	updateExcLayer(network, 1, dt_tauDict["exc"], inputSpikes[i])
 
 	updateInhLayer(network, 1)
 
@@ -54,37 +58,57 @@ inhSpikes = inhSpikes .T
 excPotential = excPotential.T
 threshold = threshold.T
 
-# First excitatory neuron
-fig, axs = plt.subplots(6, 1)
-fig.tight_layout()
 
-for i in range(2):
-	axs[i].plot(inputSpikes[i])
-	axs[i].grid()
-	axs[i].set_title("Input spikes " + str(i))
+plt.rc('xtick', labelsize = 20)
+plt.rc('ytick', labelsize = 20)
 
-for i in range(2):
-	axs[i+2].plot(inhSpikes[i+1])
-	axs[i+2].grid()
-	axs[i+2].set_title("Inhibitory spikes " + str(i+1))
+# fig = plt.figure(figsize = (22, 22))
+# grid_fig = fig.add_gridspec(4, 1)
+# ax1, ax2, ax3, ax4 = grid_fig.subplots()
+# fig.tight_layout(pad = 0.3)
 
 
-axs[4].plot(excPotential[0])
-axs[4].plot(threshold[0])
-axs[4].grid()
-axs[4].set_title("Membrane potential")
+fig = plt.figure(figsize = (20, 4))
 
-axs[5].plot(excSpikes[0])
-axs[5].grid()
-axs[5].set_title("Output spikes")
+plt.plot(inputSpikes[0].astype(int))
+plt.grid()
+plt.title("Excitatory spikes", fontsize = 30)
 
-plt.show()
+plt.savefig("excSpikes.svg", format = 'svg', bbox_inches = 'tight', transparent
+		= True)
+
+
+
+fig = plt.figure(figsize = (20, 4))
+
+plt.plot(inhSpikes[1])
+plt.grid()
+plt.title("Inhibitory spikes", fontsize = 30)
+
+plt.savefig("inhSpikes.svg", format = 'svg', bbox_inches = 'tight', transparent
+		= True)
+
+
+fig = plt.figure(figsize = (20, 4))
 
 plt.plot(excPotential[0])
 plt.plot(threshold[0])
 plt.grid()
+plt.title("Membrane potential", fontsize = 30)
 
-plt.show()
+plt.savefig("v.svg", format = 'svg', bbox_inches = 'tight', transparent
+		= True)
+
+
+fig = plt.figure(figsize = (20, 4))
+
+plt.plot(excSpikes[0])
+plt.grid()
+plt.title("Output spikes", fontsize = 30)
+
+plt.savefig("outSpikes.svg", format = 'svg', bbox_inches = 'tight', transparent
+		= True)
+
 
 
 # # Second excitatory neuron

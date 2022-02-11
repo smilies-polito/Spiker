@@ -7,15 +7,16 @@ from parameters import *
 
 N_sim = 1500
 
-density = 0.01
+density = 0.005
 
-networkList = [2, 3]
+networkList = [1, 2]
 
 mode = "train"
 
 excDictList = [excDict] * (len(networkList) - 1)
 
 inh2excWeights = inh2excWeight * np.ones(len(networkList) - 1)
+ 
 
 scaleFactors = np.array([10])
 
