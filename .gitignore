@@ -7,6 +7,7 @@ __pycache__
 
 # Plots used to visualize the output results
 *.png
+*.svg
 
 # Report files and similar
 *.txt
