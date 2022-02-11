@@ -7,40 +7,40 @@ entity bare_neurons is
 
 	generic(
 		-- internal parallelism
-		N		: integer := 16;
-		N_weights	: integer := 5;
+		parallelism		: integer := 16;
+		weightsParallelism	: integer := 5;
 
 		-- number of neurons in the layer
-		layer_size	: integer := 400;
+		N_neurons		: integer := 400;
 
 		-- shift during the exponential decay
-		shift		: integer := 1
+		shift			: integer := 10
 	);
 
 	port(
 		-- control input
-		clk		: in std_logic;
-		rst_n		: in std_logic;		
-		start		: in std_logic;		
-		stop		: in std_logic;
-		exc_or		: in std_logic;
-		exc_stop	: in std_logic;
-		inh_or		: in std_logic;
-		inh_stop	: in std_logic;
-		v_th_en		: in std_logic_vector(layer_size-1 downto 0);
+		clk			: in std_logic;
+		rst_n			: in std_logic;		
+		start			: in std_logic;		
+		stop			: in std_logic;
+		exc_or			: in std_logic;
+		exc_stop		: in std_logic;
+		inh_or			: in std_logic;
+		inh_stop		: in std_logic;
+		v_th_en			: in std_logic_vector(N_neurons-1 downto 0);
 
 		-- input
-		input_spikes	: in std_logic_vector(layer_size-1 downto 0);
+		input_spikes		: in std_logic_vector(N_neurons-1 downto 0);
 
 		-- input parameters
-		v_th_value	: in signed(N-1 downto 0);		
-		v_reset		: in signed(N-1 downto 0);		
-		inh_weight	: in signed(N-1 downto 0);		
-		exc_weights	: in signed(layer_size*N_weights-1 downto 0);
+		v_th_value		: in signed(parallelism-1 downto 0);		
+		v_reset			: in signed(parallelism-1 downto 0);		
+		inh_weight		: in signed(parallelism-1 downto 0);		
+		exc_weights		: in signed(N_neurons*weightsParallelism-1 downto 0);
 
 		-- output
-		out_spikes	: out std_logic_vector(layer_size-1 downto 0);
-		all_ready	: out std_logic
+		out_spikes		: out std_logic_vector(N_neurons-1 downto 0);
+		all_ready		: out std_logic
 	);
 
 end entity bare_neurons;
@@ -48,7 +48,7 @@ end entity bare_neurons;
 
 architecture behaviour of bare_neurons is
 
-	signal neurons_ready	: std_logic_vector(layer_size-1 downto 0);
+	signal neurons_ready	: std_logic_vector(N_neurons-1 downto 0);
 
 	component generic_and is
 
@@ -73,37 +73,37 @@ architecture behaviour of bare_neurons is
 
 		generic(
 			-- parallelism
-			N		: integer := 16;
-			N_weight	: integer := 5;
+			parallelism		: integer := 16;
+			weightsParallelism	: integer := 5;
 
 			-- shift amount
-			shift		: integer := 1
+			shift			: integer := 10
 		);
 
 		port(
 			-- input controls
-			clk		: in std_logic;
-			rst_n		: in std_logic;
-			start		: in std_logic;
-			stop		: in std_logic;
-			exc_or		: in std_logic;
-			exc_stop	: in std_logic;
-			inh_or		: in std_logic;
-			inh_stop	: in std_logic;
-			input_spike	: in std_logic;
+			clk			: in std_logic;
+			rst_n			: in std_logic;
+			start			: in std_logic;
+			stop			: in std_logic;
+			exc_or			: in std_logic;
+			exc_stop		: in std_logic;
+			inh_or			: in std_logic;
+			inh_stop		: in std_logic;
+			input_spike		: in std_logic;
 
 			-- to load the threshold
-			v_th_en		: in std_logic;
+			v_th_en			: in std_logic;
 
 			-- input parameters
-			v_th_value	: in signed(N-1 downto 0);
-			v_reset		: in signed(N-1 downto 0);
-			inh_weight	: in signed(N-1 downto 0);
-			exc_weight	: in signed(N_weight-1 downto 0);
+			v_th_value		: in signed(parallelism-1 downto 0);
+			v_reset			: in signed(parallelism-1 downto 0);
+			inh_weight		: in signed(parallelism-1 downto 0);
+			exc_weight		: in signed(weightsParallelism-1 downto 0);
 
 			-- output
-			out_spike	: out std_logic;
-			neuron_ready	: out std_logic
+			out_spike		: out std_logic;
+			neuron_ready		: out std_logic
 		);
 
 	end component neuron;
@@ -115,7 +115,7 @@ begin
 
 	neurons_ready_and	: generic_and
 		generic map(
-			N	=> layer_size
+			N	=> N_neurons
 		)
 
 		port map(
@@ -127,17 +127,17 @@ begin
 		);
 
 
-	neurons	: for i in 0 to layer_size-1
+	neurons	: for i in 0 to N_neurons-1
 	generate
 
 		neuron_i	: neuron
 			generic map(
-			-- parallelism
-			N		=> N,
-			N_weight	=> N_weights,
-                                                       
-			-- shift amount    
-			shift		=> shift
+				-- parallelisms
+				parallelism		=> parallelism,
+				weightsParallelism	=> weightsParallelism,
+							       
+				-- shift amount    
+				shift			=> shift
 			)                                      
 							       
 			port map(
@@ -156,8 +156,10 @@ begin
 				v_th_value	=> v_th_value,
 				v_reset		=> v_reset,
 				inh_weight	=> inh_weight,
-				exc_weight	=> exc_weights((i+1)*N_weights-1 downto
-							i*N_weights),
+				exc_weight	=> exc_weights((i+1)*
+							weightsParallelism-1
+							downto
+							i*weightsParallelism),
 				
 				-- to load the threshold
 				v_th_en		=> v_th_en(i),

@@ -7,8 +7,8 @@ entity neuron_datapath is
 
 	generic(
 		-- parallelisms
-		N			: integer := 16;
-		N_weight		: integer := 5;
+		parallelism		: integer := 16;
+		weightsParallelism	: integer := 5;
 
 		-- shift amount
 		shift			: integer := 1
@@ -16,22 +16,22 @@ entity neuron_datapath is
 
 	port(
 		-- input parameters
-		v_th_value	: in signed(N-1 downto 0);
-		v_reset		: in signed(N-1 downto 0);
-		inh_weight	: in signed(N-1 downto 0);
-		exc_weight	: in signed(N_weight-1 downto 0);
+		v_th_value		: in signed(parallelism-1 downto 0);
+		v_reset			: in signed(parallelism-1 downto 0);
+		inh_weight		: in signed(parallelism-1 downto 0);
+		exc_weight		: in signed(weightsParallelism-1 downto 0);
 
 		-- input controls
-		clk		: in std_logic;
-		update_sel	: in std_logic_vector(1 downto 0);
-		add_or_sub	: in std_logic;
-		v_update	: in std_logic;
-		v_th_en		: in std_logic;
-		v_en		: in std_logic;
-		v_rst_n		: in std_logic;
+		clk			: in std_logic;
+		update_sel		: in std_logic_vector(1 downto 0);
+		add_or_sub		: in std_logic;
+		v_update		: in std_logic;
+		v_th_en			: in std_logic;
+		v_en			: in std_logic;
+		v_rst_n			: in std_logic;
 		
 		-- output
-		exceed_v_th	: out std_logic		
+		exceed_v_th		: out std_logic		
 	);
 
 end entity neuron_datapath;
@@ -40,12 +40,12 @@ end entity neuron_datapath;
 architecture test of neuron_datapath is
 
 	
-	signal update		: signed(N-1 downto 0);
-	signal update_value	: signed(N-1 downto 0);
-	signal v_th		: signed(N-1 downto 0);
-	signal v_value		: signed(N-1 downto 0);
-	signal v		: signed(N-1 downto 0);
-	signal v_shifted	: signed(N-1 downto 0);
+	signal update		: signed(parallelism-1 downto 0);
+	signal update_value	: signed(parallelism-1 downto 0);
+	signal v_th		: signed(parallelism-1 downto 0);
+	signal v_value		: signed(parallelism-1 downto 0);
+	signal v		: signed(parallelism-1 downto 0);
+	signal v_shifted	: signed(parallelism-1 downto 0);
 
 
 
@@ -201,7 +201,7 @@ begin
 	v_shifter	: shifter
 		generic map(
 			-- parallelism
-			N		=> N,
+			N		=> parallelism,
 		
 			-- shift
 			shift		=> shift
@@ -219,15 +219,18 @@ begin
 	update_mux	: mux4to1_signed
 		generic map(
 			-- parallelism
-			N	=> N		
+			N	=> parallelism		
 		)
 		port map(
 			-- input
 			sel				=> update_sel,
 			in0				=> (others => '0'),
 			in1				=> v_shifted,
-			in2(N-1 downto N_weight)	=> (others => '0'),
-			in2(N_weight-1 downto 0)	=> exc_weight,
+			in2(parallelism-1 
+				downto 
+				weightsParallelism)	=> (others => '0'),
+			in2(weightsParallelism-1 
+				downto 0)		=> exc_weight,
 			in3				=> inh_weight,
 		                               
 			-- output
@@ -237,7 +240,7 @@ begin
 
 	update_add_sub	: add_sub
 		generic map(
-			N		=> N	
+			N		=> parallelism	
 		)
 
 		port map(
@@ -254,7 +257,7 @@ begin
 	v_mux	: mux2to1_signed
 		generic map(
 			-- parallelism
-			N	=> N
+			N	=> parallelism
 		)
 
 		port map(	
@@ -272,7 +275,7 @@ begin
 	v_th_reg	: reg_signed
 		generic map(
 			-- parallelism
-			N	=> N   
+			N	=> parallelism   
 		)
 
 		port map(	
@@ -290,7 +293,7 @@ begin
 	v_reg		: reg_signed_sync_rst
 		generic map(
 			-- parallelism
-			N	=> N   
+			N	=> parallelism   
 		)
 
 		port map(	
@@ -307,7 +310,7 @@ begin
 
 	fire_cmp	: cmp_gt
 		generic map(
-			N	=> N	
+			N	=> parallelism	
 		)
 
 		port map(

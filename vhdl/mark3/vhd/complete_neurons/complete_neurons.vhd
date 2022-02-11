@@ -6,43 +6,44 @@ entity complete_neurons is
 
 	generic(
 		-- internal parallelism
-		N		: integer := 16;
-		N_weights	: integer := 5;
+		parallelism		: integer := 16;
+		weightsParallelism	: integer := 5;
 
 		-- number of neurons in the layer
-		layer_size	: integer := 400;
-		N_addr		: integer := 9;
+		N_neurons		: integer := 400;
+		N_addr			: integer := 9;
 
 		-- shift during the exponential decay
-		shift		: integer := 1
+		shift			: integer := 10
 	);
 
 	port(
 		-- control input
-		clk		: in std_logic;
-		rst_n		: in std_logic;		
-		start		: in std_logic;		
-		stop		: in std_logic;
-		exc_or		: in std_logic;
-		exc_stop	: in std_logic;
-		inh_or		: in std_logic;
-		inh_stop	: in std_logic;
-		inh		: in std_logic;
-		load_v_th	: in std_logic;
-		neuron_addr	: in std_logic_vector(N_addr-1 downto 0);
+		clk			: in std_logic;
+		rst_n			: in std_logic;		
+		start			: in std_logic;		
+		stop			: in std_logic;
+		exc_or			: in std_logic;
+		exc_stop		: in std_logic;
+		inh_or			: in std_logic;
+		inh_stop		: in std_logic;
+		inh			: in std_logic;
+		load_v_th		: in std_logic;
+		neuron_addr		: in std_logic_vector(N_addr-1 downto 0);
 
 		-- input
-		input_spike	: in std_logic;
+		input_spike		: in std_logic;
 
 		-- input parameters
-		v_th_value	: in signed(N-1 downto 0);		
-		v_reset		: in signed(N-1 downto 0);		
-		inh_weight	: in signed(N-1 downto 0);		
-		exc_weights	: in signed(layer_size*N_weights-1 downto 0);
+		v_th_value		: in signed(parallelism-1 downto 0);		
+		v_reset			: in signed(parallelism-1 downto 0);		
+		inh_weight		: in signed(parallelism-1 downto 0);		
+		exc_weights		: in signed(N_neurons*
+						weightsParallelism-1 downto 0);
 
 		-- output
-		out_spikes	: out std_logic_vector(layer_size-1 downto 0);
-		all_ready	: out std_logic
+		out_spikes		: out std_logic_vector(N_neurons-1 downto 0);
+		all_ready		: out std_logic
 	);
 	
 end entity complete_neurons;
@@ -51,47 +52,48 @@ end entity complete_neurons;
 architecture behaviour of complete_neurons is
 
 	signal unmasked_select	: std_logic_vector(2**N_addr-1 downto 0);
-	signal input_spikes	: std_logic_vector(layer_size-1 downto 0);
-	signal v_th_en		: std_logic_vector(layer_size-1 downto 0);
+	signal input_spikes	: std_logic_vector(N_neurons-1 downto 0);
+	signal v_th_en		: std_logic_vector(N_neurons-1 downto 0);
 
 	component bare_neurons is
 
 		generic(
 			-- internal parallelism
-			N		: integer := 16;
-			N_weights	: integer := 5;
+			parallelism		: integer := 16;
+			weightsParallelism	: integer := 5;
 
 			-- number of neurons in the layer
-			layer_size	: integer := 400;
+			N_neurons		: integer := 400;
 
 			-- shift during the exponential decay
-			shift		: integer := 1
+			shift			: integer := 10
 		);
 
 		port(
 			-- control input
-			clk		: in std_logic;
-			rst_n		: in std_logic;		
-			start		: in std_logic;		
-			stop		: in std_logic;
-			exc_or		: in std_logic;
-			exc_stop	: in std_logic;
-			inh_or		: in std_logic;
-			inh_stop	: in std_logic;
-			v_th_en		: in std_logic_vector(layer_size-1 downto 0);
+			clk			: in std_logic;
+			rst_n			: in std_logic;		
+			start			: in std_logic;		
+			stop			: in std_logic;
+			exc_or			: in std_logic;
+			exc_stop		: in std_logic;
+			inh_or			: in std_logic;
+			inh_stop		: in std_logic;
+			v_th_en			: in std_logic_vector(N_neurons-1 downto 0);
 
 			-- input
-			input_spikes	: in std_logic_vector(layer_size-1 downto 0);
+			input_spikes		: in std_logic_vector(N_neurons-1 downto 0);
 
 			-- input parameters
-			v_th_value	: in signed(N-1 downto 0);		
-			v_reset		: in signed(N-1 downto 0);		
-			inh_weight	: in signed(N-1 downto 0);		
-			exc_weights	: in signed(layer_size*N_weights-1 downto 0);
+			v_th_value		: in signed(parallelism-1 downto 0);		
+			v_reset			: in signed(parallelism-1 downto 0);		
+			inh_weight		: in signed(parallelism-1 downto 0);		
+			exc_weights		: in signed(N_neurons*
+							  weightsParallelism-1 downto 0);
 
 			-- output
-			out_spikes	: out std_logic_vector(layer_size-1 downto 0);
-			all_ready	: out std_logic
+			out_spikes		: out std_logic_vector(N_neurons-1 downto 0);
+			all_ready		: out std_logic
 		);
 
 	end component bare_neurons;
@@ -158,40 +160,40 @@ begin
 
 		generic map(
 			-- internal parallelism
-			N		=> N,
-			N_weights	=> N_weights,
+			parallelism		=> parallelism,
+			weightsParallelism	=> weightsParallelism,
 
 			-- number of neurons in the layer
-			layer_size	=> layer_size,
+			N_neurons		=> N_neurons,
 
 			-- shift during the exponential decay
-			shift		=> shift
+			shift			=> shift
 		)
 
 		port map(
 			-- control input
-			clk		=> clk,
-			rst_n		=> rst_n,
-			start		=> start,
-			stop		=> stop,
-			exc_or		=> exc_or,
-			exc_stop	=> exc_stop,
-			inh_or		=> inh_or,
-			inh_stop	=> inh_stop,
-			v_th_en		=> v_th_en,
+			clk			=> clk,
+			rst_n			=> rst_n,
+			start			=> start,
+			stop			=> stop,
+			exc_or			=> exc_or,
+			exc_stop		=> exc_stop,
+			inh_or			=> inh_or,
+			inh_stop		=> inh_stop,
+			v_th_en			=> v_th_en,
 
 			-- input
-			input_spikes	=> input_spikes,
+			input_spikes		=> input_spikes,
 
 			-- input parameters
-			v_th_value	=> v_th_value,
-			v_reset		=> v_reset,
-			inh_weight	=> inh_weight,
-			exc_weights	=> exc_weights,
+			v_th_value		=> v_th_value,
+			v_reset			=> v_reset,
+			inh_weight		=> inh_weight,
+			exc_weights		=> exc_weights,
 
 			-- output
-			out_spikes	=> out_spikes,
-			all_ready	=> all_ready
+			out_spikes		=> out_spikes,
+			all_ready		=> all_ready
 		);
 
 	
@@ -215,12 +217,12 @@ begin
 
 		generic map(
 			-- number of input bits on which the mask is applied
-			N		=> layer_size
+			N		=> N_neurons
 		)
 
 		port map(
 			-- input
-			input_bits	=> unmasked_select(layer_size-1 downto 0),
+			input_bits	=> unmasked_select(N_neurons-1 downto 0),
 			mask_bit	=> load_v_th,
                                                       
 			-- output
@@ -231,12 +233,12 @@ begin
 	neurons_select	: double_and_mask_n 
 
 		generic map(
-			N		=> layer_size
+			N		=> N_neurons
 		)
 
 		port map(
 			-- input
-			input_bits	=> unmasked_select(layer_size-1 downto 0),
+			input_bits	=> unmasked_select(N_neurons-1 downto 0),
 			mask_bit0	=> inh,
 			mask_bit1	=> input_spike,
                                                       

@@ -7,37 +7,38 @@ entity neuron is
 
 	generic(
 		-- parallelism
-		N		: integer := 16;
-		N_weight	: integer := 5;
+		parallelism		: integer := 16;
+		weightsParallelism	: integer := 5;
 
 		-- shift amount
-		shift		: integer := 1
+		shift			: integer := 1
 	);
 
 	port(
 		-- input controls
-		clk		: in std_logic;
-		rst_n		: in std_logic;
-		start		: in std_logic;
-		stop		: in std_logic;
-		exc_or		: in std_logic;
-		exc_stop	: in std_logic;
-		inh_or		: in std_logic;
-		inh_stop	: in std_logic;
-		input_spike	: in std_logic;
+		clk			: in std_logic;
+		rst_n			: in std_logic;
+		start			: in std_logic;
+		stop			: in std_logic;
+		exc_or			: in std_logic;
+		exc_stop		: in std_logic;
+		inh_or			: in std_logic;
+		inh_stop		: in std_logic;
+		input_spike		: in std_logic;
 
 		-- to load the threshold
-		v_th_en		: in std_logic;
+		v_th_en			: in std_logic;
 
 		-- input parameters
-		v_th_value	: in signed(N-1 downto 0);
-		v_reset		: in signed(N-1 downto 0);
-		inh_weight	: in signed(N-1 downto 0);
-		exc_weight	: in signed(N_weight-1 downto 0);
+		v_th_value		: in signed(parallelism-1 downto 0);
+		v_reset			: in signed(parallelism-1 downto 0);
+		inh_weight		: in signed(parallelism-1 downto 0);
+		exc_weight		: in signed(weightsParallelism-1 
+						  downto 0);
 
 		-- output
-		out_spike	: out std_logic;
-		neuron_ready	: out std_logic
+		out_spike		: out std_logic;
+		neuron_ready		: out std_logic
 	);
 
 end entity neuron;
@@ -61,31 +62,31 @@ architecture behaviour of neuron is
 
 		generic(
 			-- parallelism
-			N			: integer := 16;
-			N_weight		: integer := 5;
+			parallelism			: integer := 16;
+			weightsParallelism			: integer := 5;
 
 			-- shift amount
-			shift			: integer := 1
+			shift				: integer := 1
 		);
 
 		port(
 			-- input parameters
-			v_th_value	: in signed(N-1 downto 0);
-			v_reset		: in signed(N-1 downto 0);
-			inh_weight	: in signed(N-1 downto 0);
-			exc_weight	: in signed(N_weight-1 downto 0);
+			v_th_value		: in signed(parallelism-1 downto 0);
+			v_reset			: in signed(parallelism-1 downto 0);
+			inh_weight		: in signed(parallelism-1 downto 0);
+			exc_weight		: in signed(weightsParallelism-1 downto 0);
 
 			-- input controls
-			clk		: in std_logic;
-			update_sel	: in std_logic_vector(1 downto 0);
-			add_or_sub	: in std_logic;
-			v_update	: in std_logic;
-			v_th_en		: in std_logic;
-			v_en		: in std_logic;
-			v_rst_n		: in std_logic;
+			clk			: in std_logic;
+			update_sel		: in std_logic_vector(1 downto 0);
+			add_or_sub		: in std_logic;
+			v_update		: in std_logic;
+			v_th_en			: in std_logic;
+			v_en			: in std_logic;
+			v_rst_n			: in std_logic;
 			
 			-- output
-			exceed_v_th	: out std_logic		
+			exceed_v_th		: out std_logic		
 		);
 
 	end component neuron_datapath;
@@ -131,31 +132,31 @@ begin
 	datapath : neuron_datapath
 		generic map(
 			-- parallelism
-			N		=> N,
-			N_weight	=> N_weight,
+			parallelism		=> parallelism,
+			weightsParallelism	=> weightsParallelism,
 
 			-- shift amount
-			shift		=> shift
+			shift			=> shift
 		)
 
 		port map(
 			-- input parameters
-			v_th_value	=> v_th_value,	   	
-			v_reset		=> v_reset,	       
-			inh_weight	=> inh_weight,     
-			exc_weight	=> exc_weight,    
+			v_th_value		=> v_th_value,	   	
+			v_reset			=> v_reset,	       
+			inh_weight		=> inh_weight,     
+			exc_weight		=> exc_weight,    
 
 			-- input controls
-			clk		=> clk,
-			update_sel	=> update_sel,		
-			add_or_sub	=> add_or_sub,	     
-			v_update	=> v_update,	     
-			v_th_en		=> v_th_en,	     
-			v_en		=> v_en,
-			v_rst_n		=> v_rst_n,
+			clk			=> clk,
+			update_sel		=> update_sel,		
+			add_or_sub		=> add_or_sub,	     
+			v_update		=> v_update,	     
+			v_th_en			=> v_th_en,	     
+			v_en			=> v_en,
+			v_rst_n			=> v_rst_n,
      
 			-- output
-			exceed_v_th	=> exceed_v_th
+			exceed_v_th		=> exceed_v_th
 		);
 
 
