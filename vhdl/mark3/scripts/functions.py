@@ -1,3 +1,25 @@
+def storeWeights(weightsArray, subArraySize, bitWidth, wordWidth, rootFilename):
+
+	subArraysN = int(weightsArray.shape[0]//subArraySize)
+	lastArraySize = int(weightsArray.shape[0]%subArraySize)
+
+	for i in range(subArraysN):
+
+		filename = rootFilename + str(i) + ".mem"
+
+		formatAndStore(weightsArray[i*subArraySize :
+			(i+1)*subArraySize], bitWidth, wordWidth, filename)
+
+	if lastArraySize > 0:
+
+		filename = rootFilename + str(subArraysN)  + ".mem"	
+
+		formatAndStore(weightsArray[subArraysN*subArraySize :
+			subArraysN*subArraySize + lastArraySize], bitWidth,
+			wordWidth, filename)
+
+
+
 
 def formatAndStore(numpyArray, bitWidth, wordWidth, filename):
 
@@ -20,7 +42,7 @@ def arrayToBin(numpyArray, bitWidth, wordWidth):
 
 			binaryElement = binaryFormat.format(element)
 
-			binaryString += binaryElement
+			binaryString = binaryElement + binaryString
 
 		binaryString = "0"*(wordWidth - len(binaryString)) + \
 				binaryString
@@ -39,13 +61,3 @@ def storeList(inputList, filename):
 
 			fp.write(element)
 			fp.write("\n")
-
-
-import numpy as np
-
-numpyArray = np.array([[1, 4], [2, 5], [3, 6]])
-bitWidth = 4
-wordWidth = 10
-filename = "weights.mem"
-
-formatAndStore(numpyArray, bitWidth, wordWidth, filename)
