@@ -25,7 +25,7 @@ assignementsFile = assignementsFilename + ".npy"
 
 
 
-networkList = [784, 400]
+networkList = [784, 200, 100]
 
 mode = "train"
 
@@ -34,7 +34,7 @@ updateInterval = 250
 printInterval = 10
 startInputIntensity = 2.
 inputIntensity = startInputIntensity
-scaleFactors = np.array([0.3])
+scaleFactors = np.array([0.3, 0.3])
 
 
 accuracies = []
