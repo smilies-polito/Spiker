@@ -57,11 +57,11 @@ trainStdpDict = {
 	"stdpEqs"	:	'''
 				w					: 1
 				post2before				: 1
-				dpre/dt   =   -pre/(tauPre_exc)		: 1 \
+				dpre/dt   =   -pre/(tau_pre_exc)	: 1 \
 					(event-driven)
-				dpost1/dt  = -post1/(tauPost1_exc)	: 1 \
+				dpost1/dt  = -post1/(tau_post1_exc)	: 1 \
 					(event-driven)
-				dpost2/dt  = -post2/(tauPost2_exc)	: 1 \
+				dpost2/dt  = -post2/(tau_post2_exc)	: 1 \
 					(event-driven)	
 
 				''',
@@ -70,13 +70,13 @@ trainStdpDict = {
 	"stdpPre"	:	'''
 				ge = ge + w
 				pre = 1.
-				w = clip(w - etaPre_exc*post1, 0, wMax_exc)
+				w = clip(w - eta_pre_exc*post1, 0, wMax_exc)
 				''',
 
 	# Postsynaptic STDP
 	"stdpPost"	:	'''
 				post2before = post2
-				w = clip(w + etaPost_exc * pre * post2before, \
+				w = clip(w + eta_post_exc * pre * post2before, \
 					0, wMax_exc)
 				post1 = 1.
 				post2 = 1.	

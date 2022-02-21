@@ -1,27 +1,12 @@
 import brian2 as b2
 import timeit
 import numpy as np
-from equationsParameters import *
-from neuronsParameters import *
 import sys
 
+from poisson import imgToSpikeTrains
+from parameters import *
+
 locals().update(parametersDict)
-
-
-def initAssignements(mode, networkList, assignementsFile):
-
-	if mode == "train":
-		return -1*np.ones(networkList[-1])
-
-	elif mode == "test":
-		with open(assignementsFile, 'rb') as fp:
-			return np.load(fp)
-
-	else:
-		print('Invalid operation mode. Accepted values: \n\t1) test\
-			\n\t2) train')
-		sys.exit()
-
 
 
 def trainTestCycle(image, networkList, network, trainDuration, restTime, 
@@ -52,15 +37,6 @@ def trainTestCycle(image, networkList, network, trainDuration, restTime,
 
 
 
-def imgToSpikeTrain(network, image, inputIntensity):
-	
-	values = {
-		"poissongroup":{
-			"rates": image*b2.Hz/8*inputIntensity
-		}
-	}
-
-	network.set_states(values, units=True, format='dict', level=0)
 
 
 	
@@ -242,57 +218,3 @@ def updateAccuracy(classification, labelsSequence, accuracies):
 	print(accuracyString)
 
 	return accuracies
-
-
-
-
-
-def storeParameters(networkList, network, assignements, weightFilename,
-			thetaFilename, assignementsFilename):
-
-	storeArray(weightFilename + str(1) + ".npy", network["poisson2exc"].w)
-
-	storeArray(thetaFilename + str(1) + ".npy", network["excLayer1"].theta)
-
-	for layer in range(2, len(networkList)):
-
-		storeArray(weightFilename + str(layer) + ".npy", 
-			network["exc2exc" + str(layer)].w)
-
-		storeArray(thetaFilename + str(layer) + ".npy", 
-			network["excLayer" + str(layer)].theta)
-
-
-	storeArray(assignementsFilename + ".npy", assignements)
-
-
-
-
-def storeArray(filename, numpyArray):
-
-	with open(filename, 'wb') as fp:
-		np.save(fp, numpyArray)
-
-
-
-
-def storePerformace(startTimeTraining, accuracies, performanceFilename):
-
-	timeString = "Total training time : " + \
-		seconds2hhmmss(timeit.default_timer() - startTimeTraining)
-
-	accuracyString = "Accuracy evolution:\n" + "\n".join(accuracies)
-
-	with open(performanceFilename + ".txt", 'w') as fp:
-		fp.write(timeString)
-		fp.write("\n\n")
-		fp.write(accuracyString)
-
-
-def seconds2hhmmss(seconds):
-
-	hours = int(seconds // 3600)
-	minutes = int((seconds % 3600) // 60)
-	seconds = int(seconds % 60)
-
-	return str(hours) + "h " + str(minutes) + "min " + str(seconds) + "s"
