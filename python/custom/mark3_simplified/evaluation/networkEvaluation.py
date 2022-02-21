@@ -18,8 +18,7 @@ from evaluationParameters import *
 
 # Create the network
 network = createNetwork(networkList, None, None, mode, excDictList, 
-			inhDictList, scaleFactors, exc2inhWeights,
-			inh2excWeights)
+			scaleFactors, inh2excWeights)
 
 
 # Create a spare matrix of random spikes
@@ -40,25 +39,20 @@ for i in range(N_sim):
 	updateNetwork(networkList, network, inputSpikes[i], dt_tauDict, 
 		stdpDict, mode)
 
-	excSpikes[i] = network["excLayer1"]["outSpikes"][0]
-	inhSpikes[i] = network["inhLayer1"]["outSpikes"][0]
+	inhSpikes[i] = network["excLayer1"]["inhSpikes"][0]
 
 	excPotential[i] = network["excLayer1"]["v"][0]
-	inhPotential[i] = network["inhLayer1"]["v"][0]
 
-	threshold[i] = network["excLayer1"]["vThresh"] + \
-	network["excLayer1"]["theta"]
+	threshold[i] = network["excLayer1"]["vThresh"]
 
 
 inputSpikes = inputSpikes.T
-excSpikes = excSpikes.T 
 inhSpikes = inhSpikes .T
 excPotential = excPotential.T
-inhPotential = inhPotential.T
 threshold = threshold.T
 
 # First excitatory neuron
-fig, axs = plt.subplots(6, 1)
+fig, axs = plt.subplots(5, 1)
 
 for i in range(3):
 	axs[i].plot(inputSpikes[i])
@@ -71,14 +65,11 @@ axs[4].plot(excPotential[0])
 axs[4].plot(threshold[0])
 axs[4].grid()
 
-axs[5].plot(excSpikes[0])
-axs[5].grid()
-
 plt.show()
 
 
 # Second excitatory neuron
-fig, axs = plt.subplots(6, 1)
+fig, axs = plt.subplots(5, 1)
 
 for i in range(3):
 	axs[i].plot(inputSpikes[i])
@@ -91,42 +82,4 @@ axs[4].plot(excPotential[1])
 axs[4].plot(threshold[1])
 axs[4].grid()
 
-axs[5].plot(excSpikes[1])
-axs[5].grid()
-
 plt.show()
-
-
-
-# First inhibitory neuron
-fig, axs = plt.subplots(3, 1)
-
-axs[0].plot(excSpikes[0])
-axs[0].grid()
-
-axs[1].plot(inhPotential[0])
-axs[1].grid()
-
-axs[2].plot(inhSpikes[0])
-axs[2].grid()
-
-
-plt.show()
-
-
-
-# Second inhibitory neuron
-fig, axs = plt.subplots(3, 1)
-
-axs[0].plot(excSpikes[1])
-axs[0].grid()
-
-axs[1].plot(inhPotential[1])
-axs[1].grid()
-
-axs[2].plot(inhSpikes[1])
-axs[2].grid()
-
-
-plt.show()
-

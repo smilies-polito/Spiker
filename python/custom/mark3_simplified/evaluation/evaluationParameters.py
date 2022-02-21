@@ -9,7 +9,7 @@ N_sim = 1500
 
 density = 0.005
 
-networkList = [1, 2]
+networkList = [3, 2]
 
 mode = "train"
 
