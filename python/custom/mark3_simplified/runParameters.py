@@ -40,14 +40,15 @@ stdpDict["ltd_dt_tau"] = dt/stdpDict["ltd_tau"]
 
 # Array of scale factors for the random generation of the weights
 scaleFactors = np.ones(len(networkList) - 1)
-scaleFactors[0] = scaleFactor0
-scaleFactors[1] = scaleFactor1
+for i in range(1, len(networkList)):
+	scaleFactors[i-1] = scaleFactor*refInLayerSize/networkList[i-1]\
+			*refCurrLayerSize/networkList[i]
 
 # Array of normalizing factors
 constSums = np.ones(len(networkList) - 1)
-constSums[0] = constSum0
-constSums[1] = constSum1
-
+for i in range(1, len(networkList)):
+	constSums[i-1] = constSum*refInLayerSize/networkList[i-1]\
+			*refCurrLayerSize/networkList[i]
 
 # Update and print intervals expressed in number of images
 updateInterval = 250

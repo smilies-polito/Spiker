@@ -27,9 +27,11 @@ tauExc = 100				# ms
 tauThresh = 1e7				# ms
 
 # Weights normalization factors
-constSum0 = 78.4
-constSum1 = 78.4 * (784/200) * (400/100)
+constSum = 78.4
 
 # Scaling factor for the random generation of the weights
-scaleFactor0 = 0.3
-scaleFactor1 = 0.3 * (784/200) * (400/100)
+scaleFactor = 0.3
+
+# Reference sizes used for constSum and scaleFactor
+refInLayerSize = 784
+refCurrLayerSize = 400
