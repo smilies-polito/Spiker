@@ -221,7 +221,7 @@ def allSpikes(spikes):
 
 
 
-def homeostasis(network, layerName):
+def homeostasis(network, layerName, dt_tau):
 
 	'''
 	Increase the threshold for the active neurons, decrease it for the
@@ -232,8 +232,18 @@ def homeostasis(network, layerName):
 
 		2) layerName: string. Complete name of the layer, including the
 		index of the layer itself.
+
+		3) dt_tau: ratio of the time step and the exponential time
+		constant.
+
+		4) vThresh0: steady state value of the threshold.
 	'''
+
+	# Exponentially decrease the dynamic homeostasis
+	expDecay(network, layerName, dt_tau, network[layerName]["vThresh0"],
+			"vThresh")
 
 	# Increase homeostasis of the active neurons
 	network[layerName]["vThresh"][0][network[layerName]["outSpikes"][0]] += \
 		network[layerName]["vThreshPlus"]
+
