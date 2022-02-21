@@ -25,8 +25,10 @@ inh2excWeight = -15	           	# mV
 # Membrane potential time constant
 tauExc = 100				# ms
 
-# Weights normalization factor
-constSum = 78.4
+# Weights normalization factors
+constSum0 = 78.4
+constSum1 = 78.4*(784/200)*(400/100)
 
 # Scaling factor for the random generation of the weights
-scaleFactor = 0.3	
+scaleFactor0 = 0.3
+scaleFactor1 = 0.3

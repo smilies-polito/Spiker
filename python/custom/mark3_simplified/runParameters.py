@@ -6,7 +6,7 @@ from files import *
 
 
 # List of layer sizes
-networkList = [784, 400]
+networkList = [784, 200, 100]
 
 mode = "train"
 
@@ -38,7 +38,14 @@ stdpDict["ltd_dt_tau"] = dt/stdpDict["ltd_tau"]
 
 
 # Array of scale factors for the random generation of the weights
-scaleFactors = scaleFactor * np.ones(len(networkList) - 1)
+scaleFactors = np.ones(len(networkList) - 1)
+scaleFactors[0] = scaleFactor0
+scaleFactors[1] = scaleFactor1
+
+# Array of normalizing factors
+constSums = np.ones(len(networkList) - 1)
+constSums[0] = constSum0
+constSums[1] = constSum1
 
 
 # Update and print intervals expressed in number of images
@@ -49,11 +56,6 @@ printInterval = 10
 # Initial intensity of the input pixels
 startInputIntensity = 2.
 inputIntensity = startInputIntensity
-
-
-# Array of normalization factors for the weights of the various layers 
-constSums = constSum * np.ones(len(networkList) - 1)
-
 
 # Initialize history of accuracies
 accuracies = []
