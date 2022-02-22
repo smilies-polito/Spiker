@@ -4,34 +4,34 @@ from utils import expDecay
 
 def stdp(network, layer, stdpDict, inputSpikes):
 
-	'''
-	Increase or decrease the weights through STDP.
+    '''
+    Increase or decrease the weights through STDP.
 
-	INPUT:
+    INPUT:
 
-		1) network: dictionary of the network.
+        1) network: dictionary of the network.
 
-		2) layer: index of the current layer. The count starts from 1.
- 
-		4) stdpDict: dictionary containing the STDP parameters.
+        2) layer: index of the current layer. The count starts from 1.
 
-		5) inputSpikes: boolean NumPy array containing the input spikes.
-	'''
+        4) stdpDict: dictionary containing the STDP parameters.
 
-	synapseName = "exc2exc" + str(layer)
-	layerName = "excLayer" + str(layer)
+        5) inputSpikes: boolean NumPy array containing the input spikes.
+    '''
 
-	# Increase the weights of the active neurons' synapses through LTP.
-	ltp(network, synapseName, layerName, stdpDict["eta_post"],
-		stdpDict["ltp_dt_tau"])
+    synapseName = "exc2exc" + str(layer)
+    layerName = "excLayer" + str(layer)
 
-	# Decrease the weights of the inactive neurons' synapses through LTD.
-	ltd(network, synapseName, layerName, stdpDict["eta_pre"],
-		stdpDict["ltd_dt_tau"], inputSpikes)
+    # Increase the weights of the active neurons' synapses through LTP.
+    ltp(network, synapseName, layerName, stdpDict[synapseName]["eta_post"],
+        stdpDict[synapseName]["ltp_dt_tau"])
 
-	
-	network[synapseName]["weights"][network[synapseName]["weights"] < 0] = 0
-	# network[synapseName]["weights"][network[synapseName]["weights"] > 1] = 1
+    # Decrease the weights of the inactive neurons' synapses through LTD.
+    ltd(network, synapseName, layerName, stdpDict[synapseName]["eta_pre"],
+        stdpDict[synapseName]["ltd_dt_tau"], inputSpikes)
+
+
+    network[synapseName]["weights"][network[synapseName]["weights"] < 0] = 0
+    # network[synapseName]["weights"][network[synapseName]["weights"] > 1] = 1
 
 
 
