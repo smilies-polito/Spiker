@@ -19,7 +19,7 @@ from runParameters import *
 imgArray, labelsArray = loadDataset(trainImages, trainLabels)
 
 
-
+print(inh2excWeights)
 
 # Create the network data structure
 network = createNetwork(networkList, weightFilename, thresholdFilename, mode, 
