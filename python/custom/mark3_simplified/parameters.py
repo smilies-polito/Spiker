@@ -8,7 +8,7 @@ excDict = {
 }
 
 # STDP synapses
-stdpDict = {
+stdpParam = {
 
 	# Learning rates
 	"eta_pre"	: 1e-4,		# mV
@@ -27,10 +27,10 @@ tauExc = 100				# ms
 tauThresh = 1e7				# ms
 
 # Weights normalization factors
-constSum = 78.4
+constSum = 1000 #78.4
 
 # Scaling factor for the random generation of the weights
-scaleFactor = 0.3
+scaleFactor = 0.5 #0.3
 
 # Reference sizes used for constSum and scaleFactor
 refInLayerSize = 784
