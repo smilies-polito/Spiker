@@ -27,7 +27,7 @@ tauExc = 100				# ms
 tauThresh = 1e7				# ms
 
 # Weights normalization factors
-constSum = 1000 #78.4
+constSum = 100 #78.4
 
 # Scaling factor for the random generation of the weights
 scaleFactor = 0.5 #0.3
