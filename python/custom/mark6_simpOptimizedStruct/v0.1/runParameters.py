@@ -82,6 +82,11 @@ for i in range(1, len(networkList)):
 	layerName = "excLayer" + str(i)
 
 	excDict[layerName] = excParam.copy()
+
+excDict["excLayer0"] = 0.1
+excDict["excLayer0"] = 0.5
+excDict["excLayer0"] = 0.1
+
 	
 
 # Array of scale factors for the random generation of the weights
@@ -99,5 +104,5 @@ constSums[2] = 500
 # Arrays of weights for the inter layer connections
 inh2excWeights = np.ones(len(networkList) - 1)
 inh2excWeights[0] = -5
-inh2excWeights[1] = -10
+inh2excWeights[1] = -15
 inh2excWeights[2] = -50
