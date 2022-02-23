@@ -83,9 +83,9 @@ for i in range(1, len(networkList)):
 
 	excDict[layerName] = excParam.copy()
 
-excDict["excLayer0"] = 0.1
-excDict["excLayer0"] = 0.5
-excDict["excLayer0"] = 0.1
+excDict["excLayer0"] = 0.05
+excDict["excLayer0"] = 0.05
+excDict["excLayer0"] = 0.05
 
 	
 
