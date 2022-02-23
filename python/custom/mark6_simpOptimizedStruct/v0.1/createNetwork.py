@@ -3,7 +3,7 @@ import sys
 
 
 def createNetwork(networkList, weightFilename, thresholdFilename, mode,
-			excDictList, scaleFactors, inh2excWeights):
+			excDict, scaleFactors, inh2excWeights):
 
 	'''
 	Create the complete network dictionary.
@@ -49,7 +49,7 @@ def createNetwork(networkList, weightFilename, thresholdFilename, mode,
 			thresholdFile = None
 
 		# Create the excitatory layer
-		createLayer(network, "exc", excDictList[layer-1], networkList,
+		createLayer(network, "exc", excDict["excLayer" + str(layer)], networkList,
 				layer, mode, thresholdFile)
 
 		# Create the excitatory to excitatory connection
