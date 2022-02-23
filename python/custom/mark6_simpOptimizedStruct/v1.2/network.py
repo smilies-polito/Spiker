@@ -113,7 +113,7 @@ def updateNetwork(networkList, network, inputSpikes, dt_tauDict, stdpDict,
 		stdp(network, 1, stdpDict, inputSpikes)
 
 		# Increase threshold for active neurons. 
-		homeostasis(network, layerName, dt_tauDict["thresh"])
+		homeostasis(network, layerName, dt_tauDict["thresh"][0])
 
 
 
@@ -135,7 +135,7 @@ def updateNetwork(networkList, network, inputSpikes, dt_tauDict, stdpDict,
 				str(layer - 1)]["outSpikes"][0])
 
 			# Increase threshold for active neurons. 
-			homeostasis(network, layerName, dt_tauDict["thresh"])
+			homeostasis(network, layerName, dt_tauDict["thresh"][layer-1])
 
 
 

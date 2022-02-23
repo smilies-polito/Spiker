@@ -20,10 +20,16 @@ restTime = 150		# ms
 dt = 0.1		# ms
 
 
+tauThresh = [
+    1e7,
+    1e7,
+    1e5
+]
+
 # Exponential time constants
 dt_tauDict = {
 	"exc" 		: dt/tauExc,
-	"thresh"	: dt/tauThresh
+	"thresh"	: [dt/tauThresh[i] for i in range(0, len(networkList) - 1)]
 }
 
 
@@ -98,10 +104,11 @@ scaleFactors[2] = 7
 constSums = np.ones(len(networkList) - 1)
 constSums[0] = 300
 constSums[1] = 500
-constSums[2] = 100
+constSums[2] = 700
 
 # Arrays of weights for the inter layer connections
 inh2excWeights = np.ones(len(networkList) - 1)
 inh2excWeights[0] = -5
 inh2excWeights[1] = -15
-inh2excWeights[2] = -10
+inh2excWeights[2] = -20
+
