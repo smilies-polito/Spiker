@@ -83,10 +83,9 @@ for i in range(1, len(networkList)):
 
 	excDict[layerName] = excParam.copy()
 
-excDict["excLayer0"] = 0.05
-excDict["excLayer0"] = 0.05
-excDict["excLayer0"] = 0.05
-
+excDict["excLayer1"]["vThreshPlus"] = 0.05
+excDict["excLayer2"]["vThreshPlus"] = 0.05
+excDict["excLayer3"]["vThreshPlus"] = 0.01
 	
 
 # Array of scale factors for the random generation of the weights
