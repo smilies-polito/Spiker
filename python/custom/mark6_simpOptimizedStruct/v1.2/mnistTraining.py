@@ -21,7 +21,7 @@ imgArray, labelsArray = loadDataset(trainImages, trainLabels)
 
 # Create the network data structure
 network = createNetwork(networkList, weightFilename, thresholdFilename, mode, 
-			excDictList, scaleFactors, inh2excWeights)
+			excDict, scaleFactors, inh2excWeights)
 
 
 
