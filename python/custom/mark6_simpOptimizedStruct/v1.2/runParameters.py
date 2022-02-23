@@ -110,5 +110,5 @@ constSums[2] = 700
 inh2excWeights = np.ones(len(networkList) - 1)
 inh2excWeights[0] = -5
 inh2excWeights[1] = -15
-inh2excWeights[2] = -20
+inh2excWeights[2] = -50
 
