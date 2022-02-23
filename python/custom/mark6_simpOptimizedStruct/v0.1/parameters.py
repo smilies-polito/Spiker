@@ -1,5 +1,5 @@
 # Excitatory layer
-excDict = {
+excParam = {
 
 	"vRest"		: -65.0,	# mV
 	"vReset"	: -60.0,	# mV

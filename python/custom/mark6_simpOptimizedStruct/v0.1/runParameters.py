@@ -10,17 +10,6 @@ networkList = [784, 200, 100, 10]
 
 mode = "train"
 
-# List of dictionaries of parameters for the layers
-excDictList = [excDict.copy()] * (len(networkList) - 1)
-
-
-# Arrays of weights for the inter layer connections
-inh2excWeights = np.ones(len(networkList) - 1)
-
-# Normalize with respect to the current and previous layer sizes
-for i in range(1, len(networkList)):
-	inh2excWeights[i-1] = inh2excWeight*refInLayerSize/networkList[i-1]\
-			*refCurrLayerSize/networkList[i]
 
 # Training and resting periods in milliseconds
 trainDuration = 350	# ms
@@ -45,36 +34,6 @@ stdpParam["ltd_dt_tau"] = dt/stdpParam["ltd_tau"]
 # List of dictionaries for the learning parameters
 stdpDict = {}
 
-# Normalize with respect to the current and previous layer sizes
-for i in range(1, len(networkList)):
-
-    synapseName = "exc2exc" + str(i)
-
-    stdpDict[synapseName] = stdpParam.copy()
-    stdpDict[synapseName]["eta_pre"] = stdpDict[synapseName]["eta_pre"]*\
-            refInLayerSize/networkList[i-1]*\
-            refCurrLayerSize/networkList[i]
-    stdpDict[synapseName]["eta_post"] = stdpDict[synapseName]["eta_post"]*\
-            refInLayerSize/networkList[i-1]*\
-            refCurrLayerSize/networkList[i]
-
-
-# Array of scale factors for the random generation of the weights
-scaleFactors = np.ones(len(networkList) - 1)
-
-# Normalize with respect to the current and previous layer sizes
-for i in range(1, len(networkList)):
-	scaleFactors[i-1] = scaleFactor*refInLayerSize/networkList[i-1]\
-			*refCurrLayerSize/networkList[i]
-
-
-# Array of normalizing factors
-constSums = np.ones(len(networkList) - 1)
-
-# Normalize with respect to the current and previous layer sizes
-for i in range(1, len(networkList)):
-	constSums[i-1] = constSum*refInLayerSize/networkList[i-1]\
-			*refCurrLayerSize/networkList[i]
 
 # Update and print intervals expressed in number of images
 updateInterval = 250
@@ -101,3 +60,44 @@ countThreshold = 3
 
 # NumPy default random generator.
 rng = np.random.default_rng()
+
+
+
+# Initialize the learning rates
+stdpDict = {}
+
+for i in range(1, len(networkList)):
+
+	synapseName = "exc2exc" + str(i)
+
+	stdpDict[synapseName] = stdpParam.copy()
+	stdpDict[synapseName]["eta_pre"] = stdpDict[synapseName]["eta_pre"]*1
+	stdpDict[synapseName]["eta_post"] = stdpDict[synapseName]["eta_post"]*1
+
+# Initialize the excitatory parameters
+excDict = {}
+
+for i in range(1, len(networkList)):
+
+	layerName = "excLayer" + str(i)
+
+	excDict[layerName] = excParam.copy()
+	
+
+# Array of scale factors for the random generation of the weights
+scaleFactors = np.ones(len(networkList) - 1)
+scaleFactors[0] = 0.8
+scaleFactors[1] = 3
+scaleFactors[2] = 7
+
+# Array of normalizing factors
+constSums = np.ones(len(networkList) - 1)
+constSums[0] = 300
+constSums[1] = 500
+constSums[2] = 500
+
+# Arrays of weights for the inter layer connections
+inh2excWeights = np.ones(len(networkList) - 1)
+inh2excWeights[0] = -5
+inh2excWeights[1] = -10
+inh2excWeights[2] = -50
