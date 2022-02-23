@@ -226,6 +226,8 @@ def train(network, networkList, spikesTrains, dt_tauDict, stdpDict,
 	spikesCounter = run(network, networkList, spikesTrains, dt_tauDict,
 				stdpDict, mode, constSums)
 
+	print(spikesCounter)
+
 	if np.sum(spikesCounter) < countThreshold:
 
 		# Prepare the training over the same image

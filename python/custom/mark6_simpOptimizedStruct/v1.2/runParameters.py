@@ -99,10 +99,10 @@ scaleFactors[2] = 7
 constSums = np.ones(len(networkList) - 1)
 constSums[0] = 300
 constSums[1] = 500
-constSums[2] = 500
+constSums[2] = 100
 
 # Arrays of weights for the inter layer connections
 inh2excWeights = np.ones(len(networkList) - 1)
 inh2excWeights[0] = -5
 inh2excWeights[1] = -15
-inh2excWeights[2] = -50
+inh2excWeights[2] = -10
