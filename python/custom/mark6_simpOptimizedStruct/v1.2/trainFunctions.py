@@ -13,7 +13,7 @@ def singleImageTraining(trainDuration, restTime, dt, image, network,
 			inputIntensity, currentIndex, spikesEvolution,
 			updateInterval, printInterval, startTimeTraining,
 			accuracies, labelsArray, assignments,
-			startInputIntensity, mode, constSums, rng):
+			startInputIntensity, mode, constSums, rng, labels):
 
 	'''
 	Train the network over an image of the dataset.
@@ -78,11 +78,12 @@ def singleImageTraining(trainDuration, restTime, dt, image, network,
 
 		20) mode: string. It can be "train" or "test".
 
-		21) constSums: NumPy array. Each element represents the constant
-		value corresponding to the sum of all the weights of a single 
-		neuron in the specific layer.
+		21) constSums: NumPy array containing the total sum of the
+		weights for each layer. Needed for normalizarion. 
 
 		22) rng: NumPy random generator.
+
+		23) labels: NumPy array containing the whole list of labels.
 
 	
 	OUTPUT:
@@ -129,7 +130,8 @@ def singleImageTraining(trainDuration, restTime, dt, image, network,
 			assignments, 
 			startInputIntensity, 
 			mode,
-			constSums
+			constSums,
+			labels
 			)
 
 
@@ -148,7 +150,7 @@ def train(network, networkList, spikesTrains, dt_tauDict, stdpDict,
 		countThreshold, inputIntensity, currentIndex, spikesEvolution,
 		updateInterval, printInterval, startTimeImage,
 		startTimeTraining, accuracies, labelsArray, assignments,
-		startInputIntensity, mode, constSums):
+		startInputIntensity, mode, constSums, labels):
 
 	'''
 	Train the network with the spikes sequences associated to the pixels.
@@ -208,6 +210,12 @@ def train(network, networkList, spikesTrains, dt_tauDict, stdpDict,
 
 		18) mode: string. It can be "train" or "test".
 
+		19) constSums: NumPy array containing the total sum of the
+		weights for each layer. Needed for normalizarion. 
+
+		20) labels: NumPy array containing the whole list of labels.
+
+
 	OUTPUT:
 
 		1) inputIntensity: update value of the pixel's intensity.
@@ -250,6 +258,7 @@ def train(network, networkList, spikesTrains, dt_tauDict, stdpDict,
 				assignments, 
 				startInputIntensity, 
 				currentIndex, 
+				labels,
 				mode
 			)
 

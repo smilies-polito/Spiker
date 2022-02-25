@@ -60,7 +60,8 @@ while currentIndex < numberOfCycles:
 			startInputIntensity,
 			mode,
 			constSums,
-			rng
+			rng,
+			labels
 		)
 
 
