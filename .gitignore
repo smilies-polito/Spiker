@@ -16,7 +16,18 @@ __pycache__
 *.npy
 
 # Vivado simulation files
-sim/
+*.jou
+*.log
+*.pb
+*.dir
+*.str
+*.cache
+*.hw
+*.ip_user_files
+*.sim
+*.xpr
+*.runs
+*.zip
 
 # Files on iCloud
 *.icloud
