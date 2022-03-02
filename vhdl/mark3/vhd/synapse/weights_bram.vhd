@@ -18,7 +18,7 @@ entity weights_bram is
 		rdaddr		: in std_logic_vector(9 downto 0);
 		rden		: in std_logic;
 		wren		: in std_logic;
-		wraddr		: in std_logic_vector(35 downto 0);
+		wraddr		: in std_logic_vector(9 downto 0);
 		bram_sel	: in std_logic_vector(5 downto 0);
 
 		-- output
@@ -37,7 +37,7 @@ architecture behaviour of weights_bram is
 	signal wren_int	: std_logic_vector(63 downto 0);
 	signal data_out	: data_matrix;
 	signal rst	: std_logic;
-	signal we	: std_logic_vector(7 downto 0);
+	signal we	: std_logic_vector(3 downto 0);
 
 	component decoder is
 
@@ -63,7 +63,7 @@ begin
 
 	init_we	: process(wren)
 	begin
-		for i in 0 to 7
+		for i in 0 to 3
 		loop
 			we(i)	<= wren;
 		end loop;
@@ -82,7 +82,7 @@ begin
 			decoded_out	=> wren_int
 		);
 
-	complete_memory	: for i in 0 to 44
+	complete_memory	: for i in 0 to 57
 	generate
 
 
@@ -113,7 +113,7 @@ begin
 				SIM_COLLISION_CHECK 	=> "ALL", 
 				
 				--  Set/Reset value for port output
-				SRVAL 			=> X"000000000000000000", 
+				SRVAL 			=> X"000000000", 
 
 				-- Specify "READ_FIRST" for same clock or synchronous
 				-- clocks. Specify "WRITE_FIRST for asynchrononous
@@ -121,7 +121,7 @@ begin
 				WRITE_MODE 		=> "READ_FIRST", 
 							   
 				--  Initial values on output port
-				INIT 			=> X"000000000000000000" 
+				INIT 			=> X"000000000" 
 			)
 
 
@@ -170,15 +170,15 @@ begin
 	connect_output	: process(data_out)
 	begin
 
-		for i in 0 to 57
+		for i in 0 to 56
 		loop
 
-			do((i+1)*9*5-1 downto i*9*5) <= data_out(i)(9*5-1 
+			do((i+1)*7*5-1 downto i*7*5) <= data_out(i)(7*5-1 
 				downto 0);
 
 		end loop;
 
-		do(400*5-1 downto 44*9*5) <= data_out(44)(4*5-1 downto 0);
+		do(400*5-1 downto 57*7*5) <= data_out(57)(4 downto 0);
 
 	end process connect_output;
 
