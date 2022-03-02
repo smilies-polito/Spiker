@@ -13,6 +13,8 @@ architecture test of weights_bram_tb is
 		"Poli/Dottorato/progetti/snn/spiker/vhdl/mark3/"&
 		"hyperparameters/weights1.mem";
 
+	constant out_filename	: string	:= "out_file.mem";
+
 	-- input
 	signal clk		: std_logic;
 	signal di		: std_logic_vector(35 downto 0);
@@ -108,6 +110,50 @@ begin
 	end process write_process;
 
 
+
+	-- read data from the bram
+	read_process : process(clk)
+
+		file out_file		: text open write_mode is
+						out_filename;
+
+		variable write_line	: line;
+		variable do_var		: std_logic_vector(35 downto 0);
+		variable addr_var	: integer := 0;
+
+	begin
+
+		if clk'event and clk = '1'
+		then
+
+			if rd_ok = '1'
+			then
+
+				rdaddr	<= std_logic_vector(
+						to_unsigned(addr_var,
+							wraddr'length));
+				rden	<= '1';
+
+				do_var := '0' & do(34 downto 0);
+
+				write(write_line, do_var);
+				writeline(out_file, write_line);
+
+				addr_var := addr_var + 1;
+				
+
+			else
+
+				rden	<= '0';
+
+			end if;
+
+
+		end if;
+
+	end process read_process;
+
+
 	-- enable read process
 	rd_ok_gen	: process
 	begin
@@ -115,33 +161,35 @@ begin
 		rd_ok <= '0';
 		wait for 12000 ns; 
 		rd_ok <= '1';
+		wait for 9408 ns; 
+		rd_ok <= '1';
 		wait;
 
 	end process rd_ok_gen;
 
 
 	-- read data from the bram
-	read_process	: process(clk, rd_ok)
+	-- read_process	: process(clk, rd_ok)
 
-		variable addr_var	: integer := 0;
+	-- 	variable addr_var	: integer := 0;
 
-	begin
+	-- begin
 
-		if clk'event and clk = '1'
-		then
-			if rd_ok = '1'
-			then
-				rden 	<= '1';
-				rdaddr	<= std_logic_vector(
-						to_unsigned(addr_var, 10));
-			addr_var := addr_var + 1;
-			else
-				rden	<= '0';
-			end if;
+	-- 	if clk'event and clk = '1'
+	-- 	then
+	-- 		if rd_ok = '1'
+	-- 		then
+	-- 			rden 	<= '1';
+	-- 			rdaddr	<= std_logic_vector(
+	-- 					to_unsigned(addr_var, 10));
+	-- 		addr_var := addr_var + 1;
+	-- 		else
+	-- 			rden	<= '0';
+	-- 		end if;
 
-		end if;
+	-- 	end if;
 
-	end process read_process;
+	-- end process read_process;
 
 
 	dut	: weights_bram 
