@@ -7,15 +7,26 @@ from parameters import *
 # Create the target directory in which the weights will be stored
 createDir(hyperparametersDir)
 
+
+
 # Import the weights in form of a numpy array
 with open(weightsFilename, 'rb') as fp:
 	weightsArray = np.load(fp)
 
-i = 0
-flag = 0
+# Import the thresholds in form of a numpy array
+with open(inThreshFilename, 'rb') as fp:
+	threshArray = np.load(fp)
+
 
 # Quantize the weights to fixed point
 weightsArray = fixedPointArray(weightsArray, fixed_point_decimals)
+
+# Quantize the thresholds to fixed point
+threshArray = fixedPointArray(threshArray, fixed_point_decimals)
+
+
+i = 0
+flag = 0
 
 # Find the proper word-width for the BRAM between the available ones
 while i < len(wordWidthsList) and flag == 0:
@@ -33,5 +44,8 @@ while i < len(wordWidthsList) and flag == 0:
 subArraySize = int(wordWidth//bitWidth)
 
 # Store the weights in binary format to import them to initialize the BRAMs
-storeWeights(weightsArray, subArraySize, bitWidth, wordWidth, bramRootFilename,
-		".mem")
+storeWeights(weightsArray, subArraySize, weightsBitWidth, wordWidth,
+		bramRootFilename, ".mem")
+
+formatAndStore(threshArray, neuronsBitWidth, neuronsBitWidth, outThreshFilename,
+		mode)
