@@ -14,6 +14,7 @@ numberOfNeurons = 400
 
 numberOfInputs = 784
 
-bitWidth = 5
+weightsBitWidth = 5
+neuronsBitWidth = 16
 
 fixed_point_decimals = 3
