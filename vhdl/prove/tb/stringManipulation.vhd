@@ -1,29 +1,40 @@
 library ieee;
 library std;
 use ieee.std_logic_1164.all;
-use std.textio.all;
 use ieee.std_logic_textio.all;
+use std.textio.all;
 
 entity string_man is
 end entity string_man;
 
 architecture behaviour of string_man is
+
+	constant name		: string := "weights";
+	constant ext		: string := ".mem";
+
+	file weights		: text;
+
 begin
 
 	string_manipulation	: process
 
-		variable name		: string := "weights";
-		variable ext		: string := ".mem";
-		variable filename	: string;
-		variable out_string	: line;
-		variable i		: integer := 0;
+		variable filename	: string(1 to 12);
+		variable i		: integer; 
+		variable i_string	: string(1 to 1);
 
 	begin
 
-		filename := name & i & ext;
+		for i in 0 to 50
+		loop
 
-		write(out_string, filename);
-		writeline(output, filename);
+			i_string := integer'image(i)(0);
+			filename := name & i_string & ext;
+
+			file_open(weights, filename, read_mode);
+
+			wait for 10 ns;
+		end loop;
+
 		wait;
 
 	end process string_manipulation;
