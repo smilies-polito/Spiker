@@ -1,6 +1,6 @@
 import numpy as np
 
-from functions import storeWeights, fixedPointArray, createDir
+from functions import storeWeights, fixedPointArray, createDir, formatAndStore
 from files import *
 from parameters import *
 
@@ -41,11 +41,11 @@ while i < len(wordWidthsList) and flag == 0:
 	i += 1
 
 # Set the number of neurons that can be stored within the BRAM
-subArraySize = int(wordWidth//bitWidth)
+subArraySize = int(wordWidth//weightsBitWidth)
 
 # Store the weights in binary format to import them to initialize the BRAMs
 storeWeights(weightsArray, subArraySize, weightsBitWidth, wordWidth,
 		bramRootFilename, ".mem")
 
 formatAndStore(threshArray, neuronsBitWidth, neuronsBitWidth, outThreshFilename,
-		mode)
+		"w")

@@ -8,4 +8,4 @@ inThreshFilename = "../../../python/custom/mark3_simplified/"\
 
 bramRootFilename = hyperparametersDir + "/weights"
 
-outThreshFilename = hyperparamtersDir + "/thresholds.init"
+outThreshFilename = hyperparametersDir + "/thresholds.init"
