@@ -173,6 +173,25 @@ architecture test of spiker_tb is
 
 begin
 
+	clk_gen		: process
+	begin
+		clk <= '0';
+		wait for 10 ns;
+		clk <= '1';
+		wait for 10 ns:
+	end process clk_gen;
+
+	rst_n_gen	: process
+	begin
+		rst_n <= '1';
+		wait for 42 ns;
+		rst_n <= '0';
+		wait;
+	end process rst_n_gen;
+
+
+	-- load_weight	: process(clk)
+
 
 	dut	: spiker
 		generic map(
