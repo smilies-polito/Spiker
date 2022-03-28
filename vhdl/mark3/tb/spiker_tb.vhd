@@ -1,6 +1,8 @@
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
+use std.textio.all;
+use ieee.std_logic_textio.all;
 
 entity spiker_tb is
 end entity spiker_tb;
@@ -39,6 +41,11 @@ architecture test of spiker_tb is
 	
 	constant v_reset_int		: integer := 5*2**3; 	  
 	constant inh_weight_int	 	: integer := -15*2**3; 
+
+
+	constant weights_filename	: string	:= "/home/alessio/"&
+		"OneDrive/Dottorato/Progetti/SNN/spiker/vhdl/mark3/"&
+		"hyperparameters/weights.mem";
 
 	-- Common signals
 	signal clk			: std_logic;
@@ -192,6 +199,7 @@ begin
 	N_cycles_tc	<= std_logic_vector(to_signed(N_cycles,
 			       N_cycles_tc'length));
 
+	-- clock
 	clk_gen		: process
 	begin
 		clk <= '0';
@@ -200,6 +208,7 @@ begin
 		wait for 10 ns;
 	end process clk_gen;
 
+	-- reset (active low)
 	rst_n_gen	: process
 	begin
 		rst_n <= '1';
@@ -211,7 +220,46 @@ begin
 	end process rst_n_gen;
 
 
-	-- load_weight	: process(clk)
+	-- load weights inside the BRAMs
+	load_weights	: process(clk)
+
+		file weights_file	: text open read_mode is
+						weights_filename;
+
+		variable read_line	: line;
+		variable di_var		: std_logic_vector(35 downto 0);
+		variable addr_var	: integer := 0;
+
+	begin
+
+		if clk'event and clk = '1'
+		then
+
+			if not endfile(weights_file)
+			then
+
+				readline(weights_file, read_line);
+				read(read_line, di_var);
+
+				di	<= di_var;
+				wraddr	<= std_logic_vector(
+						to_unsigned(addr_var,
+							wraddr'length));
+				wren	<= '1';
+
+				addr_var := addr_var + 1;
+				
+
+			else
+
+				wren	<= '0';
+
+			end if;
+
+
+		end if;
+
+	end process load_weights;
 
 
 	dut	: spiker
