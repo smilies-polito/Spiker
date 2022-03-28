@@ -94,7 +94,7 @@ architecture behaviour of spiker is
 
 
 	-- Memory signals: input
-	signal rdaddr			: std_logic_vector(9 downto 0);
+	signal rdaddr			: std_logic_vector(10 downto 0);
 
 	-- Memory signals: output
 	signal do			: std_logic_vector(400*5-1 downto 0);
@@ -252,7 +252,7 @@ begin
 			clk		=> clk,
 			di		=> di,
 			rst_n		=> rst_n,
-			rdaddr		=> rdaddr,
+			rdaddr		=> rdaddr(9 downto 0),
 			rden		=> rden,
 			wren		=> wren,
 			wraddr		=> wraddr,
