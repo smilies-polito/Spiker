@@ -30,9 +30,15 @@ architecture test of spiker_tb is
 
 	-- Output counters parallelism
 	constant N_out			: integer := 16;
+
+	-- Number of elaboration cycles
+	constant N_cycles		: integer := 3500;
 	
 	-- Cycles cnt
 	constant N_cycles_cnt		: integer := 12;
+	
+	constant v_reset_int		: integer := 5*2**3; 	  
+	constant inh_weight_int	 	: integer := -15*2**3; 
 
 	-- Common signals
 	signal clk			: std_logic;
@@ -52,12 +58,15 @@ architecture test of spiker_tb is
 						downto 0);
 	signal input_spikes		: std_logic_vector
 					     (N_inputs-1 downto 0);
+
+	-- input parameters
 	signal v_th_value		: signed(parallelism-1 downto 0);		
 	signal v_reset			: signed(parallelism-1 downto 0);	
 	signal inh_weight		: signed(parallelism-1 downto 0);		
 	signal exc_weights		: signed
 						(N_neurons*weightsParallelism-1
 						 downto 0);
+	-- terminal counters
 	signal N_inputs_tc		: std_logic_vector
 						(N_inputs_cnt-1 downto 0);
 	signal N_neurons_tc		: std_logic_vector
@@ -173,12 +182,22 @@ architecture test of spiker_tb is
 
 begin
 
+	v_reset		<= to_signed(v_reset_int, v_reset'length);
+	inh_weight	<= to_signed(inh_weight_int, inh_weight'length);
+
+	N_inputs_tc	<= std_logic_vector(to_signed(N_inputs,
+			       N_inputs_tc'length));
+	N_neurons_tc	<= std_logic_vector(to_signed(N_neurons,
+				N_neurons_tc'length));
+	N_cycles_tc	<= std_logic_vector(to_signed(N_cycles,
+			       N_cycles_tc'length));
+
 	clk_gen		: process
 	begin
 		clk <= '0';
 		wait for 10 ns;
 		clk <= '1';
-		wait for 10 ns:
+		wait for 10 ns;
 	end process clk_gen;
 
 	rst_n_gen	: process
@@ -186,6 +205,8 @@ begin
 		rst_n <= '1';
 		wait for 42 ns;
 		rst_n <= '0';
+		wait for 10 ns;
+		rst_n <= '1';
 		wait;
 	end process rst_n_gen;
 
