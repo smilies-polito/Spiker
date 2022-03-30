@@ -3,11 +3,10 @@
 VHD_DIR="../vhd"
 TB_DIR="../tb"
 
-TOP_ENTITY="weights_bram_tb"
+TOP_ENTITY="load_file_tb"
 
-xvhdl $VHD_DIR"/shared/decoder.vhd"
-xvhdl $VHD_DIR"/synapse/weights_bram.vhd"
-xvhdl $TB_DIR"/synapse/weights_bram_tb.vhd"
+xvhdl $VHD_DIR"/io/load_file.vhd"
+xvhdl $TB_DIR"/io/load_file_tb.vhd"
 
 xelab $TOP_ENTITY
 
