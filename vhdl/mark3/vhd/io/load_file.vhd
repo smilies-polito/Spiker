@@ -52,9 +52,6 @@ begin
 
 	begin
 
-		-- Default value
-		wren <= '0';
-
 		-- Sample on the clock edge
 		if clk'event and clk = '1'
 		then
@@ -116,11 +113,28 @@ begin
 								bram_addr_var
 								+ 1;
 
+							-- Disable writing
+							wren <= '0';
+
 						end if;
+
+					else
+
+						-- Disable writing
+						wren <= '0';
 
 					end if;
 
+				else
+					-- Disable writing
+					wren <= '0';
+
 				end if;
+
+			else
+
+				-- Disable writing
+				wren <= '0';
 
 			end if;
 
