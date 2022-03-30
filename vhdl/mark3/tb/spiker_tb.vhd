@@ -220,46 +220,6 @@ begin
 	end process rst_n_gen;
 
 
-	-- load weights inside the BRAMs
-	load_weights	: process(clk)
-
-		file weights_file	: text open read_mode is
-						weights_filename;
-
-		variable read_line	: line;
-		variable di_var		: std_logic_vector(35 downto 0);
-		variable addr_var	: integer := 0;
-
-	begin
-
-		if clk'event and clk = '1'
-		then
-
-			if not endfile(weights_file)
-			then
-
-				readline(weights_file, read_line);
-				read(read_line, di_var);
-
-				di	<= di_var;
-				wraddr	<= std_logic_vector(
-						to_unsigned(addr_var,
-							wraddr'length));
-				wren	<= '1';
-
-				addr_var := addr_var + 1;
-				
-
-			else
-
-				wren	<= '0';
-
-			end if;
-
-
-		end if;
-
-	end process load_weights;
 
 
 	dut	: spiker
