@@ -3,3 +3,4 @@ clean:
 	rm -f *.log
 	rm -f *.pb
 	rm -rf *.dir
+	rm -f *.str
