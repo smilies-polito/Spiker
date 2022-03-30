@@ -38,7 +38,6 @@ end entity load_file;
 architecture behaviour of load_file is
 begin
 
-
 	-- load weights inside the BRAMs
 	load_weights	: process(clk, rden)
 
@@ -46,7 +45,8 @@ begin
 						weights_filename;
 
 		variable read_line	: line;
-		variable di_var		: std_logic_vector(35 downto 0);
+		variable di_var		: std_logic_vector(word_length-1 
+						downto 0);
 		variable wraddr_var	: integer := 0;
 		variable bram_addr_var	: integer := 0;
 
