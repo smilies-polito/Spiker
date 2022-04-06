@@ -37,7 +37,7 @@ entity neuron_datapath is
 end entity neuron_datapath;
 
 
-architecture test of neuron_datapath is
+architecture behaviour of neuron_datapath is
 
 	
 	signal update		: signed(parallelism-1 downto 0);
@@ -324,4 +324,4 @@ begin
 
 	
 
-end architecture test;
+end architecture behaviour;
