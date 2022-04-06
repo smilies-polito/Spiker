@@ -47,6 +47,10 @@ architecture test of spiker_tb is
 		"OneDrive/Dottorato/Progetti/SNN/spiker/vhdl/mark3/"&
 		"hyperparameters/weights.mem";
 
+	constant thresholds_filename	: string	:= "/home/alessio/"&
+		"OneDrive/Dottorato/Progetti/SNN/spiker/vhdl/mark3/"&
+		"hyperparameters/thresholds.mem";
+
 	
 	constant weightsWord		: integer := 36;
 	constant bram_addr_length	: integer := 6;
@@ -65,24 +69,30 @@ architecture test of spiker_tb is
 	signal wren			: std_logic;
 	signal wraddr			: std_logic_vector(weights_addr_length-1 downto 0);
 	signal bram_sel			: std_logic_vector(bram_addr_length-1 downto 0);
-	signal file_rden		: std_logic;
+	signal weights_rden		: std_logic;
 
-	-- Layer signals: input
-	signal start			: std_logic;	
+	-- Threshold initialization
 	signal init_v_th		: std_logic;
 	signal v_th_addr		: std_logic_vector(N_neurons_cnt-1
 						downto 0);
+	signal v_th_value		: signed(parallelism-1 downto 0);		
+	signal thresholds_rden		: std_logic;
+	signal dummy_addr		: std_logic_vector(0 downto 0);
+
+
+
+	-- Layer signals: input
+	signal start			: std_logic;	
 	signal input_spikes		: std_logic_vector
 					     (N_inputs-1 downto 0);
 
-	-- input parameters
-	signal v_th_value		: signed(parallelism-1 downto 0);		
+	-- Input parameters
 	signal v_reset			: signed(parallelism-1 downto 0);	
 	signal inh_weight		: signed(parallelism-1 downto 0);		
 	signal exc_weights		: signed
 						(N_neurons*weightsParallelism-1
 						 downto 0);
-	-- terminal counters
+	-- Terminal counters
 	signal N_inputs_tc		: std_logic_vector
 						(N_inputs_cnt-1 downto 0);
 	signal N_neurons_tc		: std_logic_vector
@@ -237,6 +247,8 @@ begin
 	N_cycles_tc	<= std_logic_vector(to_signed(N_cycles,
 			       N_cycles_tc'length));
 
+	dummy_addr	<= "0";
+
 	-- clock
 	clk_gen		: process
 	begin
@@ -257,15 +269,25 @@ begin
 		wait;
 	end process rst_n_gen;
 
-	-- weights file read enable
-	file_rden_gen	: process
+	-- weights read enable
+	weights_rden_gen	: process
 	begin
-		file_rden <= '0';
+		weights_rden <= '0';
 		wait for 100 ns;
-		file_rden <= '0';
+		weights_rden <= '0';
 		wait for 1 ms;
-		file_rden <= '0';
-	end process file_rden_gen;
+		weights_rden <= '0';
+	end process weights_rden_gen;
+
+	-- thresholds read enable
+	thresholds_rden_gen	: process
+	begin
+		thresholds_rden <= '0';
+		wait for 1.1 ms;
+		thresholds_rden <= '0';
+		wait for 4 us;
+		thresholds_rden <= '0';
+	end process thresholds_rden_gen;
 
 
 	-- initialize weights
@@ -283,7 +305,7 @@ begin
 		port map(
 			-- input
 			clk			=> clk,
-			rden			=> file_rden,
+			rden			=> weights_rden,
 
 			-- output
 			di			=> input_weights,
@@ -292,6 +314,30 @@ begin
 			wren			=> wren
 		);
 
+	-- initialize thresholds
+	init_thresholds : load_file 
+
+		generic map(
+			word_length		=> parallelism,
+			bram_addr_length	=> 1,
+			addr_length		=> N_neurons_cnt-1,
+			N_bram			=> 1,
+			N_words			=> N_neurons,
+			weights_filename	=> thresholds_filename
+		)
+
+		port map(
+			-- input
+			clk			=> clk,
+			rden			=> thresholds_rden,
+
+			-- output
+			std_logic_vector(di)	=> v_th_value,
+			bram_addr		=> dummy_addr,
+			wraddr			=> v_th_addr(N_neurons_cnt-2
+							downto 0),
+			wren			=> init_v_th 
+		);
 
 
 
