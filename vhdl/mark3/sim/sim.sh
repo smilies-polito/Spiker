@@ -50,6 +50,7 @@ xvhdl $VHD_DIR"/synapse/weights_bram.vhd"
 xvhdl $VHD_DIR"/spiker.vhd"
 
 # Testbench
+xvhdl $VHD_DIR"/io/load_file.vhd"
 xvhdl $TB_DIR"/spiker_tb.vhd"
 
 xelab $TOP_ENTITY
