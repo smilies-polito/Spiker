@@ -47,16 +47,25 @@ architecture test of spiker_tb is
 		"OneDrive/Dottorato/Progetti/SNN/spiker/vhdl/mark3/"&
 		"hyperparameters/weights.mem";
 
+	
+	constant weightsWord		: integer := 36;
+	constant bram_addr_length	: integer := 6;
+	constant weights_addr_length	: integer := 10;
+	constant N_bram			: integer := 58;
+
+
+
 	-- Common signals
 	signal clk			: std_logic;
 	signal rst_n			: std_logic;
 	
 	-- Memory signals: input
-	signal di			: std_logic_vector(35 downto 0);
+	signal input_weights		: std_logic_vector(35 downto 0);
 	signal rden			: std_logic;
 	signal wren			: std_logic;
-	signal wraddr			: std_logic_vector(9 downto 0);
-	signal bram_sel			: std_logic_vector(5 downto 0);
+	signal wraddr			: std_logic_vector(weights_addr_length-1 downto 0);
+	signal bram_sel			: std_logic_vector(bram_addr_length-1 downto 0);
+	signal file_rden		: std_logic;
 
 	-- Layer signals: input
 	signal start			: std_logic;	
@@ -90,7 +99,36 @@ architecture test of spiker_tb is
 	signal cnt_out			: std_logic_vector(N_neurons*N_out-1
 						downto 0);
 
-	
+		
+	component load_file is
+
+		generic(
+			word_length		: integer := 36;
+			bram_addr_length	: integer := 6;
+			addr_length		: integer := 16;
+			N_bram			: integer := 58;
+			N_words			: integer := 784;
+			weights_filename	: string := "/home/alessio/"&
+			"OneDrive/Dottorato/Progetti/SNN/spiker/vhdl/mark3/"&
+			"hyperparameters/weights.mem"
+		);
+
+		port(
+			-- input
+			clk			: in std_logic;
+			rden			: in std_logic;
+
+			-- output
+			di			: out std_logic_vector(word_length-1
+							downto 0);
+			bram_addr		: out std_logic_vector(bram_addr_length
+							-1 downto 0);
+			wraddr			: out std_logic_vector(addr_length-1
+							downto 0);
+			wren			: out std_logic
+		);
+
+	end component load_file;
 
 
 	component spiker is
@@ -219,6 +257,41 @@ begin
 		wait;
 	end process rst_n_gen;
 
+	-- weights file read enable
+	file_rden_gen	: process
+	begin
+		file_rden <= '0';
+		wait for 100 ns;
+		file_rden <= '0';
+		wait for 1 ms;
+		file_rden <= '0';
+	end process file_rden_gen;
+
+
+	-- initialize weights
+	init_weights	: load_file 
+
+		generic map(
+			word_length		=> weightsWord,
+			bram_addr_length	=> bram_addr_length,
+			addr_length		=> weights_addr_length,
+			N_bram			=> N_bram,
+			N_words			=> N_inputs,
+			weights_filename	=> weights_filename
+		)
+
+		port map(
+			-- input
+			clk			=> clk,
+			rden			=> file_rden,
+
+			-- output
+			di			=> input_weights,
+			bram_addr		=> bram_sel,
+			wraddr			=> wraddr,
+			wren			=> wren
+		);
+
 
 
 
@@ -288,7 +361,7 @@ begin
 
 			-- Memory signals -------------------------------------- 
 			-- input
-			di		=> di,
+			di		=> input_weights,
 			rden		=> rden,
 			wren		=> wren,
 			wraddr		=> wraddr,
