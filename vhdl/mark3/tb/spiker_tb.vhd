@@ -51,6 +51,9 @@ architecture test of spiker_tb is
 		"OneDrive/Dottorato/Progetti/SNN/spiker/vhdl/mark3/"&
 		"hyperparameters/thresholds.init";
 
+	constant inputs_filename	: string	:= "/home/alessio/"&
+		"OneDrive/Dottorato/Progetti/SNN/spiker/vhdl/mark3/"&
+		"sim/inputs.txt";
 	
 	constant weightsWord		: integer := 36;
 	constant bram_addr_length	: integer := 6;
@@ -347,6 +350,50 @@ begin
 		rden <= '1';
 		wait;
 	end process rden_gen;
+
+	-- start generation
+	start_gen	: process
+	begin
+		start <= '0';
+		wait for 1.3 ms;
+		start <= '1';
+		wait for 20 ns;
+		start <= '0';
+		wait;
+	end process start_gen;
+
+
+
+	-- read inputs from file
+	read_inputs	: process(clk, sample)
+
+		file inputs_file	: text open read_mode is
+			inputs_filename;
+
+		variable read_line	: line;
+		variable inputs_var	: std_logic_vector(N_inputs-1 
+						downto 0);
+
+	begin
+
+		if clk'event and clk = '1'
+		then
+			if sample = '1'
+			then
+				if not endfile(inputs_file)
+				then
+
+					-- Read line from file
+					readline(inputs_file, read_line);
+					read(read_line, inputs_var);
+
+					-- Associate line to data input
+					input_spikes	<= inputs_var;
+
+				end if;
+			end if;
+		end if;	
+	end process read_inputs;
 
 
 
