@@ -57,9 +57,6 @@ entity spiker is
 		v_th_value		: in signed(parallelism-1 downto 0);		
 		v_reset			: in signed(parallelism-1 downto 0);	
 		inh_weight		: in signed(parallelism-1 downto 0);		
-		exc_weights		: in signed
-						(N_neurons*weightsParallelism-1
-						 downto 0);
 
 		-- terminal counters 
 		N_inputs_tc		: in std_logic_vector
@@ -97,7 +94,7 @@ architecture behaviour of spiker is
 	signal rdaddr			: std_logic_vector(10 downto 0);
 
 	-- Memory signals: output
-	signal do			: std_logic_vector(400*5-1 downto 0);
+	signal exc_weights		: std_logic_vector(400*5-1 downto 0);
 
 	-- Layer signals: input
 	signal stop			: std_logic;	
@@ -259,7 +256,7 @@ begin
 			bram_sel	=> bram_sel,
 
 			-- output
-			do		=> do
+			do		=> exc_weights
 					
 		);
 
@@ -307,7 +304,7 @@ begin
 			v_th_value		=> v_th_value,
 			v_reset			=> v_reset,
 			inh_weight		=> inh_weight,
-			exc_weights		=> exc_weights,
+			exc_weights		=> signed(exc_weights),
 					           		
 					           		
                                                                    

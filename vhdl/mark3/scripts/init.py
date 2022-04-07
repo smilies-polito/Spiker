@@ -47,5 +47,16 @@ subArraySize = int(wordWidth//weightsBitWidth)
 storeWeights(weightsArray, subArraySize, weightsBitWidth, wordWidth,
 		bramRootFilename, ".mem")
 
-formatAndStore(threshArray, neuronsBitWidth, neuronsBitWidth, outThreshFilename,
-		"w")
+
+
+
+binaryFormat = "{0:0" + str(neuronsBitWidth) + "b}"
+
+with open(outThreshFilename, "w") as fp:
+
+	for threshold in threshArray[0]:
+
+		binaryValue = binaryFormat.format(threshold)
+
+		fp.write(binaryValue)
+		fp.write("\n")

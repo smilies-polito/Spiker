@@ -49,7 +49,7 @@ architecture test of spiker_tb is
 
 	constant thresholds_filename	: string	:= "/home/alessio/"&
 		"OneDrive/Dottorato/Progetti/SNN/spiker/vhdl/mark3/"&
-		"hyperparameters/thresholds.mem";
+		"hyperparameters/thresholds.init";
 
 	
 	constant weightsWord		: integer := 36;
@@ -89,9 +89,7 @@ architecture test of spiker_tb is
 	-- Input parameters
 	signal v_reset			: signed(parallelism-1 downto 0);	
 	signal inh_weight		: signed(parallelism-1 downto 0);		
-	signal exc_weights		: signed
-						(N_neurons*weightsParallelism-1
-						 downto 0);
+
 	-- Terminal counters
 	signal N_inputs_tc		: std_logic_vector
 						(N_inputs_cnt-1 downto 0);
@@ -200,9 +198,6 @@ architecture test of spiker_tb is
 							downto 0);	
 			inh_weight		: in signed(parallelism-1 
 							downto 0);		
-			exc_weights		: in signed(N_neurons
-							*weightsParallelism-1
-							 downto 0);
 
 			-- terminal counters 
 			N_inputs_tc		: in std_logic_vector
@@ -247,6 +242,7 @@ begin
 	N_cycles_tc	<= std_logic_vector(to_signed(N_cycles,
 			       N_cycles_tc'length));
 
+	v_th_addr(N_neurons_cnt-1) <= '0';
 	dummy_addr	<= "0";
 
 	-- clock
@@ -274,9 +270,10 @@ begin
 	begin
 		weights_rden <= '0';
 		wait for 100 ns;
-		weights_rden <= '0';
+		weights_rden <= '1';
 		wait for 1 ms;
 		weights_rden <= '0';
+		wait;
 	end process weights_rden_gen;
 
 	-- thresholds read enable
@@ -284,9 +281,10 @@ begin
 	begin
 		thresholds_rden <= '0';
 		wait for 1.1 ms;
+		thresholds_rden <= '1';
+		wait for 10 us;
 		thresholds_rden <= '0';
-		wait for 4 us;
-		thresholds_rden <= '0';
+		wait;
 	end process thresholds_rden_gen;
 
 
@@ -314,6 +312,7 @@ begin
 			wren			=> wren
 		);
 
+
 	-- initialize thresholds
 	init_thresholds : load_file 
 
@@ -338,6 +337,16 @@ begin
 							downto 0),
 			wren			=> init_v_th 
 		);
+
+
+	-- read enable
+	rden_gen	: process
+	begin
+		rden <= '0';
+		wait for 1.2 ms;
+		rden <= '1';
+		wait;
+	end process rden_gen;
 
 
 
@@ -393,7 +402,6 @@ begin
 			v_th_value		=> v_th_value,
 			v_reset			=> v_reset,
 			inh_weight		=> inh_weight,
-			exc_weights		=> exc_weights,
                                                                    
 			-- terminal counters
 			N_inputs_tc		=> N_inputs_tc,

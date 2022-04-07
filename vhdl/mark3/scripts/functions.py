@@ -159,7 +159,7 @@ def arrayToBin(numpyArray, bitWidth, wordWidth):
 		# Set the binary format with the desired bit-width
 		binaryFormat = "{0:0" + str(bitWidth) + "b}"
 
-		# Loop over all the element sin the subarray (all the columns)
+		# Loop over all the elements in the subarray (all the columns)
 		for element in subArray:
 
 			# Convert the element into binary format
