@@ -54,6 +54,10 @@ architecture test of spiker_tb is
 	constant inputs_filename	: string	:= "/home/alessio/"&
 		"OneDrive/Dottorato/Progetti/SNN/spiker/vhdl/mark3/"&
 		"sim/inputs.txt";
+
+	constant output_filename	: string	:= "/home/alessio/"&
+		"OneDrive/Dottorato/Progetti/SNN/spiker/vhdl/mark3/"&
+		"sim/cntOut.txt";
 	
 	constant weightsWord		: integer := 36;
 	constant bram_addr_length	: integer := 6;
@@ -395,6 +399,30 @@ begin
 		end if;	
 	end process read_inputs;
 
+
+
+	-- Store outputs on file
+	store_outputs	: process(clk, ready)
+
+		file output_file	: text open write_mode is
+			output_filename;
+
+		variable write_line	: line;
+
+	begin
+
+		if clk'event and clk = '1'
+		then
+			if ready = '1'
+			then
+
+				write(write_line, cnt_out);
+				writeline(output_file, write_line);
+
+			end if;
+		end if;	
+
+	end process store_outputs;
 
 
 	dut	: spiker
