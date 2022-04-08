@@ -52,7 +52,3 @@ xvhdl $VHD_DIR"/spiker.vhd"
 # Testbench
 xvhdl $VHD_DIR"/io/load_file.vhd"
 xvhdl $TB_DIR"/spiker_tb.vhd"
-
-xelab $TOP_ENTITY
-
-xsim -t commands.tcl $TOP_ENTITY
