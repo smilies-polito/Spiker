@@ -1,2 +1,2 @@
-run 30000 ns
+run 5 ms
 quit
