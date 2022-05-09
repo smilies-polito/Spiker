@@ -67,5 +67,7 @@ for image in imgArray:
 
 	print(counters)
 
+	break
+
 
 sp.run("make clean", shell=True)
