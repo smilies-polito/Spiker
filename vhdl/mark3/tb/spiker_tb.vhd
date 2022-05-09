@@ -113,6 +113,7 @@ architecture test of spiker_tb is
 	-- Output counters signal
 	signal cnt_out			: std_logic_vector(N_neurons*N_out-1
 						downto 0);
+	signal write_out		: std_logic;
 
 		
 	component load_file is
@@ -367,6 +368,21 @@ begin
 	end process start_gen;
 
 
+	-- enable output write on file
+	write_out_gen	: process
+	begin
+		write_out <= '0';
+		wait for 60 ms;
+		write_out <= '1';
+		wait for 20 ns;
+		write_out <= '0';
+		wait;
+	end process write_out_gen;
+
+
+
+
+
 
 	-- read inputs from file
 	read_inputs	: process(clk, sample)
@@ -413,7 +429,7 @@ begin
 
 		if clk'event and clk = '1'
 		then
-			if ready = '1'
+			if write_out = '1'
 			then
 
 				write(write_line, cnt_out);
