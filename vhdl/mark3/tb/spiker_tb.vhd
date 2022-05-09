@@ -44,19 +44,19 @@ architecture test of spiker_tb is
 
 
 	constant weights_filename	: string	:= "/home/alessio/"&
-		"OneDrive/Dottorato/Progetti/SNN/spiker/vhdl/mark3/"&
+		"OneDrive/Dottorato/Progetti/SNN/Miei/spiker/vhdl/mark3/"&
 		"hyperparameters/weights.mem";
 
 	constant thresholds_filename	: string	:= "/home/alessio/"&
-		"OneDrive/Dottorato/Progetti/SNN/spiker/vhdl/mark3/"&
+		"OneDrive/Dottorato/Progetti/SNN/Miei/spiker/vhdl/mark3/"&
 		"hyperparameters/thresholds.init";
 
 	constant inputs_filename	: string	:= "/home/alessio/"&
-		"OneDrive/Dottorato/Progetti/SNN/spiker/vhdl/mark3/"&
+		"OneDrive/Dottorato/Progetti/SNN/Miei/spiker/vhdl/mark3/"&
 		"sim/inputs.txt";
 
 	constant output_filename	: string	:= "/home/alessio/"&
-		"OneDrive/Dottorato/Progetti/SNN/spiker/vhdl/mark3/"&
+		"OneDrive/Dottorato/Progetti/SNN/Miei/spiker/vhdl/mark3/"&
 		"sim/cntOut.txt";
 	
 	constant weightsWord		: integer := 36;
