@@ -372,7 +372,7 @@ begin
 	write_out_gen	: process
 	begin
 		write_out <= '0';
-		wait for 60 ms;
+		wait for 25 ms;
 		write_out <= '1';
 		wait for 20 ns;
 		write_out <= '0';
