@@ -16,17 +16,54 @@ end entity neuron_and_bram_tb;
 
 architecture test of neuron_and_bram_tb is
 
+	-- parallelism
+	constant N			: integer := 16;
+	constant N_weight		: integer := 5;
 
-	signal mem_out 	: std_logic_vector(35 downto 0); 	
-	signal mem_in	: std_logic_vector(35 downto 0);	
-	signal rdaddr 	: std_logic_vector(9 downto 0);		
-	signal clk 	: std_logic;	
-	signal rden 	: std_logic;		
-	signal regce 	: std_logic;		
-	signal rst 	: std_logic;		
-	signal we 	: std_logic_vector(9 downto 0);		
-	signal wraddr 	: std_logic_vector(9 downto 0);		
-	signal wren 	: std_logic;		
+	-- shift amount
+	constant shift			: integer := 10;
+	constant v_reset_int		: integer := 5*2**3; 	  
+	constant inh_weight_int		: integer := -15*2**3;
+	constant v_th_value_int		: integer :=  589;
+
+	-- common signals
+	signal clk			: std_logic;
+
+	-- memory signals
+	signal mem_out			: std_logic_vector(35 downto 0); 	
+	signal mem_in			: std_logic_vector(35 downto 0);	
+	signal rdaddr			: std_logic_vector(9 downto 0);		
+	signal rden			: std_logic;		
+	signal regce			: std_logic;		
+	signal rst			: std_logic;		
+	signal we			: std_logic_vector(3 downto 0);		
+	signal wraddr			: std_logic_vector(9 downto 0);		
+	signal wren			: std_logic;		
+	
+	-- input controls
+	signal rst_n			: std_logic;
+	signal start			: std_logic;
+	signal stop			: std_logic;
+	signal exc_or			: std_logic;
+	signal exc_stop			: std_logic;
+	signal inh_or			: std_logic;
+	signal inh_stop			: std_logic;
+	signal input_spike		: std_logic;
+	signal v_th_en			: std_logic;
+
+	-- input parameters
+	signal v_th_value		: signed(N-1 downto 0);
+	signal v_reset			: signed(N-1 downto 0);
+	signal inh_weight		: signed(N-1 downto 0);
+	signal exc_weight		: signed(N_weight-1 downto 0);
+
+	-- output
+	signal out_spike		: std_logic;
+	signal neuron_ready		: std_logic;
+
+	-- debug output
+	signal v_out			: signed(N-1 downto 0);
+
 
 	component debug_neuron is
 
@@ -74,6 +111,54 @@ architecture test of neuron_and_bram_tb is
 
 
 begin
+
+	-- connect memory and neuron
+	exc_weight <= signed(mem_out(exc_weight'length-1 downto 0));
+
+	-- initialize threshold
+	v_th_value <= to_signed(v_th_value_int, v_th_value'length);
+
+
+	neuron	: debug_neuron 
+
+		generic map(
+			-- parallelism
+			N		=> N,
+			N_weight	=> N_weight,
+
+			-- shift amount
+			shift		=> shift
+		)
+
+		port map(
+			-- input controls
+			clk		=> clk,
+			rst_n		=> rst_n,
+			start		=> start,
+			stop		=> stop,
+			exc_or		=> exc_or,
+			exc_stop	=> exc_stop,
+			inh_or		=> inh_or,
+			inh_stop	=> inh_stop,
+			input_spike	=> input_spike,
+
+			-- to load the threshold
+			v_th_en		=> v_th_en,
+
+			-- input parameters
+			v_th_value	=> v_th_value,
+			v_reset		=> v_reset,
+			inh_weight	=> inh_weight,
+			exc_weight	=> exc_weight,
+
+			-- output
+			out_spike	=> out_spike,
+			neuron_ready	=> neuron_ready,
+
+			-- debug output
+			v_out		=> v_out
+		);
+
 
 
 	BRAM_SDP_MACRO_inst : BRAM_SDP_MACRO
@@ -132,7 +217,7 @@ begin
 			rdclk 	=> clk,   
 
 			-- 1-bit input read port enable
-			rden 	=> '1', --rden,     
+			rden 	=> rden,     
 
 			-- 1-bit input read output register enable
 			regce 	=> '0',   
