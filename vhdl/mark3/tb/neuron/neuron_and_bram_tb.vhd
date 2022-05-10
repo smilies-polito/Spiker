@@ -26,8 +26,27 @@ architecture test of neuron_and_bram_tb is
 	constant inh_weight_int		: integer := -15*2**3;
 	constant v_th_value_int		: integer :=  589;
 
+	constant weights_filename	: string	:= "/home/alessio/"&
+		"OneDrive/Dottorato/Progetti/SNN/Miei/spiker/vhdl/mark3/"&
+		"hyperparameters/weights.mem";
+
+	constant inputs_filename	: string	:= "/home/alessio/"&
+		"OneDrive/Dottorato/Progetti/SNN/Miei/spiker/vhdl/mark3/"&
+		"sim/inputs.txt";
+
+	constant N_inputs		: integer := 784;
+	constant N_inputs_cnt		: integer := 11;
+
+	constant weightsWord		: integer := 36;
+	constant bram_addr_length	: integer := 1;
+	constant N_bram			: integer := 1;
+
+
 	-- common signals
 	signal clk			: std_logic;
+
+	-- to load weights from file
+	signal weights_rden		: std_logic;
 
 	-- memory signals
 	signal mem_out			: std_logic_vector(35 downto 0); 	
@@ -63,6 +82,47 @@ architecture test of neuron_and_bram_tb is
 
 	-- debug output
 	signal v_out			: signed(N-1 downto 0);
+
+	signal input_spikes		: std_logic_vector(N_inputs-1 downto 0);
+	signal sample			: std_logic;
+	signal exc_cnt_en		: std_logic;
+	signal exc_cnt_rst_n		: std_logic;
+	signal exc_cnt			: std_logic_vector(N_inputs_cnt-1 downto 0);
+	signal N_inputs_tc		: std_logic_vector
+						(N_inputs_cnt-1 downto 0);
+
+
+
+	component bit_selection is
+
+		generic(
+			-- number of input bits
+			N_bit			: integer := 8;
+
+			-- selection counter parallelism
+			N_cnt			: integer := 3		
+		);
+
+		port(
+			-- input
+			clk			: in std_logic;
+			input_bits		: in std_logic_vector(N_bit-1 
+							  downto 0);
+			select_cnt_en		: in std_logic;
+			select_cnt_rst_n	: in std_logic;
+			N_inputs		: in std_logic_vector(N_cnt-1 
+							  downto 0);
+
+			-- output
+			all_inputs		: out std_logic;
+			selected_input		: out std_logic;
+			input_index		: out std_logic_vector(N_cnt-1
+							  downto 0);
+			stop			: out std_logic		
+		);
+
+	end component bit_selection;
+
 
 
 	component debug_neuron is
@@ -110,13 +170,203 @@ architecture test of neuron_and_bram_tb is
 	end component debug_neuron;
 
 
+
+	component load_file is
+
+		generic(
+			word_length		: integer := 36;
+			bram_addr_length	: integer := 6;
+			addr_length		: integer := 16;
+			N_bram			: integer := 58;
+			N_words			: integer := 784;
+			weights_filename	: string := "/home/alessio/"&
+			"OneDrive/Dottorato/Progetti/SNN/spiker/vhdl/mark3/"&
+			"hyperparameters/weights.mem"
+		);
+
+		port(
+			-- input
+			clk			: in std_logic;
+			rden			: in std_logic;
+
+			-- output
+			di			: out std_logic_vector(word_length-1
+							downto 0);
+			bram_addr		: out std_logic_vector(bram_addr_length
+							-1 downto 0);
+			wraddr			: out std_logic_vector(addr_length-1
+							downto 0);
+			wren			: out std_logic
+		);
+
+	end component load_file;
+
 begin
 
 	-- connect memory and neuron
-	exc_weight <= signed(mem_out(exc_weight'length-1 downto 0));
+	exc_weight 	<= signed(mem_out(exc_weight'length-1 downto 0));
 
 	-- initialize threshold
-	v_th_value <= to_signed(v_th_value_int, v_th_value'length);
+	v_th_value 	<= to_signed(v_th_value_int, v_th_value'length);
+
+	-- initialize the terminal counter
+	N_inputs_tc	<= std_logic_vector(to_signed(N_inputs,
+			       N_inputs_tc'length));
+
+	rdaddr		<= exc_cnt(rdaddr'length-1 downto 0);
+
+
+
+	-- clock
+	clk_gen		: process
+	begin
+		clk <= '0';
+		wait for 10 ns;
+		clk <= '1';
+		wait for 10 ns;
+	end process clk_gen;
+
+	-- reset (active low)
+	rst_n_gen	: process
+	begin
+		rst_n <= '1';
+		wait for 42 ns;
+		rst_n <= '0';
+		wait for 10 ns;
+		rst_n <= '1';
+		wait;
+	end process rst_n_gen;
+
+	-- weights read enable
+	weights_rden_gen	: process
+	begin
+		weights_rden <= '0';
+		wait for 100 ns;
+		weights_rden <= '1';
+		wait for 1 ms;
+		weights_rden <= '0';
+		wait;
+	end process weights_rden_gen;
+
+
+	-- read enable
+	rden_gen	: process
+	begin
+		rden <= '0';
+		wait for 1.2 ms;
+		rden <= '1';
+		wait;
+	end process rden_gen;
+
+	-- start generation
+	start_gen	: process
+	begin
+		start <= '0';
+		wait for 1.3 ms;
+		start <= '1';
+		wait for 20 ns;
+		start <= '0';
+		wait;
+	end process start_gen;
+
+
+	-- sample input spikes
+	sample_gen		: process
+	begin
+		sample <= '0';
+		wait for 10 ns;
+		sample <= '1';
+		wait for 10 ns;
+		sample <= '0';
+		wait;
+	end process sample_gen;
+
+	
+
+	-- initialize weights
+	init_weights	: load_file 
+
+		generic map(
+			word_length		=> weightsWord,
+			bram_addr_length	=> bram_addr_length,
+			addr_length		=> N_inputs_cnt-1,
+			N_bram			=> N_bram,
+			N_words			=> N_inputs,
+			weights_filename	=> weights_filename
+		)
+
+		port map(
+			-- input
+			clk			=> clk,
+			rden			=> weights_rden,
+
+			-- output
+			di			=> mem_in,
+			bram_addr		=> open,
+			wraddr			=> wraddr,
+			wren			=> wren
+		);
+
+
+	-- read inputs from file
+	read_inputs	: process(clk, sample)
+
+		file inputs_file	: text open read_mode is
+			inputs_filename;
+
+		variable read_line	: line;
+		variable inputs_var	: std_logic_vector(N_inputs-1 
+						downto 0);
+
+	begin
+
+		if clk'event and clk = '1'
+		then
+			if sample = '1'
+			then
+				if not endfile(inputs_file)
+				then
+
+					-- Read line from file
+					readline(inputs_file, read_line);
+					read(read_line, inputs_var);
+
+					-- Associate line to data input
+					input_spikes	<= inputs_var;
+
+				end if;
+			end if;
+		end if;	
+	end process read_inputs;
+
+
+
+
+	select_exc_spike	: bit_selection 
+		generic map(
+			-- number of input bits
+			N_bit			=> N_inputs,
+
+			-- selection counter parallelism
+			N_cnt			=> N_inputs_cnt
+		)
+
+		port map(
+			-- input
+			clk			=> clk,
+			input_bits		=> input_spikes,
+			select_cnt_en		=> exc_cnt_en,
+			select_cnt_rst_n	=> exc_cnt_rst_n,
+			N_inputs		=> N_inputs_tc,
+
+			-- output
+			all_inputs		=> exc_or,
+			selected_input		=> input_spike,
+			input_index		=> exc_cnt,
+			stop			=> exc_stop
+		);
+
+
 
 
 	neuron	: debug_neuron 
