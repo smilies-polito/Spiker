@@ -142,7 +142,7 @@ begin
 				rdclk 	=> clk,   
 
 				-- 1-bit input read port enable
-				rden 	=> '1', --rden,     
+				rden 	=> rden,     
 
 				-- 1-bit input read output register enable
 				regce 	=> '0',   
