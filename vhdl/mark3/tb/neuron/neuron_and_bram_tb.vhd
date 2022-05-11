@@ -21,14 +21,14 @@ architecture test of neuron_and_bram_tb is
 	constant N_weight		: integer := 5;
 
 	-- shift amount
-	constant shift			: integer := 10;
+	constant shift			: integer := 1;
 	constant v_reset_int		: integer := 5*2**3; 	  
 	constant inh_weight_int		: integer := -15*2**3;
 	constant v_th_value_int		: integer :=  589;
 
 	constant weights_filename	: string	:= "/home/alessio/"&
 		"OneDrive/Dottorato/Progetti/SNN/Miei/spiker/vhdl/mark3/"&
-		"hyperparameters/weights.mem";
+		"hyperparameters/dummyWeights.mem";
 
 	constant inputs_filename	: string	:= "/home/alessio/"&
 		"OneDrive/Dottorato/Progetti/SNN/Miei/spiker/vhdl/mark3/"&
@@ -53,7 +53,6 @@ architecture test of neuron_and_bram_tb is
 	signal mem_in			: std_logic_vector(35 downto 0);	
 	signal rdaddr			: std_logic_vector(9 downto 0);		
 	signal rden			: std_logic;		
-	signal regce			: std_logic;		
 	signal rst			: std_logic;		
 	signal we			: std_logic_vector(3 downto 0);		
 	signal wraddr			: std_logic_vector(9 downto 0);		
@@ -65,8 +64,6 @@ architecture test of neuron_and_bram_tb is
 	signal stop			: std_logic;
 	signal exc_or			: std_logic;
 	signal exc_stop			: std_logic;
-	signal inh_or			: std_logic;
-	signal inh_stop			: std_logic;
 	signal input_spike		: std_logic;
 	signal v_th_en			: std_logic;
 
@@ -90,6 +87,7 @@ architecture test of neuron_and_bram_tb is
 	signal exc_cnt			: std_logic_vector(N_inputs_cnt-1 downto 0);
 	signal N_inputs_tc		: std_logic_vector
 						(N_inputs_cnt-1 downto 0);
+	signal out_w_en			: std_logic;
 
 
 
@@ -203,6 +201,10 @@ architecture test of neuron_and_bram_tb is
 
 begin
 
+	-- initialize the constant parameters
+	v_reset		<= to_signed(v_reset_int, v_reset'length);
+	inh_weight	<= to_signed(inh_weight_int, inh_weight'length);
+
 	-- connect memory and neuron
 	exc_weight 	<= signed(mem_out(exc_weight'length-1 downto 0));
 
@@ -214,6 +216,22 @@ begin
 			       N_inputs_tc'length));
 
 	rdaddr		<= exc_cnt(rdaddr'length-1 downto 0);
+
+	-- reset signals
+	rst		<= not rst_n;
+	exc_cnt_rst_n	<= rst_n;
+
+	-- start the counter when one active spike is found
+	exc_cnt_en	<= exc_or;
+
+
+	init_we	: process(wren)
+	begin
+		for i in 0 to we'length - 1
+		loop
+			we(i)	<= wren;
+		end loop;
+	end process init_we;
 
 
 
@@ -232,10 +250,22 @@ begin
 		rst_n <= '1';
 		wait for 42 ns;
 		rst_n <= '0';
-		wait for 10 ns;
+		wait for 20 ns;
 		rst_n <= '1';
 		wait;
 	end process rst_n_gen;
+
+	-- thrshold initialization
+	v_th_en_gen	: process
+	begin
+		v_th_en <= '0';
+		wait for 500 ns;
+		v_th_en <= '1';
+		wait for 20 ns;
+		v_th_en <= '0';
+		wait;
+	end process v_th_en_gen;
+
 
 	-- weights read enable
 	weights_rden_gen	: process
@@ -262,7 +292,7 @@ begin
 	start_gen	: process
 	begin
 		start <= '0';
-		wait for 1.3 ms;
+		wait for 1.5 ms;
 		start <= '1';
 		wait for 20 ns;
 		start <= '0';
@@ -274,12 +304,24 @@ begin
 	sample_gen		: process
 	begin
 		sample <= '0';
-		wait for 10 ns;
+		wait for  1.6 ms;
 		sample <= '1';
-		wait for 10 ns;
+		wait for 20 ns;
 		sample <= '0';
 		wait;
 	end process sample_gen;
+
+	-- enable write onto output file
+	out_w_en_gen		: process
+	begin
+		out_w_en <= '0';
+		wait for  1.6 ms;
+		out_w_en <= '1';
+		wait for  5000*20 ns;
+		out_w_en <= '0';
+		wait;
+	end process out_w_en_gen;
+
 
 	
 
@@ -341,6 +383,46 @@ begin
 
 
 
+	file_write : process(clk, out_w_en)
+
+		file in_spikes_file	: text open write_mode is
+			"/home/alessio/OneDrive/Dottorato/Progetti/SNN/Miei/spiker/vhdl/mark3/plot/data/inSpikes.txt";
+
+		file out_spikes_file	: text open write_mode is
+			"/home/alessio/OneDrive/Dottorato/Progetti/SNN/Miei/spiker/vhdl/mark3/plot/data/outSpikes.txt";
+
+		file v_file		: text open write_mode is 
+			"/home/alessio/OneDrive/Dottorato/Progetti/SNN/Miei/spiker/vhdl/mark3/plot/data/v.txt";
+
+		variable row		: line;
+		variable write_var	: integer;
+
+	begin
+
+		if clk'event and clk = '1'
+		then
+
+			if out_w_en = '1'
+			then
+
+				-- write the input spike
+				write(row, input_spike, right, 1);
+				writeline(in_spikes_file, row);
+
+				-- write the potential value
+				write_var := to_integer(v_out);
+				write(row, write_var);
+				writeline(v_file, row);
+
+				-- write the output spike
+				write(row, out_spike, right, 1);
+				writeline(out_spikes_file, row);
+
+			end if;
+
+		end if;
+
+	end process file_write;
 
 	select_exc_spike	: bit_selection 
 		generic map(
@@ -388,8 +470,8 @@ begin
 			stop		=> stop,
 			exc_or		=> exc_or,
 			exc_stop	=> exc_stop,
-			inh_or		=> inh_or,
-			inh_stop	=> inh_stop,
+			inh_or		=> '0',
+			inh_stop	=> '1',
 			input_spike	=> input_spike,
 
 			-- to load the threshold
