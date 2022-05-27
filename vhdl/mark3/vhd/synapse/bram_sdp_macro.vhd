@@ -15,17 +15,17 @@ entity bram_sdp is
 		rdclk	: in std_logic;
 		rden	: in std_logic;
 		regce	: in std_logic;
-		rdaddr	: in std_logic_vector(8 downto 0);
+		rdaddr	: in std_logic_vector(9 downto 0);
 
 		-- write input
-		we	: in std_logic_vector(7 downto 0);
+		we	: in std_logic_vector(3 downto 0);
 		wrclk	: in std_logic;
 		wren	: in std_logic;
-		wraddr	: in std_logic_vector(8 downto 0);
-		di	: in std_logic_vector(71 downto 0);
+		wraddr	: in std_logic_vector(9 downto 0);
+		di	: in std_logic_vector(35 downto 0);
 
 		-- output
-		do	: out std_logic_vector(71 downto 0)
+		do	: out std_logic_vector(35 downto 0)
 	);
 
 end entity bram_sdp;
