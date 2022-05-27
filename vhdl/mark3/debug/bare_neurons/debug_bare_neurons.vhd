@@ -3,7 +3,7 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 
-entity bare_neurons is
+entity debug_bare_neurons is
 
 	generic(
 		-- internal parallelism
@@ -40,13 +40,16 @@ entity bare_neurons is
 
 		-- output
 		out_spikes		: out std_logic_vector(N_neurons-1 downto 0);
-		all_ready		: out std_logic
+		all_ready		: out std_logic;
+
+		-- debug output
+		v_out			: out signed(N_neurons*parallelism-1 downto 0)
 	);
 
-end entity bare_neurons;
+end entity debug_bare_neurons;
 
 
-architecture behaviour of bare_neurons is
+architecture behaviour of debug_bare_neurons is
 
 	signal neurons_ready	: std_logic_vector(N_neurons-1 downto 0);
 
@@ -69,7 +72,7 @@ architecture behaviour of bare_neurons is
 
 
 
-	component neuron is
+	component debug_neuron is
 
 		generic(
 			-- parallelism
@@ -96,17 +99,25 @@ architecture behaviour of bare_neurons is
 			v_th_en			: in std_logic;
 
 			-- input parameters
-			v_th_value		: in signed(parallelism-1 downto 0);
-			v_reset			: in signed(parallelism-1 downto 0);
-			inh_weight		: in signed(parallelism-1 downto 0);
-			exc_weight		: in signed(weightsParallelism-1 downto 0);
+			v_th_value		: in signed(parallelism-1 downto
+							0);
+			v_reset			: in signed(parallelism-1 downto
+							0);
+			inh_weight		: in signed(parallelism-1 downto
+							0);
+			exc_weight		: in signed(weightsParallelism-1
+							downto 0);
 
 			-- output
 			out_spike		: out std_logic;
-			neuron_ready		: out std_logic
+			neuron_ready		: out std_logic;
+
+			-- debug output
+			v_out			: out signed(parallelism-1
+							downto 0)
 		);
 
-	end component neuron;
+	end component debug_neuron;
 
 
 begin
@@ -130,7 +141,7 @@ begin
 	neurons	: for i in 0 to N_neurons-1
 	generate
 
-		neuron_i	: neuron
+		neuron_i	: debug_neuron
 			generic map(
 				-- parallelisms
 				parallelism		=> parallelism,
@@ -142,21 +153,21 @@ begin
 							       
 			port map(
 				-- input control
-				clk		=> clk,
-				rst_n		=> rst_n,
-				start		=> start,
-				stop		=> stop,
-				exc_or	       	=> exc_or,
-				exc_stop       	=> exc_stop,
-				inh_or	        => inh_or,
-				inh_stop        => inh_stop,
-				input_spike	=> input_spikes(i),
+				clk			=> clk,
+				rst_n			=> rst_n,
+				start			=> start,
+				stop			=> stop,
+				exc_or			=> exc_or,
+				exc_stop		=> exc_stop,
+				inh_or			=> inh_or,
+				inh_stop		=> inh_stop,
+				input_spike		=> input_spikes(i),
 							       
 				-- input parameters
-				v_th_value	=> v_th_value,
-				v_reset		=> v_reset,
-				inh_weight	=> inh_weight,
-				exc_weight	=> exc_weights((i+1)*
+				v_th_value		=> v_th_value,
+				v_reset			=> v_reset,
+				inh_weight		=> inh_weight,
+				exc_weight		=> exc_weights((i+1)*
 							weightsParallelism-1
 							downto
 							i*weightsParallelism),
@@ -166,7 +177,12 @@ begin
 							       
 				-- output         
 				out_spike	=> out_spikes(i),
-				neuron_ready	=> neurons_ready(i)
+				neuron_ready	=> neurons_ready(i),
+
+				-- debug output
+				v_out		=> v_out((i+1)*parallelism-1
+							downto
+							i*parallelism)
 			);
 
 
