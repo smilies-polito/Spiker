@@ -45,7 +45,7 @@ architecture test of spiker_tb is
 
 	constant weights_filename	: string	:= "/home/alessio/"&
 		"OneDrive/Dottorato/Progetti/SNN/Miei/spiker/vhdl/mark3/"&
-		"hyperparameters/weights.mem";
+		"hyperparameters/dummyWeights.mem";
 
 	constant thresholds_filename	: string	:= "/home/alessio/"&
 		"OneDrive/Dottorato/Progetti/SNN/Miei/spiker/vhdl/mark3/"&
@@ -110,9 +110,8 @@ architecture test of spiker_tb is
 	signal sample			: std_logic;
 
 
-	-- Output counters signal
-	signal cnt_out			: std_logic_vector(N_neurons*N_out-1
-						downto 0);
+	signal out_spikes		: std_logic_vector(N_neurons-1 downto 0);
+	signal cnt_out			: std_logic_vector(N_neurons*N_out-1 downto 0);
 	signal write_out		: std_logic;
 
 		
@@ -231,9 +230,13 @@ architecture test of spiker_tb is
 			wraddr		: in std_logic_vector(9 downto 0);
 			bram_sel	: in std_logic_vector(5 downto 0);
 
+			-- Output spikes
+			out_spikes_out	: out std_logic_vector(N_neurons-1
+						downto 0);
+			
 			-- Output counters signals
-			cnt_out	: out std_logic_vector(N_neurons*N_out-1 
-					downto 0)
+			cnt_out		: out std_logic_vector(N_neurons*N_out-1 
+						downto 0)
 		);
 
 	end component spiker;
@@ -432,14 +435,13 @@ begin
 			if write_out = '1'
 			then
 
-				write(write_line, cnt_out);
+				write(write_line, out_spikes);
 				writeline(output_file, write_line);
 
 			end if;
 		end if;	
 
 	end process store_outputs;
-
 
 	dut	: spiker
 		generic map(
@@ -512,8 +514,11 @@ begin
 			wraddr		=> wraddr,
 			bram_sel	=> bram_sel,
 
-			-- Output counters signals
-			cnt_out		=> cnt_out	
+			-- Output spikes
+			out_spikes_out	=> out_spikes,
+
+			-- Output counters
+			cnt_out		=> cnt_out
 		);
 
 end architecture test;

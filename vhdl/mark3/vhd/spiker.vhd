@@ -79,6 +79,10 @@ entity spiker is
 		wraddr		: in std_logic_vector(9 downto 0);
 		bram_sel	: in std_logic_vector(5 downto 0);
 
+		-- Output spikes
+		out_spikes_out	: out std_logic_vector(N_neurons-1 downto 0);
+
+
 		-- Output counters signals
 		cnt_out	: out std_logic_vector(N_neurons*N_out-1 downto 0)
 	);
@@ -94,7 +98,8 @@ architecture behaviour of spiker is
 	signal rdaddr			: std_logic_vector(10 downto 0);
 
 	-- Memory signals: output
-	signal exc_weights		: std_logic_vector(400*5-1 downto 0);
+	signal exc_weights		:
+		std_logic_vector(N_neurons*weightsParallelism-1 downto 0);
 
 	-- Layer signals: input
 	signal stop			: std_logic;	
@@ -107,6 +112,8 @@ architecture behaviour of spiker is
 	signal cycles_cnt_en		: std_logic;	
 	signal cycles_cnt		: std_logic_vector(N_cycles_cnt-1 downto
 						0);
+	signal cnt_out_rst_n		: std_logic;
+	
 
 
 	component weights_bram is
@@ -242,6 +249,9 @@ architecture behaviour of spiker is
 
 begin
 
+	out_spikes_out	<= out_spikes;
+	cnt_out_rst_n	<= not start;
+
 
 	weights_memory	: weights_bram 
 		port map(
@@ -324,26 +334,26 @@ begin
 		);
 
 
-	out_cnt_layer	: for i in 0 to N_neurons-1
-	generate
-		
-		out_cnt : cnt
-			generic map(
-				N		=> N_out
-			)
-
-			port map(
-				-- input
-				clk		=> clk,
-				cnt_en		=> out_spikes(i),
-				cnt_rst_n	=> start,
-								   
-				-- output
-				cnt_out		=> cnt_out((i+1)*N_out-1
-							downto i*N_out)
-			);
-
-	end generate out_cnt_layer;
+ 	out_cnt_layer	: for i in 0 to N_neurons-1
+ 	generate
+ 		
+ 		out_cnt : cnt
+ 			generic map(
+ 				N		=> N_out
+ 			)
+ 
+ 			port map(
+ 				-- input
+ 				clk		=> clk,
+ 				cnt_en		=> out_spikes(i),
+ 				cnt_rst_n	=> cnt_out_rst_n,
+ 								   
+ 				-- output
+ 				cnt_out		=> cnt_out((i+1)*N_out-1
+ 							downto i*N_out)
+ 			);
+ 
+ 	end generate out_cnt_layer;
 
 
 	cycles_counter	: cnt
