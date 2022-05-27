@@ -3,7 +3,7 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 
-entity layer_datapath is
+entity debug_layer_datapath is
 
 	generic(
 
@@ -83,14 +83,18 @@ entity layer_datapath is
 
 		-- output address to select the excitatory weights
 		exc_cnt			: out std_logic_vector
-						(N_inputs_cnt-1 downto 0)
+						(N_inputs_cnt-1 downto 0);
+
+		-- debug output
+		v_out			: out signed(N_neurons*parallelism-1
+						downto 0)
 	
 	);
 
-end entity layer_datapath;
+end entity debug_layer_datapath;
 
 
-architecture behaviour of layer_datapath is
+architecture behaviour of debug_layer_datapath is
 
 	signal exc_spikes		: std_logic_vector(N_inputs-1 downto 0);
 	signal inh_spikes		: std_logic_vector(N_neurons-1 
