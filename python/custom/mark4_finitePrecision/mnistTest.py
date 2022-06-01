@@ -1,5 +1,7 @@
 import timeit
+import sys
 
+from mnist import loadDataset
 from createNetwork import createNetwork
 from testFunctions import singleImageTest
 from storeParameters import *
@@ -13,6 +15,11 @@ from files import *
 from runParameters import *
 
 
+
+# Load the MNIST dataset
+_ , labelsArray = loadDataset(testImages, testLabels)
+
+
 # Create the network data structure
 network = createNetwork(networkList, weightFilename, thresholdFilename, mode, 
 			excDictList, scaleFactors, inh2excWeights,
@@ -20,6 +27,11 @@ network = createNetwork(networkList, weightFilename, thresholdFilename, mode,
 
 checkParallelism(network["exc2exc1"]["weights"], weights_parallelism)
 
+currentIndex = sys.argv[1]
+
+
+# Measure the test starting time
+startTimeTraining = timeit.default_timer()
 
 # Complete test cycle over a single image
 inputIntensity, currentIndex, accuracies = \
@@ -27,7 +39,7 @@ inputIntensity, currentIndex, accuracies = \
 		trainDuration,
 		restTime,
 		dt,
-		imgArray[currentIndex],
+		None,
 		network,
 		networkList,
 		dt_tauDict,
@@ -46,7 +58,8 @@ inputIntensity, currentIndex, accuracies = \
 		constSums,
 		rng,
 		exp_shift,
-		neuron_parallelism
+		neuron_parallelism,
+		inputFilename
 	)
 
 # Store the performance of the network into a text file
