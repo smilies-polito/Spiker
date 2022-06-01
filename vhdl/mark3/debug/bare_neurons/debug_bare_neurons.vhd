@@ -43,7 +43,7 @@ entity debug_bare_neurons is
 		all_ready		: out std_logic;
 
 		-- debug output
-		v_out			: out signed(N_neurons*parallelism-1 downto 0)
+		v_out			: out signed(parallelism-1 downto 0)
 	);
 
 end entity debug_bare_neurons;
@@ -70,6 +70,45 @@ architecture behaviour of debug_bare_neurons is
 	end component generic_and;
 
 
+	component neuron is
+
+		generic(
+			-- parallelism
+			parallelism		: integer := 16;
+			weightsParallelism	: integer := 5;
+
+			-- shift amount
+			shift			: integer := 1
+		);
+
+		port(
+			-- input controls
+			clk			: in std_logic;
+			rst_n			: in std_logic;
+			start			: in std_logic;
+			stop			: in std_logic;
+			exc_or			: in std_logic;
+			exc_stop		: in std_logic;
+			inh_or			: in std_logic;
+			inh_stop		: in std_logic;
+			input_spike		: in std_logic;
+
+			-- to load the threshold
+			v_th_en			: in std_logic;
+
+			-- input parameters
+			v_th_value		: in signed(parallelism-1 downto 0);
+			v_reset			: in signed(parallelism-1 downto 0);
+			inh_weight		: in signed(parallelism-1 downto 0);
+			exc_weight		: in signed(weightsParallelism-1 
+							  downto 0);
+
+			-- output
+			out_spike		: out std_logic;
+			neuron_ready		: out std_logic
+		);
+
+	end component neuron;
 
 
 	component debug_neuron is
@@ -138,10 +177,50 @@ begin
 		);
 
 
-	neurons	: for i in 0 to N_neurons-1
+	debug_node		: debug_neuron
+		generic map(
+			-- parallelisms
+			parallelism		=> parallelism,
+			weightsParallelism	=> weightsParallelism,
+						       
+			-- shift amount    
+			shift			=> shift
+		)                                      
+						       
+		port map(
+			-- input control
+			clk			=> clk,
+			rst_n			=> rst_n,
+			start			=> start,
+			stop			=> stop,
+			exc_or			=> exc_or,
+			exc_stop		=> exc_stop,
+			inh_or			=> inh_or,
+			inh_stop		=> inh_stop,
+			input_spike		=> input_spikes(0),
+						       
+			-- input parameters
+			v_th_value		=> v_th_value,
+			v_reset			=> v_reset,
+			inh_weight		=> inh_weight,
+			exc_weight		=> exc_weights(
+						weightsParallelism-1 downto 0),
+			
+			-- to load the threshold
+			v_th_en		=> v_th_en(0),
+						       
+			-- output         
+			out_spike	=> out_spikes(0),
+			neuron_ready	=> neurons_ready(0),
+
+			-- debug output
+			v_out		=> v_out
+		);
+
+	neurons	: for i in 1 to N_neurons-1
 	generate
 
-		neuron_i	: debug_neuron
+		neuron_i	: neuron
 			generic map(
 				-- parallelisms
 				parallelism		=> parallelism,
@@ -177,12 +256,7 @@ begin
 							       
 				-- output         
 				out_spike	=> out_spikes(i),
-				neuron_ready	=> neurons_ready(i),
-
-				-- debug output
-				v_out		=> v_out((i+1)*parallelism-1
-							downto
-							i*parallelism)
+				neuron_ready	=> neurons_ready(i)
 			);
 
 

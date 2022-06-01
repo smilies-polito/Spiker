@@ -86,7 +86,7 @@ entity debug_layer_datapath is
 						(N_inputs_cnt-1 downto 0);
 
 		-- debug output
-		v_out			: out signed(N_neurons*parallelism-1
+		v_out			: out signed(parallelism-1
 						downto 0)
 	
 	);
@@ -253,8 +253,7 @@ architecture behaviour of debug_layer_datapath is
 			all_ready		: out std_logic;
 
 			-- debug output
-			v_out			: out signed(
-							N_neurons*parallelism-1
+			v_out			: out signed(parallelism-1
 							downto 0)
 		);
 		

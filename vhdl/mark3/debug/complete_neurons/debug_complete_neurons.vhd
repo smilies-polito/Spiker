@@ -48,8 +48,7 @@ entity debug_complete_neurons is
 		all_ready		: out std_logic;
 
 		-- debug output
-		v_out			: out signed(N_neurons*parallelism-1
-						downto 0)
+		v_out			: out signed(parallelism-1 downto 0)
 	);
 	
 end entity debug_complete_neurons;
@@ -109,8 +108,7 @@ architecture behaviour of debug_complete_neurons is
 			all_ready		: out std_logic;
 
 			-- debug output
-			v_out			: out signed(N_neurons*
-							parallelism-1 downto 0)
+			v_out			: out signed(parallelism-1 downto 0)
 		);
 
 	end component debug_bare_neurons;
