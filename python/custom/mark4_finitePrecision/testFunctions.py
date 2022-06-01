@@ -2,7 +2,7 @@ import timeit
 import numpy as np
 
 from utils import seconds2hhmmss
-from poisson import imgToSpikeTrain
+from poisson import importSpikes
 from network import run
 from common import *
 
@@ -13,7 +13,8 @@ def singleImageTest(trainDuration, restTime, dt, image,	network, networkList,
 			currentIndex, spikesEvolution, updateInterval,
 			printInterval, startTimeTraining, accuracies,
 			labelsArray, assignments, startInputIntensity, mode,
-			constSums, rng, exp_shift, neuron_parallelism):
+			constSums, rng, exp_shift, neuron_parallelism,
+			inputFilename):
 
 	'''
 	Test the network over an image of the dataset.
@@ -86,6 +87,9 @@ def singleImageTest(trainDuration, restTime, dt, image,	network, networkList,
 
 		23) neuron_parallelism: number of bits on which the neuron works.
 
+		24) inputFilename: string. Name of the file containing the input
+		spikes.
+
 	
 	OUTPUT:
 
@@ -106,9 +110,8 @@ def singleImageTest(trainDuration, restTime, dt, image,	network, networkList,
 	# Measure the system time corresponding to the beginning of the image
 	startTimeImage = timeit.default_timer()
 
-	# Convert the image into spikes trains
-	spikesTrains = imgToSpikeTrain(image, dt, trainingSteps, inputIntensity,
-			rng)
+	# Import the spikes from an input file
+	spikesTrains = importSpikes(inputFilename)
 
 	# Test the network with the spikes sequences associated to the pixels.
 	inputIntensity, currentIndex, accuracies = \
@@ -134,8 +137,6 @@ def singleImageTest(trainDuration, restTime, dt, image,	network, networkList,
 			exp_shift,
 			neuron_parallelism
 			)
-
-
 
 	# Bring the network into a rest state
 	rest(network, networkList)

@@ -2,6 +2,37 @@
 
 import numpy as np
 
+def importSpikes(filename):
+
+	'''
+	Read the input spikes from file and convert them into a numpy array.
+
+	INPUT:
+		filename: string. Name of the file containing the spikes in text
+		form.
+
+
+	NOTE: format of the file.
+		
+		The file must be a text file with one single line containing all
+		the spikes represented as "0" or "1", without quotes or spaces.
+	'''
+
+	# Read one single string from the input file
+	with open(filename, "r") as fp:
+		binaryString = fp.read()
+	
+	# Remove newline character
+	binaryString = binaryString[:-1]
+
+	# Convert string into list
+	binaryList = list(binaryString)
+
+	# Convert list of characters into array of integers
+	binaryArray = np.array(binaryList).astype(int)
+
+	# Convert integers to boolean and return the resulting array
+	return binaryArray.astype(bool)
 
 def imgToSpikeTrain(image, dt, trainingSteps, inputIntensity, rng):
 
