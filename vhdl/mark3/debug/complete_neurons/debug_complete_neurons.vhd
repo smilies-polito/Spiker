@@ -2,7 +2,7 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
-entity complete_neurons is
+entity debug_complete_neurons is
 
 	generic(
 		-- internal parallelism
@@ -29,7 +29,8 @@ entity complete_neurons is
 		inh_stop		: in std_logic;
 		inh			: in std_logic;
 		load_v_th		: in std_logic;
-		neuron_addr		: in std_logic_vector(N_addr-1 downto 0);
+		neuron_addr		: in std_logic_vector(N_addr-1
+						downto 0);
 
 		-- input
 		input_spike		: in std_logic;
@@ -42,20 +43,25 @@ entity complete_neurons is
 						weightsParallelism-1 downto 0);
 
 		-- output
-		out_spikes		: out std_logic_vector(N_neurons-1 downto 0);
-		all_ready		: out std_logic
+		out_spikes		: out std_logic_vector(N_neurons-1
+						downto 0);
+		all_ready		: out std_logic;
+
+		-- debug output
+		v_out			: out signed(N_neurons*parallelism-1
+						downto 0)
 	);
 	
-end entity complete_neurons;
+end entity debug_complete_neurons;
 
 
-architecture behaviour of complete_neurons is
+architecture behaviour of debug_complete_neurons is
 
 	signal unmasked_select	: std_logic_vector(2**N_addr-1 downto 0);
 	signal input_spikes	: std_logic_vector(N_neurons-1 downto 0);
 	signal v_th_en		: std_logic_vector(N_neurons-1 downto 0);
 
-	component bare_neurons is
+	component debug_bare_neurons is
 
 		generic(
 			-- internal parallelism
@@ -79,24 +85,35 @@ architecture behaviour of complete_neurons is
 			exc_stop		: in std_logic;
 			inh_or			: in std_logic;
 			inh_stop		: in std_logic;
-			v_th_en			: in std_logic_vector(N_neurons-1 downto 0);
+			v_th_en			: in std_logic_vector(
+							N_neurons-1 downto 0);
 
 			-- input
-			input_spikes		: in std_logic_vector(N_neurons-1 downto 0);
+			input_spikes		: in std_logic_vector(
+							N_neurons-1 downto 0);
 
 			-- input parameters
-			v_th_value		: in signed(parallelism-1 downto 0);		
-			v_reset			: in signed(parallelism-1 downto 0);		
-			inh_weight		: in signed(parallelism-1 downto 0);		
+			v_th_value		: in signed(parallelism-1 
+							downto 0);		
+			v_reset			: in signed(parallelism-1
+							downto 0);		
+			inh_weight		: in signed(parallelism-1
+							downto 0);		
 			exc_weights		: in signed(N_neurons*
-							  weightsParallelism-1 downto 0);
+							  weightsParallelism-1
+							  downto 0);
 
 			-- output
-			out_spikes		: out std_logic_vector(N_neurons-1 downto 0);
-			all_ready		: out std_logic
+			out_spikes		: out std_logic_vector(
+							N_neurons-1 downto 0);
+			all_ready		: out std_logic;
+
+			-- debug output
+			v_out			: out signed(N_neurons*
+							parallelism-1 downto 0)
 		);
 
-	end component bare_neurons;
+	end component debug_bare_neurons;
 
 
 	
@@ -111,7 +128,8 @@ architecture behaviour of complete_neurons is
 			encoded_in	: in std_logic_vector(N-1 downto 0);
 
 			-- output
-			decoded_out	: out  std_logic_vector(2**N -1 downto 0)
+			decoded_out	: out  std_logic_vector(2**N -1 
+						downto 0)
 		);
 
 	end component decoder;
@@ -156,7 +174,7 @@ architecture behaviour of complete_neurons is
 
 begin
 
-	neurons_layer	: bare_neurons 
+	neurons_layer	: debug_bare_neurons 
 
 		generic map(
 			-- internal parallelism
@@ -193,7 +211,10 @@ begin
 
 			-- output
 			out_spikes		=> out_spikes,
-			all_ready		=> all_ready
+			all_ready		=> all_ready,
+
+			-- debug output
+			v_out			=> v_out
 		);
 
 	
@@ -222,7 +243,8 @@ begin
 
 		port map(
 			-- input
-			input_bits	=> unmasked_select(N_neurons-1 downto 0),
+			input_bits	=> unmasked_select(N_neurons-1 
+						downto 0),
 			mask_bit	=> load_v_th,
                                                       
 			-- output
@@ -238,7 +260,8 @@ begin
 
 		port map(
 			-- input
-			input_bits	=> unmasked_select(N_neurons-1 downto 0),
+			input_bits	=> unmasked_select(N_neurons-1
+						downto 0),
 			mask_bit0	=> inh,
 			mask_bit1	=> input_spike,
                                                       

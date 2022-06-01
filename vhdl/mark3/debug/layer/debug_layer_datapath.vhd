@@ -203,7 +203,7 @@ architecture behaviour of debug_layer_datapath is
 
 
 
-	component complete_neurons is
+	component debug_complete_neurons is
 
 		generic(
 			-- int parallelism_
@@ -250,10 +250,15 @@ architecture behaviour of debug_layer_datapath is
 			-- output
 			out_spikes		: out std_logic_vector
 							(N_neurons-1 downto 0);
-			all_ready		: out std_logic
+			all_ready		: out std_logic;
+
+			-- debug output
+			v_out			: out signed(
+							N_neurons*parallelism-1
+							downto 0)
 		);
 		
-	end component complete_neurons;
+	end component debug_complete_neurons;
 
 
 begin
@@ -385,7 +390,7 @@ begin
 
 
 
-	bare_layer : complete_neurons
+	bare_layer : debug_complete_neurons
 
 		generic map(
 
@@ -426,7 +431,10 @@ begin
 							       
 			-- output		   
 			out_spikes		=> feedback_spikes,
-			all_ready		=> all_ready
+			all_ready		=> all_ready,
+
+			-- debug output
+			v_out			=> v_out
 		);
 
 
