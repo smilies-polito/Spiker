@@ -9,7 +9,7 @@ end entity debug_layer_tb;
 
 architecture test of debug_layer_tb is
 
-	-- Int parallelism
+	-- Parallelisms
 	constant parallelism		: integer := 16;
 	constant weightsParallelism	: integer := 5;
 
@@ -30,19 +30,19 @@ architecture test of debug_layer_tb is
 	-- Exponential decay shift
 	constant shift			: integer := 10;
 
-	-- Output counters parallelism
-	constant N_out			: integer := 16;
-
 	-- Number of elaboration cycles
 	constant N_cycles		: integer := 3500;
 	
 	-- Cycles cnt
 	constant N_cycles_cnt		: integer := 12;
 	
+
+	-- Constant parameters
 	constant v_reset_int		: integer := 5*2**3; 	  
 	constant inh_weight_int	 	: integer := -15*2**3; 
 
 
+	--File names
 	constant weights_filename	: string	:= "/home/alessio/"&
 		"OneDrive/Dottorato/Progetti/SNN/Miei/spiker/vhdl/mark3/"&
 		"hyperparameters/dummyWeights.mem";
@@ -58,7 +58,8 @@ architecture test of debug_layer_tb is
 	constant output_filename	: string	:= "/home/alessio/"&
 		"OneDrive/Dottorato/Progetti/SNN/Miei/spiker/vhdl/mark3/"&
 		"sim/cntOut.txt";
-	
+
+	-- BRAM parameters
 	constant weightsWord		: integer := 36;
 	constant bram_addr_length	: integer := 6;
 	constant weights_addr_length	: integer := 10;
@@ -66,36 +67,44 @@ architecture test of debug_layer_tb is
 
 
 
+
+
+
+	-- Io files control signals
+	signal weights_rden		: std_logic;
+	signal thresholds_rden		: std_logic;
+	signal write_out		: std_logic;
+
+
+
+
 	-- Common signals
 	signal clk			: std_logic;
 	signal rst_n			: std_logic;
-	
-	-- Memory signals: input
-	signal input_weights		: std_logic_vector(35 downto 0);
-	signal rden			: std_logic;
-	signal wren			: std_logic;
-	signal wraddr			: std_logic_vector(weights_addr_length-1 downto 0);
-	signal bram_sel			: std_logic_vector(bram_addr_length-1 downto 0);
-	signal weights_rden		: std_logic;
 
-	-- Threshold initialization
+
+
+
+	-- Layer signals: control input
+	signal start			: std_logic;	
+	signal stop			: std_logic;	
 	signal init_v_th		: std_logic;
+
+	
+	-- Layer signals: address to select the neurons
 	signal v_th_addr		: std_logic_vector(N_neurons_cnt-1
 						downto 0);
-	signal v_th_value		: signed(parallelism-1 downto 0);		
-	signal thresholds_rden		: std_logic;
-	signal dummy_addr		: std_logic_vector(0 downto 0);
 
-
-
-	-- Layer signals: input
-	signal start			: std_logic;	
+	-- Layer signals: data input
 	signal input_spikes		: std_logic_vector
 					     (N_inputs-1 downto 0);
 
-	-- Input parameters
+	-- Layer signals: input parameters
+	signal v_th_value		: signed(parallelism-1 downto 0);	
 	signal v_reset			: signed(parallelism-1 downto 0);	
 	signal inh_weight		: signed(parallelism-1 downto 0);		
+	signal exc_weights		: signed(N_neurons*weightsParallelism-1
+						downto 0);
 
 	-- Terminal counters
 	signal N_inputs_tc		: std_logic_vector
@@ -106,13 +115,33 @@ architecture test of debug_layer_tb is
 						(N_cycles_cnt-1 downto 0);
 
 	-- Layer signals: output
+	signal out_spikes		: std_logic_vector(N_neurons-1 downto
+						0);
 	signal ready			: std_logic;
 	signal sample			: std_logic;
+	signal cycles_cnt_rst_n		: std_logic;	
+	signal cycles_cnt_en		: std_logic;	
+
+	-- Layer signals: debug output
+	signal v_out			: signed(parallelism-1 downto 0);
 
 
-	signal out_spikes		: std_logic_vector(N_neurons-1 downto 0);
-	signal cnt_out			: std_logic_vector(N_neurons*N_out-1 downto 0);
-	signal write_out		: std_logic;
+
+
+
+	-- Memory signals: input
+	signal input_weights		: std_logic_vector(35 downto 0);
+	signal rden			: std_logic;
+	signal wren			: std_logic;
+	signal wraddr			: std_logic_vector(weights_addr_length-1 downto 0);
+	signal bram_sel			: std_logic_vector(bram_addr_length-1 downto 0);
+
+	-- Memory signals: output
+	signal output_weights		: std_logic_vector(N_neurons*
+						weightsParallelism-1 downto 0);
+
+
+
 
 		
 	component load_file is
@@ -145,6 +174,103 @@ architecture test of debug_layer_tb is
 
 	end component load_file;
 
+
+
+	component debug_layer is
+
+		generic(
+
+			-- int parallelism
+			parallelism		: integer := 16;
+			weightsParallelism	: integer := 5;
+
+			-- input spikes
+			N_inputs		: integer := 784;
+
+			-- must be one bit larger that the parallelism required to count
+			-- up to N_inputs
+			N_inputs_cnt		: integer := 11;
+
+			-- inhibitory spikes
+			N_neurons		: integer := 400;
+
+			-- must be one bit larger that the parallelism required to count
+			-- up to N_neurons
+			N_neurons_cnt		: integer := 10;
+
+			-- exponential decay shift
+			shift			: integer := 10
+		);
+
+		port(
+			-- control input
+			clk			: in std_logic;
+			rst_n			: in std_logic;	
+			start			: in std_logic;	
+			stop			: in std_logic;	
+			init_v_th		: in std_logic;
+
+			-- address to select the neurons
+			v_th_addr		: in std_logic_vector(N_neurons_cnt-1
+							  downto 0);
+
+			-- data input
+			input_spikes		: in std_logic_vector
+							(N_inputs-1 downto 0);
+
+			-- input parameters
+			v_th_value		: in signed(parallelism-1 downto 0);		
+			v_reset			: in signed(parallelism-1 downto 0);	
+			inh_weight		: in signed(parallelism-1 downto 0);		
+			exc_weights		: in signed
+							(N_neurons*weightsParallelism-1
+							 downto 0);
+
+			-- terminal counters 
+			N_inputs_tc		: in std_logic_vector
+							(N_inputs_cnt-1 downto 0);
+			N_neurons_tc		: in std_logic_vector
+							(N_neurons_cnt-1 downto 0);
+
+			-- output
+			out_spikes		: out std_logic_vector
+							(N_neurons-1 downto 0);
+			ready			: out std_logic;
+			sample			: out std_logic;
+			cycles_cnt_rst_n	: out std_logic;	
+			cycles_cnt_en		: out std_logic;	
+
+			-- output address to select the excitatory weights
+			exc_cnt			: out std_logic_vector
+							(N_inputs_cnt-1 downto 0);
+
+			-- debug output
+			v_out			: out signed(parallelism-1
+							downto 0)
+		);
+
+	end component debug_layer;
+
+
+	component weights_bram is
+
+		port(
+			-- input
+			clk		: in std_logic;
+			di		: in std_logic_vector(35 downto 0);
+			rst_n		: in std_logic;
+			rdaddr		: in std_logic_vector(9 downto 0);
+			rden		: in std_logic;
+			wren		: in std_logic;
+			wraddr		: in std_logic_vector(9 downto 0);
+			bram_sel	: in std_logic_vector(5 downto 0);
+
+			-- output
+			do		: out std_logic_vector(400*5-1 downto 0)
+					
+		);
+
+	end component weights_bram;
 
 begin
 
@@ -206,7 +332,7 @@ begin
 
 			-- output
 			std_logic_vector(di)	=> v_th_value,
-			bram_addr		=> dummy_addr,
+			bram_addr		=> bram_sel,
 			wraddr			=> v_th_addr(N_neurons_cnt-2
 							downto 0),
 			wren			=> init_v_th 
@@ -269,6 +395,9 @@ begin
 		end if;	
 
 	end process store_outputs;
+
+
+
 
 
 
