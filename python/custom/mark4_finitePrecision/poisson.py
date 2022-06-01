@@ -2,37 +2,49 @@
 
 import numpy as np
 
-def importSpikes(filename):
+
+def importSpikes(filename, trainingSteps, inputLayerSize):
 
 	'''
 	Read the input spikes from file and convert them into a numpy array.
 
 	INPUT:
-		filename: string. Name of the file containing the spikes in text
+		1) filename: string. Name of the file containing the spikes in text
 		form.
 
+		2) trainingSteps: total amount of time steps associated to the
+		pixels' spikes trains. This must be equal to the number of lines
+		in the file.
 
-	NOTE: format of the file.
-		
-		The file must be a text file with one single line containing all
-		the spikes represented as "0" or "1", without quotes or spaces.
+		3) inputLayerSize: total amount of input spikes per each cycle.
+		Each line of the file must contain exactly this amount of "0"
+		and "1".
 	'''
+
+	spikesTrains = np.zeros((trainingSteps, inputLayerSize)).astype(bool)
+	i = 0
 
 	# Read one single string from the input file
 	with open(filename, "r") as fp:
-		binaryString = fp.read()
+
+		for line in fp:
+
+			# Remove newline character
+			binaryString = line[:-1]
+
+			# Convert string into list
+			binaryList = list(binaryString)
+
+			# Convert list of characters into array of integers
+			binaryArray = np.array(binaryList).astype(int)
+
+			# Convert integers to boolean
+			spikesTrains[i] = binaryArray.astype(bool)
+			
+			i += 1
+
+	return spikesTrains
 	
-	# Remove newline character
-	binaryString = binaryString[:-1]
-
-	# Convert string into list
-	binaryList = list(binaryString)
-
-	# Convert list of characters into array of integers
-	binaryArray = np.array(binaryList).astype(int)
-
-	# Convert integers to boolean and return the resulting array
-	return binaryArray.astype(bool)
 
 def imgToSpikeTrain(image, dt, trainingSteps, inputIntensity, rng):
 
