@@ -8,7 +8,7 @@ from common import *
 
 
 
-def singleImageTest(trainDuration, restTime, dt, image,	network, networkList,
+def singleImageTest(trainDuration, restTime, dt, image, network, networkList,
 			dt_tauDict, countThreshold, inputIntensity,
 			currentIndex, spikesEvolution, updateInterval,
 			printInterval, startTimeTraining, accuracies,
@@ -39,7 +39,7 @@ def singleImageTest(trainDuration, restTime, dt, image,	network, networkList,
 		in that layer.
 
 		7) dt_tauDict: dictionary containing the exponential constants
-		of the excitatory and inhibitory membrane and of the 
+		o6f the excitatory and inhibitory membrane and of the 
 		homeostasis parameter theta .
 
 		8) countThreshold: minimum acceptable number of output spikes
@@ -64,7 +64,9 @@ def singleImageTest(trainDuration, restTime, dt, image,	network, networkList,
 		of the training.
 
 		15) accuracies: list of strings containing the history of the
-		accuracy.
+		accuracy.0
+		15) labelsArray: NumPy array containing all the labels of the
+		training set.
 
 		16) labelsArray: NumPy array containing all the labels of the
 		training set.
@@ -76,7 +78,7 @@ def singleImageTest(trainDuration, restTime, dt, image,	network, networkList,
 		The default value is 2.
 
 		19) mode: string. It can be "train" or "test".
-
+-
 		20) constSums: NumPy array. Each element represents the constant
 		value corresponding to the sum of all the weights of a single 
 		neuron in the specific layer.
@@ -111,7 +113,8 @@ def singleImageTest(trainDuration, restTime, dt, image,	network, networkList,
 	startTimeImage = timeit.default_timer()
 
 	# Import the spikes from an input file
-	spikesTrains = importSpikes(inputFilename)
+	spikesTrains = importSpikes(inputFilename, trainingSteps,
+			networkList[0])
 
 	# Test the network with the spikes sequences associated to the pixels.
 	inputIntensity, currentIndex, accuracies = \
