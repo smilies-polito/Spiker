@@ -2,18 +2,20 @@
 
 VHD_DIR="../vhd"
 DEBUG_DIR="../debug"
-TB_DIR="../tb"
+TB_DIR="../tb/debug/layer"
 
-TOP_ENTITY="debug_layer"
+TOP_ENTITY="debug_layer_tb"
 
 # Neuron
 xvhdl $VHD_DIR"/neuron/add_sub.vhd"
 xvhdl $VHD_DIR"/neuron/cmp_gt.vhd"
 xvhdl $VHD_DIR"/neuron/mux2to1_signed.vhd"
 xvhdl $VHD_DIR"/neuron/mux4to1_signed.vhd"
-xvhdl $DEBUG_DIR"/neuron/debug_neuron.vhd"
 xvhdl $VHD_DIR"/neuron/neuron_cu.vhd"
+xvhdl $VHD_DIR"/neuron/neuron_datapath.vhd"
+xvhdl $VHD_DIR"/neuron/neuron.vhd"
 xvhdl $DEBUG_DIR"/neuron/debug_neuron_datapath.vhd"
+xvhdl $DEBUG_DIR"/neuron/debug_neuron.vhd"
 xvhdl $VHD_DIR"/neuron/reg_signed_sync_rst.vhd"
 xvhdl $VHD_DIR"/neuron/shifter.vhd"
 
@@ -39,9 +41,17 @@ xvhdl $DEBUG_DIR"/layer/debug_layer_datapath.vhd"
 xvhdl $VHD_DIR"/layer/mux2to1.vhd"
 xvhdl $VHD_DIR"/layer/reg.vhd"
 
+# Synapses
+xvhdl $VHD_DIR"/synapse/weights_bram.vhd"
+
 # Shared components
 xvhdl $VHD_DIR"/shared/decoder.vhd"
 xvhdl $VHD_DIR"/shared/mux2to1_std_logic.vhd"
 xvhdl $VHD_DIR"/shared/reg_signed.vhd"
 
-xelab debug_layer
+# Testbench
+xvhdl $VHD_DIR"/io/load_file.vhd"
+
+xvhdl $TB_DIR"/debug_layer_tb.vhd"
+
+xelab $TOP_ENTITY

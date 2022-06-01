@@ -74,6 +74,7 @@ architecture test of debug_layer_tb is
 	signal weights_rden		: std_logic;
 	signal thresholds_rden		: std_logic;
 	signal write_out		: std_logic;
+	signal dummy_addr		: std_logic_vector(0 downto 0);
 
 
 
@@ -122,6 +123,11 @@ architecture test of debug_layer_tb is
 	signal cycles_cnt_rst_n		: std_logic;	
 	signal cycles_cnt_en		: std_logic;	
 
+
+	-- Layer signals: output address to select the excitatory weights
+	signal exc_cnt			: std_logic_vector(N_inputs_cnt-1 
+						downto 0);
+
 	-- Layer signals: debug output
 	signal v_out			: signed(parallelism-1 downto 0);
 
@@ -133,8 +139,10 @@ architecture test of debug_layer_tb is
 	signal input_weights		: std_logic_vector(35 downto 0);
 	signal rden			: std_logic;
 	signal wren			: std_logic;
-	signal wraddr			: std_logic_vector(weights_addr_length-1 downto 0);
-	signal bram_sel			: std_logic_vector(bram_addr_length-1 downto 0);
+	signal wraddr			: std_logic_vector(weights_addr_length-1
+						downto 0);
+	signal bram_sel			: std_logic_vector(bram_addr_length-1
+						downto 0);
 
 	-- Memory signals: output
 	signal output_weights		: std_logic_vector(N_neurons*
@@ -163,12 +171,13 @@ architecture test of debug_layer_tb is
 			rden			: in std_logic;
 
 			-- output
-			di			: out std_logic_vector(word_length-1
+			di			: out std_logic_vector(
+							word_length-1 downto 0);
+			bram_addr		: out std_logic_vector(
+							bram_addr_length - 1 
 							downto 0);
-			bram_addr		: out std_logic_vector(bram_addr_length
-							-1 downto 0);
-			wraddr			: out std_logic_vector(addr_length-1
-							downto 0);
+			wraddr			: out std_logic_vector(
+							addr_length-1 downto 0);
 			wren			: out std_logic
 		);
 
@@ -187,15 +196,15 @@ architecture test of debug_layer_tb is
 			-- input spikes
 			N_inputs		: integer := 784;
 
-			-- must be one bit larger that the parallelism required to count
-			-- up to N_inputs
+			-- must be one bit larger that the parallelism required
+			-- to count up to N_inputs
 			N_inputs_cnt		: integer := 11;
 
 			-- inhibitory spikes
 			N_neurons		: integer := 400;
 
-			-- must be one bit larger that the parallelism required to count
-			-- up to N_neurons
+			-- must be one bit larger that the parallelism required
+			-- to count up to N_neurons
 			N_neurons_cnt		: integer := 10;
 
 			-- exponential decay shift
@@ -211,26 +220,32 @@ architecture test of debug_layer_tb is
 			init_v_th		: in std_logic;
 
 			-- address to select the neurons
-			v_th_addr		: in std_logic_vector(N_neurons_cnt-1
-							  downto 0);
+			v_th_addr		: in std_logic_vector(
+							N_neurons_cnt-1 downto
+							0);
 
 			-- data input
 			input_spikes		: in std_logic_vector
 							(N_inputs-1 downto 0);
 
 			-- input parameters
-			v_th_value		: in signed(parallelism-1 downto 0);		
-			v_reset			: in signed(parallelism-1 downto 0);	
-			inh_weight		: in signed(parallelism-1 downto 0);		
-			exc_weights		: in signed
-							(N_neurons*weightsParallelism-1
-							 downto 0);
+			v_th_value		: in signed(parallelism-1 downto
+							0);		
+			v_reset			: in signed(parallelism-1 downto
+							0);	
+			inh_weight		: in signed(parallelism-1 downto
+							0);		
+			exc_weights		: in signed(N_neurons*
+							weightsParallelism-1
+						       	downto 0);
 
 			-- terminal counters 
 			N_inputs_tc		: in std_logic_vector
-							(N_inputs_cnt-1 downto 0);
+							(N_inputs_cnt-1 
+							downto 0);
 			N_neurons_tc		: in std_logic_vector
-							(N_neurons_cnt-1 downto 0);
+							(N_neurons_cnt-1 
+							downto 0);
 
 			-- output
 			out_spikes		: out std_logic_vector
@@ -242,7 +257,8 @@ architecture test of debug_layer_tb is
 
 			-- output address to select the excitatory weights
 			exc_cnt			: out std_logic_vector
-							(N_inputs_cnt-1 downto 0);
+							(N_inputs_cnt-1 
+							downto 0);
 
 			-- debug output
 			v_out			: out signed(parallelism-1
@@ -274,17 +290,18 @@ architecture test of debug_layer_tb is
 
 begin
 
-	v_reset		<= to_signed(v_reset_int, v_reset'length);
-	inh_weight	<= to_signed(inh_weight_int, inh_weight'length);
+	v_reset			<= to_signed(v_reset_int, v_reset'length);
+	inh_weight		<= to_signed(inh_weight_int, inh_weight'length);
 
-	N_inputs_tc	<= std_logic_vector(to_signed(N_inputs,
-			       N_inputs_tc'length));
-	N_neurons_tc	<= std_logic_vector(to_signed(N_neurons,
-				N_neurons_tc'length));
-	N_cycles_tc	<= std_logic_vector(to_signed(N_cycles,
-			       N_cycles_tc'length));
+	N_inputs_tc		<= std_logic_vector(to_signed(N_inputs,
+			       		N_inputs_tc'length));
+	N_neurons_tc		<= std_logic_vector(to_signed(N_neurons,
+					N_neurons_tc'length));
+	N_cycles_tc		<= std_logic_vector(to_signed(N_cycles,
+					N_cycles_tc'length));
 
 	v_th_addr(N_neurons_cnt-1) <= '0';
+	dummy_addr	<= "0";
 
 
 
@@ -332,7 +349,7 @@ begin
 
 			-- output
 			std_logic_vector(di)	=> v_th_value,
-			bram_addr		=> bram_sel,
+			bram_addr		=> dummy_addr,
 			wraddr			=> v_th_addr(N_neurons_cnt-2
 							downto 0),
 			wren			=> init_v_th 
@@ -477,5 +494,88 @@ begin
 		start <= '0';
 		wait;
 	end process start_gen;
+
+
+	
+	layer	: debug_layer 
+		generic map(
+
+			-- int parallelism
+			parallelism		=> parallelism,
+			weightsParallelism	=> weightsParallelism,
+
+			-- input spikes
+			N_inputs		=> N_inputs,
+
+			-- must be one bit larger that the parallelism required
+			-- to count up to N_inputs
+			N_inputs_cnt		=> N_inputs_cnt,
+
+			-- inhibitory spikes
+			N_neurons		=> N_neurons,
+
+			-- must be one bit larger that the parallelism required
+			-- to count up to N_neurons
+			N_neurons_cnt		=> N_neurons_cnt,
+
+			-- exponential decay shift
+			shift			=> shift
+		)
+
+		port map(
+			-- control input
+			clk			=> clk,
+			rst_n			=> rst_n,
+			start			=> start,
+			stop			=> stop,
+			init_v_th		=> init_v_th,
+
+			-- address to select the neurons
+			v_th_addr		=> v_th_addr,
+
+			-- data input
+			input_spikes		=> input_spikes,
+
+			-- input parameters
+			v_th_value		=> v_th_value,
+			v_reset			=> v_reset,
+			inh_weight		=> inh_weight,
+			exc_weights		=> exc_weights,
+                                                                   
+			-- terminal counters
+			N_inputs_tc		=> N_inputs_tc,
+			N_neurons_tc		=> N_neurons_tc,
+                                                                   
+			-- output
+			out_spikes		=> out_spikes,
+			ready			=> ready,
+			sample			=> sample,
+			cycles_cnt_rst_n	=> cycles_cnt_rst_n,
+			cycles_cnt_en		=> cycles_cnt_en,
+
+			-- output address to select the excitatory weights
+			exc_cnt			=> exc_cnt,
+
+			-- debug output
+			v_out			=> v_out
+		);
+
+
+	synapses_weights	: weights_bram 
+		port map(
+			-- input
+			clk		=> clk,
+			di		=> input_weights,
+			rst_n		=> rst_n,
+			rdaddr		=> exc_cnt(9 downto 0),
+			rden		=> rden,
+			wren		=> wren,
+			wraddr		=> wraddr,
+			bram_sel	=> bram_sel,
+
+			-- output
+			do		=> output_weights
+					
+		);
 
 end architecture test;
