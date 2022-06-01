@@ -43,3 +43,5 @@ xvhdl $VHD_DIR"/layer/reg.vhd"
 xvhdl $VHD_DIR"/shared/decoder.vhd"
 xvhdl $VHD_DIR"/shared/mux2to1_std_logic.vhd"
 xvhdl $VHD_DIR"/shared/reg_signed.vhd"
+
+xelab debug_layer
