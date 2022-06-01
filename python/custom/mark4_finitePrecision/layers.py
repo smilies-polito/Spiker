@@ -48,9 +48,6 @@ def updateExcLayer(network, layer, exp_shift, inputSpikes, neuron_parallelism):
 	checkParallelism(network["excLayer" + str(layer)]["v"],
 			neuron_parallelism)
 
-	# Increase threshold for active neurons. Decrease it for inactive ones.
-	homeostasis(network, layerName)
-
 
 
 

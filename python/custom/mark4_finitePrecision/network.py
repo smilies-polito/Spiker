@@ -1,6 +1,6 @@
 import numpy as np
 
-from layers import updateExcLayer, updateInhLayer
+from layers import updateExcLayer, updateInhLayer, homeostasis
 from synapses import stdp 
 
 
@@ -106,6 +106,8 @@ def updateNetwork(networkList, network, inputSpikes, dt_tauDict, exp_shift,
 
 	'''	
 
+	layerName = "excLayer1"
+
 	# Update the first excitatory layer
 	updateExcLayer(network, 1, exp_shift, inputSpikes, neuron_parallelism)
 
@@ -117,8 +119,15 @@ def updateNetwork(networkList, network, inputSpikes, dt_tauDict, exp_shift,
 		# Update the first layer weights 
 		stdp(network, 1, stdpDict, inputSpikes)
 
+		# Increase threshold for active neurons. 
+		homeostasis(network, layerName, dt_tauDict["thresh"])
+
+
+
 
 	for layer in range(2, len(networkList)):
+
+		layerName = "excLayer" + str(layer)
 		
 		# Update the excitatory layer
 		updateExcLayer(network, layer, exp_shift,
@@ -133,6 +142,8 @@ def updateNetwork(networkList, network, inputSpikes, dt_tauDict, exp_shift,
 			stdp(network, layer, stdpDict, network["excLayer" + 
 				str(layer - 1)]["outSpikes"][0])
 
+			# Increase threshold for active neurons. 
+			homeostasis(network, layerName, dt_tauDict["thresh"])
 
 
 
