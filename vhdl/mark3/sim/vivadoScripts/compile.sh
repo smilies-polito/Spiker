@@ -1,7 +1,7 @@
 #!/usr/bin/bash
 
-VHD_DIR="../vhd"
-TB_DIR="../tb"
+VHD_DIR="../../vhd/vhd"
+TB_DIR="../../tb/vhd"
 
 TOP_ENTITY="spiker_tb"
 
