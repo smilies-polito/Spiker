@@ -66,11 +66,11 @@ inputIntensity, currentIndex, accuracies, spikesMonitor, membraneMonitor = \
 	)
 
 with open(outSpikesFilename, "w") as spikes_fp:
-	spikes_fp.write(np.array2string(spikesMonitor.astype(int)).replace("\n",
+	spikes_fp.write(str(list(spikesMonitor.astype(int))).replace(",",
 		"")[1:-1])
 
 with open(membraneFilename, "w") as membrane_fp:
-	membrane_fp.write(np.array2string(membraneMonitor).replace("\n",
+	membrane_fp.write(str(list(membraneMonitor.astype(int))).replace(",",
 		"")[1:-1])
 
 # Store the performance of the network into a text file
