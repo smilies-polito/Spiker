@@ -1,5 +1,8 @@
 import timeit
 import sys
+import matplotlib.pyplot as plt
+import numpy as np
+np.set_printoptions(threshold=np.inf)
 
 from mnist import loadDataset
 from createNetwork import createNetwork
@@ -27,14 +30,14 @@ network = createNetwork(networkList, weightFilename, thresholdFilename, mode,
 
 checkParallelism(network["exc2exc1"]["weights"], weights_parallelism)
 
-currentIndex = sys.argv[1]
+currentIndex = int(sys.argv[1])
 
 
 # Measure the test starting time
 startTimeTraining = timeit.default_timer()
 
 # Complete test cycle over a single image
-inputIntensity, currentIndex, accuracies = \
+inputIntensity, currentIndex, accuracies, spikesMonitor, membraneMonitor = \
 	singleImageTest(
 		trainDuration,
 		restTime,
@@ -61,6 +64,14 @@ inputIntensity, currentIndex, accuracies = \
 		neuron_parallelism,
 		inputFilename
 	)
+
+with open(outSpikesFilename, "w") as spikes_fp:
+	spikes_fp.write(np.array2string(spikesMonitor.astype(int)).replace("\n",
+		"")[1:-1])
+
+with open(membraneFilename, "w") as membrane_fp:
+	membrane_fp.write(np.array2string(membraneMonitor).replace("\n",
+		"")[1:-1])
 
 # Store the performance of the network into a text file
 storePerformace(startTimeTraining, accuracies, testPerformanceFile)

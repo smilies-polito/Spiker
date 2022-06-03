@@ -51,12 +51,20 @@ def run(network, networkList, spikesTrains, dt_tauDict, exp_shift, stdpDict,
 
 	# Initialize the output spikes counter to 0
 	spikesCounter = np.zeros((1, lastLayerSize))
+	spikesMonitor = np.zeros(trainDuration).astype(bool)
+	membraneMonitor = np.zeros(trainDuration).astype(int)
 
 	for i in range(trainDuration):
 
 		# Train the network over a single step
 		updateNetwork(networkList, network, spikesTrains[i], dt_tauDict,
 				exp_shift, stdpDict, mode, neuron_parallelism)
+
+		spikesMonitor[i] = network["excLayer" +
+				str(lastLayerIndex)]["outSpikes"][0][0]
+
+		membraneMonitor[i] = network["excLayer" +
+				str(lastLayerIndex)]["v"][0][0]
 
 
 		# Update the output spikes counter
@@ -67,7 +75,7 @@ def run(network, networkList, spikesTrains, dt_tauDict, exp_shift, stdpDict,
 		# Normalize the weights
 		normalizeWeights(network, networkList, constSums)
 	
-	return spikesCounter
+	return spikesCounter, spikesMonitor, membraneMonitor
 
 
 

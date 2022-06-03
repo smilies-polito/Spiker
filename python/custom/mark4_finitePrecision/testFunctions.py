@@ -117,7 +117,8 @@ def singleImageTest(trainDuration, restTime, dt, image, network, networkList,
 			networkList[0])
 
 	# Test the network with the spikes sequences associated to the pixels.
-	inputIntensity, currentIndex, accuracies = \
+	inputIntensity, currentIndex, accuracies, spikesMonitor, \
+	membraneMonitor = \
 		test(
 			network, 
 			networkList, 
@@ -145,7 +146,8 @@ def singleImageTest(trainDuration, restTime, dt, image, network, networkList,
 	rest(network, networkList)
 
 
-	return inputIntensity, currentIndex, accuracies
+	return inputIntensity, currentIndex, accuracies, spikesMonitor, \
+		membraneMonitor
 
 
 
@@ -233,8 +235,9 @@ def test(network, networkList, spikesTrains, dt_tauDict, countThreshold,
 
 	
 	# Train the network over the pixels' spikes train
-	spikesCounter = run(network, networkList, spikesTrains, dt_tauDict,
-			exp_shift, None, mode, constSums, neuron_parallelism)
+	spikesCounter, spikesMonitor, membraneMonitor = run(network,
+			networkList, spikesTrains, dt_tauDict, exp_shift, None,
+			mode, constSums, neuron_parallelism)
 
 
 	if np.sum(spikesCounter) < countThreshold:
@@ -262,7 +265,8 @@ def test(network, networkList, spikesTrains, dt_tauDict, countThreshold,
 				mode
 			)
 
-	return inputIntensity, currentIndex, accuracies
+	return inputIntensity, currentIndex, accuracies, spikesMonitor,\
+		membraneMonitor
 
 
 

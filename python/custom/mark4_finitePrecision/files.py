@@ -16,4 +16,9 @@ assignmentsFile = paramDir + "/assignments.npy"
 trainPerformanceFile = paramDir + "/trainPerformance.txt"
 testPerformanceFile = paramDir + "/testPerformance.txt"
 
-inputFilename = "inputs.txt"
+
+vhdlDir = "../../../vhdl/mark3/sim"
+
+inputFilename = vhdlDir + "/inputs.txt"
+outSpikesFilename = vhdlDir + "/pythonOutSpikes.txt"
+membraneFilename = vhdlDir + "/pythonMembrane.txt"
