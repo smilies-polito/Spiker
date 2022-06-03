@@ -53,5 +53,3 @@ xvhdl $VHD_DIR"/shared/reg_signed.vhd"
 xvhdl $VHD_DIR"/io/load_file.vhd"
 
 xvhdl $TB_DIR"/debug_layer_tb.vhd"
-
-xelab $TOP_ENTITY
