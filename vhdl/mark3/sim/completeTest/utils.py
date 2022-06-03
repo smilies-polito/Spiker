@@ -167,3 +167,16 @@ def checkParallelism(numpyArray, parallelism):
 	elif (numpyArray < -2**(parallelism-1)).any():
 		print("Value too low")
 		# sys.exit()
+
+
+def storeBinaryArray2D_txt(filename, numpyArray2D):
+
+	with open(filename, "w") as fp:
+
+		for row in numpyArray2D:
+
+			fp.write(str(list(row.astype(int)))\
+					.replace(",", "")\
+					.replace(" ", "")[1:-1])
+			fp.write("\n")
+
