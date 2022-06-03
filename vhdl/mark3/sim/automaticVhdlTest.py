@@ -1,17 +1,90 @@
+import timeit
 import sys
-import subprocess as sp
+import matplotlib.pyplot as plt
+import numpy as np
 
-srcDir = "../../../python/custom/mark3_simplified"
+from files import *
+
+srcDir = "../../../python/custom/mark4_finitePrecision"
 
 if srcDir not in sys.path:
 	sys.path.insert(1, srcDir)
 
 from mnist import loadDataset
-from poisson import imgToSpikeTrain
-
+from createNetwork import createNetwork
+from testFunctions import singleImageTest
+from storeParameters import *
+from utils import checkParallelism
 from runParameters import *
 
-testSteps = int(trainDuration/dt)
+
+
+# Load the MNIST dataset
+imgArray, labelsArray = loadDataset(testImages, testLabels)
+
+
+# Create the network data structure
+network = createNetwork(networkList, weightFilename, thresholdFilename, mode, 
+			excDictList, scaleFactors, inh2excWeights,
+			fixed_point_decimals, trainPrecision, rng)
+
+checkParallelism(network["exc2exc1"]["weights"], weights_parallelism)
+
+
+
+
+
+
+currentIndex = int(sys.argv[1])
+
+
+# Measure the test starting time
+startTimeTraining = timeit.default_timer()
+
+# Complete test cycle over a single image
+inputIntensity, currentIndex, accuracies, spikesMonitor, membraneMonitor = \
+	singleImageTest(
+		trainDuration,
+		restTime,
+		dt,
+		None,
+		network,
+		networkList,
+		dt_tauDict,
+		countThreshold,
+		inputIntensity,
+		currentIndex,
+		spikesEvolution,
+		updateInterval,
+		printInterval,
+		startTimeTraining,
+		accuracies,
+		labelsArray,
+		assignments,
+		startInputIntensity,
+		mode,
+		constSums,
+		rng,
+		exp_shift,
+		neuron_parallelism,
+		inputFilename
+	)
+
+with open(outSpikesFilename, "w") as spikes_fp:
+	spikes_fp.write(str(list(spikesMonitor.astype(int))).replace(",",
+		"")[1:-1])
+
+with open(membraneFilename, "w") as membrane_fp:
+	membrane_fp.write(str(list(membraneMonitor.astype(int))).replace(",",
+		"")[1:-1])
+
+# Store the performance of the network into a text file
+storePerformace(startTimeTraining, accuracies, testPerformanceFile)
+
+
+
+
+
 
 N_out = 16
 N_neurons = 400
