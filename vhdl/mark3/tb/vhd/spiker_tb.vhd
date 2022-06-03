@@ -74,15 +74,17 @@ architecture test of spiker_tb is
 	signal input_weights		: std_logic_vector(35 downto 0);
 	signal rden			: std_logic;
 	signal wren			: std_logic;
-	signal wraddr			: std_logic_vector(weights_addr_length-1 downto 0);
-	signal bram_sel			: std_logic_vector(bram_addr_length-1 downto 0);
+	signal wraddr			: std_logic_vector(weights_addr_length-1
+						downto 0);
+	signal bram_sel			: std_logic_vector(bram_addr_length-1
+						downto 0);
 	signal weights_rden		: std_logic;
 
 	-- Threshold initialization
 	signal init_v_th		: std_logic;
 	signal v_th_addr		: std_logic_vector(N_neurons_cnt-1
 						downto 0);
-	signal v_th_value		: signed(parallelism-1 downto 0);		
+	signal v_th_value		: signed(parallelism-1 downto 0);
 	signal thresholds_rden		: std_logic;
 	signal dummy_addr		: std_logic_vector(0 downto 0);
 
@@ -95,7 +97,7 @@ architecture test of spiker_tb is
 
 	-- Input parameters
 	signal v_reset			: signed(parallelism-1 downto 0);	
-	signal inh_weight		: signed(parallelism-1 downto 0);		
+	signal inh_weight		: signed(parallelism-1 downto 0);
 
 	-- Terminal counters
 	signal N_inputs_tc		: std_logic_vector
@@ -111,7 +113,8 @@ architecture test of spiker_tb is
 
 
 	signal out_spikes		: std_logic_vector(N_neurons-1 downto 0);
-	signal cnt_out			: std_logic_vector(N_neurons*N_out-1 downto 0);
+	signal cnt_out			: std_logic_vector(N_neurons*N_out-1
+						downto 0);
 	signal write_out		: std_logic;
 
 		
@@ -134,12 +137,13 @@ architecture test of spiker_tb is
 			rden			: in std_logic;
 
 			-- output
-			di			: out std_logic_vector(word_length-1
+			di			: out std_logic_vector(
+							word_length-1 downto 0);
+			bram_addr		: out std_logic_vector(
+							bram_addr_length-1
 							downto 0);
-			bram_addr		: out std_logic_vector(bram_addr_length
-							-1 downto 0);
-			wraddr			: out std_logic_vector(addr_length-1
-							downto 0);
+			wraddr			: out std_logic_vector(
+							addr_length-1 downto 0);
 			wren			: out std_logic
 		);
 
