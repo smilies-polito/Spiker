@@ -117,7 +117,7 @@ def createLayer(network, layerType, initDict, networkList, layer, mode,
 	network[layerName] = {
 
 		# Initialize the membrane potentials at the reset voltage		
-		"v"		: initDict["vReset"]*np.ones((1, 
+		"v"		: initDict["vRest"]*np.ones((1, 
 					networkList[layer])).astype(int),
 
 		# Initialize the threshold potential
