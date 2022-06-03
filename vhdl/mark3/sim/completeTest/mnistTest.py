@@ -2,21 +2,18 @@ import timeit
 import sys
 import matplotlib.pyplot as plt
 import numpy as np
-np.set_printoptions(threshold=np.inf)
+import subprocess as sp
 
 from mnist import loadDataset
-from createNetwork import createNetwork
 from testFunctions import singleImageTest
 from storeParameters import *
-from utils import checkParallelism
-
-
 
 
 # Initialize the training parameters
 from files import *
 from runParameters import *
 
+sp.run(networkCompile)
 
 
 # Load the MNIST dataset
@@ -32,15 +29,16 @@ startTimeTraining = timeit.default_timer()
 
 
 while currentIndex < numberOfCycles:
+
 	# Complete test cycle over a single image
-	inputIntensity, currentIndex, accuracies, spikesMonitor, \
-	membraneMonitor = \
+	inputIntensity, currentIndex, accuracies = \
 		singleImageTest(
 			trainDuration,
 			restTime,
 			dt,
 			imgArray[currentIndex],
-			network,
+			networkScript,
+			countersFilename,
 			networkList,
 			dt_tauDict,
 			countThreshold,
@@ -59,7 +57,8 @@ while currentIndex < numberOfCycles:
 			rng,
 			exp_shift,
 			neuron_parallelism,
-			inputFilename
+			spikesFilename,
+			countBitWidth
 		)
 
 # Store the performance of the network into a text file

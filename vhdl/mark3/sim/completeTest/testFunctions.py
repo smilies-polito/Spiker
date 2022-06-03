@@ -1,20 +1,19 @@
 import timeit
 import numpy as np
 
-from utils import seconds2hhmmss
-from poisson import importSpikes
+from utils import seconds2hhmmss, storeBinaryArray2D_txt
+from poisson import imgToSpikeTrain
 from network import run
 from common import *
 
 
 
-def singleImageTest(trainDuration, restTime, dt, image, network, networkList,
-			dt_tauDict, countThreshold, inputIntensity,
-			currentIndex, spikesEvolution, updateInterval,
-			printInterval, startTimeTraining, accuracies,
-			labelsArray, assignments, startInputIntensity, mode,
-			constSums, rng, exp_shift, neuron_parallelism,
-			inputFilename):
+def singleImageTest(trainDuration, restTime, dt, image, networkScript,
+	countersFilename, networkList, dt_tauDict, countThreshold,
+	inputIntensity, currentIndex, spikesEvolution, updateInterval,
+	printInterval, startTimeTraining, accuracies, labelsArray, assignments,
+	startInputIntensity, mode, constSums, rng, exp_shift,
+	neuron_parallelism, spikesFilename, countBitWidth):
 
 	'''
 	Test the network over an image of the dataset.
@@ -78,7 +77,7 @@ def singleImageTest(trainDuration, restTime, dt, image, network, networkList,
 		The default value is 2.
 
 		19) mode: string. It can be "train" or "test".
--
+
 		20) constSums: NumPy array. Each element represents the constant
 		value corresponding to the sum of all the weights of a single 
 		neuron in the specific layer.
@@ -89,7 +88,7 @@ def singleImageTest(trainDuration, restTime, dt, image, network, networkList,
 
 		23) neuron_parallelism: number of bits on which the neuron works.
 
-		24) inputFilename: string. Name of the file containing the input
+		24) spikesFilename: string. Name of the file containing the input
 		spikes.
 
 	
@@ -113,14 +112,16 @@ def singleImageTest(trainDuration, restTime, dt, image, network, networkList,
 	startTimeImage = timeit.default_timer()
 
 	# Import the spikes from an input file
-	spikesTrains = importSpikes(inputFilename, trainingSteps,
-			networkList[0])
+	spikesTrains = imgToSpikeTrain(image, dt, trainingSteps, inputIntensity,
+			rng)
 
+	storeBinaryArray2D_txt(spikesFilename, spikesTrains)
+	
 	# Test the network with the spikes sequences associated to the pixels.
-	inputIntensity, currentIndex, accuracies, spikesMonitor, \
-	membraneMonitor = \
+	inputIntensity, currentIndex, accuracies = \
 		test(
-			network, 
+			networkScript, 
+			countersFilename,
 			networkList, 
 			spikesTrains, 
 			dt_tauDict, 
@@ -139,26 +140,23 @@ def singleImageTest(trainDuration, restTime, dt, image, network, networkList,
 			mode,
 			constSums,
 			exp_shift,
-			neuron_parallelism
+			neuron_parallelism,
+			countBitWidth
 			)
 
-	# Bring the network into a rest state
-	rest(network, networkList)
 
-
-	return inputIntensity, currentIndex, accuracies, spikesMonitor, \
-		membraneMonitor
+	return inputIntensity, currentIndex, accuracies
 
 
 
 
 
 
-def test(network, networkList, spikesTrains, dt_tauDict, countThreshold,
-	inputIntensity, currentIndex, spikesEvolution, updateInterval,
-	printInterval, startTimeImage, startTimeTraining, accuracies,
-	labelsArray, assignments, startInputIntensity, mode, constSums,
-	exp_shift, neuron_parallelism):
+def test(networkScript, countersFilename, networkList, spikesTrains, dt_tauDict,
+	countThreshold, inputIntensity, currentIndex, spikesEvolution,
+	updateInterval, printInterval, startTimeImage, startTimeTraining,
+	accuracies, labelsArray, assignments, startInputIntensity, mode,
+	constSums, exp_shift, neuron_parallelism, countBitWidth):
 
 	'''
 	Test the network with the spikes sequences associated to the pixels.
@@ -232,12 +230,10 @@ def test(network, networkList, spikesTrains, dt_tauDict, countThreshold,
 
 	'''
 
-
 	
 	# Train the network over the pixels' spikes train
-	spikesCounter, spikesMonitor, membraneMonitor = run(network,
-			networkList, spikesTrains, dt_tauDict, exp_shift, None,
-			mode, constSums, neuron_parallelism)
+	spikesCounter = run(networkScript, countersFilename, networkList[-1],
+			countBitWidth)
 
 
 	if np.sum(spikesCounter) < countThreshold:
@@ -265,27 +261,4 @@ def test(network, networkList, spikesTrains, dt_tauDict, countThreshold,
 				mode
 			)
 
-	return inputIntensity, currentIndex, accuracies, spikesMonitor,\
-		membraneMonitor
-
-
-
-def rest(network, networkList):
-
-	'''
-	Bring the network into a rest state.
-
-	INPUT:
-
-		1) network: dictionary of the network.
-
-		2) networkList: list of integer numbers. Each element of the 
-		list corresponds to a layer and identifies the number of nodes
-		in that layer.
-	'''
-
-	for layer in range(1, len(networkList)):
-
-		# Reset the membrane potential to the rest value
-		network["excLayer" + str(layer)]["v"][0][:] = network["excLayer"
-			+ str(layer)]["vRest"]
+	return inputIntensity, currentIndex, accuracies
