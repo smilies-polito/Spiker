@@ -3,6 +3,8 @@ import numpy as np
 from functions import storeWeights, fixedPointArray, createDir, formatAndStore
 from parameters import *
 
+from files import *
+
 
 def bramInit(hyperparametersDir, weightsFilename, inThreshFilename,
 		wordWidthsList, bramSize, numberOfInputs, weightsBitWidth,
@@ -50,6 +52,9 @@ def bramInit(hyperparametersDir, weightsFilename, inThreshFilename,
 	# BRAMs
 	storeWeights(weightsArray, subArraySize, weightsBitWidth, wordWidth,
 			bramRootFilename, ".mem")
+
+	binaryFormat = "{0:0" + str(neuronsBitWidth) + "b}"
+
 	with open(outThreshFilename, "w") as fp:
 
 		for threshold in threshArray[0]:
@@ -58,3 +63,9 @@ def bramInit(hyperparametersDir, weightsFilename, inThreshFilename,
 
 			fp.write(binaryValue)
 			fp.write("\n")
+
+
+# Create files for the initialization of the BRAMs and the thresholds
+bramInit(hyperparametersDir, weightsFilename, inThreshFilename,
+		wordWidthsList, bramSize, numberOfInputs, weightsBitWidth,
+		neuronsBitWidth, bramRootFilename, outThreshFilename)
