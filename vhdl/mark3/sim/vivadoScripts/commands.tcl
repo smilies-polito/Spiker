@@ -1,2 +1,2 @@
-run 26 ms
+run 10 ms
 quit
