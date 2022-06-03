@@ -45,19 +45,19 @@ architecture test of spiker_tb is
 
 	constant weights_filename	: string	:= "/home/alessio/"&
 		"OneDrive/Dottorato/Progetti/SNN/Miei/spiker/vhdl/mark3/"&
-		"hyperparameters/dummyWeights.mem";
+		"sim/hyperparameters/weights.mem";
 
 	constant thresholds_filename	: string	:= "/home/alessio/"&
 		"OneDrive/Dottorato/Progetti/SNN/Miei/spiker/vhdl/mark3/"&
-		"hyperparameters/thresholds.init";
+		"sim/hyperparameters/thresholds.init";
 
 	constant inputs_filename	: string	:= "/home/alessio/"&
 		"OneDrive/Dottorato/Progetti/SNN/Miei/spiker/vhdl/mark3/"&
-		"sim/inputs.txt";
+		"sim/inputOutput/inputSpikes.txt";
 
 	constant output_filename	: string	:= "/home/alessio/"&
 		"OneDrive/Dottorato/Progetti/SNN/Miei/spiker/vhdl/mark3/"&
-		"sim/cntOut.txt";
+		"sim/inputOutput/cntOut.txt";
 	
 	constant weightsWord		: integer := 36;
 	constant bram_addr_length	: integer := 6;
@@ -379,7 +379,7 @@ begin
 	write_out_gen	: process
 	begin
 		write_out <= '0';
-		wait for 25 ms;
+		wait for 10 ms;
 		write_out <= '1';
 		wait for 20 ns;
 		write_out <= '0';
@@ -439,7 +439,7 @@ begin
 			if write_out = '1'
 			then
 
-				write(write_line, out_spikes);
+				write(write_line, cnt_out);
 				writeline(output_file, write_line);
 
 			end if;
