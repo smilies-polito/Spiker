@@ -72,3 +72,5 @@ countThreshold = 5
 
 # NumPy default random generator.
 rng = np.random.default_rng()
+
+countBitWidth = 16
