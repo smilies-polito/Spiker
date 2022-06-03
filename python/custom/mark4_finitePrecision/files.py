@@ -19,6 +19,6 @@ testPerformanceFile = paramDir + "/testPerformance.txt"
 
 vhdlDir = "../../../vhdl/mark3/sim"
 
-inputFilename = vhdlDir + "/inputs.txt"
+inputFilename = vhdlDir + "/inputSpikes.txt"
 outSpikesFilename = vhdlDir + "/pythonOutSpikes.txt"
 membraneFilename = vhdlDir + "/pythonMembrane.txt"
