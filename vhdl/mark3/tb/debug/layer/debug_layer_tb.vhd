@@ -53,11 +53,15 @@ architecture test of debug_layer_tb is
 
 	constant inputs_filename	: string	:= "/home/alessio/"&
 		"OneDrive/Dottorato/Progetti/SNN/Miei/spiker/vhdl/mark3/"&
-		"sim/inputs.txt";
+		"sim/inputOutput/inputs.txt";
 
-	constant output_filename	: string	:= "/home/alessio/"&
+	constant out_spikes_filename	: string	:= "/home/alessio/"&
 		"OneDrive/Dottorato/Progetti/SNN/Miei/spiker/vhdl/mark3/"&
-		"sim/cntOut.txt";
+		"sim/inputOutput/vhdlOutSpikes.txt";
+
+	constant membrane_filename	: string	:= "/home/alessio/"&
+		"OneDrive/Dottorato/Progetti/SNN/Miei/spiker/vhdl/mark3/"&
+		"sim/inputOutput/vhdlMembrane.txt";
 
 	-- BRAM parameters
 	constant weightsWord		: integer := 36;
@@ -103,7 +107,7 @@ architecture test of debug_layer_tb is
 	-- Layer signals: input parameters
 	signal v_th_value		: signed(parallelism-1 downto 0);	
 	signal v_reset			: signed(parallelism-1 downto 0);	
-	signal inh_weight		: signed(parallelism-1 downto 0);		
+	signal inh_weight		: signed(parallelism-1 downto 0);	
 	signal exc_weights		: signed(N_neurons*weightsParallelism-1
 						downto 0);
 
@@ -143,10 +147,11 @@ architecture test of debug_layer_tb is
 						downto 0);
 	signal bram_sel			: std_logic_vector(bram_addr_length-1
 						downto 0);
+						
 
-	-- Memory signals: output
-	signal output_weights		: std_logic_vector(N_neurons*
-						weightsParallelism-1 downto 0);
+	-- Cycles counter signals
+	signal cycles_cnt		: std_logic_vector(N_cycles_cnt-1 
+						downto 0);
 
 
 
@@ -288,6 +293,44 @@ architecture test of debug_layer_tb is
 
 	end component weights_bram;
 
+
+	component cnt is
+
+		generic(
+			N		: integer := 8		
+		);
+
+		port(
+			-- input
+			clk		: in std_logic;
+			cnt_en		: in std_logic;
+			cnt_rst_n	: in std_logic;
+
+			-- output
+			cnt_out		: out std_logic_vector(N-1 downto 0)		
+		);
+
+	end component cnt;
+
+
+	component cmp_eq is
+
+		generic(
+			N	: integer := 8		
+		);
+
+		port(
+			-- input
+			in0	: in std_logic_vector(N-1 downto 0);
+			in1	: in std_logic_vector(N-1 downto 0);
+
+			-- output
+			cmp_out	: out std_logic
+		);
+
+	end component cmp_eq;
+
+
 begin
 
 	v_reset			<= to_signed(v_reset_int, v_reset'length);
@@ -390,11 +433,11 @@ begin
 
 
 
-	-- Store outputs on file
-	store_outputs	: process(clk, ready)
+	-- Store output spikes on file
+	store_spikes	: process(clk, sample)
 
 		file output_file	: text open write_mode is
-			output_filename;
+			out_spikes_filename;
 
 		variable write_line	: line;
 
@@ -402,17 +445,41 @@ begin
 
 		if clk'event and clk = '1'
 		then
-			if write_out = '1'
+			if sample = '1'
 			then
 
-				write(write_line, out_spikes);
+				write(write_line, out_spikes(0));
 				writeline(output_file, write_line);
 
 			end if;
 		end if;	
 
-	end process store_outputs;
+	end process store_spikes;
 
+
+
+	-- Store membrane voltage of the first neuron on file
+	store_membrane	: process(clk, sample)
+
+		file output_file	: text open write_mode is
+			membrane_filename;
+
+		variable write_line	: line;
+
+	begin
+
+		if clk'event and clk = '1'
+		then
+			if sample = '1'
+			then
+
+				write(write_line, to_integer(v_out));
+				writeline(output_file, write_line);
+
+			end if;
+		end if;	
+
+	end process store_membrane;
 
 
 
@@ -574,8 +641,40 @@ begin
 			bram_sel	=> bram_sel,
 
 			-- output
-			do		=> output_weights
+			signed(do)		=> exc_weights
 					
 		);
+
+
+	cycles_counter	: cnt
+		generic map(
+			N		=> N_cycles_cnt
+		)
+
+		port map(
+			-- input
+			clk		=> clk,
+			cnt_en		=> cycles_cnt_en,
+			cnt_rst_n	=> cycles_cnt_rst_n,
+							   
+			-- output
+			cnt_out		=> cycles_cnt
+		);
+
+
+	cycles_stop	: cmp_eq 
+		generic map(
+			N	=> N_cycles_cnt	
+		)
+
+		port map(
+			-- input
+			in0	=> cycles_cnt,
+			in1	=> N_cycles_tc,
+
+			-- output
+			cmp_out	=> stop
+		);
+
 
 end architecture test;
