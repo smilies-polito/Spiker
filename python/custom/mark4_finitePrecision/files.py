@@ -17,8 +17,8 @@ trainPerformanceFile = paramDir + "/trainPerformance.txt"
 testPerformanceFile = paramDir + "/testPerformance.txt"
 
 
-vhdlDir = "../../../vhdl/mark3/sim"
+vhdlIoDir = "../../../vhdl/mark3/sim/inputOutput"
 
-inputFilename = vhdlDir + "/inputSpikes.txt"
-outSpikesFilename = vhdlDir + "/pythonOutSpikes.txt"
-membraneFilename = vhdlDir + "/pythonMembrane.txt"
+inputFilename = vhdlIoDir + "/inputSpikes.txt"
+outSpikesFilename = vhdlIoDir + "/pythonOutSpikes.txt"
+membraneFilename = vhdlIoDir + "/pythonMembrane.txt"

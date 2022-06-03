@@ -1,8 +1,8 @@
 #!/usr/bin/bash
 
-VHD_DIR="../vhd"
-DEBUG_DIR="../debug"
-TB_DIR="../tb/debug/layer"
+VHD_DIR="../../vhd/vhd"
+DEBUG_DIR="../../vhd/debug"
+TB_DIR="../../tb/debug/layer"
 
 TOP_ENTITY="debug_layer_tb"
 

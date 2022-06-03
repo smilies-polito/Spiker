@@ -44,11 +44,11 @@ architecture test of debug_layer_tb is
 
 	--File names
 	constant weights_filename	: string	:= "/home/alessio/"&
-		"OneDrive/Dottorato/Progetti/SNN/Miei/spiker/vhdl/mark3/"&
-		"hyperparameters/dummyWeights.mem";
+		"OneDrive/Dottorato/Progetti/SNN/Miei/spiker/vhdl/mark3/sim/"&
+		"hyperparameters/weights.mem";
 
 	constant thresholds_filename	: string	:= "/home/alessio/"&
-		"OneDrive/Dottorato/Progetti/SNN/Miei/spiker/vhdl/mark3/"&
+		"OneDrive/Dottorato/Progetti/SNN/Miei/spiker/vhdl/mark3/sim/"&
 		"hyperparameters/thresholds.init";
 
 	constant inputs_filename	: string	:= "/home/alessio/"&
