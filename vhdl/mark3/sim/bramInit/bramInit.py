@@ -1,7 +1,6 @@
 import numpy as np
 
 from functions import storeWeights, fixedPointArray, createDir, formatAndStore
-from files import *
 from parameters import *
 
 
@@ -59,7 +58,3 @@ def bramInit(hyperparametersDir, weightsFilename, inThreshFilename,
 
 			fp.write(binaryValue)
 			fp.write("\n")
-
-bramInit(hyperparametersDir, weightsFilename, inThreshFilename,
-		wordWidthsList, bramSize, numberOfInputs, weightsBitWidth,
-		neuronsBitWidth, bramRootFilename, outThreshFilename)

@@ -5,10 +5,8 @@ import numpy as np
 
 from files import *
 
-srcDir = "../../../python/custom/mark4_finitePrecision"
-
-if srcDir not in sys.path:
-	sys.path.insert(1, srcDir)
+if pythonSrcDir not in sys.path:
+	sys.path.insert(1, pythonSrcDir)
 
 from mnist import loadDataset
 from createNetwork import createNetwork
@@ -16,6 +14,13 @@ from testFunctions import singleImageTest
 from storeParameters import *
 from utils import checkParallelism
 from runParameters import *
+
+if bramInitDir not in sys.path:
+	sys.path.insert(1, bramInitDir)
+
+from bramInit import bramInit
+
+
 
 
 
