@@ -53,7 +53,7 @@ architecture test of debug_layer_tb is
 
 	constant inputs_filename	: string	:= "/home/alessio/"&
 		"OneDrive/Dottorato/Progetti/SNN/Miei/spiker/vhdl/mark3/"&
-		"sim/inputOutput/inputs.txt";
+		"sim/inputOutput/inputSpikes.txt";
 
 	constant out_spikes_filename	: string	:= "/home/alessio/"&
 		"OneDrive/Dottorato/Progetti/SNN/Miei/spiker/vhdl/mark3/"&
