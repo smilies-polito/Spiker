@@ -1,3 +1,6 @@
+from parallelisms import *
+from utils import fixedPoint
+
 wordWidthsList = [
 	72,
 	36,
