@@ -1,8 +1,8 @@
 # Complete path of the MNIST files
-trainImages = "../../brian2/mnist/train-images-idx3-ubyte"
-trainLabels = "../../brian2/mnist/train-labels-idx1-ubyte"
-testImages = "../../brian2/mnist/t10k-images-idx3-ubyte"
-testLabels = "../../brian2/mnist/t10k-labels-idx1-ubyte"
+trainImages = "../../../../mnist/train-images-idx3-ubyte"
+trainLabels = "../../../../mnist/train-labels-idx1-ubyte"
+testImages = "../../../../mnist/t10k-images-idx3-ubyte"
+testLabels = "../../../../mnist/t10k-labels-idx1-ubyte"
 
 # Directory in which parameters and performance of the network are stored
 paramDir = "./parameters"
@@ -16,9 +16,10 @@ assignmentsFile = paramDir + "/assignments.npy"
 trainPerformanceFile = paramDir + "/trainPerformance.txt"
 testPerformanceFile = paramDir + "/testPerformance.txt"
 
+networkScript = "./runAccelerator.sh"
+networkCompile = "./compileAccelerator.sh"
 
-vhdlIoDir = "../../../vhdl/mark3/sim/inputOutput"
+vhdlIoDir = "../inputOutput"
 
-inputFilename = vhdlIoDir + "/inputSpikes.txt"
-outSpikesFilename = vhdlIoDir + "/pythonOutSpikes.txt"
-membraneFilename = vhdlIoDir + "/pythonMembrane.txt"
+spikesFilename = vhdlIoDir + "inputSpikes.txt"
+countersFilename = vhdlIoDir + "/cntOut.txt"
