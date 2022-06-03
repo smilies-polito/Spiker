@@ -6,7 +6,7 @@ BRAM_INIT_DIR="bramInit"
 PYTHON_SIM_DIR="../../../python/custom/mark4_finitePrecision"
 VHDL_SIM_DIR="vivadoScripts"
 INPUT_GEN_DIR="inputGen"
-IMAGE_INDEX=0
+IMAGE_INDEX=30
 
 echo "Generate input spikes"
 cd $INPUT_GEN_DIR
