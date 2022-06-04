@@ -235,7 +235,9 @@ def test(networkScript, countersFilename, networkList, spikesTrains, dt_tauDict,
 	spikesCounter = run(networkScript, countersFilename, networkList[-1],
 			countBitWidth)
 
-	spikesCounter = spikesCounter[-1:-1]
+	print(spikesCounter)
+
+	spikesCounter = spikesCounter[-1::-1]
 	print(spikesCounter)
 
 
