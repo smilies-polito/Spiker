@@ -37,7 +37,8 @@ currentIndex = int(sys.argv[1])
 startTimeTraining = timeit.default_timer()
 
 # Complete test cycle over a single image
-inputIntensity, currentIndex, accuracies, spikesMonitor, membraneMonitor = \
+inputIntensity, currentIndex, accuracies, spikesMonitor, membraneMonitor, \
+spikesCounter = \
 	singleImageTest(
 		trainDuration,
 		restTime,
@@ -71,6 +72,10 @@ with open(outSpikesFilename, "w") as spikes_fp:
 
 with open(membraneFilename, "w") as membrane_fp:
 	membrane_fp.write(str(list(membraneMonitor.astype(int))).replace(",",
+		"").replace(" ", "\n")[1:-1])
+
+with open(countersFilename, "w") as counter_fp:
+	counter_fp.write(str(list(spikesCounter[0].astype(int))).replace(",",
 		"").replace(" ", "\n")[1:-1])
 
 # Store the performance of the network into a text file

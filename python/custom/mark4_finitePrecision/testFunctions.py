@@ -117,7 +117,7 @@ def singleImageTest(trainDuration, restTime, dt, image, network, networkList,
 
 	# Test the network with the spikes sequences associated to the pixels.
 	inputIntensity, currentIndex, accuracies, spikesMonitor, \
-	membraneMonitor = \
+	membraneMonitor, spikesCounter = \
 		test(
 			network, 
 			networkList, 
@@ -146,7 +146,7 @@ def singleImageTest(trainDuration, restTime, dt, image, network, networkList,
 
 
 	return inputIntensity, currentIndex, accuracies, spikesMonitor, \
-		membraneMonitor
+		membraneMonitor, spikesCounter
 
 
 
@@ -265,7 +265,7 @@ def test(network, networkList, spikesTrains, dt_tauDict, countThreshold,
 			)
 
 	return inputIntensity, currentIndex, accuracies, spikesMonitor,\
-		membraneMonitor
+		membraneMonitor, spikesCounter
 
 
 
