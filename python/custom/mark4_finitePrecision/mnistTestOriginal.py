@@ -6,7 +6,7 @@ np.set_printoptions(threshold=np.inf)
 
 from mnist import loadDataset
 from createNetwork import createNetwork
-from testFunctions import singleImageTest
+from testFunctionsOriginal import singleImageTest
 from storeParameters import *
 from utils import checkParallelism
 

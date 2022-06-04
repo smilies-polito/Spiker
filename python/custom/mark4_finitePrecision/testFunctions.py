@@ -2,7 +2,7 @@ import timeit
 import numpy as np
 
 from utils import seconds2hhmmss
-from poisson import imgToSpikeTrain
+from poisson import importSpikes
 from network import run
 from common import *
 
@@ -113,8 +113,7 @@ def singleImageTest(trainDuration, restTime, dt, image, network, networkList,
 	startTimeImage = timeit.default_timer()
 
 	# Import the spikes from an input file
-	spikesTrains = imgToSpikeTrain(image, dt, trainingSteps, inputIntensity,
-			rng)
+	spikesTrains = importSpikes(inputFilename, trainingSteps, networkList[0])
 
 	# Test the network with the spikes sequences associated to the pixels.
 	inputIntensity, currentIndex, accuracies, spikesMonitor, \
