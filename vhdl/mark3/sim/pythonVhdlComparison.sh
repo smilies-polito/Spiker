@@ -4,6 +4,7 @@ ROOT_DIR=`pwd`
 
 BRAM_INIT_DIR="bramInit"
 PYTHON_SIM_DIR="../../../python/custom/mark4_finitePrecision"
+COUNTERS_CONVERTION_DIR="vhdlCountersConvertion"
 VHDL_SIM_DIR="vivadoScripts"
 INPUT_GEN_DIR="inputGen"
 IMAGE_INDEX=30
@@ -27,4 +28,9 @@ echo "VHDL simulation"
 cd $VHDL_SIM_DIR
 ./debug_compile.sh
 ./debug_sim.sh
+cd $ROOT_DIR
+
+echo "VHDL counters translation"
+cd $COUNTERS_CONVERTION_DIR
+python countersConvertion.py
 cd $ROOT_DIR
