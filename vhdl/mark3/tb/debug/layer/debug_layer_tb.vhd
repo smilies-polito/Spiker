@@ -55,6 +55,10 @@ architecture test of debug_layer_tb is
 		"OneDrive/Dottorato/Progetti/SNN/Miei/spiker/vhdl/mark3/"&
 		"sim/inputOutput/inputSpikes.txt";
 
+	constant out_spikes1_filename	: string	:= "/home/alessio/"&
+		"OneDrive/Dottorato/Progetti/SNN/Miei/spiker/vhdl/mark3/"&
+		"sim/inputOutput/vhdlOutSpikesFirstNeuron.txt";
+
 	constant out_spikes_filename	: string	:= "/home/alessio/"&
 		"OneDrive/Dottorato/Progetti/SNN/Miei/spiker/vhdl/mark3/"&
 		"sim/inputOutput/vhdlOutSpikes.txt";
@@ -63,16 +67,22 @@ architecture test of debug_layer_tb is
 		"OneDrive/Dottorato/Progetti/SNN/Miei/spiker/vhdl/mark3/"&
 		"sim/inputOutput/vhdlMembrane.txt";
 
-	
 	constant out_weights_filename	: string	:= "/home/alessio/"&
 		"OneDrive/Dottorato/Progetti/SNN/Miei/spiker/vhdl/mark3/"&
 		"sim/inputOutput/outWeights.txt";
+
+	constant cnt_out_filename	: string	:= "/home/alessio/"&
+		"OneDrive/Dottorato/Progetti/SNN/Miei/spiker/vhdl/mark3/"&
+		"sim/inputOutput/vhdlCounters.txt";
 
 	-- BRAM parameters
 	constant weightsWord		: integer := 36;
 	constant bram_addr_length	: integer := 6;
 	constant weights_addr_length	: integer := 10;
 	constant N_bram			: integer := 58;
+
+	-- Output counters parameters
+	constant N_out			: integer := 16;
 
 
 
@@ -156,6 +166,11 @@ architecture test of debug_layer_tb is
 
 	-- Cycles counter signals
 	signal cycles_cnt		: std_logic_vector(N_cycles_cnt-1 
+						downto 0);
+
+	-- Output counters signals
+	signal cnt_out_rst_n		: std_logic;
+	signal cnt_out			: std_logic_vector(N_neurons*N_out-1 
 						downto 0);
 
 
@@ -348,8 +363,12 @@ begin
 	N_cycles_tc		<= std_logic_vector(to_signed(N_cycles,
 					N_cycles_tc'length));
 
-	v_th_addr(N_neurons_cnt-1) <= '0';
-	dummy_addr	<= "0";
+	v_th_addr(
+		N_neurons_cnt
+		-1) 		<= '0';
+
+	dummy_addr		<= "0";
+	cnt_out_rst_n		<= not start;
 
 
 
@@ -438,11 +457,11 @@ begin
 
 
 
-	-- Store output spikes on file
-	store_spikes	: process(clk, sample)
+	-- Store output spikes of the first neuron on file
+	store_spikes_first_neuron	: process(clk, sample)
 
 		file output_file	: text open write_mode is
-			out_spikes_filename;
+			out_spikes1_filename;
 
 		variable write_line	: line;
 
@@ -459,7 +478,58 @@ begin
 			end if;
 		end if;	
 
+	end process store_spikes_first_neuron;
+
+
+
+	-- Store all the output spikes on file
+	store_spikes	: process(clk, sample)
+
+		file output_file	: text open write_mode is
+			out_spikes_filename;
+
+		variable write_line	: line;
+
+	begin
+
+		if clk'event and clk = '1'
+		then
+			if sample = '1'
+			then
+
+				write(write_line, out_spikes);
+				writeline(output_file, write_line);
+
+			end if;
+		end if;	
+
 	end process store_spikes;
+
+
+
+	-- Store output counters on file
+	store_cnt_out	: process(clk, sample)
+
+		file output_file	: text open write_mode is
+			cnt_out_filename;
+
+		variable write_line	: line;
+
+	begin
+
+		if clk'event and clk = '1'
+		then
+			if stop = '1'
+			then
+
+				write(write_line, cnt_out);
+				writeline(output_file, write_line);
+
+			end if;
+		end if;	
+
+	end process store_cnt_out;
+  
 
 
 
@@ -705,6 +775,29 @@ begin
 			-- output
 			cmp_out	=> stop
 		);
+		
+
+	
+ 	out_cnt_layer	: for i in 0 to N_neurons-1
+ 	generate
+ 		
+ 		out_cnt : cnt
+ 			generic map(
+ 				N		=> N_out
+ 			)
+ 
+ 			port map(
+ 				-- input
+ 				clk		=> clk,
+ 				cnt_en		=> out_spikes(i),
+ 				cnt_rst_n	=> cnt_out_rst_n,
+ 								   
+ 				-- output
+ 				cnt_out		=> cnt_out((i+1)*N_out-1
+ 							downto i*N_out)
+ 			);
+ 
+ 	end generate out_cnt_layer;
 
 
 end architecture test;
