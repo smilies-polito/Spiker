@@ -27,19 +27,23 @@ entity bare_neurons is
 		exc_stop		: in std_logic;
 		inh_or			: in std_logic;
 		inh_stop		: in std_logic;
-		v_th_en			: in std_logic_vector(N_neurons-1 downto 0);
+		v_th_en			: in std_logic_vector(N_neurons-1 
+						downto 0);
 
 		-- input
-		input_spikes		: in std_logic_vector(N_neurons-1 downto 0);
+		input_spikes		: in std_logic_vector(N_neurons-1
+						downto 0);
 
 		-- input parameters
 		v_th_value		: in signed(parallelism-1 downto 0);		
 		v_reset			: in signed(parallelism-1 downto 0);		
 		inh_weight		: in signed(parallelism-1 downto 0);		
-		exc_weights		: in signed(N_neurons*weightsParallelism-1 downto 0);
+		exc_weights		: in signed(N_neurons*
+						weightsParallelism-1 downto 0);
 
 		-- output
-		out_spikes		: out std_logic_vector(N_neurons-1 downto 0);
+		out_spikes		: out std_logic_vector(N_neurons-1 
+						downto 0);
 		all_ready		: out std_logic
 	);
 
@@ -96,10 +100,14 @@ architecture behaviour of bare_neurons is
 			v_th_en			: in std_logic;
 
 			-- input parameters
-			v_th_value		: in signed(parallelism-1 downto 0);
-			v_reset			: in signed(parallelism-1 downto 0);
-			inh_weight		: in signed(parallelism-1 downto 0);
-			exc_weight		: in signed(weightsParallelism-1 downto 0);
+			v_th_value		: in signed(parallelism-1 
+							downto 0);
+			v_reset			: in signed(parallelism-1
+							downto 0);
+			inh_weight		: in signed(parallelism-1
+							downto 0);
+			exc_weight		: in signed(weightsParallelism-1
+							downto 0);
 
 			-- output
 			out_spike		: out std_logic;
