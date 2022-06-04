@@ -115,7 +115,8 @@ begin
 				--  Set/Reset value for port output
 				SRVAL 			=> X"000000000", 
 
-				-- Specify "READ_FIRST" for same clock or synchronous
+				-- Specify "READ_FIRST" for same clock or
+				-- synchronous
 				-- clocks. Specify "WRITE_FIRST for asynchrononous
 				-- clocks on ports
 				WRITE_MODE 		=> "READ_FIRST", 
@@ -127,15 +128,16 @@ begin
 
 			port map (
 				
-				-- Output read data port, width defined by READ_WIDTH
-				-- parameter
+				-- Output read data port, width defined by
+				-- READ_WIDTH parameter
 				do 	=> data_out(i),         
 
-				-- Input write data port, width defined by WRITE_WIDTH
-				-- parameter
+				-- Input write data port, width defined by
+				-- WRITE_WIDTH parameter
 				di 	=> di,         
 
-				-- Input read address, width defined by read port depth
+				-- Input read address, width defined by read
+				-- port depth
 				rdaddr 	=> rdaddr, 
 
 				-- 1-bit input read clock
@@ -150,11 +152,12 @@ begin
 				-- 1-bit input reset 
 				rst 	=> rst, 
 
-				-- Input write enable, width defined by write port depth
+				-- Input write enable, width defined by write
+				-- port depth
 				we 	=> we,         
 
-				-- Input write address, width defined by write port
-				-- depth
+				-- Input write address, width defined by write
+				-- port depth
 				wraddr 	=> wraddr, 
 
 				-- 1-bit input write clock
