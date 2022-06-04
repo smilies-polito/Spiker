@@ -63,6 +63,11 @@ architecture test of debug_layer_tb is
 		"OneDrive/Dottorato/Progetti/SNN/Miei/spiker/vhdl/mark3/"&
 		"sim/inputOutput/vhdlMembrane.txt";
 
+	
+	constant out_weights_filename	: string	:= "/home/alessio/"&
+		"OneDrive/Dottorato/Progetti/SNN/Miei/spiker/vhdl/mark3/"&
+		"sim/inputOutput/outWeights.txt";
+
 	-- BRAM parameters
 	constant weightsWord		: integer := 36;
 	constant bram_addr_length	: integer := 6;
@@ -481,6 +486,31 @@ begin
 
 	end process store_membrane;
 
+
+	-- Store weights evolution
+	store_weights_evolution	: process(clk, sample)
+
+		file output_file	: text open write_mode is
+			out_weights_filename;
+
+		variable write_line	: line;
+
+	begin
+
+		if clk'event and clk = '1'
+		then
+
+			write(write_line, sample);
+			write(write_line, string'(" "));
+			write(write_line, exc_cnt);
+			write(write_line, string'(" "));
+			write(write_line, std_logic_vector(exc_weights));
+			
+			writeline(output_file, write_line);
+
+		end if;	
+
+	end process store_weights_evolution;
 
 
 
