@@ -7,9 +7,9 @@ from runParameters import *
 
 with open("../inputOutput/outWeights.txt") as fp:
 	
-	vhdlWeights = np.zeros((788, 400)).astype(int)
-	samples = np.zeros(788).astype(int)
-	exc_cnt = np.zeros(788).astype(int)
+	vhdlWeights = np.zeros((784, 400)).astype(int)
+	samples = np.zeros(784).astype(int)
+	exc_cnt = np.zeros(784).astype(int)
 
 	i=0
 
@@ -37,10 +37,6 @@ network = createNetwork(networkList, weightFilename, thresholdFilename, mode,
 
 pythonWeights = network["exc2exc1"]["weights"]
 
-for i in range(400):
-
-	print(pythonWeights[i])
-	print(vhdlWeights.T[400-1-i][1:785])
-
-	for j in range(100000000):
-		a = j
+with open("../vhdlTmp.txt", "w") as fp:
+	fp.write(str(list(vhdlWeights.T[0].astype(int))).replace(",",
+		"").replace(" ", "\n")[1:-1])
