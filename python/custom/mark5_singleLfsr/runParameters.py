@@ -72,3 +72,8 @@ countThreshold = 5
 
 # NumPy default random generator.
 rng = np.random.default_rng()
+
+# Parameters of the LFSR
+bitWidth = 13
+taps = np.array([12, 3, 2, 0])
+seed = 5

@@ -64,7 +64,9 @@ while currentIndex < numberOfCycles:
 			startInputIntensity,
 			mode,
 			constSums,
-			rng,
+			bitWidth,
+			taps,
+			seed,
 			exp_shift,
 			neuron_parallelism,
 			inputFilename

@@ -13,8 +13,8 @@ def singleImageTest(trainDuration, restTime, dt, image, network, networkList,
 			currentIndex, spikesEvolution, updateInterval,
 			printInterval, startTimeTraining, accuracies,
 			labelsArray, assignments, startInputIntensity, mode,
-			constSums, rng, exp_shift, neuron_parallelism,
-			inputFilename):
+			constSums, bitWidth, taps, seed, exp_shift,
+			neuron_parallelism, inputFilename):
 
 	'''
 	Test the network over an image of the dataset.
@@ -114,7 +114,7 @@ def singleImageTest(trainDuration, restTime, dt, image, network, networkList,
 
 	# Import the spikes from an input file
 	spikesTrains = imgToSpikeTrain(image, dt, trainingSteps, inputIntensity,
-			rng)
+			bitWidth, taps, seed)
 
 	# Test the network with the spikes sequences associated to the pixels.
 	inputIntensity, currentIndex, accuracies, spikesMonitor, \
