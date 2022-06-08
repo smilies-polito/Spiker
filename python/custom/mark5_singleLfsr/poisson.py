@@ -34,16 +34,16 @@ def imgToSpikeTrain(image, dt, trainingSteps, inputIntensity, bitWidth, taps,
 
 	# Create two-dimensional array of random values
 	random2D = randomArrayGen(trainingSteps, 1, bitWidth, taps,
-			seed)/(2**bitWidth-1)
+			seed)
 
 	# Convert the image into spikes trains
-	return poisson(image, dt, random2D, inputIntensity)
+	return poisson(image, dt, random2D, inputIntensity, bitWidth)
 
 
 
 
 
-def poisson(image, dt, random2D, inputIntensity):
+def poisson(image, dt, random2D, inputIntensity, bitWidth):
 
 	''' 
 	Poisson convertion of the numerical values of the pixels into spike
@@ -68,11 +68,11 @@ def poisson(image, dt, random2D, inputIntensity):
 		train for each pixel.  
 	'''
 
-	# Convert dt from milliseconds to seconds
-	dt = dt*1e-3
+	# Normalize the random value 
+	random2D = random2D*8/(inputIntensity*dt*1e-3*2**bitWidth)
 
 	# Create the boolean array of spikes with Poisson distribution
-	return ((image*inputIntensity/8.0)*dt)[:] > random2D
+	return image[:] > random2D
 
 
 
