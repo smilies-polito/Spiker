@@ -70,3 +70,43 @@ def poisson(image, dt, random2D, inputIntensity):
 
 	# Create the boolean array of spikes with Poisson distribution
 	return ((image*inputIntensity/8.0)*dt)[:] > random2D
+
+
+def updateLfsr(lfsr, taps):
+
+	updateBit = lfsrCharacteristicPolinomial(lfsr, taps)
+
+	lfsr = shiftRight(lfsr)
+
+	lfsr[0] = updateBit
+
+	return lfsr
+
+
+def intToBinaryNumpyArray(bitWidth, seed):
+
+	binaryFormat = "{0:0" + str(bitWidth) + "b}"
+
+	return np.array(list(binaryFormat.format(seed))).astype(bool)
+
+def binaryNumpyArrayToInt(booleanNumpyArray):
+
+	binaryString = str(booleanNumpyArray.astype(int))
+	binaryString = binaryString[1:-1]
+	binaryString = binaryString.replace(" ", "")
+
+	return int(binaryString, 2)
+
+
+def lfsrCharacteristicPolinomial(lfsr, taps):
+
+	updateBit = lfsr[taps[0]]
+
+	for i in range(1, taps.shape[0]):
+
+		updateBit = updateBit ^ lfsr[taps[i]]
+
+	return updateBit
+
+def shiftRight(numpyArray):
+	return np.roll(numpyArray, 1)
