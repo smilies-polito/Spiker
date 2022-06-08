@@ -69,7 +69,7 @@ def poisson(image, dt, random2D, inputIntensity, bitWidth):
 	'''
 
 	# Normalize the random value 
-	random2D = random2D*8/(inputIntensity*dt*1e-3*2**bitWidth)
+	random2D = random2D >> inputIntensity
 
 	# Create the boolean array of spikes with Poisson distribution
 	return image[:] > random2D
