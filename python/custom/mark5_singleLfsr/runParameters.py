@@ -48,7 +48,7 @@ printInterval = 10
 
 
 # Initial intensity of the input pixels
-startInputIntensity = 2.
+startInputIntensity = 1
 inputIntensity = startInputIntensity
 
 
@@ -74,6 +74,6 @@ countThreshold = 5
 rng = np.random.default_rng()
 
 # Parameters of the LFSR
-bitWidth = 13
-taps = np.array([12, 3, 2, 0])
+bitWidth = 16
+taps = np.array([15, 14, 12, 3])
 seed = 5
