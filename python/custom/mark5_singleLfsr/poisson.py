@@ -4,7 +4,8 @@ import numpy as np
 np.set_printoptions(threshold = np.inf)
 
 
-def imgToSpikeTrain(image, dt, trainingSteps, inputIntensity, rng):
+def imgToSpikeTrain(image, dt, trainingSteps, inputIntensity, bitWidth, taps,
+		seed):
 
 	''' 
 	Convert a black and white image into spike trains using the Poisson
@@ -32,7 +33,8 @@ def imgToSpikeTrain(image, dt, trainingSteps, inputIntensity, rng):
 	'''
 
 	# Create two-dimensional array of random values
-	random2D = rng.uniform(size = (trainingSteps, 1))
+	random2D = randomArrayGen(trainingSteps, 1, bitWidth, taps,
+			seed)/(2**bitWidth-1)
 
 	# Convert the image into spikes trains
 	return poisson(image, dt, random2D, inputIntensity)
