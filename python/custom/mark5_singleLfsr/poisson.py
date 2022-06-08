@@ -1,6 +1,7 @@
 #!/Users/alessio/anaconda3/bin/python3
 
 import numpy as np
+np.set_printoptions(threshold = np.inf)
 
 
 def imgToSpikeTrain(image, dt, trainingSteps, inputIntensity, rng):
@@ -70,6 +71,25 @@ def poisson(image, dt, random2D, inputIntensity):
 
 	# Create the boolean array of spikes with Poisson distribution
 	return ((image*inputIntensity/8.0)*dt)[:] > random2D
+
+
+
+def randomArrayGen(rows, columns, bitWidth, taps, seed):
+
+	lfsr = intToBinaryNumpyArray(bitWidth, seed)
+
+	randomArray = np.zeros((rows, columns)).astype(int)
+
+	for i in range(rows):
+
+		for j in range(columns):
+
+			lfsr = updateLfsr(lfsr, taps)
+			randomArray[i][j] = binaryNumpyArrayToInt(lfsr)
+
+	return randomArray
+
+
 
 
 def updateLfsr(lfsr, taps):
