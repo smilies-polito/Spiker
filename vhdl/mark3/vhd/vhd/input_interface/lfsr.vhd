@@ -24,6 +24,27 @@ entity lfsr is
 end entity lfsr;
 
 architecture behaviour_16bit of lfsr is
+
+	
+	component reg_unsigned is
+
+		generic(
+			-- parallelism
+			N	: integer	:= 16		
+		);
+
+		port(	
+			-- inputs	
+			clk	: in std_logic;
+			en	: in std_logic;
+			reg_in	: in unsigned(N-1 downto 0);
+
+			-- outputs
+			reg_out	: out unsigned(N-1 downto 0)
+		);
+
+	end component reg_unsigned;
+
 begin
 
 end architecture behaviour_16bit;
