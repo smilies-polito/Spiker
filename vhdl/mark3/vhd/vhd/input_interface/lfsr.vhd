@@ -25,26 +25,54 @@ end entity lfsr;
 
 architecture behaviour_16bit of lfsr is
 
+	signal reg_out		: unsigned(bit_width-1 downto 0);
+	signal feedback		: std_logic;
+
 	
-	component reg_unsigned is
+	component shift_register is
 
 		generic(
-			-- parallelism
-			N	: integer	:= 16		
+			bit_width	: integer := 16
 		);
 
-		port(	
-			-- inputs	
-			clk	: in std_logic;
-			en	: in std_logic;
-			reg_in	: in unsigned(N-1 downto 0);
+		port(
+			-- input
+			clk		: in std_logic;
+			shift_in	: in std_logic;
+			reg_en		: in std_logic;
+			shift_en	: in std_logic;
+			reg_in		: in unsigned(bit_width-1 downto 0);
 
-			-- outputs
-			reg_out	: out unsigned(N-1 downto 0)
+			-- output
+			reg_out		: out unsigned(bit_width-1 downto 0)
 		);
 
-	end component reg_unsigned;
+	end component shift_register;
 
 begin
+
+	pseudo_random	<= reg_out;
+
+	feedback	<= reg_out(0) xor reg_out(1) xor reg_out(3) xor
+		    		reg_out(12);
+
+
+	core_shift_register	: shift_register 
+
+		generic map(
+			bit_width	=> bit_width
+		)
+
+		port map(
+			-- input
+			clk		=> clk,
+			shift_in	=> feedback,
+			reg_en		=> load,
+			shift_en	=> update,
+			reg_in		=> seed,
+
+			-- output
+			reg_out		=> pseudo_random
+		);
 
 end architecture behaviour_16bit;
