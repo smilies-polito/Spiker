@@ -85,7 +85,7 @@ begin
 				then
 					next_state <= idle;
 				else
-					next_state <= init;
+					next_state <= elaboration;
 				end if;
 
 			-- default case
