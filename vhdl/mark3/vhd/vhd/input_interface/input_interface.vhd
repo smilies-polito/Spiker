@@ -27,7 +27,8 @@ end entity input_interface;
 
 architecture behaviour of input_interface is
 
-	signal pseudo_random	: unsigned(bit_width-1 downto 0);
+	signal pseudo_random		: unsigned(bit_width-1 downto 0);
+	signal shifted_pseudo_random	: unsigned(bit_width-1 downto 0);
 	
 	component lfsr is
 
@@ -71,6 +72,9 @@ architecture behaviour of input_interface is
 
 begin
 
+	shifted_pseudo_random <= '0' & pseudo_random(pseudo_random'length-1
+				downto 1);
+
 
 	pseudo_random_generator	: lfsr 
 
@@ -91,7 +95,7 @@ begin
 			pseudo_random	=> pseudo_random
 		);
 
-	cmp_layer	: for i in 0 to N_inputs
+	cmp_layer	: for i in 0 to N_inputs-1
 	generate	
 
 		cmp_i	: unsigned_cmp_gt 
@@ -102,9 +106,9 @@ begin
 
 			port map(
 				-- input
-				in0		=> pseudo_random,
-				in1		=> input_data((i+1)*bit_width-1
+				in0		=> input_data((i+1)*bit_width-1
 							downto i*bit_width),
+				in1		=> shifted_pseudo_random,
 
 				-- output		
 				cmp_out		=> output_spikes(i)	
