@@ -2,7 +2,7 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
-entity shift_register is
+entity shift_register_unsigned is
 
 	generic(
 		bit_width	: integer := 8		
@@ -20,11 +20,11 @@ entity shift_register is
 		reg_out		: out unsigned(bit_width-1 downto 0)
 	);
 
-end entity shift_register;
+end entity shift_register_unsigned;
 
 
 
-architecture behaviour of shift_register is
+architecture behaviour of shift_register_unsigned is
 
 	signal ff_in	: unsigned(bit_width-1 downto 0);
 	signal ff_out	: unsigned(bit_width-1 downto 0);
@@ -102,7 +102,7 @@ begin
 	end generate multiplexers;
 
 
-	muxbit_width	: mux2to1_std_logic
+	mux_n	: mux2to1_std_logic
 		port map(
 			-- input
 			sel	=> shift_en,
