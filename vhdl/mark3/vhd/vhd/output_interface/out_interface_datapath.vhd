@@ -21,6 +21,7 @@ entity out_interface_datapath is
 		cnt_out		: out std_logic_vector(N_neurons*bit_width-1
 					downto 0)
 	);
+
 end entity out_interface_datapath;
 
 architecture behaviour of out_interface_datapath is
@@ -41,7 +42,8 @@ architecture behaviour of out_interface_datapath is
 			cnt_rst_n	: in std_logic;
 
 			-- output
-			cnt_out		: out std_logic_vector(bit_width-1 downto 0)
+			cnt_out		: out std_logic_vector(bit_width-1 
+						downto 0)
 		);
 
 	end component cnt;
