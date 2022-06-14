@@ -2,11 +2,10 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
-
 entity cnt is
 
 	generic(
-		N		: integer := 8		
+		bit_width		: integer := 8		
 	);
 
 	port(
@@ -16,7 +15,7 @@ entity cnt is
 		cnt_rst_n	: in std_logic;
 
 		-- output
-		cnt_out		: out std_logic_vector(N-1 downto 0)		
+		cnt_out		: out std_logic_vector(bit_width-1 downto 0)		
 	);
 
 end entity cnt;
@@ -43,7 +42,7 @@ begin
 			end if;
 		end if;
 
-		cnt_out	<= std_logic_vector(to_unsigned(cnt_var, N));
+		cnt_out	<= std_logic_vector(to_unsigned(cnt_var, bit_width));
 
 	end process count;
 
