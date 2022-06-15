@@ -13,6 +13,13 @@ architecture test of spiker_tb is
 	constant parallelism		: integer := 16;
 	constant weightsParallelism	: integer := 5;
 
+	-- memory parameters
+	constant word_length		: integer := 36;
+	constant rdwr_addr_length	: integer := 10;
+	constant we_length		: integer := 4;
+	constant N_bram			: integer := 58;
+	constant bram_addr_length	: integer := 6;
+
 	-- Input spikes
 	constant N_inputs		: integer := 784;
 
@@ -42,6 +49,11 @@ architecture test of spiker_tb is
 	constant v_reset_int		: integer := 5*2**3; 	  
 	constant inh_weight_int	 	: integer := -15*2**3; 
 
+	-- Input interface bit width
+	constant input_data_bit_width	: integer := 16;
+	constant lfsr_bit_width		: integer := 16;
+	constant seed_int		: integer := 5;
+
 
 	constant weights_filename	: string	:= "/home/alessio/"&
 		"OneDrive/Dottorato/Progetti/SNN/Miei/spiker/vhdl/mark3/"&
@@ -58,23 +70,21 @@ architecture test of spiker_tb is
 	constant output_filename	: string	:= "/home/alessio/"&
 		"OneDrive/Dottorato/Progetti/SNN/Miei/spiker/vhdl/mark3/"&
 		"sim/inputOutput/cntOut.txt";
-	
-	constant weightsWord		: integer := 36;
-	constant bram_addr_length	: integer := 6;
-	constant weights_addr_length	: integer := 10;
-	constant N_bram			: integer := 58;
-
 
 
 	-- Common signals
 	signal clk			: std_logic;
 	signal rst_n			: std_logic;
+
+		-- Input interface signals ------------------------------------
+	signal init_lfsr		: std_logic;
+	signal seed			: unsigned(lfsr_bit_width-1 downto 0);
 	
 	-- Memory signals: input
 	signal input_weights		: std_logic_vector(35 downto 0);
 	signal rden			: std_logic;
 	signal wren			: std_logic;
-	signal wraddr			: std_logic_vector(weights_addr_length-1
+	signal wraddr			: std_logic_vector(rdwr_addr_length-1
 						downto 0);
 	signal bram_sel			: std_logic_vector(bram_addr_length-1
 						downto 0);
@@ -92,8 +102,9 @@ architecture test of spiker_tb is
 
 	-- Layer signals: input
 	signal start			: std_logic;	
-	signal input_spikes		: std_logic_vector
-					     (N_inputs-1 downto 0);
+	signal input_data		: unsigned(N_inputs*
+						input_data_bit_width-1 
+						downto 0);
 
 	-- Input parameters
 	signal v_reset			: signed(parallelism-1 downto 0);	
@@ -155,20 +166,27 @@ architecture test of spiker_tb is
 		generic(
 			-- int parallelism
 			parallelism		: integer := 16;
-			weightsParallelism	: integer := 5;
+			weights_bit_width	: integer := 5;
+
+			-- memory parameters
+			word_length		: integer := 36;
+			rdwr_addr_length	: integer := 10;
+			we_length		: integer := 4;
+			N_bram			: integer := 58;
+			bram_addr_length	: integer := 6;
 
 			-- input spikes
 			N_inputs		: integer := 784;
 
-			-- must be one bit larger that the parallelism required
-			-- to count up to N_inputs
+			-- must be one bit larger that the parallelism required to count
+			-- up to N_inputs
 			N_inputs_cnt		: integer := 11;
 
 			-- inhibitory spikes
 			N_neurons		: integer := 400;
 
-			-- must be one bit larger that the parallelism required
-			-- to count up to N_neurons
+			-- must be one bit larger that the parallelism required to count
+			-- up to N_neurons
 			N_neurons_cnt		: integer := 10;
 
 			-- Cycles counter
@@ -177,70 +195,65 @@ architecture test of spiker_tb is
 			-- exponential decay shift
 			shift			: integer := 10;
 
+			-- Input interface bit width
+			input_data_bit_width	: integer := 8;
+			lfsr_bit_width		: integer := 16;
+
 			-- Output counters parallelism
 			N_out			: integer := 16
 		);
 
 		port(
 
-			-- Common signals --------------------------------------
+			-- Common signals ---------------------------------------------
 			clk			: in std_logic;
 			rst_n			: in std_logic;	
 
-			-- Layer signals ---------------------------------------  
+			-- Input interface signals ------------------------------------
+			init_lfsr		: in std_logic;
+			seed			: in unsigned(lfsr_bit_width-1 downto 0);
+
+			-- Layer signals ----------------------------------------------  
 
 			-- control input
 			start			: in std_logic;	
 			init_v_th		: in std_logic;
 
 			-- address to select the neurons
-			v_th_addr		: in std_logic_vector
-							(N_neurons_cnt-1
+			v_th_addr		: in std_logic_vector(N_neurons_cnt-1
 							  downto 0);
 
 			-- data input
-			input_spikes		: in std_logic_vector
-							(N_inputs-1 downto 0);
+			input_data		: in unsigned(N_inputs*
+							input_data_bit_width-1 
+							downto 0);
 
 			-- input parameters
-			v_th_value		: in signed(parallelism-1 
-							downto 0);		
-			v_reset			: in signed(parallelism-1 
-							downto 0);	
-			inh_weight		: in signed(parallelism-1 
-							downto 0);		
+			v_th_value		: in signed(parallelism-1 downto 0);		
+			v_reset			: in signed(parallelism-1 downto 0);	
+			inh_weight		: in signed(parallelism-1 downto 0);		
 
 			-- terminal counters 
 			N_inputs_tc		: in std_logic_vector
-							(N_inputs_cnt-1 
-							downto 0);
+							(N_inputs_cnt-1 downto 0);
 			N_neurons_tc		: in std_logic_vector
-							(N_neurons_cnt-1 
-							downto 0);
-			N_cycles_tc		: in std_logic_vector(
-							N_cycles_cnt-1
+							(N_neurons_cnt-1 downto 0);
+			N_cycles_tc		: in std_logic_vector(N_cycles_cnt-1
 							downto 0);
 
 			-- output
 			ready			: out std_logic;
-			sample			: out std_logic;
+			cnt_out			: out std_logic_vector(N_neurons*N_out-1
+							downto 0);
 
 
-			-- Memory signals -------------------------------------- 
+			-- Memory signals --------------------------------------------- 
 			-- input
 			di		: in std_logic_vector(35 downto 0);
 			rden		: in std_logic;
 			wren		: in std_logic;
 			wraddr		: in std_logic_vector(9 downto 0);
-			bram_sel	: in std_logic_vector(5 downto 0);
-
-			-- Output spikes
-			out_spikes_out	: out std_logic_vector(N_neurons-1
-						downto 0);
-			
-			-- Output counters signals
-			cnt_out		: out std_logic_vector(N_neurons*N_out-1 
-						downto 0)
+			bram_sel	: in std_logic_vector(5 downto 0)
 		);
 
 	end component spiker;
@@ -249,6 +262,7 @@ begin
 
 	v_reset		<= to_signed(v_reset_int, v_reset'length);
 	inh_weight	<= to_signed(inh_weight_int, inh_weight'length);
+	seed		<= to_unsigned(seed_int, seed'length);
 
 	N_inputs_tc	<= std_logic_vector(to_signed(N_inputs,
 			       N_inputs_tc'length));
@@ -302,14 +316,25 @@ begin
 		wait;
 	end process thresholds_rden_gen;
 
+	-- initialize lfsr
+	init_lfsr_gen	: process
+	begin
+		init_lfsr <= '0';
+		wait for 100 ns;
+		init_lfsr <= '1';
+		wait for 20 ns;
+		init_lfsr <= '0';
+		wait;
+	end process init_lfsr_gen;
+
 
 	-- initialize weights
 	init_weights	: load_file 
 
 		generic map(
-			word_length		=> weightsWord,
+			word_length		=> word_length,
 			bram_addr_length	=> bram_addr_length,
-			addr_length		=> weights_addr_length,
+			addr_length		=> rdwr_addr_length,
 			N_bram			=> N_bram,
 			N_words			=> N_inputs,
 			weights_filename	=> weights_filename
@@ -392,34 +417,26 @@ begin
 
 
 	-- read inputs from file
-	read_inputs	: process(clk, sample)
+	read_inputs	: process
 
 		file inputs_file	: text open read_mode is
 			inputs_filename;
 
 		variable read_line	: line;
-		variable inputs_var	: std_logic_vector(N_inputs-1 
+		variable inputs_var	: std_logic_vector(N_inputs*
+						input_data_bit_width-1 
 						downto 0);
 
 	begin
 
-		if clk'event and clk = '1'
-		then
-			if sample = '1'
-			then
-				if not endfile(inputs_file)
-				then
+		-- Read line from file
+		readline(inputs_file, read_line);
+		read(read_line, inputs_var);
 
-					-- Read line from file
-					readline(inputs_file, read_line);
-					read(read_line, inputs_var);
+		-- Associate line to data input
+		input_data	<= unsigned(inputs_var);
+		wait;
 
-					-- Associate line to data input
-					input_spikes	<= inputs_var;
-
-				end if;
-			end if;
-		end if;	
 	end process read_inputs;
 
 
@@ -451,7 +468,14 @@ begin
 		generic map(
 			-- int parallelism
 			parallelism		=> parallelism,
-			weightsParallelism	=> weightsParallelism,
+			weights_bit_width	=> weightsParallelism,
+
+			-- memory parameters
+			word_length		=> word_length,
+			rdwr_addr_length	=> rdwr_addr_length,
+			we_length		=> we_length,
+			N_bram			=> N_bram,
+			bram_addr_length	=> bram_addr_length,
 
 			-- input spikes
 			N_inputs		=> N_inputs,
@@ -470,6 +494,10 @@ begin
 			-- Cycles counter
 			N_cycles_cnt		=> N_cycles_cnt,
 
+			-- Input interface bit width
+			input_data_bit_width	=> input_data_bit_width,
+			lfsr_bit_width		=> lfsr_bit_width,
+
 			-- exponential decay shift
 			shift			=> shift,
 
@@ -483,6 +511,10 @@ begin
 			clk			=> clk,
 			rst_n			=> rst_n,
 
+			-- Input interface signals ------------------------------------
+			init_lfsr		=> init_lfsr,
+			seed			=> seed,
+
 			-- Layer signals ---------------------------------------  
 
 			-- control input
@@ -493,7 +525,7 @@ begin
 			v_th_addr		=> v_th_addr,
                                                                    
 			-- data input
-			input_spikes		=> input_spikes,
+			input_data		=> input_data,
                                                                    
 			-- input parameters
 			v_th_value		=> v_th_value,
@@ -507,7 +539,6 @@ begin
                                                                    
 			-- output
 			ready			=> ready,
-			sample			=> sample,
 
 
 			-- Memory signals -------------------------------------- 
@@ -517,9 +548,6 @@ begin
 			wren		=> wren,
 			wraddr		=> wraddr,
 			bram_sel	=> bram_sel,
-
-			-- Output spikes
-			out_spikes_out	=> out_spikes,
 
 			-- Output counters
 			cnt_out		=> cnt_out

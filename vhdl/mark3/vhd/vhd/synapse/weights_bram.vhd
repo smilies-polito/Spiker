@@ -31,7 +31,7 @@ entity weights_bram is
 		wren		: in std_logic;
 		wraddr		: in std_logic_vector(rdwr_addr_length-1
 					downto 0);
-		bram_sel	: in std_logic_vector(weights_bit_width-1 
+		bram_sel	: in std_logic_vector(bram_addr_length-1 
 					downto 0);
 
 		-- output

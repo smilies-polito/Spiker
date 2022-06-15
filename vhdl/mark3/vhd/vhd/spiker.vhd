@@ -37,7 +37,7 @@ entity spiker is
 		shift			: integer := 10;
 
 		-- Input interface bit width
-		input_data_bit_width	: integer := 8;
+		input_data_bit_width	: integer := 16;
 		lfsr_bit_width		: integer := 16;
 
 		-- Output counters parallelism
@@ -152,7 +152,7 @@ architecture behaviour of spiker is
 			wren		: in std_logic;
 			wraddr		: in std_logic_vector(rdwr_addr_length-1
 						downto 0);
-			bram_sel	: in std_logic_vector(weights_bit_width-1 
+			bram_sel	: in std_logic_vector(bram_addr_length-1 
 						downto 0);
 
 			-- output
@@ -170,7 +170,7 @@ architecture behaviour of spiker is
 
 			-- int parallelism
 			parallelism		: integer := 16;
-			weights_bit_width	: integer := 5;
+			weightsParallelism	: integer := 5;
 
 			-- input spikes
 			N_inputs		: integer := 784;
@@ -289,7 +289,7 @@ architecture behaviour of spiker is
 	component cnt is
 
 		generic(
-			N		: integer := 8		
+			bit_width	: integer := 8		
 		);
 
 		port(
@@ -299,7 +299,8 @@ architecture behaviour of spiker is
 			cnt_rst_n	: in std_logic;
 
 			-- output
-			cnt_out		: out std_logic_vector(N-1 downto 0)		
+			cnt_out		: out std_logic_vector(bit_width-1 
+						downto 0)
 		);
 
 	end component cnt;
@@ -346,7 +347,7 @@ begin
 			clk		=> clk,
 			di		=> di,
 			rst_n		=> rst_n,
-			rdaddr		=> rdaddr(9 downto 0),
+			rdaddr		=> rdaddr(rdwr_addr_length-1 downto 0),
 			rden		=> rden,
 			wren		=> wren,
 			wraddr		=> wraddr,
@@ -363,7 +364,7 @@ begin
 
 			-- int parallelism
 			parallelism		=> parallelism,
-			weights_bit_width	=> weights_bit_width,
+			weightsParallelism	=> weights_bit_width,
 
 			-- input spikes
 			N_inputs		=> N_inputs,
@@ -468,7 +469,7 @@ begin
 
 	cycles_counter	: cnt
 		generic map(
-			N		=> N_cycles_cnt
+			bit_width	=> N_cycles_cnt
 		)
 
 		port map(

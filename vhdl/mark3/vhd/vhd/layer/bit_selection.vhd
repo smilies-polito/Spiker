@@ -73,7 +73,7 @@ architecture behaviour of bit_selection is
 	component cnt is
 
 		generic(
-			N		: integer := 8		
+			bit_width	: integer := 8		
 		);
 
 		port(
@@ -83,7 +83,8 @@ architecture behaviour of bit_selection is
 			cnt_rst_n	: in std_logic;
 
 			-- output
-			cnt_out		: out std_logic_vector(N-1 downto 0)		
+			cnt_out		: out std_logic_vector(bit_width-1 
+						downto 0)
 		);
 
 	end component cnt;
@@ -153,7 +154,7 @@ begin
 	select_cnt	: cnt
 
 		generic map(
-			N		=> N_cnt
+			bit_width	=> N_cnt
 		)
 
 		port map(
