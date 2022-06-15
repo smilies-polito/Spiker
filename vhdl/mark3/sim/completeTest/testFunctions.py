@@ -1,7 +1,7 @@
 import timeit
 import numpy as np
 
-from utils import seconds2hhmmss, storeBinaryArray2D_txt
+from utils import seconds2hhmmss, storeBinaryArray_txt
 from poisson import imgToSpikeTrain
 from network import run
 from common import *
@@ -111,11 +111,7 @@ def singleImageTest(trainDuration, restTime, dt, image, networkScript,
 	# Measure the system time corresponding to the beginning of the image
 	startTimeImage = timeit.default_timer()
 
-	# Import the spikes from an input file
-	spikesTrains = imgToSpikeTrain(image, dt, trainingSteps, inputIntensity,
-			rng)
-
-	storeBinaryArray2D_txt(spikesFilename, spikesTrains)
+	storeBinaryArray_txt(imageFilename, image)
 	
 	# Test the network with the spikes sequences associated to the pixels.
 	inputIntensity, currentIndex, accuracies = \
@@ -234,11 +230,6 @@ def test(networkScript, countersFilename, networkList, spikesTrains, dt_tauDict,
 	# Train the network over the pixels' spikes train
 	spikesCounter = run(networkScript, countersFilename, networkList[-1],
 			countBitWidth)
-
-	print(spikesCounter)
-
-	spikesCounter = spikesCounter[-1::-1]
-	print(spikesCounter)
 
 
 	if np.sum(spikesCounter) < countThreshold:
