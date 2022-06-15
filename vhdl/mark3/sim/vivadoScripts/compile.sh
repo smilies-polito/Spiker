@@ -29,7 +29,6 @@ xvhdl $VHD_DIR"/complete_neurons/simple_and_mask.vhd"
 xvhdl $VHD_DIR"/layer/anticipate_bits.vhd"
 xvhdl $VHD_DIR"/layer/bit_selection.vhd"
 xvhdl $VHD_DIR"/layer/cmp_eq.vhd"
-xvhdl $VHD_DIR"/layer/cnt.vhd"
 xvhdl $VHD_DIR"/layer/generic_mux_1bit.vhd"
 xvhdl $VHD_DIR"/layer/generic_or.vhd"
 xvhdl $VHD_DIR"/layer/layer.vhd"
@@ -42,9 +41,22 @@ xvhdl $VHD_DIR"/layer/reg.vhd"
 xvhdl $VHD_DIR"/shared/decoder.vhd"
 xvhdl $VHD_DIR"/shared/mux2to1_std_logic.vhd"
 xvhdl $VHD_DIR"/shared/reg_signed.vhd"
+xvhdl $VHD_DIR"/shared/cnt.vhd"
 
 # Synapses
 xvhdl $VHD_DIR"/synapse/weights_bram.vhd"
+
+# Input interface
+xvhdl $VHD_DIR"/input_interface/input_interface.vhd"
+xvhdl $VHD_DIR"/input_interface/ff.vhd"
+xvhdl $VHD_DIR"/input_interface/lfsr.vhd"
+xvhdl $VHD_DIR"/input_interface/shift_register_unsigned.vhd"
+xvhdl $VHD_DIR"/input_interface/unsigned_cmp_gt.vhd"
+
+# Output interface
+xvhdl $VHD_DIR"/output_interface/out_interface.vhd"
+xvhdl $VHD_DIR"/output_interface/out_interface_datapath.vhd"
+xvhdl $VHD_DIR"/output_interface/out_interface_cu.vhd"
 
 # Spiker
 xvhdl $VHD_DIR"/spiker.vhd"
