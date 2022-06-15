@@ -55,21 +55,17 @@ architecture test of spiker_tb is
 	constant seed_int		: integer := 5;
 
 
-	constant weights_filename	: string	:= "/home/alessio/"&
-		"OneDrive/Dottorato/Progetti/SNN/Miei/spiker/vhdl/mark3/"&
-		"sim/hyperparameters/weights.mem";
+	constant weights_filename	: string	:= "./hyperparameters/"&
+		"weights.mem";
 
-	constant thresholds_filename	: string	:= "/home/alessio/"&
-		"OneDrive/Dottorato/Progetti/SNN/Miei/spiker/vhdl/mark3/"&
-		"sim/hyperparameters/thresholds.init";
+	constant thresholds_filename	: string	:= "./hyperparameters/"&
+		"thresholds.init";
 
-	constant inputs_filename	: string	:= "/home/alessio/"&
-		"OneDrive/Dottorato/Progetti/SNN/Miei/spiker/vhdl/mark3/"&
-		"sim/inputOutput/inputSpikes.txt";
+	constant inputs_filename	: string	:= "./inputOutput/"&
+		"inputSpikes.txt";
 
-	constant output_filename	: string	:= "/home/alessio/"&
-		"OneDrive/Dottorato/Progetti/SNN/Miei/spiker/vhdl/mark3/"&
-		"sim/inputOutput/cntOut.txt";
+	constant output_filename	: string	:= "./inputOutput/"&
+		"cntOut.txt";
 
 
 	-- Common signals
