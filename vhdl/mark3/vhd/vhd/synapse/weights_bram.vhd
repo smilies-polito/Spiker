@@ -10,19 +10,33 @@ use UNIMACRO.vcomponents.all;
 
 entity weights_bram is
 
+	generic(
+		word_length		: integer := 36;
+		rdwr_addr_length	: integer := 10;
+		we_length		: integer := 4;
+ 		N_neurons		: integer := 400;
+		weights_bit_width	: integer := 5;
+		N_bram			: integer := 58;
+		bram_addr_length	: integer := 6
+	);
+
 	port(
 		-- input
 		clk		: in std_logic;
-		di		: in std_logic_vector(35 downto 0);
+		di		: in std_logic_vector(word_length-1 downto 0);
 		rst_n		: in std_logic;
-		rdaddr		: in std_logic_vector(9 downto 0);
+		rdaddr		: in std_logic_vector(rdwr_addr_length-1 
+					downto 0);
 		rden		: in std_logic;
 		wren		: in std_logic;
-		wraddr		: in std_logic_vector(9 downto 0);
-		bram_sel	: in std_logic_vector(5 downto 0);
+		wraddr		: in std_logic_vector(rdwr_addr_length-1
+					downto 0);
+		bram_sel	: in std_logic_vector(weights_bit_width-1 
+					downto 0);
 
 		-- output
-		do		: out std_logic_vector(400*5-1 downto 0)
+		do		: out std_logic_vector(N_neurons*
+					weights_bit_width-1 downto 0)
 				
 	);
 
@@ -32,12 +46,15 @@ end entity weights_bram;
 
 architecture behaviour of weights_bram is
 
-	type data_matrix is array(57 downto 0) of std_logic_vector(35 downto 0);
+	constant N_weights	: integer := word_length/weights_bit_width;
 
-	signal wren_int	: std_logic_vector(63 downto 0);
+	type data_matrix is array(N_bram-1 downto 0) of
+		std_logic_vector(word_length-1 downto 0);
+
+	signal wren_int	: std_logic_vector(2**bram_addr_length-1 downto 0);
 	signal data_out	: data_matrix;
 	signal rst	: std_logic;
-	signal we	: std_logic_vector(3 downto 0);
+	signal we	: std_logic_vector(we_length-1 downto 0);
 
 	component decoder is
 
@@ -63,7 +80,7 @@ begin
 
 	init_we	: process(wren)
 	begin
-		for i in 0 to 3
+		for i in 0 to we_length-1
 		loop
 			we(i)	<= wren;
 		end loop;
@@ -71,7 +88,7 @@ begin
 
 	bram_decoder	: decoder
 		generic map(
-			N		=> 6
+			N		=> bram_addr_length
 		)
 
 		port map(
@@ -82,7 +99,7 @@ begin
 			decoded_out	=> wren_int
 		);
 
-	complete_memory	: for i in 0 to 57
+	complete_memory	: for i in 0 to N_bram-1
 	generate
 
 
@@ -98,11 +115,11 @@ begin
 
 				-- Valid values are 1-72 (37-72 only valid when
 				-- BRAM_SIZE="36Kb")
-				WRITE_WIDTH 		=> 36,
+				WRITE_WIDTH 		=> word_length,
 
 				-- Valid values are 1-72 (37-72 only valid when
 				-- BRAM_SIZE="36Kb")
-				READ_WIDTH 		=> 36,     
+				READ_WIDTH 		=> word_length,     
 
 				-- Optional output register (0 or 1)
 				DO_REG 			=> 0, 
@@ -173,15 +190,32 @@ begin
 	connect_output	: process(data_out)
 	begin
 
-		for i in 0 to 56
+		for i in 0 to N_bram-2
 		loop
 
-			do((i+1)*7*5-1 downto i*7*5) <= data_out(i)(7*5-1 
-				downto 0);
+			do(
+				(i+1)*N_weights*weights_bit_width-1 
+				downto
+				i*N_weights*weights_bit_width
+			) <=
+			data_out(i)(
+				N_weights*weights_bit_width-1
+				downto 
+				0
+			);
 
 		end loop;
 
-		do(400*5-1 downto 57*7*5) <= data_out(57)(4 downto 0);
+		do(
+			N_neurons*weights_bit_width-1 
+			downto
+			(N_bram-1)*N_weights*weights_bit_width
+		) <=
+		data_out(N_bram-1)(
+			weights_bit_width-1
+			downto
+			0
+		);
 
 	end process connect_output;
 
