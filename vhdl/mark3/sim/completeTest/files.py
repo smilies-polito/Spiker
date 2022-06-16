@@ -21,5 +21,5 @@ networkCompile = "./compileAccelerator.sh"
 
 vhdlIoDir = "../inputOutput"
 
-spikesFilename = vhdlIoDir + "/inputSpikes.txt"
+imageFilename = vhdlIoDir + "/inputImage.txt"
 countersFilename = vhdlIoDir + "/cntOut.txt"
