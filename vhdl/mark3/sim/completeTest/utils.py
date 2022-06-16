@@ -169,14 +169,19 @@ def checkParallelism(numpyArray, parallelism):
 		# sys.exit()
 
 
-def storeBinaryArray2D_txt(filename, numpyArray2D):
+def storeBinaryArray_txt(filename, numpyArray, bitWidth):
 
 	with open(filename, "w") as fp:
 
-		for row in numpyArray2D:
+		binaryFormat = "{0:0" + str(bitWidth) + "b}"
 
-			fp.write(str(list(row.astype(int)))\
-					.replace(",", "")\
-					.replace(" ", "")[1:-1])
-			fp.write("\n")
+		for element in numpyArray[-1::-1]:
 
+			fp.write(binaryFormat.format(element))
+
+
+filename = "prova.txt"
+numpyArray = np.array([1,2,3,4,5])
+bitWidth = 16
+
+storeBinaryArray_txt(filename, numpyArray, bitWidth)
