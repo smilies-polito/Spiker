@@ -57,8 +57,9 @@ while currentIndex < numberOfCycles:
 			rng,
 			exp_shift,
 			neuron_parallelism,
-			spikesFilename,
-			countBitWidth
+			imageFilename,
+			countBitWidth,
+			pixelBitWidth
 		)
 
 # Store the performance of the network into a text file
