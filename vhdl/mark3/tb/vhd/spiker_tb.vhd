@@ -1,4 +1,6 @@
 library ieee;
+library std;
+use std.env.finish;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 use std.textio.all;
@@ -55,16 +57,20 @@ architecture test of spiker_tb is
 	constant seed_int		: integer := 5;
 
 
-	constant weights_filename	: string	:= "./hyperparameters/"&
+	constant weights_filename	: string	:= "/home/alessio/Documents/"&
+		"Poli/Dottorato/Progetti/spiker/vhdl/mark3/sim/hyperparameters/"&
 		"weights.mem";
 
-	constant thresholds_filename	: string	:= "./hyperparameters/"&
+	constant thresholds_filename	: string	:= "/home/alessio/Documents/"&
+		"Poli/Dottorato/Progetti/spiker/vhdl/mark3/sim/hyperparameters/"&
 		"thresholds.init";
 
-	constant inputs_filename	: string	:= "./inputOutput/"&
-		"inputSpikes.txt";
+	constant inputs_filename	: string	:= "/home/alessio/Documents/"&
+		"Poli/Dottorato/Progetti/spiker/vhdl/mark3/sim/inputOutput/"&
+		"inputImage.txt";
 
-	constant output_filename	: string	:= "./inputOutput/"&
+	constant output_filename	: string	:= "/home/alessio/Documents/"&
+		"Poli/Dottorato/Progetti/spiker/vhdl/mark3/sim/inputOutput/"&
 		"cntOut.txt";
 
 
@@ -116,10 +122,8 @@ architecture test of spiker_tb is
 
 	-- Layer signals: output
 	signal ready			: std_logic;
-	signal sample			: std_logic;
 
 
-	signal out_spikes		: std_logic_vector(N_neurons-1 downto 0);
 	signal cnt_out			: std_logic_vector(N_neurons*N_out-1
 						downto 0);
 	signal write_out		: std_logic;
@@ -324,57 +328,6 @@ begin
 	end process init_lfsr_gen;
 
 
-	-- initialize weights
-	init_weights	: load_file 
-
-		generic map(
-			word_length		=> word_length,
-			bram_addr_length	=> bram_addr_length,
-			addr_length		=> rdwr_addr_length,
-			N_bram			=> N_bram,
-			N_words			=> N_inputs,
-			weights_filename	=> weights_filename
-		)
-
-		port map(
-			-- input
-			clk			=> clk,
-			rden			=> weights_rden,
-
-			-- output
-			di			=> input_weights,
-			bram_addr		=> bram_sel,
-			wraddr			=> wraddr,
-			wren			=> wren
-		);
-
-
-	-- initialize thresholds
-	init_thresholds : load_file 
-
-		generic map(
-			word_length		=> parallelism,
-			bram_addr_length	=> 1,
-			addr_length		=> N_neurons_cnt-1,
-			N_bram			=> 1,
-			N_words			=> N_neurons,
-			weights_filename	=> thresholds_filename
-		)
-
-		port map(
-			-- input
-			clk			=> clk,
-			rden			=> thresholds_rden,
-
-			-- output
-			std_logic_vector(di)	=> v_th_value,
-			bram_addr		=> dummy_addr,
-			wraddr			=> v_th_addr(N_neurons_cnt-2
-							downto 0),
-			wren			=> init_v_th 
-		);
-
-
 	-- read enable
 	rden_gen	: process
 	begin
@@ -408,6 +361,81 @@ begin
 	end process write_out_gen;
 
 
+	-- quit simulation when the execution ends
+	quit_sim	: process
+
+		file output_file	: text open write_mode is
+			output_filename;
+
+		variable write_line	: line;
+
+	begin
+
+		wait until start = '1';
+		wait until ready = '1';
+		
+		write(write_line, cnt_out);
+		writeline(output_file, write_line);
+
+		finish;
+
+	end process quit_sim;
+
+
+
+
+	-- initialize weights
+	init_weights	: load_file 
+
+		generic map(
+			word_length		=> word_length,
+			bram_addr_length	=> bram_addr_length,
+			addr_length		=> rdwr_addr_length,
+			N_bram			=> N_bram,
+			N_words			=> N_inputs,
+			weights_filename	=> weights_filename
+		)
+
+		port map(
+			-- input
+			clk			=> clk,
+			rden			=> weights_rden,
+
+			-- output
+			di			=> input_weights,
+			bram_addr		=> bram_sel,
+			wraddr			=> wraddr,
+			wren			=> wren
+		);
+
+
+
+
+	-- initialize thresholds
+	init_thresholds : load_file 
+
+		generic map(
+			word_length		=> parallelism,
+			bram_addr_length	=> 1,
+			addr_length		=> N_neurons_cnt-1,
+			N_bram			=> 1,
+			N_words			=> N_neurons,
+			weights_filename	=> thresholds_filename
+		)
+
+		port map(
+			-- input
+			clk			=> clk,
+			rden			=> thresholds_rden,
+
+			-- output
+			std_logic_vector(di)	=> v_th_value,
+			bram_addr		=> dummy_addr,
+			wraddr			=> v_th_addr(N_neurons_cnt-2
+							downto 0),
+			wren			=> init_v_th 
+		);
+
 
 
 
@@ -438,27 +466,32 @@ begin
 
 
 	-- Store outputs on file
-	store_outputs	: process(clk, ready)
+	-- store_outputs	: process(clk, ready)
 
-		file output_file	: text open write_mode is
-			output_filename;
+	-- 	file output_file	: text open write_mode is
+	-- 		output_filename;
 
-		variable write_line	: line;
+	-- 	variable write_line	: line;
 
-	begin
+	-- begin
 
-		if clk'event and clk = '1'
-		then
-			if write_out = '1'
-			then
+	-- 	if clk'event and clk = '1'
+	-- 	then
+	-- 		if write_out = '1'
+	-- 		then
 
-				write(write_line, cnt_out);
-				writeline(output_file, write_line);
+	-- 			write(write_line, cnt_out);
+	-- 			writeline(output_file, write_line);
 
-			end if;
-		end if;	
+	-- 		end if;
+	-- 	end if;	
 
-	end process store_outputs;
+	-- end process store_outputs;
+
+
+
+
+
 
 	dut	: spiker
 		generic map(
