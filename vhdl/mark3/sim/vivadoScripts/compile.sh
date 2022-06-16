@@ -59,7 +59,7 @@ xvhdl $VHD_DIR"/output_interface/out_interface_datapath.vhd"
 xvhdl $VHD_DIR"/output_interface/out_interface_cu.vhd"
 
 # Spiker
-xvhdl $VHD_DIR"/spiker.vhd"
+xvhdl --2008 $VHD_DIR"/spiker.vhd"
 
 # Testbench
 xvhdl $VHD_DIR"/io/load_file.vhd"
