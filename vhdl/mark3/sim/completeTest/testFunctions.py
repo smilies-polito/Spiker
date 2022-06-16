@@ -13,7 +13,7 @@ def singleImageTest(trainDuration, restTime, dt, image, networkScript,
 	inputIntensity, currentIndex, spikesEvolution, updateInterval,
 	printInterval, startTimeTraining, accuracies, labelsArray, assignments,
 	startInputIntensity, mode, constSums, rng, exp_shift,
-	neuron_parallelism, spikesFilename, countBitWidth):
+	neuron_parallelism, imageFilename, countBitWidth, pixelBitWidth):
 
 	'''
 	Test the network over an image of the dataset.
@@ -111,7 +111,7 @@ def singleImageTest(trainDuration, restTime, dt, image, networkScript,
 	# Measure the system time corresponding to the beginning of the image
 	startTimeImage = timeit.default_timer()
 
-	storeBinaryArray_txt(imageFilename, image)
+	storeBinaryArray_txt(imageFilename, image, pixelBitWidth)
 	
 	# Test the network with the spikes sequences associated to the pixels.
 	inputIntensity, currentIndex, accuracies = \
@@ -119,7 +119,6 @@ def singleImageTest(trainDuration, restTime, dt, image, networkScript,
 			networkScript, 
 			countersFilename,
 			networkList, 
-			spikesTrains, 
 			dt_tauDict, 
 			countThreshold,
 			inputIntensity, 
@@ -148,7 +147,7 @@ def singleImageTest(trainDuration, restTime, dt, image, networkScript,
 
 
 
-def test(networkScript, countersFilename, networkList, spikesTrains, dt_tauDict,
+def test(networkScript, countersFilename, networkList, dt_tauDict,
 	countThreshold, inputIntensity, currentIndex, spikesEvolution,
 	updateInterval, printInterval, startTimeImage, startTimeTraining,
 	accuracies, labelsArray, assignments, startInputIntensity, mode,
@@ -230,6 +229,8 @@ def test(networkScript, countersFilename, networkList, spikesTrains, dt_tauDict,
 	# Train the network over the pixels' spikes train
 	spikesCounter = run(networkScript, countersFilename, networkList[-1],
 			countBitWidth)
+
+	spikesCounter = spikesCounter[-1::-1]
 
 
 	if np.sum(spikesCounter) < countThreshold:
