@@ -74,3 +74,4 @@ countThreshold = 5
 rng = np.random.default_rng()
 
 countBitWidth = 16
+pixelBitWidth = 16
