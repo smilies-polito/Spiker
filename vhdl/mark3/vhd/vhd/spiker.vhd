@@ -37,7 +37,6 @@ entity spiker is
 		shift			: integer := 10;
 
 		-- Input interface bit width
-		input_data_bit_width	: integer := 16;
 		lfsr_bit_width		: integer := 16;
 
 		-- Output counters parallelism
@@ -66,7 +65,7 @@ entity spiker is
 
 		-- data input
 		input_data		: in unsigned(N_inputs*
-						input_data_bit_width-1 
+						lfsr_bit_width-1 
 						downto 0);
 
 		-- input parameters
@@ -425,7 +424,7 @@ begin
 	input_layer	: input_interface
 
 		generic map(
-			bit_width	=> N_out,
+			bit_width	=> lfsr_bit_width,
 			N_inputs	=> N_inputs
 		)
 
