@@ -12,6 +12,8 @@ entity complete_accelerator is
 		-- input buffer
 		input_data_addr_length	: integer := 10;
 
+		load_length		: integer := 4;
+
 
 		-- memory parameters
 		word_length		: integer := 36;
@@ -21,7 +23,7 @@ entity complete_accelerator is
 		bram_addr_length	: integer := 6;
 
 		-- input spikes
-		N_inputs		: integer := 784;
+		N_inputs		: integer := 392; --784;
 
 		-- must be one bit larger that the parallelism required to count
 		-- up to N_inputs
@@ -51,68 +53,25 @@ entity complete_accelerator is
 
 	port(
 
-		-- Common signals ---------------------------------------------
-		clk			: in std_logic;
+		-- Input
+   		clk			: in std_logic;
 		rst_n			: in std_logic;	
-
-		-- Input buffer signals -----------------------------
-		input_data_addr		: in std_logic_vector(
-						input_data_addr_length-1
-						downto 0);
-			
-
-		-- Input interface signals ------------------------------------
-		init_lfsr		: in std_logic;
-		seed			: in unsigned(lfsr_bit_width-1 
-						downto 0);
-
-		-- Layer signals ----------------------------------------------  
-
-		-- control input
 		start			: in std_logic;	
-		init_v_th		: in std_logic;
-		load_input_data		: in std_logic;
-		load_v_reset		: in std_logic;
-		load_inh_weight		: in std_logic;
-
-		-- address to select the neurons
-		v_th_addr		: in std_logic_vector(N_neurons_cnt-1
-						  downto 0);
-
-		-- data input
-		input_data		: in unsigned(input_data_bit_width-1 
+		addr			: in std_logic_vector(N_inputs_cnt-2
 						downto 0);
-
-		-- input parameters
-		v_th_value		: in signed(parallelism-1 downto 0);		
-		v_reset_value		: in signed(parallelism-1 downto 0);	
-		inh_weight_value	: in signed(parallelism-1 downto 0);		
-
-		-- terminal counters 
-		N_inputs_tc		: in std_logic_vector
-						(N_inputs_cnt-1 downto 0);
-		N_neurons_tc		: in std_logic_vector
-						(N_neurons_cnt-1 downto 0);
-		N_cycles_tc		: in std_logic_vector(N_cycles_cnt-1
+		load			: in std_logic_vector(load_length-1
 						downto 0);
-		
-		-- output counters selector
-		cnt_out_sel		: in std_logic_vector(N_cnt_out_sel-1
+		data			: in std_logic_vector(word_length-1 
 						downto 0);
-
-		-- output
+		sel			: in std_logic_vector(N_cnt_out_sel-1
+						downto 0);
+		-- Output
 		ready			: out std_logic;
 		cnt_out			: out std_logic_vector(N_out-1
 						downto 0);
 
-
 		-- Memory signals --------------------------------------------- 
-		-- input
-		di		: in std_logic_vector(35 downto 0);
-		rden		: in std_logic;
-		wren		: in std_logic;
-		wraddr		: in std_logic_vector(9 downto 0);
-		bram_sel	: in std_logic_vector(5 downto 0)
+		rden			: in std_logic
 	);
 
 end entity complete_accelerator;
@@ -120,6 +79,77 @@ end entity complete_accelerator;
 
 
 architecture behaviour of complete_accelerator is
+
+
+
+	-- Input data
+	signal input_data_addr		: std_logic_vector(
+						input_data_addr_length-1
+						downto 0);
+					
+	-- Internal thresholds
+	signal v_th_addr		: std_logic_vector(N_neurons_cnt-1
+						downto 0);
+
+	-- Bram
+	signal wraddr			: std_logic_vector(N_inputs_cnt-2
+						downto 0);
+
+
+	-- Initialize the accelerator
+	signal enable			: std_logic_vector(2**load_length-1
+						downto 0);
+
+	signal init_lfsr		: std_logic;
+	signal init_v_th		: std_logic;
+	signal load_input_data		: std_logic;
+	signal load_v_reset		: std_logic;
+	signal load_inh_weight		: std_logic;
+	signal wren			: std_logic;
+	signal load_N_inputs_tc		: std_logic;
+	signal load_N_neurons_tc	: std_logic;
+	signal load_N_cycles_tc		: std_logic;
+
+
+	-- Lfsr
+	signal seed			: unsigned(lfsr_bit_width-1 
+						downto 0);
+
+	-- Input data
+	signal input_data		: unsigned(input_data_bit_width-1 
+						downto 0);
+
+	-- Terminal counters 
+	signal N_inputs_tc_value	: std_logic_vector
+						(N_inputs_cnt-1 downto 0);
+	signal N_neurons_tc_value	: std_logic_vector
+						(N_neurons_cnt-1 downto 0);
+	signal N_cycles_tc_value	: std_logic_vector(N_cycles_cnt-1
+						downto 0);
+	signal N_inputs_tc		: std_logic_vector
+						(N_inputs_cnt-1 downto 0);
+	signal N_neurons_tc		: std_logic_vector
+						(N_neurons_cnt-1 downto 0);
+	signal N_cycles_tc		: std_logic_vector(N_cycles_cnt-1
+						downto 0);
+
+
+	-- Threshold
+	signal v_th_value		: signed(parallelism-1 downto 0);		
+	signal v_reset_value		: signed(parallelism-1 downto 0);		
+	signal inh_weight_value		: signed(parallelism-1 downto 0);		
+
+	-- Input weights
+	signal di			: std_logic_vector(word_length-1 
+						downto 0);
+
+	-- Output counters selector
+	signal cnt_out_sel		: std_logic_vector(N_cnt_out_sel-1
+						downto 0);
+
+	signal bram_sel			: std_logic_vector(bram_addr_length-1
+       						downto 0);
+
 
 	signal buffered_data	: unsigned(N_inputs*input_data_bit_width-1 
 					downto 0);
@@ -302,8 +332,73 @@ architecture behaviour of complete_accelerator is
 	end component reg_signed;
 
 
+	component reg is
+
+		generic(
+			-- parallelism
+			N	: integer	:= 16		
+		);
+
+		port(	
+			-- inputs	
+			clk	: in std_logic;
+			en	: in std_logic;
+			reg_in	: in std_logic_vector(N-1 downto 0);
+
+			-- outputs
+			reg_out	: out std_logic_vector(N-1 downto 0)
+		);
+
+	end component reg;
+
+
+	component decoder is
+
+		generic(
+			N	: integer := 8		
+		);
+
+		port(
+			-- input
+			encoded_in	: in std_logic_vector(N-1 downto 0);
+
+			-- output
+			decoded_out	: out  std_logic_vector(2**N -1 downto 0)
+		);
+
+	end component decoder;
+
+
 
 begin
+
+
+	wren			<= enable(0);
+	init_v_th		<= enable(1);
+	load_v_reset		<= enable(2);
+	load_inh_weight		<= enable(3);
+	load_N_inputs_tc	<= enable(4);
+	load_N_neurons_tc	<= enable(5);
+	load_N_cycles_tc	<= enable(6);
+	init_lfsr		<= enable(7);
+	load_input_data		<= enable(8);
+
+
+	seed			<= unsigned(data(lfsr_bit_width-1 downto 0));
+	input_data		<= unsigned(data(input_data_bit_width-1
+					downto 0));
+	N_inputs_tc_value	<= data(N_inputs_cnt-1 downto 0);
+	N_neurons_tc_value	<= data(N_neurons_cnt-1 downto 0);
+	N_cycles_tc_value	<= data(N_cycles_cnt-1 downto 0);
+	v_th_value		<= signed(data(parallelism-1 downto 0));
+	v_reset_value		<= signed(data(parallelism-1 downto 0));
+	inh_weight_value	<= signed(data(parallelism-1 downto 0));
+	di			<= data;
+
+	cnt_out_sel		<= sel;
+	bram_sel		<= sel(bram_addr_length-1 downto 0);		
+
+
 
 	data_padding	: process(buffered_data)
 	begin
@@ -321,6 +416,24 @@ begin
 		end loop pad;
 
 	end process data_padding;
+	
+
+
+	load_decoder	: decoder
+
+		generic map(
+			N		=> load_length
+		)
+
+		port map(
+			-- input
+			encoded_in	=> load,
+
+			-- output
+			decoded_out	=> enable
+		);
+
+
 
 	v_reset_reg	: reg_signed 
 
@@ -356,6 +469,61 @@ begin
 			-- outputs
 			reg_out	=> inh_weight
 		);
+
+
+	N_inputs_tc_reg	: reg 
+
+		generic map(
+			-- parallelism
+			N	=> N_inputs_cnt
+		)
+
+		port map(	
+			-- inputs	
+			clk	=> clk,
+			en	=> load_N_inputs_tc,
+			reg_in	=> N_inputs_tc_value,
+
+			-- outputs
+			reg_out	=> N_inputs_tc
+		);
+
+	N_neurons_tc_reg	: reg 
+
+		generic map(
+			-- parallelism
+			N	=> N_neurons_cnt
+		)
+
+		port map(	
+			-- Inputs	
+			clk	=> clk,
+			en	=> load_N_neurons_tc,
+			reg_in	=> N_neurons_tc_value,
+
+			-- outputs
+			reg_out	=> N_neurons_tc
+		);
+
+	N_cycles_tc_reg	: reg 
+
+		generic map(
+			-- parallelism
+			N	=> N_cycles_cnt
+		)
+
+		port map(	
+			-- Inputs	
+			clk	=> clk,
+			en	=> load_N_cycles_tc,
+			reg_in	=> N_cycles_tc_value,
+
+			-- outputs
+			reg_out	=> N_cycles_tc
+		);
+
+
+
 
 
 	data_buffer	: input_buffer 
