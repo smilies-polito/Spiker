@@ -28,6 +28,7 @@ __pycache__
 *.xpr
 *.runs
 *.zip
+*.srcs
 
 # Files on iCloud
 *.icloud
