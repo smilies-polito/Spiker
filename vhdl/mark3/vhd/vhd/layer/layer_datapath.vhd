@@ -8,22 +8,22 @@ entity layer_datapath is
 	generic(
 
 		-- int parallelism
-		parallelism		: integer := 16;
-		weightsParallelism	: integer := 5;
+		neuron_bit_width	: integer := 16;
+		weights_bit_width	: integer := 5;
 
 		-- input spikes
 		N_inputs		: integer := 784;
 
-		-- must be one bit larger that the parallelism required to count
-		-- up to N_inputs
-		N_inputs_cnt		: integer := 11;
+		-- must be one bit larger that the parallelism required
+		-- to count up to N_inputs
+		inputs_cnt_bit_width	: integer := 11;
 
 		-- inhibitory spikes
 		N_neurons		: integer := 400;
 
-		-- must be one bit larger that the parallelism required to count
-		-- up to N_neurons
-		N_neurons_cnt		: integer := 10;
+		-- must be one bit larger that the parallelism required
+		-- to count up to N_neurons
+		neurons_cnt_bit_width	: integer := 10;
 
 		-- exponential decay shift
 		shift			: integer := 10
@@ -49,26 +49,33 @@ entity layer_datapath is
 		inh			: in std_logic;	
 
 		-- address to select the neurons
-		v_th_addr		: in std_logic_vector(N_neurons_cnt-1
-						  downto 0);
+		v_th_addr		: in std_logic_vector
+						(neurons_cnt_bit_width-1
+						downto 0);
 
 		-- data input
 		input_spikes		: in std_logic_vector
 						(N_inputs-1 downto 0);
 
 		-- input parameters
-		v_th_value		: in signed(parallelism-1 downto 0);		
-		v_reset			: in signed(parallelism-1 downto 0);	
-		inh_weight		: in signed(parallelism-1 downto 0);		
+		v_th_value		: in signed(neuron_bit_width-1 
+						downto 0);		
+		v_reset			: in signed(neuron_bit_width-1 
+						downto 0);	
+		inh_weight		: in signed(neuron_bit_width-1 
+						downto 0);		
 		exc_weights		: in signed
-						(N_neurons*weightsParallelism-1
+						(N_neurons*
+						 weights_bit_width-1
 						 downto 0);
 
 		-- terminal counters 
 		N_inputs_tc		: in std_logic_vector
-						(N_inputs_cnt-1 downto 0);
+						(inputs_cnt_bit_width-1
+						 downto 0);
 		N_neurons_tc		: in std_logic_vector
-						(N_neurons_cnt-1 downto 0);
+						(neurons_cnt_bit_width-1
+						 downto 0);
 
 		-- control output
 		exc_or			: out std_logic;
@@ -83,7 +90,8 @@ entity layer_datapath is
 
 		-- output address to select the excitatory weights
 		exc_cnt			: out std_logic_vector
-						(N_inputs_cnt-1 downto 0)
+						(inputs_cnt_bit_width-1 
+						 downto 0)
 	
 	);
 
@@ -97,7 +105,8 @@ architecture behaviour of layer_datapath is
 						downto 0);
 	signal exc_spike		: std_logic;
 	signal inh_spike		: std_logic;
-	signal inh_cnt			: std_logic_vector(N_neurons_cnt-1 
+	signal inh_cnt			: std_logic_vector(
+						neurons_cnt_bit_width-1 
 						downto 0);
 	signal spike			: std_logic;
 	signal exc_or_int		: std_logic;
@@ -106,7 +115,8 @@ architecture behaviour of layer_datapath is
 	signal inh_stop_int		: std_logic;
 	signal feedback_spikes		: std_logic_vector(N_neurons-1 
 						downto 0);
-	signal neuron_addr		: std_logic_vector(N_neurons_cnt-1
+	signal neuron_addr		: std_logic_vector(
+						neurons_cnt_bit_width-1
 						downto 0);
 
 
@@ -203,12 +213,12 @@ architecture behaviour of layer_datapath is
 
 		generic(
 			-- int parallelism_
-			parallelism		: integer := 16;
-			weightsParallelism	: integer := 5;
+			neuron_bit_width	: integer := 16;
+			weights_bit_width	: integer := 5;
 
 			-- number of neurons in the layer
 			N_neurons		: integer := 400;
-			N_addr			: integer := 9;
+			neurons_cnt_bit_width	: integer := 9;
 
 			-- shift during the exponential decay
 			shift			: integer := 10
@@ -226,21 +236,22 @@ architecture behaviour of layer_datapath is
 			inh_stop		: in std_logic;
 			inh			: in std_logic;
 			load_v_th		: in std_logic;
-			neuron_addr		: in std_logic_vector(N_addr-1
-							  downto 0);
+			neuron_addr		: in std_logic_vector(
+							neurons_cnt_bit_width-1
+							downto 0);
 
 			-- input
 			input_spike		: in std_logic;
 
 			-- input parameters
-			v_th_value		: in signed(parallelism-1 
+			v_th_value		: in signed(neuron_bit_width-1 
 							downto 0);		
-			v_reset			: in signed(parallelism-1 
+			v_reset			: in signed(neuron_bit_width-1 
 							downto 0);		
-			inh_weight		: in signed(parallelism-1 
+			inh_weight		: in signed(neuron_bit_width-1 
 							downto 0);		
 			exc_weights		: in signed(N_neurons*
-							weightsParallelism-1
+							weights_bit_width-1
 							downto 0);
 
 			-- output
@@ -305,7 +316,7 @@ begin
 			N_bit			=> N_inputs,
 
 			-- selection counter parallelism
-			N_cnt			=> N_inputs_cnt
+			N_cnt			=> inputs_cnt_bit_width
 		)
 
 		port map(
@@ -330,7 +341,7 @@ begin
 			N_bit			=> N_neurons,
 
 			-- selection counter parallelism
-			N_cnt			=> N_neurons_cnt
+			N_cnt			=> neurons_cnt_bit_width
 		)
 
 		port map(
@@ -366,7 +377,7 @@ begin
 	addr_mux		:  mux2to1
 
 		generic map(
-			N			=> N_neurons_cnt		
+			N			=> neurons_cnt_bit_width
 		)
 
 		port map(
@@ -386,12 +397,12 @@ begin
 		generic map(
 
 			-- parallelism
-			parallelism		=> parallelism,	
-			weightsParallelism	=> weightsParallelism,
+			neuron_bit_width	=> neuron_bit_width,	
+			weights_bit_width	=> weights_bit_width,
 
 			-- number of neurons in the layer
 			N_neurons		=> N_neurons,
-			N_addr			=> N_neurons_cnt,
+			neurons_cnt_bit_width	=> neurons_cnt_bit_width,
 
 			-- shift amount
 			shift			=> shift

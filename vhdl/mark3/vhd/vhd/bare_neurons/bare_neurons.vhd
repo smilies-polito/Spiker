@@ -7,8 +7,8 @@ entity bare_neurons is
 
 	generic(
 		-- internal parallelism
-		parallelism		: integer := 16;
-		weightsParallelism	: integer := 5;
+		neuron_bit_width	: integer := 16;
+		weights_bit_width	: integer := 5;
 
 		-- number of neurons in the layer
 		N_neurons		: integer := 400;
@@ -27,23 +27,20 @@ entity bare_neurons is
 		exc_stop		: in std_logic;
 		inh_or			: in std_logic;
 		inh_stop		: in std_logic;
-		v_th_en			: in std_logic_vector(N_neurons-1 
-						downto 0);
+		v_th_en			: in std_logic_vector(N_neurons-1 downto 0);
 
 		-- input
-		input_spikes		: in std_logic_vector(N_neurons-1
-						downto 0);
+		input_spikes		: in std_logic_vector(N_neurons-1 downto 0);
 
 		-- input parameters
-		v_th_value		: in signed(parallelism-1 downto 0);		
-		v_reset			: in signed(parallelism-1 downto 0);		
-		inh_weight		: in signed(parallelism-1 downto 0);		
+		v_th_value		: in signed(neuron_bit_width-1 downto 0);		
+		v_reset			: in signed(neuron_bit_width-1 downto 0);		
+		inh_weight		: in signed(neuron_bit_width-1 downto 0);		
 		exc_weights		: in signed(N_neurons*
-						weightsParallelism-1 downto 0);
+						  weights_bit_width-1 downto 0);
 
 		-- output
-		out_spikes		: out std_logic_vector(N_neurons-1 
-						downto 0);
+		out_spikes		: out std_logic_vector(N_neurons-1 downto 0);
 		all_ready		: out std_logic
 	);
 
@@ -77,8 +74,8 @@ architecture behaviour of bare_neurons is
 
 		generic(
 			-- parallelism
-			parallelism		: integer := 16;
-			weightsParallelism	: integer := 5;
+			neuron_bit_width	: integer := 16;
+			weights_bit_width	: integer := 5;
 
 			-- shift amount
 			shift			: integer := 10
@@ -100,13 +97,13 @@ architecture behaviour of bare_neurons is
 			v_th_en			: in std_logic;
 
 			-- input parameters
-			v_th_value		: in signed(parallelism-1 
+			v_th_value		: in signed(neuron_bit_width-1 
 							downto 0);
-			v_reset			: in signed(parallelism-1
+			v_reset			: in signed(neuron_bit_width-1
 							downto 0);
-			inh_weight		: in signed(parallelism-1
+			inh_weight		: in signed(neuron_bit_width-1
 							downto 0);
-			exc_weight		: in signed(weightsParallelism-1
+			exc_weight		: in signed(weights_bit_width-1
 							downto 0);
 
 			-- output
@@ -141,8 +138,8 @@ begin
 		neuron_i	: neuron
 			generic map(
 				-- parallelisms
-				parallelism		=> parallelism,
-				weightsParallelism	=> weightsParallelism,
+				neuron_bit_width	=> neuron_bit_width,
+				weights_bit_width	=> weights_bit_width,
 							       
 				-- shift amount    
 				shift			=> shift
@@ -165,9 +162,9 @@ begin
 				v_reset		=> v_reset,
 				inh_weight	=> inh_weight,
 				exc_weight	=> exc_weights((i+1)*
-							weightsParallelism-1
+							weights_bit_width-1
 							downto
-							i*weightsParallelism),
+							i*weights_bit_width),
 				
 				-- to load the threshold
 				v_th_en		=> v_th_en(i),

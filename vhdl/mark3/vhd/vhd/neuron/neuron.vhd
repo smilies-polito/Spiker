@@ -7,11 +7,11 @@ entity neuron is
 
 	generic(
 		-- parallelism
-		parallelism		: integer := 16;
-		weightsParallelism	: integer := 5;
+		neuron_bit_width	: integer := 16;
+		weights_bit_width	: integer := 5;
 
 		-- shift amount
-		shift			: integer := 1
+		shift			: integer := 10
 	);
 
 	port(
@@ -30,11 +30,14 @@ entity neuron is
 		v_th_en			: in std_logic;
 
 		-- input parameters
-		v_th_value		: in signed(parallelism-1 downto 0);
-		v_reset			: in signed(parallelism-1 downto 0);
-		inh_weight		: in signed(parallelism-1 downto 0);
-		exc_weight		: in signed(weightsParallelism-1 
-						  downto 0);
+		v_th_value		: in signed(neuron_bit_width-1 
+						downto 0);
+		v_reset			: in signed(neuron_bit_width-1
+						downto 0);
+		inh_weight		: in signed(neuron_bit_width-1
+						downto 0);
+		exc_weight		: in signed(weights_bit_width-1
+						downto 0);
 
 		-- output
 		out_spike		: out std_logic;
@@ -62,8 +65,8 @@ architecture behaviour of neuron is
 
 		generic(
 			-- parallelism
-			parallelism			: integer := 16;
-			weightsParallelism			: integer := 5;
+			neuron_bit_width		: integer := 16;
+			weights_bit_width		: integer := 5;
 
 			-- shift amount
 			shift				: integer := 1
@@ -71,14 +74,19 @@ architecture behaviour of neuron is
 
 		port(
 			-- input parameters
-			v_th_value		: in signed(parallelism-1 downto 0);
-			v_reset			: in signed(parallelism-1 downto 0);
-			inh_weight		: in signed(parallelism-1 downto 0);
-			exc_weight		: in signed(weightsParallelism-1 downto 0);
+			v_th_value		: in signed(neuron_bit_width-1 
+							downto 0);
+			v_reset			: in signed(neuron_bit_width-1 
+							downto 0);
+			inh_weight		: in signed(neuron_bit_width-1
+							downto 0);
+			exc_weight		: in signed(weights_bit_width-1
+							downto 0);
 
 			-- input controls
 			clk			: in std_logic;
-			update_sel		: in std_logic_vector(1 downto 0);
+			update_sel		: in std_logic_vector(1 
+							downto 0);
 			add_or_sub		: in std_logic;
 			v_update		: in std_logic;
 			v_th_en			: in std_logic;
@@ -132,8 +140,8 @@ begin
 	datapath : neuron_datapath
 		generic map(
 			-- parallelism
-			parallelism		=> parallelism,
-			weightsParallelism	=> weightsParallelism,
+			neuron_bit_width	=> neuron_bit_width,
+			weights_bit_width	=> weights_bit_width,
 
 			-- shift amount
 			shift			=> shift

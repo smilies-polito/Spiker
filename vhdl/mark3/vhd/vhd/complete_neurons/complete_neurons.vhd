@@ -5,13 +5,13 @@ use ieee.numeric_std.all;
 entity complete_neurons is
 
 	generic(
-		-- internal parallelism
-		parallelism		: integer := 16;
-		weightsParallelism	: integer := 5;
+		-- int parallelism_
+		neuron_bit_width	: integer := 16;
+		weights_bit_width	: integer := 5;
 
 		-- number of neurons in the layer
 		N_neurons		: integer := 400;
-		N_addr			: integer := 9;
+		neurons_cnt_bit_width	: integer := 9;
 
 		-- shift during the exponential decay
 		shift			: integer := 10
@@ -29,20 +29,27 @@ entity complete_neurons is
 		inh_stop		: in std_logic;
 		inh			: in std_logic;
 		load_v_th		: in std_logic;
-		neuron_addr		: in std_logic_vector(N_addr-1 downto 0);
+		neuron_addr		: in std_logic_vector(
+						neurons_cnt_bit_width-1
+						downto 0);
 
 		-- input
 		input_spike		: in std_logic;
 
 		-- input parameters
-		v_th_value		: in signed(parallelism-1 downto 0);		
-		v_reset			: in signed(parallelism-1 downto 0);		
-		inh_weight		: in signed(parallelism-1 downto 0);		
+		v_th_value		: in signed(neuron_bit_width-1 
+						downto 0);		
+		v_reset			: in signed(neuron_bit_width-1 
+						downto 0);		
+		inh_weight		: in signed(neuron_bit_width-1 
+						downto 0);		
 		exc_weights		: in signed(N_neurons*
-						weightsParallelism-1 downto 0);
+						weights_bit_width-1
+						downto 0);
 
 		-- output
-		out_spikes		: out std_logic_vector(N_neurons-1 downto 0);
+		out_spikes		: out std_logic_vector
+						(N_neurons-1 downto 0);
 		all_ready		: out std_logic
 	);
 	
@@ -51,7 +58,8 @@ end entity complete_neurons;
 
 architecture behaviour of complete_neurons is
 
-	signal unmasked_select	: std_logic_vector(2**N_addr-1 downto 0);
+	signal unmasked_select	: std_logic_vector(2**neurons_cnt_bit_width-1 
+					downto 0);
 	signal input_spikes	: std_logic_vector(N_neurons-1 downto 0);
 	signal v_th_en		: std_logic_vector(N_neurons-1 downto 0);
 
@@ -59,8 +67,8 @@ architecture behaviour of complete_neurons is
 
 		generic(
 			-- internal parallelism
-			parallelism		: integer := 16;
-			weightsParallelism	: integer := 5;
+			neuron_bit_width	: integer := 16;
+			weights_bit_width	: integer := 5;
 
 			-- number of neurons in the layer
 			N_neurons		: integer := 400;
@@ -85,11 +93,11 @@ architecture behaviour of complete_neurons is
 			input_spikes		: in std_logic_vector(N_neurons-1 downto 0);
 
 			-- input parameters
-			v_th_value		: in signed(parallelism-1 downto 0);		
-			v_reset			: in signed(parallelism-1 downto 0);		
-			inh_weight		: in signed(parallelism-1 downto 0);		
+			v_th_value		: in signed(neuron_bit_width-1 downto 0);		
+			v_reset			: in signed(neuron_bit_width-1 downto 0);		
+			inh_weight		: in signed(neuron_bit_width-1 downto 0);		
 			exc_weights		: in signed(N_neurons*
-							  weightsParallelism-1 downto 0);
+							  weights_bit_width-1 downto 0);
 
 			-- output
 			out_spikes		: out std_logic_vector(N_neurons-1 downto 0);
@@ -160,8 +168,8 @@ begin
 
 		generic map(
 			-- internal parallelism
-			parallelism		=> parallelism,
-			weightsParallelism	=> weightsParallelism,
+			neuron_bit_width	=> neuron_bit_width,
+			weights_bit_width	=> weights_bit_width,
 
 			-- number of neurons in the layer
 			N_neurons		=> N_neurons,
@@ -200,7 +208,7 @@ begin
 	neurons_decoder	: decoder 
 
 		generic map(
-			N		=> N_addr
+			N		=> neurons_cnt_bit_width
 		)
 
 		port map(

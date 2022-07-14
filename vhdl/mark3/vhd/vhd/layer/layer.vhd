@@ -8,22 +8,22 @@ entity layer is
 	generic(
 
 		-- int parallelism
-		parallelism		: integer := 16;
-		weightsParallelism	: integer := 5;
+		neuron_bit_width	: integer := 16;
+		weights_bit_width	: integer := 5;
 
 		-- input spikes
 		N_inputs		: integer := 784;
 
 		-- must be one bit larger that the parallelism required to count
 		-- up to N_inputs
-		N_inputs_cnt		: integer := 11;
+		inputs_cnt_bit_width	: integer := 11;
 
 		-- inhibitory spikes
 		N_neurons		: integer := 400;
 
 		-- must be one bit larger that the parallelism required to count
 		-- up to N_neurons
-		N_neurons_cnt		: integer := 10;
+		neurons_cnt_bit_width	: integer := 10;
 
 		-- exponential decay shift
 		shift			: integer := 10
@@ -38,26 +38,32 @@ entity layer is
 		init_v_th		: in std_logic;
 
 		-- address to select the neurons
-		v_th_addr		: in std_logic_vector(N_neurons_cnt-1
-						  downto 0);
+		v_th_addr		: in std_logic_vector(
+						neurons_cnt_bit_width-1
+						downto 0);
 
 		-- data input
 		input_spikes		: in std_logic_vector
 						(N_inputs-1 downto 0);
 
 		-- input parameters
-		v_th_value		: in signed(parallelism-1 downto 0);		
-		v_reset			: in signed(parallelism-1 downto 0);	
-		inh_weight		: in signed(parallelism-1 downto 0);		
+		v_th_value		: in signed(neuron_bit_width-1 
+						to 0);		
+		v_reset			: in signed(neuron_bit_width-1 
+						to 0);	
+		inh_weight		: in signed(neuron_bit_width-1 
+						downto 0);
 		exc_weights		: in signed
-						(N_neurons*weightsParallelism-1
+						(N_neurons*weights_bit_width-1
 						 downto 0);
 
 		-- terminal counters 
 		N_inputs_tc		: in std_logic_vector
-						(N_inputs_cnt-1 downto 0);
+						(inputs_cnt_bit_width-1 
+						downto 0);
 		N_neurons_tc		: in std_logic_vector
-						(N_neurons_cnt-1 downto 0);
+						(neurons_cnt_bit_width-1 
+						downto 0);
 
 		-- output
 		out_spikes		: out std_logic_vector
@@ -69,7 +75,8 @@ entity layer is
 
 		-- output address to select the excitatory weights
 		exc_cnt			: out std_logic_vector
-						(N_inputs_cnt-1 downto 0)
+						(inputs_cnt_bit_width-1
+						downto 0)
 	);
 
 end entity layer;
@@ -108,22 +115,22 @@ architecture behaviour of layer is
 		generic(
 
 			-- int parallelism
-			parallelism		: integer := 16;
-			weightsParallelism	: integer := 5;
+			neuron_bit_width	: integer := 16;
+			weights_bit_width	: integer := 5;
 
 			-- input spikes
 			N_inputs		: integer := 784;
 
 			-- must be one bit larger that the parallelism required
 			-- to count up to N_inputs
-			N_inputs_cnt		: integer := 11;
+			inputs_cnt_bit_width	: integer := 11;
 
 			-- inhibitory spikes
 			N_neurons		: integer := 400;
 
 			-- must be one bit larger that the parallelism required
 			-- to count up to N_neurons
-			N_neurons_cnt		: integer := 10;
+			neurons_cnt_bit_width	: integer := 10;
 
 			-- exponential decay shift
 			shift			: integer := 10
@@ -150,7 +157,7 @@ architecture behaviour of layer is
 
 			-- address to select the neurons
 			v_th_addr		: in std_logic_vector
-							(N_neurons_cnt-1
+							(neurons_cnt_bit_width-1
 							downto 0);
 
 			-- data input
@@ -158,23 +165,23 @@ architecture behaviour of layer is
 							(N_inputs-1 downto 0);
 
 			-- input parameters
-			v_th_value		: in signed(parallelism-1 
+			v_th_value		: in signed(neuron_bit_width-1 
 							downto 0);		
-			v_reset			: in signed(parallelism-1 
+			v_reset			: in signed(neuron_bit_width-1 
 							downto 0);	
-			inh_weight		: in signed(parallelism-1 
+			inh_weight		: in signed(neuron_bit_width-1 
 							downto 0);		
 			exc_weights		: in signed
 							(N_neurons*
-							 weightsParallelism-1
+							 weights_bit_width-1
 							 downto 0);
 
 			-- terminal counters 
 			N_inputs_tc		: in std_logic_vector
-							(N_inputs_cnt-1
+							(inputs_cnt_bit_width-1
 							 downto 0);
 			N_neurons_tc		: in std_logic_vector
-							(N_neurons_cnt-1
+							(neurons_cnt_bit_width-1
 							 downto 0);
 
 			-- control output
@@ -190,7 +197,7 @@ architecture behaviour of layer is
 
 			-- output address to select the excitatory weights
 			exc_cnt			: out std_logic_vector
-							(N_inputs_cnt-1 
+							(inputs_cnt_bit_width-1 
 							 downto 0)
 		
 		);
@@ -246,22 +253,22 @@ begin
 		generic map(
 
 			-- internal parallelism
-			parallelism		=> parallelism,
-			weightsParallelism	=> weightsParallelism,
+			neuron_bit_width	=> neuron_bit_width,
+			weights_bit_width	=> weights_bit_width,
                                                                    
 			-- input spikes       
 			N_inputs		=> N_inputs,
 
 			-- must be one bit larger that the parallelism required
 			-- to count up to N_inputs
-			N_inputs_cnt		=> N_inputs_cnt,
+			inputs_cnt_bit_width	=> inputs_cnt_bit_width,
                                                                    
 			-- inhibitory spikes      
 			N_neurons		=> N_neurons,
 
 			-- must be one bit larger that the parallelism required
 			-- to count up to N_neurons
-			N_neurons_cnt		=> N_neurons_cnt,
+			neurons_cnt_bit_width	=> neurons_cnt_bit_width,
                                                                    
 			-- exponential decay shift
 			shift			=> shift
