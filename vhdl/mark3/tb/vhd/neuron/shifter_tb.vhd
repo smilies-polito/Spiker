@@ -10,8 +10,8 @@ end entity shifter_tb;
 architecture test of shifter_tb is
 
 
-	constant N		: integer := 8;
-	constant shift		: integer := 3;
+	constant N		: integer := 16;
+	constant shift		: integer := 10;
 
 	signal shifter_in	: signed(N-1 downto 0);
 	signal shifted_out	: signed(N-1 downto 0);
@@ -45,11 +45,11 @@ begin
 	shift_test 	: process
 	begin
 
-	shifter_in	<= "01000000";
+	shifter_in	<= "1100000000000000";
 
 	wait for 10 ns;
 
-	shifter_in	<= "01001000";
+	shifter_in	<= "0100100000001111";
 
 	wait;
 	
