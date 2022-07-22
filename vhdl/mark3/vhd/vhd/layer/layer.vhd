@@ -12,7 +12,7 @@ entity layer is
 		weights_bit_width	: integer := 5;
 
 		-- input spikes
-		N_inputs		: integer := 784;
+		N_inputs		: integer := 392; --784;
 
 		-- must be one bit larger that the parallelism required to count
 		-- up to N_inputs
@@ -48,9 +48,9 @@ entity layer is
 
 		-- input parameters
 		v_th_value		: in signed(neuron_bit_width-1 
-						to 0);		
+						downto 0);		
 		v_reset			: in signed(neuron_bit_width-1 
-						to 0);	
+						downto 0);	
 		inh_weight		: in signed(neuron_bit_width-1 
 						downto 0);
 		exc_weights		: in signed
