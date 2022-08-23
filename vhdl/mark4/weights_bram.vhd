@@ -46,7 +46,7 @@ end entity weights_bram;
 
 architecture behaviour of weights_bram is
 
-	constant N_weights	: integer := word_length/weights_bit_width;
+	constant N_weights	: integer := N_neurons/2; -- word_length/weights_bit_width;
 
 	type data_matrix is array(N_bram-1 downto 0) of
 		std_logic_vector(word_length-1 downto 0);
@@ -190,7 +190,7 @@ begin
 	connect_output	: process(data_out)
 	begin
 
-		for i in 0 to N_bram-2
+		for i in 0 to N_bram-1
 		loop
 
 			do(
@@ -206,16 +206,16 @@ begin
 
 		end loop;
 
-		do(
-			N_neurons*weights_bit_width-1 
-			downto
-			(N_bram-1)*N_weights*weights_bit_width
-		) <=
-		data_out(N_bram-1)(
-			weights_bit_width-1
-			downto
-			0
-		);
+		-- do(
+		-- 	N_neurons*weights_bit_width-1 
+		-- 	downto
+		-- 	(N_bram-1)*N_weights*weights_bit_width
+		-- ) <=
+		-- data_out(N_bram-1)(
+		-- 	weights_bit_width-1
+		-- 	downto
+		-- 	0
+		-- );
 
 	end process connect_output;
 
