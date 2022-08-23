@@ -46,7 +46,7 @@ end entity weights_bram;
 
 architecture behaviour of weights_bram is
 
-	constant N_weights	: integer := N_neurons/2; -- word_length/weights_bit_width;
+	constant N_weights	: integer := N_neurons; -- word_length/weights_bit_width;
 
 	type data_matrix is array(N_bram-1 downto 0) of
 		std_logic_vector(word_length-1 downto 0);
