@@ -272,6 +272,7 @@ begin
 	inh_stop	<= inh_stop_int;
 
 
+
 	anticipate_exc_spikes	: anticipate_bits
 		generic map(
 			-- parallelism
