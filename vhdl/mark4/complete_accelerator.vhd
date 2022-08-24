@@ -10,10 +10,11 @@ entity complete_accelerator is
 		load_bit_width		: integer := 4;
 		data_bit_width		: integer := 36;
 		addr_bit_width		: integer := 10;
+		sel_bit_width		: integer := 10;
 
 		-- Internal bit-widths
 		neuron_bit_width	: integer := 16;
-		weights_bit_width	: integer := 5;
+		weights_bit_width	: integer := 15;
 		bram_word_length	: integer := 36;
 		bram_addr_length	: integer := 10;
 		bram_sel_length		: integer := 1;
@@ -23,18 +24,19 @@ entity complete_accelerator is
 		cnt_out_bit_width	: integer := 16;
 
 		-- Network shape
-		inputs_addr_bit_width	: integer := 1;
-		neurons_addr_bit_width	: integer := 2;
+		inputs_addr_bit_width	: integer := 2;
+		neurons_addr_bit_width	: integer := 1;
 
 		-- Must be 1 bit longer than what required to count to N_cycles
-		cycles_cnt_bit_width	: integer := 12;
+		cycles_cnt_bit_width	: integer := 6;
 
-		-- Number of block rams instantiated
+		-- Bram parameters
 		N_bram			: integer := 1;
+		N_weights_per_word	: integer := 2;
 
 		-- Structure parameters
-		N_inputs		: integer := 2;
-		N_neurons		: integer := 3;
+		N_inputs		: integer := 3;
+		N_neurons		: integer := 2;
 
 		-- Internal parameters
 		shift			: integer := 10
@@ -56,7 +58,7 @@ entity complete_accelerator is
 						data_bit_width-1 
 						downto 0);
 		sel			: in std_logic_vector(
-						neurons_addr_bit_width-1
+						sel_bit_width-1
 						downto 0);
 		-- Output
 		ready			: out std_logic;
@@ -189,8 +191,9 @@ architecture behaviour of complete_accelerator is
 			-- Must be 1 bit longer than what required to count to N_cycles
 			cycles_cnt_bit_width	: integer := 12;
 
-			-- Number of block rams instantiated
+			-- Bram parameters
 			N_bram			: integer := 58;
+			N_weights_per_word	: integer := 7;
 
 			-- Structure parameters
 			N_inputs		: integer := 784;
@@ -403,7 +406,7 @@ begin
 	cnt_out_sel		<= sel(neurons_addr_bit_width-1 downto 0);
 	bram_sel		<= sel(bram_sel_length-1 downto 0);		
 
-	wraddr			<= addr;
+	wraddr			<= addr(bram_addr_length-1 downto 0);
 	v_th_addr		<= addr(neurons_addr_bit_width downto 0);
 	input_data_addr		<= addr(inputs_addr_bit_width-1 downto 0);
 
@@ -569,6 +572,7 @@ begin
 			bram_addr_length	=> bram_addr_length, 
 			bram_sel_length		=> bram_sel_length, 
 			bram_we_length		=> bram_we_length,
+			input_data_bit_width	=> input_data_bit_width,
 			lfsr_bit_width		=> lfsr_bit_width,
 			cnt_out_bit_width	=> cnt_out_bit_width,
 
@@ -580,6 +584,7 @@ begin
 
 			-- Number of block rams instantiated
 			N_bram			=> N_bram,
+			N_weights_per_word	=> N_weights_per_word,
 
 			-- Structure parameters
 			N_inputs		=> N_inputs,

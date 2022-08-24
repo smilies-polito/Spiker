@@ -12,12 +12,13 @@ entity weights_bram is
 
 	generic(
 		word_length		: integer := 36;
+		N_weights_per_word	: integer := 2;
 		rdwr_addr_length	: integer := 10;
 		we_length		: integer := 4;
  		N_neurons		: integer := 400;
 		weights_bit_width	: integer := 5;
 		N_bram			: integer := 58;
-		bram_addr_length	: integer := 6
+		bram_sel_length	: integer := 6
 	);
 
 	port(
@@ -31,12 +32,14 @@ entity weights_bram is
 		wren		: in std_logic;
 		wraddr		: in std_logic_vector(rdwr_addr_length-1
 					downto 0);
-		bram_sel	: in std_logic_vector(bram_addr_length-1 
+		bram_sel	: in std_logic_vector(bram_sel_length-1 
 					downto 0);
 
 		-- output
-		do		: out std_logic_vector(N_neurons*
-					weights_bit_width-1 downto 0)
+		do		: out std_logic_vector(N_bram*
+					N_weights_per_word*
+					weights_bit_width-1 
+					downto 0)
 				
 	);
 
@@ -46,13 +49,14 @@ end entity weights_bram;
 
 architecture behaviour of weights_bram is
 
-	constant N_weights	: integer := N_neurons; -- word_length/weights_bit_width;
 
 	type data_matrix is array(N_bram-1 downto 0) of
-		std_logic_vector(word_length-1 downto 0);
+		std_logic_vector(word_length-1
+		downto 0);
 
-	signal wren_int	: std_logic_vector(2**bram_addr_length-1 downto 0);
 	signal data_out	: data_matrix;
+
+	signal wren_int	: std_logic_vector(2**bram_sel_length-1 downto 0);
 	signal rst	: std_logic;
 	signal we	: std_logic_vector(we_length-1 downto 0);
 
@@ -88,7 +92,7 @@ begin
 
 	bram_decoder	: decoder
 		generic map(
-			N		=> bram_addr_length
+			N		=> bram_sel_length
 		)
 
 		port map(
@@ -194,28 +198,17 @@ begin
 		loop
 
 			do(
-				(i+1)*N_weights*weights_bit_width-1 
+				(i+1)*N_weights_per_word*weights_bit_width-1 
 				downto
-				i*N_weights*weights_bit_width
+				i*N_weights_per_word*weights_bit_width
 			) <=
 			data_out(i)(
-				N_weights*weights_bit_width-1
+				N_weights_per_word*weights_bit_width-1
 				downto 
 				0
 			);
 
 		end loop;
-
-		-- do(
-		-- 	N_neurons*weights_bit_width-1 
-		-- 	downto
-		-- 	(N_bram-1)*N_weights*weights_bit_width
-		-- ) <=
-		-- data_out(N_bram-1)(
-		-- 	weights_bit_width-1
-		-- 	downto
-		-- 	0
-		-- );
 
 	end process connect_output;
 

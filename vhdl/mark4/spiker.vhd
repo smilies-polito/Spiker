@@ -23,8 +23,9 @@ entity spiker is
 		-- Must be 1 bit longer than what required to count to N_cycles
 		cycles_cnt_bit_width	: integer := 12;
 
-		-- Number of block rams instantiated
+		-- Bram parameters
 		N_bram			: integer := 58;
+		N_weights_per_word	: integer := 7;
 
 		-- Structure parameters
 		N_inputs		: integer := 784;
@@ -107,7 +108,13 @@ architecture behaviour of spiker is
 
 
 	-- Memory signals: input
-	signal rdaddr			: std_logic_vector(bram_addr_length-1 downto 0);
+	signal rdaddr			: std_logic_vector(bram_addr_length-1
+						downto 0);
+
+	signal do			: std_logic_vector(N_bram*
+						N_weights_per_word*
+						weights_bit_width-1
+						downto 0);
 
 	-- Memory signals: output
 	signal exc_weights		:
@@ -145,7 +152,7 @@ architecture behaviour of spiker is
 			N_neurons		: integer := 400;
 			weights_bit_width	: integer := 5;
 			N_bram			: integer := 58;
-			bram_addr_length	: integer := 6
+			bram_sel_length		: integer := 6
 		);
 
 		port(
@@ -160,7 +167,7 @@ architecture behaviour of spiker is
 			wren		: in std_logic;
 			wraddr		: in std_logic_vector(rdwr_addr_length-1
 						downto 0);
-			bram_sel	: in std_logic_vector(bram_addr_length-1 
+			bram_sel	: in std_logic_vector(bram_sel_length-1 
 						downto 0);
 
 			-- output
@@ -348,9 +355,13 @@ begin
 
 	cnt_out_rst_n	<= not start;
 	
-	rdaddr(bram_addr_length-1 downto inputs_addr_bit_width + 1) <= (others =>
+	rdaddr(bram_addr_length-1 downto inputs_addr_bit_width) <= (others =>
 		'0');
-	rdaddr(inputs_addr_bit_width downto 0) <= exc_cnt;
+
+	rdaddr(inputs_addr_bit_width-1 downto 0) <=
+		exc_cnt(inputs_addr_bit_width-1 downto 0);
+
+	exc_weights	<= do(N_neurons*weights_bit_width-1 downto 0);
 
 
 	weights_memory	: weights_bram 
@@ -362,7 +373,7 @@ begin
 			N_neurons		=> N_neurons,
 			weights_bit_width	=> weights_bit_width,
 			N_bram			=> N_bram,
-			bram_addr_length	=> bram_sel_length
+			bram_sel_length		=> bram_sel_length
 		)
 
 		port map(
@@ -370,14 +381,14 @@ begin
 			clk		=> clk,
 			di		=> di,
 			rst_n		=> rst_n,
-			rdaddr		=> rdaddr(bram_addr_length-1 downto 0),
+			rdaddr		=> rdaddr,
 			rden		=> rden,
 			wren		=> wren,
 			wraddr		=> wraddr,
 			bram_sel	=> bram_sel,
 
 			-- output
-			do		=> exc_weights
+			do		=> do
 					
 		);
 
