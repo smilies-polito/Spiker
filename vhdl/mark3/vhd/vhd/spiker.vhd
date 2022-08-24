@@ -12,21 +12,20 @@ entity spiker is
 		bram_addr_length	: integer := 10;
 		bram_sel_length		: integer := 6;
 		bram_we_length		: integer := 4;
-		load_length		: integer := 4;
-		input_data_addr_length	: integer := 10;
 		input_data_bit_width	: integer := 8;
 		lfsr_bit_width		: integer := 16;
-		cnt_out_sel_length	: integer := 10;
 		cnt_out_bit_width	: integer := 16;
 
-		-- Note: bit-width of the next three counters must be
-		-- ceil(log_2(max_count)) + 1
-		inputs_cnt_bit_width	: integer := 11;
-		neurons_cnt_bit_width	: integer := 10;
+		-- Network shape
+		inputs_addr_bit_width	: integer := 10;
+		neurons_addr_bit_width	: integer := 9;
+
+		-- Must be 1 bit longer than what required to count to N_cycles
 		cycles_cnt_bit_width	: integer := 12;
 
-		-- Number of block rams instantiated
+		-- Bram parameters
 		N_bram			: integer := 58;
+		N_weights_per_word	: integer := 7;
 
 		-- Structure parameters
 		N_inputs		: integer := 784;
@@ -55,7 +54,7 @@ entity spiker is
 
 		-- address to select the neurons
 		v_th_addr		: in std_logic_vector(
-						neurons_cnt_bit_width-1
+						neurons_addr_bit_width
 						  downto 0);
 
 		-- data input
@@ -73,10 +72,10 @@ entity spiker is
 
 		-- terminal counters 
 		N_inputs_tc		: in std_logic_vector (
-						inputs_cnt_bit_width-1 
+						inputs_addr_bit_width 
 						downto 0);
 		N_neurons_tc		: in std_logic_vector(
-						neurons_cnt_bit_width-1 
+						neurons_addr_bit_width 
 						downto 0);
 		N_cycles_tc		: in std_logic_vector(
 						cycles_cnt_bit_width-1
@@ -109,7 +108,13 @@ architecture behaviour of spiker is
 
 
 	-- Memory signals: input
-	signal rdaddr			: std_logic_vector(10 downto 0);
+	signal rdaddr			: std_logic_vector(bram_addr_length-1
+						downto 0);
+
+	signal do			: std_logic_vector(N_bram*
+						N_weights_per_word*
+						weights_bit_width-1
+						downto 0);
 
 	-- Memory signals: output
 	signal exc_weights		:
@@ -124,6 +129,9 @@ architecture behaviour of spiker is
 	signal out_spikes		: std_logic_vector(N_neurons-1
 						downto 0);
 	signal sample			: std_logic;
+	signal exc_cnt			: std_logic_vector(
+						inputs_addr_bit_width
+						downto 0);
 
 	-- Output counters signals
 	signal cycles_cnt_rst_n		: std_logic;	
@@ -144,7 +152,7 @@ architecture behaviour of spiker is
 			N_neurons		: integer := 400;
 			weights_bit_width	: integer := 5;
 			N_bram			: integer := 58;
-			bram_addr_length	: integer := 6
+			bram_sel_length		: integer := 6
 		);
 
 		port(
@@ -159,7 +167,7 @@ architecture behaviour of spiker is
 			wren		: in std_logic;
 			wraddr		: in std_logic_vector(rdwr_addr_length-1
 						downto 0);
-			bram_sel	: in std_logic_vector(bram_addr_length-1 
+			bram_sel	: in std_logic_vector(bram_sel_length-1 
 						downto 0);
 
 			-- output
@@ -346,6 +354,14 @@ architecture behaviour of spiker is
 begin
 
 	cnt_out_rst_n	<= not start;
+	
+	rdaddr(bram_addr_length-1 downto inputs_addr_bit_width) <= (others =>
+		'0');
+
+	rdaddr(inputs_addr_bit_width-1 downto 0) <=
+		exc_cnt(inputs_addr_bit_width-1 downto 0);
+
+	exc_weights	<= do(N_neurons*weights_bit_width-1 downto 0);
 
 
 	weights_memory	: weights_bram 
@@ -357,7 +373,7 @@ begin
 			N_neurons		=> N_neurons,
 			weights_bit_width	=> weights_bit_width,
 			N_bram			=> N_bram,
-			bram_addr_length	=> bram_sel_length
+			bram_sel_length		=> bram_sel_length
 		)
 
 		port map(
@@ -365,14 +381,14 @@ begin
 			clk		=> clk,
 			di		=> di,
 			rst_n		=> rst_n,
-			rdaddr		=> rdaddr(bram_addr_length-1 downto 0),
+			rdaddr		=> rdaddr,
 			rden		=> rden,
 			wren		=> wren,
 			wraddr		=> wraddr,
 			bram_sel	=> bram_sel,
 
 			-- output
-			do		=> exc_weights
+			do		=> do
 					
 		);
 
@@ -389,14 +405,14 @@ begin
 
 			-- must be one bit larger that the parallelism required
 			-- to count up to N_inputs
-			inputs_cnt_bit_width	=> inputs_cnt_bit_width,
+			inputs_cnt_bit_width	=> inputs_addr_bit_width + 1,
 
 			-- inhibitory spikes
 			N_neurons		=> N_neurons,
 
 			-- must be one bit larger that the parallelism required
 			-- to count up to N_neurons
-			neurons_cnt_bit_width	=> neurons_cnt_bit_width,
+			neurons_cnt_bit_width	=> neurons_addr_bit_width + 1,
 
 			-- exponential decay shift
 			shift			=> shift
@@ -436,7 +452,7 @@ begin
 			cycles_cnt_en		=> cycles_cnt_en,
 
 			-- output address to select the excitatory weights
-			exc_cnt			=> rdaddr
+			exc_cnt			=> exc_cnt
 		);
 
 
