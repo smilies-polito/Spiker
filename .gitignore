@@ -29,6 +29,7 @@ __pycache__
 *.runs
 *.zip
 *.srcs
+*.gen
 
 # Files on iCloud
 *.icloud
