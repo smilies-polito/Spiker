@@ -6,12 +6,23 @@ use ieee.std_logic_textio.all;
 
 entity driver is
 	generic(
-		word_length		: integer := 36;
+		-- Bit-width
+		word_length		: integer := 64;
 		load_bit_width		: integer := 4;
 		data_bit_width		: integer := 36;
 		addr_bit_width		: integer := 10;
 		sel_bit_width		: integer := 10;
 		cnt_out_bit_width	: integer := 16;
+
+		-- Internal parameters
+		N_inputs_tc_value	: integer := 3;
+		N_neurons_tc_value	: integer := 2;
+		N_cycles_tc_value	: integer := 30;
+		v_reset_value		: integer := 5;
+		inh_weight_value	: integer := -15;
+		seed_value		: integer := 5;
+
+		-- Initialization files
 		weights_filename	: string  := "";
 		v_th_filename		: string  := "";
 		inputs_filename		: string  := ""
@@ -23,14 +34,20 @@ entity driver is
 		clk			: in std_logic;
 		driver_rst_n		: in std_logic;
 		go			: in std_logic;
-		N_neurons_tc		: in std_logic;
-		N_inputs_tc		: in std_logic;
+		N_inputs_cnt		: in std_logic_vector(
+						addr_bit_width-1
+						downto 0);
+		N_neurons_cnt		: in std_logic_vector(
+						addr_bit_width-1
+						downto 0);
 		input_word		: in std_logic_vector(word_length-1 
 						downto 0);
 
 		-- output
 		N_neurons_cnt_en	: out std_logic;
 		N_inputs_cnt_en		: out std_logic;
+		N_neurons_cnt_rst_n	: out std_logic;
+		N_inputs_cnt_rst_n	: out std_logic;
 		output_word		: out std_logic_vector(word_length-1
 						downto 0)
 	    
@@ -58,6 +75,10 @@ architecture behaviour of driver is
 	signal cnt_out			: std_logic_vector(
 						cnt_out_bit_width-1
 						downto 0);
+
+
+	signal N_neurons_tc		: std_logic;
+	signal N_inputs_tc		: std_logic;
 
 
 	type states is (
@@ -132,6 +153,23 @@ begin
 		addr_bit_width+
 		sel_bit_width+
 		load_bit_width+1)	<= rst_n;
+
+
+	-- Neurons terminal counter
+	N_neurons_tc_gen	: process(N_neurons_cnt)
+	begin
+		-- Default value
+		N_neurons_tc <= '0';
+
+		if N_neurons_cnt = std_logic_vector(
+					to_unsigned(
+					N_neurons_tc_value,
+					N_neurons_cnt'length))
+		then
+			N_neurons_tc <= '1';
+		end if;
+		
+	end process N_neurons_tc_gen;
 
 
 	-- state transition
@@ -401,6 +439,8 @@ begin
 		end case;
 
 	end process state_evaluation;
+	
+
 
 
 	output_evaluation	: process(present_state)
@@ -414,80 +454,204 @@ begin
 		file inputs_file	: text open read_mode is
 			inputs_filename;
 
+		variable read_line	: line;
+
+		variable data_var	: std_logic_vector(data'length-1 downto
+						0);
+
 	begin
 
 		-- default values
+		addr			<= (others => '0');
+		load			<= (others => '1');
+		data			<= (others => '0');
+		sel			<= (others => '0');	
+		N_inputs_cnt_en		<= '0';
+		N_neurons_cnt_en	<= '0';
+		N_inputs_cnt_rst_n	<= '1';
+		N_neurons_cnt_rst_n	<= '1';
+		start			<= '0';
+		rst_n			<= '1';
 
 		case present_state is
 
 			-- reset
 			when reset =>
+				rst_n			<= '0';
+				N_inputs_cnt_rst_n	<= '0';
+				N_neurons_cnt_rst_n	<= '0';
 
 			-- idle
 			when idle =>
+				rst_n	<= '0';
 
 			-- load_N_inputs_tc
 			when load_N_inputs_tc =>
+				rst_n	<= '0';
+				load	<= "0100";
+				data	<= std_logic_vector(
+						to_unsigned(
+						N_inputs_tc_value,
+						data'length));
 
 			-- N_inputs_tc_wait
 			when N_inputs_tc_wait =>
+				rst_n	<= '0';
 
 			-- load_N_neurons_tc
 			when load_N_neurons_tc =>
+				rst_n	<= '0';
+				load	<= "0101";
+				data	<= std_logic_vector(
+						to_unsigned(
+						N_neurons_tc_value,
+						data'length));
+
 
 			-- N_neurons_tc_wait
 			when N_neurons_tc_wait =>
+				rst_n	<= '0';
 
 			-- load_N_cycles_tc
 			when load_N_cycles_tc =>
+				rst_n	<= '0';
+				load	<= "0110";
+				data	<= std_logic_vector(
+						to_unsigned(
+						N_cycles_tc_value,
+						data'length));
 
 			-- N_cycles_tc_wait
 			when N_cycles_tc_wait =>
+				rst_n	<= '0';
 
 			-- load_v_reset
 			when load_v_reset =>
+				rst_n	<= '0';
+				load	<= "0010";
+				data	<= std_logic_vector(
+						to_unsigned(
+						v_reset_value,
+						data'length));
 
 			-- v_reset_wait
 			when v_reset_wait =>
+				rst_n	<= '0';
 
 			-- load_inh_weight
 			when load_inh_weight =>
+				rst_n	<= '0';
+				load	<= "0011";
+				data	<= std_logic_vector(
+						to_signed(
+						inh_weight_value,
+						data'length));
 				
 			-- inh_weight_wait
 			when inh_weight_wait =>
+				rst_n	<= '0';
 
 			-- load_v_th
 			when load_v_th =>
 
+				rst_n			<= '0';
+				N_neurons_cnt_en	<= '1';
+
+				if not endfile(v_th_file)
+				then
+					-- Read line from file
+					readline(v_th_file, read_line);
+					read(read_line, data_var);
+
+					-- Associate line to data input
+					data			<= data_var;
+
+					load			<= "0001";
+					addr			<= N_neurons_cnt;
+				end if;
+
 			-- v_th_wait
 			when v_th_wait =>
+				rst_n	<= '0';
 
 			-- load_weights
 			when load_weights =>
 
+				rst_n		<= '0';
+				N_inputs_cnt_en	<= '1';
+
+				if not endfile(weights_file)
+				then
+					-- Read line from file
+					readline(weights_file, read_line);
+					read(read_line, data_var);
+
+					-- Associate line to data input
+					data		<= data_var;
+					load		<= "0000";
+					addr		<= N_inputs_cnt;
+				end if;
+
 			-- weights_wait
 			when weights_wait =>
+				rst_n	<= '0';
 
 			-- load_seed_lfsr
 			when load_seed_lfsr =>
+				rst_n	<= '0';
+				load	<= "0111";
+				data	<= std_logic_vector(
+						to_signed(
+						seed_value,
+						data'length));
+
+				N_inputs_cnt_rst_n	<= '0';
+				N_neurons_cnt_rst_n	<= '0';
 
 			-- seed_lfsr_wait
 			when seed_lfsr_wait =>
+				rst_n	<= '0';
 
 			-- wait_for_ready
 			when wait_for_ready =>
+				rst_n	<= '1';
 
 			-- read_counters
 			when read_counters =>
+				rst_n			<= '1';
+				N_neurons_cnt_en	<= '1';
 
 			-- load_input_data
 			when load_input_data =>
 
+				rst_n	<= '1';
+				N_inputs_cnt_en	<= '1';
+
+				if not endfile(inputs_file)
+				then
+					-- Read line from file
+					readline(inputs_file, read_line);
+					read(read_line, data_var);
+
+					-- Associate line to data input
+					data		<= data_var;
+					rst_n		<= '0';
+					load		<= "1000";
+					addr		<= N_inputs_cnt;
+
+				end if;
+
 			-- begin_execution
 			when begin_execution =>
+				rst_n	<= '1';
+				start	<= '1';
 
 			-- default case
 			when others =>
+				rst_n			<= '0';
+				N_inputs_cnt_rst_n	<= '0';
+				N_neurons_cnt_rst_n	<= '0';
+				
 
 		end case;
 
