@@ -1,6 +1,8 @@
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
+use std.textio.all;
+use ieee.std_logic_textio.all;
 
 entity driver is
 	generic(
@@ -9,20 +11,28 @@ entity driver is
 		data_bit_width		: integer := 36;
 		addr_bit_width		: integer := 10;
 		sel_bit_width		: integer := 10;
-		cnt_out_bit_width	: integer := 16
+		cnt_out_bit_width	: integer := 16;
+		weights_filename	: string  := "";
+		v_th_filename		: string  := "";
+		inputs_filename		: string  := ""
  			
 	);
 	port(
 
 		-- input
-		clk		: in std_logic;
-		driver_rst_n	: in std_logic;
-		go		: in std_logic;
-
-		input_word	: in std_logic_vector(word_length-1 downto 0);
+		clk			: in std_logic;
+		driver_rst_n		: in std_logic;
+		go			: in std_logic;
+		N_neurons_tc		: in std_logic;
+		N_inputs_tc		: in std_logic;
+		input_word		: in std_logic_vector(word_length-1 
+						downto 0);
 
 		-- output
-		output_word	: out std_logic_vector(word_length-1 downto 0)
+		N_neurons_cnt_en	: out std_logic;
+		N_inputs_cnt_en		: out std_logic;
+		output_word		: out std_logic_vector(word_length-1
+						downto 0)
 	    
 	);
 end entity driver;
@@ -54,14 +64,22 @@ architecture behaviour of driver is
 		reset,
 		idle,
 		load_N_inputs_tc,
+		N_inputs_tc_wait,
 		load_N_neurons_tc,
+		N_neurons_tc_wait,
 		load_N_cycles_tc,
+		N_cycles_tc_wait,
 		load_v_reset,
+		v_reset_wait,
 		load_inh_weight,
+		inh_weight_wait,
 		load_v_th,
 		v_th_wait,
 		load_weights,
+		weights_wait,
 		load_seed_lfsr,
+		seed_lfsr_wait,
+		wait_for_ready,
 		read_counters,
 		load_input_data,
 		begin_execution
@@ -138,8 +156,6 @@ begin
 
 	-- state evaluation
 	state_evaluation	: process(present_state, go, ready)
-
-
 	begin
 
 		case present_state is
@@ -150,6 +166,14 @@ begin
 
 			-- idle
 			when idle =>
+
+				if go = '1'
+				then
+					next_state <= load_N_inputs_tc;
+				else
+					next_state <= idle;
+				end if;
+
 			
 
 			-- load_N_inputs_tc
@@ -159,8 +183,19 @@ begin
 				then
 					next_state <= load_N_neurons_tc;
 				else
-					next_state <= load_N_inputs_tc;
+					next_state <= N_inputs_tc_wait;
 				end if;
+
+			-- N_inputs_tc_wait
+			when N_inputs_tc_wait =>
+
+				if go = '1'
+				then
+					next_state <= load_N_neurons_tc;
+				else
+					next_state <= N_inputs_tc_wait;
+				end if;
+
 
 			-- load_N_neurons_tc
 			when load_N_neurons_tc =>
@@ -169,7 +204,18 @@ begin
 				then
 					next_state <= load_N_cycles_tc;
 				else
-					next_state <= load_N_neurons_tc;
+					next_state <= N_neurons_tc_wait;
+				end if;
+
+
+			-- N_neurons_tc_wait
+			when N_neurons_tc_wait =>
+
+				if go = '1'
+				then
+					next_state <= load_N_cycles_tc;
+				else
+					next_state <= N_neurons_tc_wait;
 				end if;
 
 
@@ -180,7 +226,18 @@ begin
 				then
 					next_state <= load_v_reset;
 				else
-					next_state <= load_N_cycles_tc;
+					next_state <= N_cycles_tc_wait;
+				end if;
+
+
+			-- N_cycles_tc_wait
+			when N_cycles_tc_wait =>
+
+				if go = '1'
+				then
+					next_state <= load_v_reset;
+				else
+					next_state <= N_cycles_tc_wait;
 				end if;
 
 
@@ -191,8 +248,19 @@ begin
 				then
 					next_state <= load_inh_weight;
 				else
-					next_state <= load_v_reset;
+					next_state <= v_reset_wait;
 				end if;
+
+			-- v_reset_wait
+			when v_reset_wait =>
+
+				if go = '1'
+				then
+					next_state <= load_inh_weight;
+				else
+					next_state <= v_reset_wait;
+				end if;
+
 
 
 			-- load_inh_weight
@@ -202,16 +270,28 @@ begin
 				then
 					next_state <= load_v_th;
 				else
-					next_state <= load_inh_weight;
+					next_state <= inh_weight_wait;
 				end if;
+
+				
+			-- inh_weight_wait
+			when inh_weight_wait =>
+
+				if go = '1'
+				then
+					next_state <= load_v_th;
+				else
+					next_state <= inh_weight_wait;
+				end if;
+
 
 
 			-- load_v_th
 			when load_v_th =>
 
-				if go = '1'
+				if N_neurons_tc = '0'
 				then
-					next_state <= load_N_cycles_tc;
+					next_state <= load_v_th;
 
 				elsif go = '1'
 				then
@@ -221,81 +301,196 @@ begin
 					next_state <= v_th_wait;
 				end if;
 
+			-- v_th_wait
+			when v_th_wait =>
+
+				if go = '1'
+				then
+					next_state <= load_weights;
+
+				else
+					next_state <= v_th_wait;
+				end if;
+
+			-- load_weights
+			when load_weights =>
+
+				if N_inputs_tc = '0'
+				then
+					next_state <= load_weights;
+
+				elsif go = '1'
+				then
+					next_state <= load_seed_lfsr;
+
+				else
+					next_state <= weights_wait;
+				end if;
+
+			-- weights_wait
+			when weights_wait =>
+
+				if go = '1'
+				then
+					next_state <= load_seed_lfsr;
+
+				else
+					next_state <= weights_wait;
+				end if;
+
+
+			-- load_seed_lfsr
+			when load_seed_lfsr =>
+
+				if go = '1'
+				then
+					next_state <= wait_for_ready;
+				else
+					next_state <= seed_lfsr_wait;
+				end if;
+
+			-- seed_lfsr_wait
+			when seed_lfsr_wait =>
+
+				if go = '1'
+				then
+					next_state <= wait_for_ready;
+				else
+					next_state <= seed_lfsr_wait;
+				end if;
+
+			-- wait_for_ready
+			when wait_for_ready =>
+
+				if  go = '1' and ready = '1'
+				then
+					next_state <= read_counters;
+				else
+					next_state <= wait_for_ready;
+				end if;
+
+			-- read_counters
+			when read_counters =>
+
+				if N_neurons_tc = '1'
+				then
+					next_state <= load_input_data;
+				else
+					next_state <= read_counters;
+				end if;
+
+			-- load_input_data
+			when load_input_data =>
+
+				if N_inputs_tc = '1'
+				then
+					next_state <= begin_execution;
+				else
+					next_state <= load_input_data;
+				end if;
+
+			-- begin_execution
+			when begin_execution =>
+				
+				next_state <= wait_for_ready;
 
 			-- default case
 			when others =>
 				next_state <= reset;
-
 
 		end case;
 
 	end process state_evaluation;
 
 
+	output_evaluation	: process(present_state)
 
---	output_evaluation	: process(present_state)
---	begin
---
---		-- Default values
---		data	<= (others => '0');
---		addr	<= (others => '0');
---		sel	<= (others => '0')
---		load	<= (others => '1');
---		start	<= '0';
---		rst_n	<= '1';
---
---		case present_state is
---
---			-- reset
---			when reset =>
---				v_en 		<= '0';
---				v_rst_n		<= '0';
---
---			-- idle
---			when idle =>
---				neuron_ready	<= '1';
---				v_en 		<= '0';
---				v_rst_n		<= '0';
---
---			-- exp_decay
---			when exp_decay =>
---				add_or_sub	<= '1';
---				update_sel	<= "01";
---				
---
---			-- no_exc_spike
---			when no_exc_spike	=>
---				v_en		<= '0';
---
---			-- exc_spike
---			when exc_spike =>
---				update_sel	<= "10";
---				v_en		<= '1';
---
---				
---			-- no_inh_spike
---			when no_inh_spike	=>
---				v_en		<= '0';
---
---
---			-- inh_spike
---			when inh_spike		=>
---				update_sel	<= "11";
---				v_en		<= '1';
---
---
---			-- fire
---			when fire =>
---				v_update	<= '0';
---				out_spike	<= '1';
---
---			-- default case
---			when others =>
---				v_en 		<= '0';
---				v_rst_n		<= '0';
---
---		end case;
---
---	end process output_evaluation;
+		file weights_file	: text open read_mode is
+			weights_filename;
+
+		file v_th_file	: text open read_mode is
+			v_th_filename;
+
+		file inputs_file	: text open read_mode is
+			inputs_filename;
+
+	begin
+
+		-- default values
+
+		case present_state is
+
+			-- reset
+			when reset =>
+
+			-- idle
+			when idle =>
+
+			-- load_N_inputs_tc
+			when load_N_inputs_tc =>
+
+			-- N_inputs_tc_wait
+			when N_inputs_tc_wait =>
+
+			-- load_N_neurons_tc
+			when load_N_neurons_tc =>
+
+			-- N_neurons_tc_wait
+			when N_neurons_tc_wait =>
+
+			-- load_N_cycles_tc
+			when load_N_cycles_tc =>
+
+			-- N_cycles_tc_wait
+			when N_cycles_tc_wait =>
+
+			-- load_v_reset
+			when load_v_reset =>
+
+			-- v_reset_wait
+			when v_reset_wait =>
+
+			-- load_inh_weight
+			when load_inh_weight =>
+				
+			-- inh_weight_wait
+			when inh_weight_wait =>
+
+			-- load_v_th
+			when load_v_th =>
+
+			-- v_th_wait
+			when v_th_wait =>
+
+			-- load_weights
+			when load_weights =>
+
+			-- weights_wait
+			when weights_wait =>
+
+			-- load_seed_lfsr
+			when load_seed_lfsr =>
+
+			-- seed_lfsr_wait
+			when seed_lfsr_wait =>
+
+			-- wait_for_ready
+			when wait_for_ready =>
+
+			-- read_counters
+			when read_counters =>
+
+			-- load_input_data
+			when load_input_data =>
+
+			-- begin_execution
+			when begin_execution =>
+
+			-- default case
+			when others =>
+
+		end case;
+
+	end process output_evaluation;
 
 end architecture behaviour;
