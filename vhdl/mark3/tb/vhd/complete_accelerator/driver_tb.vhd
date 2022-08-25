@@ -18,7 +18,7 @@ architecture test of driver_tb is
 	constant cnt_out_bit_width	: integer := 16;
 
 	-- Internal parameters
-	constant N_inputs_tc_value	: integer := 4;
+	constant N_inputs_tc_value	: integer := 2;
 	constant N_neurons_tc_value	: integer := 1;
 	constant N_cycles_tc_value	: integer := 30;
 	constant v_reset_value		: integer := 5;
@@ -180,7 +180,7 @@ begin
 		data_bit_width+
 		addr_bit_width+
 		sel_bit_width+
-		load_bit_width)		<= (others => '0');
+		load_bit_width+2)	<= (others => '0');
 
 
 
@@ -237,7 +237,7 @@ begin
 
 
 	-- Inputs terminal counter
-	N_inputs_tc_gen	: process(N_neurons_cnt)
+	N_inputs_tc_gen	: process(N_inputs_cnt)
 	begin
 		-- Default value
 		N_inputs_tc <= '0';
@@ -274,7 +274,8 @@ begin
 
 
 	-- state evaluation
-	state_evaluation	: process(present_state, go, ready)
+	state_evaluation	: process(present_state, go, ready,
+					N_neurons_tc, N_inputs_tc)
 	begin
 
 		case present_state is
