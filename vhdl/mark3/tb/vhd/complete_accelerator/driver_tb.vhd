@@ -216,6 +216,18 @@ begin
 		wait;
 	end process go_gen;
 
+	-- ready
+	ready_gen	: process
+	begin
+		input_word <= (others => '0');
+		wait for 378 ns;
+		input_word(input_word'length-1) <= '1';
+		input_word(input_word'length-2 downto 0) <= (others => '0');
+		wait for 20 ns;
+		input_word <= (others => '0');
+		wait;
+	end process ready_gen;
+
 
 
 
@@ -525,7 +537,8 @@ begin
 
 
 
-	output_evaluation	: process(present_state)
+	output_evaluation	: process(N_neurons_cnt, N_inputs_cnt,
+					present_state)
 
 		file weights_file	: text open read_mode is
 			weights_filename;
@@ -639,7 +652,7 @@ begin
 				rst_n			<= '0';
 				N_neurons_cnt_en	<= '1';
 
-				if not endfile(v_th_file)
+				if clk = '1' and not endfile(v_th_file)
 				then
 					-- Read line from file
 					readline(v_th_file, read_line);
@@ -702,6 +715,7 @@ begin
 			when read_counters =>
 				rst_n			<= '1';
 				N_neurons_cnt_en	<= '1';
+				sel			<= N_neurons_cnt;
 
 			-- load_input_data
 			when load_input_data =>
