@@ -27,6 +27,7 @@ architecture test_3x2x30 of complete_accelerator_tb is
 	constant weight_1_2_int		: integer := 9*2**3;
 	
 	-- Interface bit-widths
+	constant word_length		: integer := 64;
 	constant load_bit_width		: integer := 4;
 	constant data_bit_width		: integer := 36;
 	constant addr_bit_width		: integer := 10;
@@ -58,8 +59,37 @@ architecture test_3x2x30 of complete_accelerator_tb is
 	-- Internal parameters
 	constant shift			: integer := 10;
 
+	-- Initialization files
+	constant weights_filename	: string  := "/home/alessio/"&
+		"Documents/Poli/Dottorato/Progetti/spiker/vhdl/mark3/"&
+		"tb/vhd/complete_accelerator/weights.txt";
+	constant v_th_filename		: string  := "/home/alessio/"&
+		"Documents/Poli/Dottorato/Progetti/spiker/vhdl/mark3/"&
+		"tb/vhd/complete_accelerator/v_th.txt";
+	constant inputs_filename	: string  := "/home/alessio/"&
+		"Documents/Poli/Dottorato/Progetti/spiker/vhdl/mark3/"&
+		"tb/vhd/complete_accelerator/pixels.txt";
 
 
+
+	-- Driver signals
+	signal driver_rst_n		: std_logic;
+	signal go			: std_logic;
+	signal N_inputs_cnt		: std_logic_vector(addr_bit_width-1
+					     downto 0);
+	signal N_neurons_cnt		: std_logic_vector(addr_bit_width-1
+					     downto 0);
+	signal input_word		: std_logic_vector(word_length-1 
+						downto 0);
+
+	-- Output
+	signal N_neurons_cnt_en		: std_logic;
+	signal N_inputs_cnt_en		: std_logic;
+	signal N_neurons_cnt_rst_n	: std_logic;
+	signal N_inputs_cnt_rst_n	: std_logic;
+	signal output_word		: std_logic_vector(word_length-1
+						downto 0);
+	
 
 	-- Input
 	signal clk			: std_logic;
@@ -86,6 +116,74 @@ architecture test_3x2x30 of complete_accelerator_tb is
 	-- Memory signals --------------------------------------
 	signal rden			: std_logic;
 
+
+	component cnt is
+
+		generic(
+			bit_width		: integer := 8		
+		);
+
+		port(
+			-- input
+			clk		: in std_logic;
+			cnt_en		: in std_logic;
+			cnt_rst_n	: in std_logic;
+
+			-- output
+			cnt_out		: out std_logic_vector(bit_width-1 downto 0)		
+		);
+
+	end component cnt;
+
+
+	component driver is
+		generic(
+			-- Bit-width
+			word_length		: integer := 64;
+			load_bit_width		: integer := 4;
+			data_bit_width		: integer := 36;
+			addr_bit_width		: integer := 10;
+			sel_bit_width		: integer := 10;
+
+			-- Internal parameters
+			N_inputs_tc_value	: integer := 3;
+			N_neurons_tc_value	: integer := 2;
+			N_cycles_tc_value	: integer := 30;
+			v_reset_value		: integer := 5;
+			inh_weight_value	: integer := -15;
+			seed_value		: integer := 5;
+
+			-- Initialization files
+			weights_filename	: string  := "";
+			v_th_filename		: string  := "";
+			inputs_filename		: string  := ""
+				
+		);
+		port(
+
+			-- input
+			clk			: in std_logic;
+			driver_rst_n		: in std_logic;
+			go			: in std_logic;
+			N_inputs_cnt		: in std_logic_vector(
+							addr_bit_width-1
+							downto 0);
+			N_neurons_cnt		: in std_logic_vector(
+							addr_bit_width-1
+							downto 0);
+			input_word		: in std_logic_vector(word_length-1 
+							downto 0);
+
+			-- output
+			N_neurons_cnt_en	: out std_logic;
+			N_inputs_cnt_en		: out std_logic;
+			N_neurons_cnt_rst_n	: out std_logic;
+			N_inputs_cnt_rst_n	: out std_logic;
+			output_word		: out std_logic_vector(word_length-1
+							downto 0)
+		    
+		);
+	end component driver;
 
 
 
@@ -163,6 +261,59 @@ architecture test_3x2x30 of complete_accelerator_tb is
 
 begin
 
+
+	ready			<= input_word(input_word'length-1);
+	cnt_out			<= input_word(cnt_out_bit_width-1 downto 0);
+
+
+	output_word(
+		data_bit_width-1 
+		downto 
+		0)			<= data;
+
+	output_word(
+		data_bit_width+
+		addr_bit_width-1 
+		downto 
+		data_bit_width)		<= addr;
+
+	output_word(
+		data_bit_width+
+		addr_bit_width+
+		sel_bit_width-1
+		downto 
+		data_bit_width+
+		addr_bit_width)		<= sel;
+
+	output_word(
+		data_bit_width+
+		addr_bit_width+
+		sel_bit_width+
+		load_bit_width-1
+		downto 
+		data_bit_width+
+		addr_bit_width+
+		sel_bit_width)		<= load;
+
+	output_word(
+		data_bit_width+
+		addr_bit_width+
+		sel_bit_width+
+		load_bit_width)		<= start;
+
+	output_word(
+		data_bit_width+
+		addr_bit_width+
+		sel_bit_width+
+		load_bit_width+1)	<= rst_n;
+
+	output_word(word_length-1
+		downto
+		data_bit_width+
+		addr_bit_width+
+		sel_bit_width+
+		load_bit_width+2)	<= (others => '0');
+
 	-- clock
 	clk_gen		: process
 	begin
@@ -174,21 +325,80 @@ begin
 
 
 
-	interface_accelerator	: process
-	begin
+	N_neurons_counter	: cnt
 
-		-- Default values
-		rst_n		<= '0';
-		start		<= '0';
-		sel		<= (others => '0');
-		load		<= (others => '1');
-		addr		<= (others => '0');
-		data		<= (others => '0');
+		generic map(
+			bit_width	=> addr_bit_width		
+		)
+
+		port map(
+			-- input
+			clk		=> clk,
+			cnt_en		=> N_neurons_cnt_en,
+			cnt_rst_n	=> N_neurons_cnt_rst_n,
+
+			-- output
+			cnt_out		=> N_neurons_cnt
+		);
 
 
-		wait;
+	N_inputs_counter	: cnt
 
-	end process interface_accelerator;
+		generic map(
+			bit_width	=> addr_bit_width		
+		)
+
+		port map(
+			-- input
+			clk		=> clk,
+			cnt_en		=> N_inputs_cnt_en,
+			cnt_rst_n	=> N_inputs_cnt_rst_n,
+
+			-- output
+			cnt_out		=> N_inputs_cnt
+		);
+
+
+
+	simulated_driver	: driver
+		generic map(
+			-- Bit-width
+			word_length		=> word_length,
+			load_bit_width		=> load_bit_width,
+			data_bit_width		=> data_bit_width,
+			addr_bit_width		=> addr_bit_width,
+			sel_bit_width		=> sel_bit_width,
+
+			-- Internal parameters
+			N_inputs_tc_value	=> N_inputs - 1,
+			N_neurons_tc_value	=> N_neurons - 1,
+			N_cycles_tc_value	=> N_cycles - 1,
+			v_reset_value		=> v_reset_int,	
+			inh_weight_value	=> inh_weight_int,
+			seed_value		=> seed_int,
+
+			-- Initialization files
+			weights_filename	=> weights_filename,
+			v_th_filename		=> v_th_filename,
+			inputs_filename		=> inputs_filename
+		)
+		port map(
+
+			-- input
+			clk			=> clk,
+			driver_rst_n		=> driver_rst_n,
+			go			=> go,
+			N_inputs_cnt		=> N_inputs_cnt,
+			N_neurons_cnt		=> N_neurons_cnt,
+			input_word		=> input_word,
+
+			-- output
+			N_neurons_cnt_en	=> N_neurons_cnt_en,
+			N_inputs_cnt_en		=> N_inputs_cnt_en,
+			N_neurons_cnt_rst_n	=> N_neurons_cnt_rst_n,
+			N_inputs_cnt_rst_n	=> N_inputs_cnt_rst_n,
+			output_word		=> output_word
+		);
 
 
 	dut	: complete_accelerator 
