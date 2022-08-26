@@ -12,7 +12,6 @@ entity driver is
 		data_bit_width		: integer := 36;
 		addr_bit_width		: integer := 10;
 		sel_bit_width		: integer := 10;
-		cnt_out_bit_width	: integer := 16;
 
 		-- Internal parameters
 		N_inputs_tc_value	: integer := 3;
@@ -73,7 +72,7 @@ architecture behaviour of driver is
 
 	signal ready			: std_logic;
 	signal cnt_out			: std_logic_vector(
-						cnt_out_bit_width-1
+						data_bit_width-1
 						downto 0);
 
 
@@ -111,7 +110,8 @@ architecture behaviour of driver is
 begin
 
 	ready			<= input_word(input_word'length-1);
-	cnt_out			<= input_word(cnt_out_bit_width-1 downto 0);
+	cnt_out			<= input_word(data_bit_width-1 downto 0);
+
 
 	output_word(
 		data_bit_width-1 
@@ -154,7 +154,12 @@ begin
 		sel_bit_width+
 		load_bit_width+1)	<= rst_n;
 
-
+	output_word(word_length-1
+		downto
+		data_bit_width+
+		addr_bit_width+
+		sel_bit_width+
+		load_bit_width+2)	<= (others => '0');
 	-- Neurons terminal counter
 	N_neurons_tc_gen	: process(N_neurons_cnt)
 	begin
@@ -170,6 +175,23 @@ begin
 		end if;
 		
 	end process N_neurons_tc_gen;
+
+
+	-- Inputs terminal counter
+	N_inputs_tc_gen	: process(N_inputs_cnt)
+	begin
+		-- Default value
+		N_inputs_tc <= '0';
+
+		if N_inputs_cnt = std_logic_vector(
+					to_unsigned(
+					N_inputs_tc_value,
+					N_inputs_cnt'length))
+		then
+			N_inputs_tc <= '1';
+		end if;
+		
+	end process N_inputs_tc_gen;
 
 
 	-- state transition
@@ -193,7 +215,8 @@ begin
 
 
 	-- state evaluation
-	state_evaluation	: process(present_state, go, ready)
+	state_evaluation	: process(present_state, go, ready,
+					N_neurons_tc, N_inputs_tc)
 	begin
 
 		case present_state is
@@ -443,7 +466,8 @@ begin
 
 
 
-	output_evaluation	: process(present_state)
+	output_evaluation	: process(N_neurons_cnt, N_inputs_cnt,
+					present_state)
 
 		file weights_file	: text open read_mode is
 			weights_filename;
@@ -620,6 +644,7 @@ begin
 			when read_counters =>
 				rst_n			<= '1';
 				N_neurons_cnt_en	<= '1';
+				sel			<= N_neurons_cnt;
 
 			-- load_input_data
 			when load_input_data =>
