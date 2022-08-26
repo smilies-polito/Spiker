@@ -69,6 +69,9 @@ architecture test_3x2x30 of complete_accelerator_tb is
 	constant inputs_filename	: string  := "/home/alessio/"&
 		"Documents/Poli/Dottorato/Progetti/spiker/vhdl/mark3/"&
 		"tb/vhd/complete_accelerator/pixels.txt";
+	constant cnt_out_filename	: string  := "/home/alessio/"&
+		"Documents/Poli/Dottorato/Progetti/spiker/vhdl/mark3/"&
+		"tb/vhd/complete_accelerator/cnt_out.txt";
 
 
 
@@ -156,7 +159,8 @@ architecture test_3x2x30 of complete_accelerator_tb is
 			-- Initialization files
 			weights_filename	: string  := "";
 			v_th_filename		: string  := "";
-			inputs_filename		: string  := ""
+			inputs_filename		: string  := "";
+			cnt_out_filename	: string  := ""
 				
 		);
 		port(
@@ -262,57 +266,55 @@ architecture test_3x2x30 of complete_accelerator_tb is
 begin
 
 
-	ready			<= input_word(input_word'length-1);
-	cnt_out			<= input_word(cnt_out_bit_width-1 downto 0);
-
-
-	output_word(
-		data_bit_width-1 
-		downto 
-		0)			<= data;
-
-	output_word(
-		data_bit_width+
-		addr_bit_width-1 
-		downto 
-		data_bit_width)		<= addr;
-
-	output_word(
-		data_bit_width+
-		addr_bit_width+
-		sel_bit_width-1
-		downto 
-		data_bit_width+
-		addr_bit_width)		<= sel;
-
-	output_word(
-		data_bit_width+
-		addr_bit_width+
-		sel_bit_width+
-		load_bit_width-1
-		downto 
-		data_bit_width+
-		addr_bit_width+
-		sel_bit_width)		<= load;
-
-	output_word(
-		data_bit_width+
-		addr_bit_width+
-		sel_bit_width+
-		load_bit_width)		<= start;
-
-	output_word(
-		data_bit_width+
-		addr_bit_width+
-		sel_bit_width+
-		load_bit_width+1)	<= rst_n;
-
-	output_word(word_length-1
+	input_word(input_word'length-1)		<= ready;
+	input_word(input_word'length-2 
 		downto
-		data_bit_width+
-		addr_bit_width+
-		sel_bit_width+
-		load_bit_width+2)	<= (others => '0');
+		cnt_out_bit_width)		<= (others => '0');
+	input_word(cnt_out_bit_width-1 
+		downto 0)			<= cnt_out;
+
+
+	data	<= output_word(
+			data_bit_width-1 
+			downto 
+			0);
+
+	addr	<= output_word(
+			data_bit_width+
+			addr_bit_width-1 
+			downto 
+			data_bit_width);
+
+	sel	<= output_word(
+			data_bit_width+
+			addr_bit_width+
+			sel_bit_width-1
+			downto 
+			data_bit_width+
+			addr_bit_width);
+
+	load	<= output_word(
+			data_bit_width+
+			addr_bit_width+
+			sel_bit_width+
+			load_bit_width-1
+			downto 
+			data_bit_width+
+			addr_bit_width+
+			sel_bit_width);
+
+	start	<= output_word(
+			data_bit_width+
+			addr_bit_width+
+			sel_bit_width+
+			load_bit_width);
+
+	rst_n	<= output_word(
+			data_bit_width+
+			addr_bit_width+
+			sel_bit_width+
+			load_bit_width+1);
+
 
 	-- clock
 	clk_gen		: process
@@ -322,6 +324,40 @@ begin
 		clk <= '1';
 		wait for 10 ns;
 	end process clk_gen;
+
+	-- reset (active low)
+	driver_rst_n_gen	: process
+	begin
+		driver_rst_n <= '1';
+		wait for 42 ns;
+		driver_rst_n <= '0';
+		wait for 10 ns;
+		driver_rst_n <= '1';
+		wait;
+	end process driver_rst_n_gen;
+
+	-- go
+	go_gen	: process
+	begin
+		go <= '0';
+		wait for 82 ns;
+		go <= '1';
+		wait for 1000 ns;
+		go <= '0';
+		wait;
+	end process go_gen;
+
+	-- rden
+	rden_gen	: process
+	begin
+		rden <= '0';
+		wait for 20 ns;
+		rden <= '1';
+		wait;
+	end process rden_gen;
+
+
+
 
 
 
@@ -380,7 +416,8 @@ begin
 			-- Initialization files
 			weights_filename	=> weights_filename,
 			v_th_filename		=> v_th_filename,
-			inputs_filename		=> inputs_filename
+			inputs_filename		=> inputs_filename,
+			cnt_out_filename	=> cnt_out_filename
 		)
 		port map(
 
