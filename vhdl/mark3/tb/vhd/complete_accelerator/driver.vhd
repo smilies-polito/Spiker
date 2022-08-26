@@ -24,7 +24,8 @@ entity driver is
 		-- Initialization files
 		weights_filename	: string  := "";
 		v_th_filename		: string  := "";
-		inputs_filename		: string  := ""
+		inputs_filename		: string  := "";
+		cnt_out_filename	: string  := ""
  			
 	);
 	port(
@@ -470,18 +471,24 @@ begin
 					present_state)
 
 		file weights_file	: text open read_mode is
-			weights_filename;
+						weights_filename;
 
-		file v_th_file	: text open read_mode is
-			v_th_filename;
+		file v_th_file		: text open read_mode is
+						v_th_filename;
 
 		file inputs_file	: text open read_mode is
-			inputs_filename;
+						inputs_filename;
+
+		file cnt_out_file	: text open write_mode is
+						cnt_out_filename;
+
 
 		variable read_line	: line;
+		variable write_line	: line;
 
 		variable data_var	: std_logic_vector(data'length-1 downto
 						0);
+		variable cnt_out_var	: integer;
 
 	begin
 
@@ -639,12 +646,21 @@ begin
 			-- wait_for_ready
 			when wait_for_ready =>
 				rst_n	<= '1';
+				writeline(cnt_out_file, write_line);
+				write(write_line, string'(""));
+				writeline(cnt_out_file, write_line);
 
 			-- read_counters
 			when read_counters =>
 				rst_n			<= '1';
 				N_neurons_cnt_en	<= '1';
 				sel			<= N_neurons_cnt;
+
+				cnt_out_var		:= to_integer(
+								unsigned(
+								cnt_out));
+
+				write(write_line, cnt_out_var, left, 5);
 
 			-- load_input_data
 			when load_input_data =>
