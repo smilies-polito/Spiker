@@ -1,6 +1,6 @@
 #!/usr/bin/bash
 
-TOP_ENTITY="spiker_tb"
+TOP_ENTITY="complete_accelerator_tb"
 
 xelab $TOP_ENTITY
 

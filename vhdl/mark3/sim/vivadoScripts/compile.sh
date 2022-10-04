@@ -3,7 +3,7 @@
 VHD_DIR="../../vhd/vhd"
 TB_DIR="../../tb/vhd"
 
-TOP_ENTITY="spiker_tb"
+TOP_ENTITY="complete_accelerator_tb"
 
 # Neuron
 xvhdl $VHD_DIR"/neuron/add_sub.vhd"
@@ -59,8 +59,18 @@ xvhdl $VHD_DIR"/output_interface/out_interface_datapath.vhd"
 xvhdl $VHD_DIR"/output_interface/out_interface_cu.vhd"
 
 # Spiker
-xvhdl --2008 $VHD_DIR"/spiker.vhd"
+xvhdl $VHD_DIR"/spiker.vhd"
+
+# Input buffer
+xvhdl $VHD_DIR"/input_buffer/input_buffer.vhd"
+xvhdl $VHD_DIR"/input_buffer/reg_unsigned.vhd"
+
+# Output selector
+xvhdl $VHD_DIR"/output_selector/generic_mux.vhd"
+
+# Complete accelerator
+xvhdl $VHD_DIR"/complete_accelerator/complete_accelerator.vhd"
 
 # Testbench
-xvhdl $VHD_DIR"/io/load_file.vhd"
-xvhdl $TB_DIR"/spiker_tb.vhd"
+xvhdl $TB_DIR"/complete_accelerator/driver.vhd"
+xvhdl $TB_DIR"/complete_accelerator/complete_accelerator_tb.vhd"
