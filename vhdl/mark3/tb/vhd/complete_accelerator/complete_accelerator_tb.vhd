@@ -1,6 +1,8 @@
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
+use std.textio.all;
+use ieee.std_logic_textio.all;
 
 entity complete_accelerator_tb is
 end entity complete_accelerator_tb;
@@ -19,12 +21,24 @@ architecture test_3x2x30 of complete_accelerator_tb is
 	-- Hyperparameters
 	constant v_th_0_int		: integer := 13*2**3;
 	constant v_th_1_int		: integer := 8*2**3;
+	-- constant v_th_1_int		: integer := 13*2**3;
 	constant weight_0_0_int		: integer := 15*2**3;
+	-- constant weight_0_1_int		: integer := 5*2**3;
+	-- constant weight_0_2_int		: integer := 5*2**3;
 	constant weight_0_1_int		: integer := 9*2**3;
 	constant weight_0_2_int		: integer := 5*2**3;
+	-- constant weight_1_0_int		: integer := 3*2**3;
+	-- constant weight_1_1_int		: integer := 3*2**3;
+	-- constant weight_1_2_int		: integer := 3*2**3;
+	-- constant weight_1_1_int		: integer := 9*2**3;
+	-- constant weight_1_2_int		: integer := 5*2**3;
 	constant weight_1_0_int		: integer := 5*2**3;
 	constant weight_1_1_int		: integer := 3*2**3;
 	constant weight_1_2_int		: integer := 9*2**3;
+
+	constant pixel0			: integer := 2**8-1;
+	constant pixel1			: integer := 2**8-1;
+	constant pixel2			: integer := 2**8-1;
 	
 	-- Interface bit-widths
 	constant word_length		: integer := 64;
@@ -265,6 +279,94 @@ architecture test_3x2x30 of complete_accelerator_tb is
 
 begin
 
+	store_init_values	: process
+
+		file weights_file	: text open write_mode is
+						weights_filename;
+
+		file v_th_file		: text open write_mode is
+						v_th_filename;
+
+		file inputs_file	: text open write_mode is
+						inputs_filename;
+
+		variable write_line	: line;
+
+		variable data_var	: std_logic_vector(data'length-1 downto
+						0);
+
+	begin
+
+		-- Threshold 0
+		data_var := std_logic_vector(to_unsigned(v_th_0_int,
+				data_var'length));
+		write(write_line, data_var);
+		writeline(v_th_file, write_line);
+
+		-- Threshold 1
+		data_var := std_logic_vector(to_unsigned(v_th_1_int,
+				data_var'length));
+		write(write_line, data_var);
+		writeline(v_th_file, write_line);
+
+		-- Weights 00 and 10
+		data_var(weights_bit_width-1 downto 0) :=
+			std_logic_vector(to_unsigned(weight_0_0_int,
+			weights_bit_width));
+		data_var(2*weights_bit_width-1 downto weights_bit_width) :=
+			std_logic_vector(to_unsigned(weight_1_0_int,
+			weights_bit_width));
+		data_var(data'length-1 downto 2*weights_bit_width) :=
+			(others => '0');
+		write(write_line, data_var);
+		writeline(weights_file, write_line);
+
+		-- Weights 01 and 11
+		data_var(weights_bit_width-1 downto 0) :=
+			std_logic_vector(to_unsigned(weight_0_1_int,
+			weights_bit_width));
+		data_var(2*weights_bit_width-1 downto weights_bit_width) :=
+			std_logic_vector(to_unsigned(weight_1_1_int,
+			weights_bit_width));
+		data_var(data'length-1 downto 2*weights_bit_width) :=
+			(others => '0');
+		write(write_line, data_var);
+		writeline(weights_file, write_line);
+
+		-- Weights 02 and 12
+		data_var(weights_bit_width-1 downto 0) :=
+			std_logic_vector(to_unsigned(weight_0_2_int,
+			weights_bit_width));
+		data_var(2*weights_bit_width-1 downto weights_bit_width) :=
+			std_logic_vector(to_unsigned(weight_1_2_int,
+			weights_bit_width));
+		data_var(data'length-1 downto 2*weights_bit_width) :=
+			(others => '0');
+		write(write_line, data_var);
+		writeline(weights_file, write_line);
+
+		-- Pixel 0
+		data_var := std_logic_vector(to_unsigned(pixel0,
+				data_var'length));
+		write(write_line, data_var);
+		writeline(inputs_file, write_line);
+		
+		-- Pixel 1
+		data_var := std_logic_vector(to_unsigned(pixel1,
+				data_var'length));
+		write(write_line, data_var);
+		writeline(inputs_file, write_line);
+
+		-- Pixel 2
+		data_var := std_logic_vector(to_unsigned(pixel2,
+				data_var'length));
+		write(write_line, data_var);
+		writeline(inputs_file, write_line);
+
+		wait;
+
+	end process store_init_values;
+
 
 	input_word(input_word'length-1)		<= ready;
 	input_word(input_word'length-2 
@@ -342,8 +444,6 @@ begin
 		go <= '0';
 		wait for 82 ns;
 		go <= '1';
-		wait for 1000 ns;
-		go <= '0';
 		wait;
 	end process go_gen;
 
