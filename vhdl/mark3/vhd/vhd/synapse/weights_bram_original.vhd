@@ -18,7 +18,7 @@ entity weights_bram is
  		N_neurons		: integer := 400;
 		weights_bit_width	: integer := 5;
 		N_bram			: integer := 58;
-		bram_sel_length	: integer := 6
+		bram_sel_length		: integer := 6
 	);
 
 	port(
