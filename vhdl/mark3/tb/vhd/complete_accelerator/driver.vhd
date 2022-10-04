@@ -636,8 +636,6 @@ begin
 						seed_value,
 						data'length));
 
-				N_inputs_cnt_rst_n	<= '0';
-				N_neurons_cnt_rst_n	<= '0';
 
 			-- seed_lfsr_wait
 			when seed_lfsr_wait =>
@@ -646,6 +644,8 @@ begin
 			-- wait_for_ready
 			when wait_for_ready =>
 				rst_n	<= '1';
+				N_inputs_cnt_rst_n	<= '0';
+				N_neurons_cnt_rst_n	<= '0';
 				writeline(cnt_out_file, write_line);
 				write(write_line, string'(""));
 				writeline(cnt_out_file, write_line);
@@ -676,7 +676,7 @@ begin
 
 					-- Associate line to data input
 					data		<= data_var;
-					rst_n		<= '0';
+					rst_n		<= '1';
 					load		<= "1000";
 					addr		<= N_inputs_cnt;
 
