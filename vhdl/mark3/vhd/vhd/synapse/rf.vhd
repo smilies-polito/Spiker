@@ -25,8 +25,7 @@ entity rf is
 					downto 0);
 
 		-- output
-		do		: out std_logic_vector(N_weights_per_word*
-					weights_bit_width-1 downto 0)
+		do		: out std_logic_vector(word_length-1 downto 0)
 				
 	);
 
