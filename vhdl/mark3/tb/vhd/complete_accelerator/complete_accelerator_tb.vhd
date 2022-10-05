@@ -12,7 +12,8 @@ architecture test_3x2x30 of complete_accelerator_tb is
 
 	-- Network parameters
 	constant v_reset_int		: integer := 5*2**3; 	  
-	constant inh_weight_int	 	: integer := -15*2**3; 
+	-- constant inh_weight_int	 	: integer := -15*2**3; 
+	constant inh_weight_int	 	: integer := 0; 
 	constant seed_int		: integer := 5;
 	constant N_inputs		: integer := 3;
 	constant N_neurons		: integer := 2;
@@ -20,21 +21,20 @@ architecture test_3x2x30 of complete_accelerator_tb is
 
 	-- Hyperparameters
 	constant v_th_0_int		: integer := 13*2**3;
-	constant v_th_1_int		: integer := 8*2**3;
-	-- constant v_th_1_int		: integer := 13*2**3;
-	constant weight_0_0_int		: integer := 15*2**3;
-	-- constant weight_0_1_int		: integer := 5*2**3;
+	-- constant v_th_1_int		: integer := 8*2**3;
+	constant v_th_1_int		: integer := 13*2**3;
+	constant weight_0_0_int		: integer := 3*2**3;
+	constant weight_0_1_int		: integer := 3*2**3;
+	constant weight_0_2_int		: integer := 3*2**3;
+	-- constant weight_0_0_int		: integer := 15*2**3;
+	-- constant weight_0_1_int		: integer := 9*2**3;
 	-- constant weight_0_2_int		: integer := 5*2**3;
-	constant weight_0_1_int		: integer := 9*2**3;
-	constant weight_0_2_int		: integer := 5*2**3;
-	-- constant weight_1_0_int		: integer := 3*2**3;
-	-- constant weight_1_1_int		: integer := 3*2**3;
-	-- constant weight_1_2_int		: integer := 3*2**3;
-	-- constant weight_1_1_int		: integer := 9*2**3;
-	-- constant weight_1_2_int		: integer := 5*2**3;
-	constant weight_1_0_int		: integer := 5*2**3;
+	constant weight_1_0_int		: integer := 3*2**3;
 	constant weight_1_1_int		: integer := 3*2**3;
-	constant weight_1_2_int		: integer := 9*2**3;
+	constant weight_1_2_int		: integer := 3*2**3;
+	-- constant weight_1_0_int		: integer := 5*2**3;
+	-- constant weight_1_1_int		: integer := 3*2**3;
+	-- constant weight_1_2_int		: integer := 9*2**3;
 
 	constant pixel0			: integer := 2**8-1;
 	constant pixel1			: integer := 2**8-1;
