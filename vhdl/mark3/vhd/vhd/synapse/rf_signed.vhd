@@ -37,7 +37,7 @@ end entity rf_signed;
 
 architecture behaviour of rf_signed is
 
-	constant N_words	: integer := 5;
+	constant N_words	: integer := 3;
 
 	signal reg_en		: std_logic_vector(N_words-1 downto 0);
 	signal reg_sel		: std_logic_vector(N_words-1 downto 0);

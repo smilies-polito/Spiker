@@ -8,14 +8,14 @@ end entity rf_signed_tb;
 architecture test of rf_signed_tb is
 
 
-	constant word_length		: integer := 36;
+	constant word_length		: integer := 10;
 	constant N_weights_per_word	: integer := 2;
-	constant rdwr_addr_length	: integer := 10;
-	constant N_neurons		: integer := 400;
+	constant rdwr_addr_length	: integer := 2;
+	constant N_neurons		: integer := 2;
 	constant weights_bit_width	: integer := 5;
-	constant N_bram			: integer := 58;
+	constant N_bram			: integer := 1;
 
-
+	-- input
 	signal clk		: std_logic;
 	signal di		: std_logic_vector(word_length-1 downto 0);
 	signal rst_n		: std_logic;
@@ -25,7 +25,6 @@ architecture test of rf_signed_tb is
 	signal wren		: std_logic;
 	signal wraddr		: std_logic_vector(rdwr_addr_length-1
 					downto 0);
-
 	-- output
 	signal do		: std_logic_vector(N_weights_per_word*
 				weights_bit_width-1 downto 0);
