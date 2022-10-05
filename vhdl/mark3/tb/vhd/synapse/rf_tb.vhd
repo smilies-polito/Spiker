@@ -2,10 +2,10 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
-entity rf_signed_tb is
-end entity rf_signed_tb;
+entity rf_tb is
+end entity rf_tb;
 
-architecture test of rf_signed_tb is
+architecture test of rf_tb is
 
 
 	constant word_length		: integer := 10;
@@ -32,7 +32,7 @@ architecture test of rf_signed_tb is
 	-- testbench signals
 	signal rdwr		: std_logic_vector(1 downto 0);
 
-	component rf_signed is
+	component rf is
 
 		generic(
 			word_length		: integer := 36;
@@ -63,7 +63,7 @@ architecture test of rf_signed_tb is
 					
 		);
 
-	end component rf_signed;
+	end component rf;
 
 begin
 
@@ -156,7 +156,7 @@ begin
 	end process read_write;
 
 
-	dut	: rf_signed 
+	dut	: rf 
 
 		generic map(
 			word_length		=> word_length,

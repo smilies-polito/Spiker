@@ -1,7 +1,7 @@
 library ieee;
 use ieee.std_logic_1164.all;
 
-entity rf_signed is
+entity rf is
 
 	generic(
 		word_length		: integer := 36;
@@ -30,11 +30,11 @@ entity rf_signed is
 				
 	);
 
-end entity rf_signed;
+end entity rf;
 
 
 
-architecture behaviour of rf_signed is
+architecture behaviour of rf is
 
 	constant N_words	: integer := 3;
 
