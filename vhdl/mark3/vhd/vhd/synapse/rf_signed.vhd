@@ -124,10 +124,10 @@ begin
 	end process reg_en_gen;
 
 	-- rden_reg_out
-	rden_reg_out_gen	: process(selected_reg_out, wren)
+	rden_reg_out_gen	: process(selected_reg_out, rden)
 	begin
 
-		masking	: for i in 0 to N_words-1
+		masking	: for i in 0 to word_length-1
 		loop
 
 			rden_reg_out(i)	<= selected_reg_out(i) and rden;
@@ -137,13 +137,13 @@ begin
 	end process rden_reg_out_gen;
 
 	-- do
-	do_gen	: process(rden_reg_out, wren)
+	do_gen	: process(rden_reg_out, rst_n)
 	begin
 
-		masking	: for i in 0 to N_words-1
+		masking	: for i in 0 to word_length-1
 		loop
 
-			do(i)	<= rden_reg_out(i) and not rst_n;
+			do(i)	<= rden_reg_out(i) and rst_n;
 
 		end loop masking;
 
