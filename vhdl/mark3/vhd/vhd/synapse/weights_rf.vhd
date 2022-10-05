@@ -77,8 +77,7 @@ architecture behaviour of weights_bram is
 
 			-- output
 			do		: out std_logic_vector(
-						N_weights_per_word*
-						weights_bit_width-1 downto 0)
+						word_length-1 downto 0)
 					
 		);
 
@@ -143,13 +142,7 @@ begin
 				wraddr			=> wraddr,
 
 				-- output
-				do			=> do((i+1)*
-							N_weights_per_word*
-							weights_bit_width-1 
-							downto 
-							i*N_weights_per_word*
-							weights_bit_width)
-						
+				do			=> data_out(i)
 						
 			);
 
