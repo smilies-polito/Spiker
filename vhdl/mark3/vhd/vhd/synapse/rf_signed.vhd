@@ -44,8 +44,9 @@ architecture behaviour of rf_signed is
 
 	signal reg_out		: std_logic_vector(N_words*word_length-1 
 					downto 0);
-
-	signal do_int		: std_logic_vector(word_length-1 downto 0);
+	signal selected_reg_out	: std_logic_vector(word_length-1 downto 0);
+	signal rden_reg_out	: std_logic_vector(word_length-1 downto 0);
+	signal rst_n_reg_out	: std_logic_vector(word_length-1 downto 0);
 	signal decoded_out	: std_logic_vector(2**rdwr_addr_length-1
 					downto 0);
 
@@ -94,7 +95,8 @@ architecture behaviour of rf_signed is
 
 		port(
 			-- input
-			mux_in	: in std_logic_vector(2**N_sel*bit_width-1 downto 0);
+			mux_in	: in std_logic_vector(2**N_sel*bit_width-1
+					downto 0);
 			mux_sel	: in std_logic_vector(N_sel-1 downto 0);
 
 			-- output
@@ -107,6 +109,45 @@ architecture behaviour of rf_signed is
 begin
 
 	reg_sel	<= decoded_out(N_words-1 downto 0);
+
+	-- reg_en
+	reg_en_gen	: process(reg_sel, wren)
+	begin
+
+		masking	: for i in 0 to N_words-1
+		loop
+
+			reg_en(i)	<= reg_sel(i) and wren;
+
+		end loop masking;
+
+	end process reg_en_gen;
+
+	-- rden_reg_out
+	rden_reg_out_gen	: process(selected_reg_out, wren)
+	begin
+
+		masking	: for i in 0 to N_words-1
+		loop
+
+			rden_reg_out(i)	<= selected_reg_out(i) and rden;
+
+		end loop masking;
+
+	end process rden_reg_out_gen;
+
+	-- do
+	do_gen	: process(rden_reg_out, wren)
+	begin
+
+		masking	: for i in 0 to N_words-1
+		loop
+
+			do(i)	<= rden_reg_out(i) and not rst_n;
+
+		end loop masking;
+
+	end process do_gen;
 
 	registers	: for i in 0 to N_words-1
 	generate
@@ -164,7 +205,7 @@ begin
 			mux_sel				=> rdaddr,
 
 			-- output
-			mux_out				=> do_int
+			mux_out				=> selected_reg_out
 		);
 
 
