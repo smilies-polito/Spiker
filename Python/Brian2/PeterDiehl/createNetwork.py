@@ -106,13 +106,17 @@ def createLayersStructure(networkList, equationsDict, parametersDict, mode,
 	# Total number of layers
 	networkSize = len(networkList)
 
+	# Pre-allocate layers' lists
 	excLayersList = [0 for i in range(networkSize - 1)]
 	inhLayersList = [0 for i in range(networkSize - 1)]
 
 	for layer in range(1, networkSize):
 
+		# One threshold file for each layer: compute the filename for
+		# the current layer
 		thetaFile = thetaFilename + str(layer) + ".npy"
 
+		# Create the excitatory layer
 		excLayersList[layer-1] = createLayer(
 			networkList[layer],
 			equationsDict["neuronsEqs_exc"],
@@ -126,7 +130,7 @@ def createLayersStructure(networkList, equationsDict, parametersDict, mode,
 			thetaFile
 		)
 
-
+		# Create the inhibitory layer
 		inhLayersList[layer-1] = createLayer(
 			networkList[layer],
 			equationsDict["neuronsEqs_inh"],
@@ -150,6 +154,40 @@ def createLayersStructure(networkList, equationsDict, parametersDict, mode,
 def createLayer(numberOfNeurons, neuronsEquations, threshEquations,
 		refractoryPeriod, resetEquations, groupName, restPotential,
 		neuronType, mode, thetaFile):
+
+	"""
+	Create a generic network layer.
+
+	INPUT:
+
+		1) numberOfNeurons: integer. Number of neurons in the current
+		layer
+
+		2) neuronsEquations: multi-line string. Model equations
+
+		3) threshEquations: string. Thresholding model
+
+		4) irefractoryPeriod: float. Refractory period of the neurons
+
+		5) resetEquations: string. Reset model
+
+		6) groupName: string. Name of the Brian 2 NeuronGroup
+
+		7) resetPotential: float. Value of the reset potential of the
+		neurons.
+		
+		8) neuronType: string. Can be "exc" or "inh"
+
+		9) mode: string. Can be "train" or "test"
+
+		10) thetaFile: string. Name of the file containing the
+		pre-trained thresholds for the current layer. Not required if
+		mode = "train"
+
+	OUTPUT:
+
+		Brian 2 NeuronGroup object containing the initialized layer
+	"""
 
 	# Create the group
 	neuronGroup = b2.NeuronGroup(
@@ -176,11 +214,33 @@ def createLayer(numberOfNeurons, neuronsEquations, threshEquations,
 
 def initializeTheta(neuronGroup, numberOfNeurons, mode, thetaFile):
 
+	"""
+	Initialize a layer's thresholds.
+
+	INPUT:
+
+		1) Brian 2 NeuronGroup object containing a layer
+
+		2) numberOfNeurons: integer. Number of neurons in the current
+		layer
+
+		3) mode: string. Can be "train" or "test"
+
+		4) thetaFile: string. Name of the file containing the
+		pre-trained thresholds for the current layer. Not required if
+		mode = "train"
+	"""
+
+	# Initialize all the thresholds to the same default value of 20mV
 	if mode == "train":
 		neuronGroup.theta = np.ones(numberOfNeurons)*20*b2.mV
+
+	# Import the pre-trained values from file
 	elif mode == "test":
 		with open(thetaFile, 'rb') as fp: 
 			neuronGroup.theta = np.load(fp)*b2.mV
+
+	# Mode error
 	else:
 		print('Invalid operation mode. Accepted values: \n\t1) test\
 			\n\t2) train')
@@ -193,7 +253,49 @@ def connectLayersStructure(networkList, poissonGroup, excLayersList,
 			inhLayersList,stdpDict, weightInitDict, mode,
 			weightFilename, scaleFactors):
 
+	"""
+	Create Brian 2 synapse connections between layers.
+
+	INPUT:
+
+		1) networkList: list. Contains the network structure. Each
+		element contain the number of neurons of the corresponding
+		layer.
+
+		2) poissonGroup: Brian 2 PoissonGroup object. Contains the input
+		layer.
+
+		3) excLayersList: list. Contains the excitatory layers in form
+		of Brian 2 NeuronGroup objects.
+
+		4) inhLayersList: list. Contains the inhibitory layers in form
+		of Brian 2 NeuronGroup objects.
+
+		5) stdpDict: dictionary. Contains the STDP parameters. Not
+		required if mode = "test"
+
+		6) weightInitDict: dictionary. Contains the initialization
+		values for the weights. Not required if mode = "test"
+
+		7) mode: string. Can be "train" or "test"
+
+		9) weightFilename: string. Name of the file containing the
+		pre-trained weights. Not required if mode = "train"
+
+		10) scaleFactors: list. Each element corresponds to a layer.
+		Allows to scale the values of the weights during the random
+		initialization. Not required if mode = "test"
+
+	OUTPUT:
+
+		synapsesList: list. Contains the synapses in form of Brian 2
+		NeuronGroup objects.
+	"""
+
+	# Total number of layers
 	networkSize = len(networkList)
+
+	# Pre-allocate synapses list
 	synapsesList = [0] * (networkSize - 1) * 3
 
 	for layer in range (1, networkSize):
