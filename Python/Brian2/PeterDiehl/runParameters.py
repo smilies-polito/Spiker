@@ -9,7 +9,7 @@ if equationsDir not in sys.path:
 from equations import *
 from parameters import *
 
-networkList = [784, 200, 100]
+networkList = [784, 400]
 
 mode = "train"
 
@@ -19,7 +19,7 @@ restTime = 0.15*b2.second
 
 equationsDict, stdpDict = defineEquations(mode)
 
-updateInterval = 250
+updateInterval = 10
 printInterval = 10
 
 startInputIntensity = 2.
