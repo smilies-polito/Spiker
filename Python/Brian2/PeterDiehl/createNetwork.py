@@ -106,8 +106,8 @@ def createLayersStructure(networkList, equationsDict, parametersDict, mode,
 	# Total number of layers
 	networkSize = len(networkList)
 
-	excLayersList = [0] * (networkSize- 1)
-	inhLayersList = [0] * (networkSize - 1)
+	excLayersList = [0 for i in range(networkSize - 1)]
+	inhLayersList = [0 for i in range(networkSize - 1)]
 
 	for layer in range(1, networkSize):
 
