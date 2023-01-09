@@ -12,8 +12,75 @@ locals().update(parametersDict)
 def trainTestCycle(image, networkList, network, trainDuration, restTime, 
 		spikesEvolution, updateInterval, printInterval, 
 		currentSpikesCount, prevSpikesCount, startTimeTraining, 
-		accuracies, labelsArray, assignements, inputIntensity, 
+		accuracies, labelsArray, assignments, inputIntensity, 
 		startInputIntensity, currentIndex, mode):
+
+	"""
+	Perform a complete train/test pass over an image.
+
+	INPUT:
+
+		1) image: Numpy array of float values.
+
+		2) networkList: list. Contains the network structure. Each
+		element contain the number of neurons of the corresponding
+		layer.
+
+		3) network: Brian 2 Network object.
+
+		4) trainDuration: temporal window associated to an input image
+
+		5) restTime: temporal window associated to the rest after one
+		pass over an image
+
+		6) spikesEvolution: numpy array. Monitor the temporal evolution
+		of the spikes.
+
+		7) updateInterval: integer. Number of images after which the
+		network parameters are updated and the accuracy is evaluated.
+
+		8) printInterval: integer. Number of images after which the
+		accuracy evolution is printed
+
+		9) currentSpikesCount: integer. Number of output spikes
+		generated at the previous training pass.
+
+		10) prevSpikesCount: integer. Total number of spikes generated
+		since the beginning of the training.
+
+		11) startTimeTraining: float. Training/test initial time
+		instant.
+
+		12) accuracies: list. Evolution of the accuracy during the
+		training/test.
+
+		13) labelsArray: numpy array. Contains all the labels in the
+		dataset.
+
+		14) assignments: numpy array. Contains the labels currently
+		associated to the output neurons.
+
+		15) inputIntensity: float. Current value of the input scaling
+		factor.
+
+		16) startInputIntensity: float. Initial value of the input
+		scaling factor.
+
+		17) currentIndex: integer. Current image index.
+
+		18) mode: string. Can be "train" or "test"
+
+	OUTPUT:
+
+		1) inputIntensity: float. Updated value of the input scaling
+		factor.
+
+		2) currentIndex: integer. Updated image index.
+
+		3) accuracies: list. Updated evolution of the accuracy during
+		the training/test.
+		
+	"""
 
 	startTimeImage = timeit.default_timer()
 
@@ -23,7 +90,7 @@ def trainTestCycle(image, networkList, network, trainDuration, restTime,
 		networkList, network, trainDuration, spikesEvolution, 
 		updateInterval, printInterval, currentSpikesCount, 
 		prevSpikesCount, startTimeImage, startTimeTraining, accuracies,
-		labelsArray, assignements, inputIntensity, startInputIntensity, 
+		labelsArray, assignments, inputIntensity, startInputIntensity, 
 		currentIndex,mode)
 
 
@@ -44,7 +111,7 @@ def trainTestCycle(image, networkList, network, trainDuration, restTime,
 def trainTestSingleImage(networkList, network, trainDuration, spikesEvolution, 
 		updateInterval, printInterval, currentSpikesCount, 
 		prevSpikesCount, startTimeImage, startTimeTraining, accuracies, 
-		labelsArray, assignements, inputIntensity, startInputIntensity, 
+		labelsArray, assignments, inputIntensity, startInputIntensity, 
 		currentIndex, mode):
 
 	network.run(trainDuration)
@@ -62,7 +129,7 @@ def trainTestSingleImage(networkList, network, trainDuration, spikesEvolution,
 			networkList, spikesEvolution, updateInterval, 
 			printInterval, currentSpikesCount, startTimeImage,
 			startTimeTraining, accuracies, labelsArray, 
-			assignements, startInputIntensity, currentIndex, mode)
+			assignments, startInputIntensity, currentIndex, mode)
 
 	return inputIntensity, currentIndex, accuracies
 
@@ -72,7 +139,7 @@ def trainTestSingleImage(networkList, network, trainDuration, spikesEvolution,
 
 def nextImage(networkList, spikesEvolution, updateInterval, printInterval, 
 		currentSpikesCount, startTimeImage, startTimeTraining, 
-		accuracies, labelsArray, assignements, startInputIntensity, 
+		accuracies, labelsArray, assignments, startInputIntensity, 
 		currentIndex, mode):
 
 	spikesEvolution[currentIndex % updateInterval] = currentSpikesCount
@@ -83,13 +150,13 @@ def nextImage(networkList, spikesEvolution, updateInterval, printInterval,
 	accuracies = computePerformances(currentIndex, updateInterval,
 			networkList[-1], spikesEvolution,
 			labelsArray[currentIndex - updateInterval :
-			currentIndex], assignements, accuracies)
+			currentIndex], assignments, accuracies)
 
 	if mode == "train":
 		updateAssignements(currentIndex, updateInterval, 
 				networkList[-1], spikesEvolution, 
 				labelsArray[currentIndex - updateInterval
-				: currentIndex], assignements)
+				: currentIndex], assignments)
 
 	return startInputIntensity, currentIndex + 1, accuracies	
 
@@ -124,7 +191,7 @@ def updatePulsesCount(network, currentSpikesCount, prevSpikesCount):
 
 
 def updateAssignements(currentIndex, updateInterval, outputLayerSize,
-			spikesEvolution, labelsSequence, assignements):
+			spikesEvolution, labelsSequence, assignments):
 
 	maxCount = np.zeros(outputLayerSize)
 
@@ -141,8 +208,8 @@ def updateAssignements(currentIndex, updateInterval, outputLayerSize,
 			# Find where the spike count exceeds the current maximum
 			whereMaxSpikes = labelSpikes > maxCount
 
-			# Update the assignements	
-			assignements[whereMaxSpikes] = label
+			# Update the assignments	
+			assignments[whereMaxSpikes] = label
 
 			# Update the maxima
 			maxCount[whereMaxSpikes] = labelSpikes[whereMaxSpikes]
@@ -170,7 +237,7 @@ def printProgress(currentIndex, printInterval, startTimeImage,
 
 
 def computePerformances(currentIndex, updateInterval, outputLayerSize,
-			spikesEvolution, labelsSequence, assignements, accuracies):
+			spikesEvolution, labelsSequence, assignments, accuracies):
 
 	maxCount = np.zeros(updateInterval)
 	classification = -1*np.ones(updateInterval)
@@ -183,7 +250,7 @@ def computePerformances(currentIndex, updateInterval, outputLayerSize,
 
 			# Consider only the neurons assigned to the current
 			# label
-			spikeCount = np.sum(spikesEvolution[:, assignements ==
+			spikeCount = np.sum(spikesEvolution[:, assignments ==
 					label], axis = 1)
 
 			# Find where the neurons have generated max spikes
