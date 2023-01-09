@@ -28,15 +28,19 @@ network = createNetwork(networkList, equationsDict, parametersDict, stdpDict,
 		weightInitDict, mode, thetaFilename, weightFilename, 
 		scaleFactors)
 
-
+# Initialize image index
 i = 0
 
-startTimeTraining = timeit.default_timer()
-
+# Number of images considered
 numberOfCycles = imgArray.shape[0]
 
+# Measure the beginning time
+startTimeTraining = timeit.default_timer()
+
+# Loop over the desired number of images
 while i < numberOfCycles:
 
+	# Perform a complete train/test cycle over the image
 	inputIntensity, i, accuracies = trainTestCycle(imgArray[i], networkList, 
 		network, trainDuration, restTime, spikesEvolution, 
 		updateInterval, printInterval, currentSpikesCount, 
@@ -46,7 +50,9 @@ while i < numberOfCycles:
 
 createDir(paramDir)
 
+# Store the trained hyper-parameters
 storeParameters(networkList, network, assignements, weightFilename, 
 		thetaFilename, assignementsFilename)
 
+# Store the results in terms of time and accuracy
 storePerformance(startTimeTraining, accuracies, performanceFilename)
