@@ -1,5 +1,6 @@
 import numpy as np
 from utils import seconds2hhmmss
+import timeit
 
 def storeParameters(networkList, network, assignements, weightFilename,
 			thetaFilename, assignementsFilename):
