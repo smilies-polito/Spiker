@@ -60,6 +60,16 @@ def initAssignments(mode, networkList, assignmentsFile):
 
 def seconds2hhmmss(seconds):
 
+	"""
+	Convert seconds into hour minutes seconds.
+
+	INPUT:
+		seconds: float. Total number of seconds.
+
+	OUTPUT:
+		String. Time in hhmmss format.
+	"""
+
 	hours = int(seconds // 3600)
 	minutes = int((seconds % 3600) // 60)
 	seconds = int(seconds % 60)
