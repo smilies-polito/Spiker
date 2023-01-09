@@ -2,26 +2,68 @@ import brian2 as b2
 import numpy as np
 import sys
 
-
+# Functions to create and initialize the Spiking Neural Network
 
 def createNetwork(networkList, equationsDict, parametersDict, stdpDict,
 		weightInitDict, mode, thetaFilename, weightFilename,
 		scaleFactors):
 
+	"""
+	Create a Brian 2 simulation of a Spiking Neural Network:
+
+	INPUT:
+
+		1) networkList: list. Contains the network structure. Each
+		element contain the number of neurons of the corresponding
+		layer.
+
+		2) equationsDict: dictionary. Contains the model equations.
+
+		3) parametersDict: dictionary. Contains the neurons' internal
+		parameters.
+
+		4) stdpDict: dictionary. Contains the STDP parameters. Not
+		required if mode = "test"
+
+		5) weightInitDict: dictionary. Contains the initialization
+		values for the weights. Not required if mode = "test"
+
+		6) mode: string. Can be "train" or "test"
+
+		7) thetaFilename: string. Name of the file containing the
+		pre-trained thresholds. Not required if mode = "train"
+
+		8) weightFilename: string. Name of the file containing the
+		pre-trained weights. Not required if mode = "train"
+
+		9) scaleFactors: list. Each element corresponds to a layer.
+		Allows to scale the values of the weights during the random
+		initialization. Not required if mode = "test"
+		
+
+	OUTPUT:
+
+		Brian 2 network object containing the initialized network. 
+	"""
+
+	# Create the input layer to convert inputs into spikes
 	poissonGroup = b2.PoissonGroup(networkList[0], 0*b2.Hz)
 
+	# Create the excitatory and inhibitory layers
 	excLayersList, inhLayersList = createLayersStructure(networkList, 
 	 				equationsDict, parametersDict, mode,
 					thetaFilename)
 
+	# Interconnect the layers
 	synapsesList = connectLayersStructure(networkList, poissonGroup, 
 	 				excLayersList, inhLayersList,stdpDict, 
 					weightInitDict, mode, weightFilename,
 					scaleFactors)
 
-	
+	# Monitor the spikes evolution
 	spikeMonitor = b2.SpikeMonitor(excLayersList[-1], record=False)
 
+	# Return the initialized network
 	return b2.Network(poissonGroup, excLayersList, inhLayersList, 
 			synapsesList, spikeMonitor)
 
@@ -33,6 +75,35 @@ def createNetwork(networkList, equationsDict, parametersDict, stdpDict,
 def createLayersStructure(networkList, equationsDict, parametersDict, mode,
 			thetaFilename):
 
+	"""
+	Create excitatory and inhibitory layers.
+
+	INPUT:
+
+		1) networkList: list. Contains the network structure. Each
+		element contain the number of neurons of the corresponding
+		layer.
+
+		2) equationsDict: dictionary. Contains the model equations.
+
+		3) parametersDict: dictionary. Contains the neurons' internal
+		parameters.
+
+		4) mode: string. Can be "train" or "test"
+
+		5) thetaFilename: string. Name of the file containing the
+		pre-trained thresholds. Not required if mode = "train"
+
+	OUTPUT:
+
+		1) excLayersList: list. Contains the excitatory layers in form
+		of Brian 2 NeuronGroup objects.
+
+		2) inhLayersList: list. Contains the inhibitory layers in form
+		of Brian 2 NeuronGroup objects.
+	"""
+
+	# Total number of layers
 	networkSize = len(networkList)
 
 	excLayersList = [0] * (networkSize- 1)

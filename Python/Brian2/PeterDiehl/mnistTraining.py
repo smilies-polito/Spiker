@@ -1,21 +1,28 @@
 import numpy as np
-import brian2 as b2
+# import brian2 as b2
 import timeit
+import sys
 
-from mnist import loadDataset
 from createNetwork import createNetwork
 from trainTestFunctions import *
 from utils import createDir, initAssignments
-from files import *
 from runParameters import *
 
+from files import *
 
+if mnistDir not in sys.path:
+	sys.path.append(mnistDir)
+
+from mnist import loadDataset
+
+
+# Associate each output neuron to a label (-1 before training)
 assignements = initAssignments(mode, networkList, assignementsFile)
 
+# Import MNIST dataset into two numpy arrays
 imgArray, labelsArray = loadDataset(images, labels)
 
-
-
+# Create and initialize the Spiking Neural Network
 network = createNetwork(networkList, equationsDict, parametersDict, stdpDict,
 		weightInitDict, mode, thetaFilename, weightFilename, 
 		scaleFactors)

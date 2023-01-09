@@ -25,13 +25,31 @@ def createDir(dirName):
 	sp.run(cmdString, shell=True, executable="/bin/bash")
 
 
-def initAssignments(mode, networkList, assignementsFile):
+def initAssignments(mode, networkList, assignmentsFile):
+
+	"""
+	Associate each output neuron to a label
+
+	INPUT:
+		1) mode: string. Can be "train" or "test"
+
+		2) networkList: list. Contains the network structure. Each
+		element contain the number of neurons of the corresponding
+		layer.
+
+		3) assignmentsFile: string. Name of the file containing the
+		pre-trained assignments. Not required if mode = "train"
+
+	OUTOUT:
+		Numpy array containing the labels associated to the output
+		neurons
+	"""
 
 	if mode == "train":
 		return -1*np.ones(networkList[-1])
 
 	elif mode == "test":
-		with open(assignementsFile, 'rb') as fp:
+		with open(assignmentsFile, 'rb') as fp:
 			return np.load(fp)
 
 	else:
