@@ -51,37 +51,37 @@ import numpy as np
 # numpy array.
 
 
+
+
+# Dictionary which is used as hash table to decode the data type from the
+# magic number.
+# 
+# The function has been developed to work on an Intel-like platform. The
+# MNIST dataset stores data in big-endian format (MSB first). On the
+# contrary Intel processors read the data in little-endian format. For
+# this reason the code corresponding for example to the 32 bit integer
+# data type can't be directly decoded with the string "int32" because in
+# this way the integer value would be read with the little-endian
+# convention, giving a result completely different from the one
+# represented in the buffer.  All the numerical values are read using the
+# NumPy function frombuffer(). This accepts a string which encodes the
+# data type to read from a buffer as one of its arguments. This allows to
+# specify the endianness of the data.
+# 
+# 	">"	: data stored in big-endian format. 
+# 	"<"	: data stored in little-endian format.
+# 
+# Considering the endianness changes the way in which data types are
+# expressed. In particular:
+# 
+# 	"i"	: integer
+# 	"f"	: float
+# 
+# The data type is followed by a numerical value which expresses the
+# number of bytes that compose the data. 
+
 dictDecoder = {
 
-	"""
-	Dictionary which is used as hash table to decode the data type from the
-	magic number.
-
-	The function has been developed to work on an Intel-like platform. The
-	MNIST dataset stores data in big-endian format (MSB first). On the
-	contrary Intel processors read the data in little-endian format. For
-	this reason the code corresponding for example to the 32 bit integer
-	data type can't be directly decoded with the string "int32" because in
-	this way the integer value would be read with the little-endian
-	convention, giving a result completely different from the one
-	represented in the buffer.  All the numerical values are read using the
-	NumPy function frombuffer(). This accepts a string which encodes the
-	data type to read from a buffer as one of its arguments. This allows to
-	specify the endianness of the data.
-
-		">"	: data stored in big-endian format. 
-		"<"	: data stored in little-endian format.
-
-	Considering the endianness changes the way in which data types are
-	expressed. In particular:
-
-		"i"	: integer
-		"f"	: float
-
-	The data type is followed by a numerical value which expresses the
-	number of bytes that compose the data. 
-	"""
-	
 	# Unsigned byte
 	"8"	: "ubyte",
 	# Signed byte
@@ -124,7 +124,7 @@ def loadDataset(images, labels):
 			labels read from the mnist file in form of integer
 			numbers.
 	"""
-	
+
 	imgBuffer = readFile(images)
 	imgArray = idxBufferToArray(imgBuffer)
 
@@ -196,6 +196,7 @@ def idxBufferToArray(buffer):
 
 
 def magicNumber(buffer):
+
 	"""
 	Read and decode the magic number.
 
@@ -233,15 +234,15 @@ def decodeDataType(intCode):
 
 	"""
 	Decode the byte of the magic number which encodes the data type.
-	
+
 		INPUT PARAMETERS:
-	
+
 			intCode: integer value read from the second less
 			significant byte of the magic number, expressed in
 			decimal format.
-	
+
 		RETURN VALUES:	
-	
+
 			The function returns a string corresponding to the data
 			type encoded in the magic number. See dictDecoder for
 			more details.
