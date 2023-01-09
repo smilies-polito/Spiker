@@ -14,29 +14,29 @@ entity complete_accelerator is
 
 		-- Internal bit-widths
 		neuron_bit_width	: integer := 16;
-		weights_bit_width	: integer := 15;
+		weights_bit_width	: integer := 5;
 		bram_word_length	: integer := 36;
 		bram_addr_length	: integer := 10;
-		bram_sel_length		: integer := 1;
+		bram_sel_length		: integer := 6;
 		bram_we_length		: integer := 4;
 		input_data_bit_width	: integer := 8;
 		lfsr_bit_width		: integer := 16;
 		cnt_out_bit_width	: integer := 16;
 
 		-- Network shape
-		inputs_addr_bit_width	: integer := 2;
-		neurons_addr_bit_width	: integer := 1;
+		inputs_addr_bit_width	: integer := 10;
+		neurons_addr_bit_width	: integer := 9;
 
 		-- Must be 1 bit longer than what required to count to N_cycles
-		cycles_cnt_bit_width	: integer := 6;
+		cycles_cnt_bit_width	: integer := 13;
 
 		-- Bram parameters
-		N_bram			: integer := 1;
-		N_weights_per_word	: integer := 2;
+		N_bram			: integer := 58;
+		N_weights_per_word	: integer := 7;
 
 		-- Structure parameters
-		N_inputs		: integer := 3;
-		N_neurons		: integer := 2;
+		N_inputs		: integer := 784;
+		N_neurons		: integer := 400;
 
 		-- Internal parameters
 		shift			: integer := 10
