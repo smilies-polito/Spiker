@@ -12,7 +12,7 @@ entity weights_bram is
 
 	generic(
 		word_length		: integer := 36;
-		N_weights_per_word	: integer := 2;
+		N_weights_per_word	: integer := 7;
 		rdwr_addr_length	: integer := 10;
 		we_length		: integer := 4;
  		N_neurons		: integer := 400;
