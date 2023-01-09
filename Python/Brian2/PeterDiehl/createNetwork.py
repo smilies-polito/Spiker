@@ -219,7 +219,7 @@ def initializeTheta(neuronGroup, numberOfNeurons, mode, thetaFile):
 
 	INPUT:
 
-		1) Brian 2 NeuronGroup object containing a layer
+		1) neuronGroup: Brian 2 NeuronGroup object containing a layer
 
 		2) numberOfNeurons: integer. Number of neurons in the current
 		layer
@@ -254,7 +254,7 @@ def connectLayersStructure(networkList, poissonGroup, excLayersList,
 			weightFilename, scaleFactors):
 
 	"""
-	Create Brian 2 synapse connections between layers.
+	Create Brian 2 synapse connections between all the layers.
 
 	INPUT:
 
@@ -296,12 +296,14 @@ def connectLayersStructure(networkList, poissonGroup, excLayersList,
 	networkSize = len(networkList)
 
 	# Pre-allocate synapses list
-	synapsesList = [0] * (networkSize - 1) * 3
+	synapsesList = [0 for i in range((networkSize - 1) * 3)]
 
 	for layer in range (1, networkSize):
 		
+		# Specific filename for the current layer
 		weightFile = weightFilename + str(layer) + ".npy"
 		
+		# Connect exc layer to the previous exc layer. Fully connected.
 		synapsesList[3*(layer - 1)] = exc2excConnection(
 			networkList, 
 			poissonGroup, 
@@ -313,6 +315,8 @@ def connectLayersStructure(networkList, poissonGroup, excLayersList,
 			scaleFactors[layer-1])
 
 
+		# Connect exc layer to the corresponding inh layer. One-to-one
+		# connection.
 		synapsesList[3*(layer -1 ) + 1] = connectLayers(
 			excLayersList[layer - 1], 
 			inhLayersList[layer - 1], 
@@ -324,6 +328,8 @@ def connectLayersStructure(networkList, poissonGroup, excLayersList,
 			name = "exc2inh" + str(layer))
 
 
+		# Connect inh layer to the corresponding exc layer.
+		# One-to-others connection.
 		synapsesList[3*(layer - 1) + 2] = connectLayers(
 			inhLayersList[layer - 1], 
 			excLayersList[layer - 1],
@@ -346,11 +352,49 @@ def connectLayersStructure(networkList, poissonGroup, excLayersList,
 def exc2excConnection(networkList, poissonGroup, excLayersList, stdpDict, 
 			layer, mode, weightFile, scaleFactor):
 
+	"""
+	Connect two excitatory layers.
+	
+	INPUT:
+		1) networkList: list. Contains the network structure. Each
+		element contain the number of neurons of the corresponding
+		layer.
+
+		2) poissonGroup: Brian 2 PoissonGroup object. Contains the input
+		layer.
+
+		3) excLayersList: list. Contains the excitatory layers in form
+		of Brian 2 NeuronGroup objects.
+
+		4) stdpDict: dictionary. Contains the STDP parameters. Not
+		required if mode = "test"
+
+		5) layer: integer. Index of the current layer. 0 corresponds to
+		the input layer. 1 represents the first neurons' layer.
+
+		6) mode: string. Can be "train" or "test"
+
+		7) weightFilename: string. Name of the file containing the
+		pre-trained weights. Not required if mode = "train"
+
+		8) scaleFactors: list. Each element corresponds to a layer.
+		Allows to scale the values of the weights during the random
+		initialization. Not required if mode = "test"
+
+	OUTPUT:
+	
+		exc2exc: Brian 2 Synapse object.
+		
+	"""
+
+	# Initialize the weights of the connections
 	weightMatrix = initializeWeights(mode, networkList, weightFile, layer,
 			scaleFactor)
 
+	# First neurons' layer
 	if layer == 1:
 
+		# Connect the layer to the input interface
 		exc2exc = connectLayers(
 			poissonGroup, 
 			excLayersList[layer-1], 
@@ -364,6 +408,7 @@ def exc2excConnection(networkList, poissonGroup, excLayersList, stdpDict,
 
 	else:
 
+		# Connect the exc layer to the previous one
 		exc2exc = connectLayers(
 			excLayersList[layer - 2], 
 			excLayersList[layer - 1], 
@@ -384,10 +429,35 @@ def exc2excConnection(networkList, poissonGroup, excLayersList, stdpDict,
 
 def initializeWeights(mode, networkList, weightFile, layer, scaleFactor):
 
+	"""
+	Initialize layer's weights.
+
+	INPUT:
+
+		1) mode: string. Can be "train" or "test"
+
+		2) networkList: list. Contains the network structure. Each
+		element contain the number of neurons of the corresponding
+		layer.
+
+		3) weightFile: string. Name of the file containing the
+		pre-trained weights for the current layer. Not required if
+		mode = "train"
+		
+		4) layer: integer. Index of the current layer. 0 corresponds to
+		the input layer. 1 represents the first neurons' layer.
+
+		5) scaleFactor: float. Allows to scale the values of the weights
+		during the random initialization. Not required if mode = "test"
+	"""
+
+
+	# Randomly initialize the weights
 	if mode == "train":
 		return (b2.random(networkList[layer]*networkList[layer - 1])
 			+ 0.01)*scaleFactor
 
+	# Import the pre-trained weights from file
 	elif mode == "test":
 		with open(weightFile, 'rb') as fp:
 			return np.load(weightFile)
@@ -401,6 +471,38 @@ def initializeWeights(mode, networkList, weightFile, layer, scaleFactor):
 
 def connectLayers(originGroup, targetGroup, synapseModel, onPreEquation,
 		onPostEquation, connectionType, weightInit, name):
+
+	"""
+	Create a Brian 2 connection between two generic layers.
+
+	INPUT:
+
+		1) originGroup: Brian 2 NeuronGroup object containing the
+		origin layer for the connection
+
+		2) targetGroup: Brian 2 NeuronGroup object containing the
+		target layer for the connection
+
+		3) synapseModel: string. Equations of the synapse.
+
+		4) onPreEquation: string. Equations describing the behaviour of
+		the synapse when receiving a pre-synaptic spike.
+
+		5) onPostEquation: string. Equations describing the behaviour of
+		the synapse when receiving a post-synaptic spike.
+
+		6) connectionType: string. Type of the connection (e.g. fully
+		connected, one-to-one). See Brian2 documentation for more
+		details.
+
+		7) weightInit: float or matrix of floats. Initialization values
+		for the connection weights.
+
+		8) name: string. Name of the Brian 2 synapse object.
+
+	OUTPUT:
+		Brian 2 synapse object containing the initialized connection.
+	"""
 	
 	# Create the synapse
 	synapse = b2.Synapses(
