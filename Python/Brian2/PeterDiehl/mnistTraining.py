@@ -4,9 +4,10 @@ import timeit
 import sys
 
 from createNetwork import createNetwork
-from trainTestFunctions import *
 from utils import createDir, initAssignments
+from storeParameters import storeParameters, storePerformance
 from runParameters import *
+from trainTestFunctions import *
 
 from files import *
 
@@ -48,4 +49,4 @@ createDir(paramDir)
 storeParameters(networkList, network, assignements, weightFilename, 
 		thetaFilename, assignementsFilename)
 
-storePerformace(startTimeTraining, accuracies, performanceFilename)
+storePerformance(startTimeTraining, accuracies, performanceFilename)
