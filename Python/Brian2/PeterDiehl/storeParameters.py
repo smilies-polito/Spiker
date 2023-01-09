@@ -1,3 +1,6 @@
+import numpy as np
+from utils import seconds2hhmmss
+
 def storeParameters(networkList, network, assignements, weightFilename,
 			thetaFilename, assignementsFilename):
 
@@ -27,7 +30,7 @@ def storeArray(filename, numpyArray):
 
 
 
-def storePerformace(startTimeTraining, accuracies, performanceFilename):
+def storePerformance(startTimeTraining, accuracies, performanceFilename):
 
 	timeString = "Total training time : " + \
 		seconds2hhmmss(timeit.default_timer() - startTimeTraining)
