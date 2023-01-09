@@ -3,7 +3,7 @@ import timeit
 import numpy as np
 import sys
 
-from poisson import imgToSpikeTrains
+from poisson import imgToSpikeTrain
 from parameters import *
 
 locals().update(parametersDict)
