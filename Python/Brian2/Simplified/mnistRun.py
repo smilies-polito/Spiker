@@ -1,8 +1,8 @@
 import numpy as np
 import brian2 as b2
 import timeit
+import sys
 
-from mnist import loadDataset
 from createNetwork import createNetwork
 from runFunctions import singleImageRun
 
@@ -11,6 +11,10 @@ from storeParameters import storeParameters, storePerformace
 
 from runParameters import *
 
+if mnistDir not in sys.path:
+	sys.path.append(mnistDir)
+
+from mnist import loadDataset
 
 
 

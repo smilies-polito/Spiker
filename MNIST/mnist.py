@@ -56,7 +56,7 @@ import numpy as np
 # Dictionary which is used as hash table to decode the data type from the
 # magic number.
 # 
-# The function has been developed to work on an Intel-like platform. The
+# The functions have been developed to work on an Intel-like platform. The
 # MNIST dataset stores data in big-endian format (MSB first). On the
 # contrary Intel processors read the data in little-endian format. For
 # this reason the code corresponding for example to the 32 bit integer
@@ -125,10 +125,14 @@ def loadDataset(images, labels):
 			numbers.
 	"""
 
+	# Load the entire content of the file of images into a memory buffer
 	imgBuffer = readFile(images)
+	# Create the array of images for the training/test
 	imgArray = idxBufferToArray(imgBuffer)
 
+	# Load the entire content of the file of labels into a memory buffer
 	labelsBuffer = readFile(labels)
+	# Create the array of labels for the training/test
 	labelsArray = idxBufferToArray(labelsBuffer)
 
 	return imgArray, labelsArray
@@ -225,6 +229,7 @@ def magicNumber(buffer):
 
 	# Decode the two less significant bytes of the magic number
 	dtype = decodeDataType(mn[2])
+	# Decode the data dimensions byte
 	dataDim = mn[3]
 
 	return dtype, dataDim

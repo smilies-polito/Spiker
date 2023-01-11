@@ -1,4 +1,6 @@
-mnistDir = "../../../MNIST"
+developmentDir = "../"
+
+mnistDir = "../../../../MNIST"
 
 # Training
 trainImages = mnistDir + "/train-images-idx3-ubyte"
@@ -10,7 +12,7 @@ testLabels = mnistDir + "/t10k-labels-idx1-ubyte"
 
 
 # Directory containing equations and their parameters
-equationsDir = "./Equations"
+equationsDir = "../Equations"
 
 
 # Directory in which parameters and performance of the network are stored

@@ -2,9 +2,14 @@ import brian2 as b2
 import numpy as np
 import sys
 
+# Functions to create and initialize the Spiking Neural Network
+
+from files import equationsDir
+
+if equationsDir not in sys.path:
+	sys.path.append(equationsDir)
 
 from equations import excInhConnectionDict
-
 from equationsParameters import *
 
 
@@ -13,7 +18,7 @@ def createNetwork(networkList, equationsDict, parametersDict, stdpDict,
 		weightInitDict, mode, thetaFilename, weightFilename,
 		scaleFactors):
 
-	'''
+	"""
 	Create a complete brian2 network object with the desired
 	values for the hyperparameters.
 
@@ -47,13 +52,11 @@ def createNetwork(networkList, equationsDict, parametersDict, stdpDict,
 		the number of layers. Each element represent the scale factor
 		used in the generation of the random weights for each layer.
 
-	
-
-	RETURN VALUE:
+	OUTPUT:
 
 		Brian2 network object with the required number of excitatory and
 		inhibitory layers properly interconnected. 
-	'''
+	"""
 
 
 	# Create the Poisson input layer
@@ -86,8 +89,7 @@ def createNetwork(networkList, equationsDict, parametersDict, stdpDict,
 def createLayersStructure(networkList, equationsDict, parametersDict, mode,
 			thetaFilename):
 
-
-	'''
+	"""
 	Create all the excitatory and inhibitory layers of the nertwork.
 
 	INPUT:	
@@ -113,7 +115,7 @@ def createLayersStructure(networkList, equationsDict, parametersDict, mode,
 
 		2) inhLayersList: list of Brian2 NeuronGroup objects, one for
 		each inhibitory layer.
-	'''
+	"""
 
 	networkSize = len(networkList)
 
@@ -166,14 +168,14 @@ def createLayer(numberOfNeurons, neuronsEquations, threshEquations,
 		refractoryPeriod, resetEquations, groupName, resetPotential,
 		neuronType, mode, thetaFile):
 
-	'''
+	"""
 	Create a single layer of neurons.
 
 	INPUT:
 		1) numberOfNeurons: number of neurons in the layer.
 
 		2) neuronsEquations: multiline string or Brian2 equation object 
-		describing the membrane potential's temporal evolution.
+		describing the membrane potential"s temporal evolution.
 		
 		3) threshEquations: multiline string or Brian2 equation object
 		describing the condition for the threshold to be exceeded.
@@ -182,11 +184,11 @@ def createLayer(numberOfNeurons, neuronsEquations, threshEquations,
 		of a spike after which the neurons stay inactive.
 
 		5) resetEquations: multiline string or Brian2 equation object 
-		describing the operations performed to reset the neuron's state.
+		describing the operations performed to reset the neuron"s state.
 
 		6) groupName: generic string used to identify the group. The
 		number of the layer will be appended to form the complete
-		layer's name. The standard names used by the training/test
+		layer"s name. The standard names used by the training/test
 		functions are "excLayer" and "inhLayer".
 
 		7) resetPotential: float value. Reset value for the membrane 
@@ -200,11 +202,11 @@ def createLayer(numberOfNeurons, neuronsEquations, threshEquations,
 		parameters for the current layer
 
 
-	RETURN VALUE:
+	OUTPUT:
 
 		neuronGroup: Brian2 object corresponding to a properly
 		initialized layer of neurons.
-	'''
+	"""
 
 	# Create the layer
 	neuronGroup = b2.NeuronGroup(
@@ -213,7 +215,7 @@ def createLayer(numberOfNeurons, neuronsEquations, threshEquations,
 		threshold = threshEquations, 
 		refractory = refractoryPeriod, 
 		reset = resetEquations, 
-		method = 'exact',
+		method = "exact",
 		name = groupName
 	)
 
@@ -231,7 +233,7 @@ def createLayer(numberOfNeurons, neuronsEquations, threshEquations,
 
 def initializeTheta(neuronGroup, numberOfNeurons, mode, thetaFile):
 
-	'''
+	"""
 	Initialize the variable threshold parameter theta.
 
 	INPUT:
@@ -249,7 +251,7 @@ def initializeTheta(neuronGroup, numberOfNeurons, mode, thetaFile):
 	The function initialize the theta parameter depending on the mode in
 	which the network will be run, train or test.
 
-	'''
+	"""
 
 	if mode == "train":
 
@@ -259,13 +261,13 @@ def initializeTheta(neuronGroup, numberOfNeurons, mode, thetaFile):
 	elif mode == "test":
 
 		# Load theta values from file
-		with open(thetaFile, 'rb') as fp: 
+		with open(thetaFile, "rb") as fp: 
 			neuronGroup.theta = np.load(fp)
 	else:
 
 		# Invalid mode, print error and exit
-		print('Invalid operation mode. Accepted values: \n\t1) test\
-			\n\t2) train')
+		print("Invalid operation mode. Accepted values: \n\t1) test\
+			\n\t2) train")
 		sys.exit()
 
 
@@ -275,7 +277,7 @@ def connectLayersStructure(networkList, poissonGroup, excLayersList,
 			inhLayersList, stdpDict, weightInitDict, mode,
 			weightFilename, scaleFactors):
 
-	'''
+	"""
 	Connect the previously created layers to form a complete network.
 
 	INPUT:
@@ -318,7 +320,7 @@ def connectLayersStructure(networkList, poissonGroup, excLayersList,
 	particular "inh2exc" and "exc2inh" + the number of the current
 	layer.
 
-	'''
+	"""
 
 	networkSize = len(networkList)
 
@@ -376,7 +378,7 @@ def connectLayersStructure(networkList, poissonGroup, excLayersList,
 def exc2excConnection(networkList, poissonGroup, excLayersList, stdpDict, 
 			layer, mode, weightFile, scaleFactor):
 
-	'''
+	"""
 	Connect two excitatory layers.
 
 	INPUT:
@@ -413,7 +415,7 @@ def exc2excConnection(networkList, poissonGroup, excLayersList, stdpDict,
 	the first excitatory layer and "exc2exc" + the number of the current
 	layer for all the others.
 
-	'''
+	"""
 
 	# Initialize weights
 	weightMatrix = initializeWeights(mode, networkList, weightFile, layer,
@@ -461,7 +463,7 @@ def exc2excConnection(networkList, poissonGroup, excLayersList, stdpDict,
 
 def initializeWeights(mode, networkList, weightFile, layer, scaleFactor):
 
-	'''
+	"""
 	Initialize the weights of the connections between two layers.
 
 	INPUT:	
@@ -482,7 +484,7 @@ def initializeWeights(mode, networkList, weightFile, layer, scaleFactor):
 	The function initialize the weights depending on the mode in
 	which the network will be run, train or test.
 
-	'''
+	"""
 
 
 	if mode == "train":
@@ -494,13 +496,13 @@ def initializeWeights(mode, networkList, weightFile, layer, scaleFactor):
 	elif mode == "test":
 
 		# Load weights from file
-		with open(weightFile, 'rb') as fp:
+		with open(weightFile, "rb") as fp:
 			return np.load(weightFile).reshape(784*400)
 	
 	else:
 		# Invalid mode, print error and exit
-		print('Invalid operation mode. Accepted values:\n\t1) test\
-		\n\t2) train')
+		print("Invalid operation mode. Accepted values:\n\t1) test\
+		\n\t2) train")
 		sys.exit()
 
 
@@ -509,7 +511,7 @@ def initializeWeights(mode, networkList, weightFile, layer, scaleFactor):
 def connectLayers(originGroup, targetGroup, synapseModel, onPreEquation,
 		onPostEquation, connectionType, weightInit, name):
 
-	'''
+	"""
 	Connect two generic layers, that are two Brian2 NeuronGroup objects.
 
 	INPUT:
@@ -538,7 +540,7 @@ def connectLayers(originGroup, targetGroup, synapseModel, onPreEquation,
 		used by the previous functions, for example for the first layer
 		are: "poisson2exc", "exc2exc1", "exc2inh1" and "inh2exc1"
  
-	'''
+	"""
 	
 	# Create the synapse between origin group and target group
 	synapse = b2.Synapses(
