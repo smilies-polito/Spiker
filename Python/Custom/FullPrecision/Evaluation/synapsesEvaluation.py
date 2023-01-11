@@ -2,6 +2,9 @@ import sys
 import scipy.sparse as sp
 import matplotlib.pyplot as plt
 
+# Initialize the evaluation parameters
+from runParameters import *
+
 development = "../"
 
 if development not in sys.path:
@@ -13,16 +16,13 @@ from layers import updateExcLayer, updateInhLayer
 from synapses import *
 
 
-# Initialize the evaluation parameters
-from evaluationParameters import *
 
 np.set_printoptions(linewidth=150)
 
 
 # Create the network
-network = createNetwork(networkList, None, None, mode, excDictList, 
-			inhDictList, scaleFactors, exc2inhWeights,
-			inh2excWeights)
+network = createNetwork(networkList, None, None, mode, 
+			excDictList, scaleFactors, inh2excWeights)
 
 # Create a spare matrix of random spikes
 inputSpikes = sp.random(N_sim, networkList[0], density = density)
@@ -39,10 +39,10 @@ pre = np.zeros((N_sim, networkList[0]))
 for i in range(N_sim):
 
 	# Update excitatory layer
-	updateExcLayer(network, 1, dt_tauDict["exc"], dt_tauDict["theta"], inputSpikes[i])
+	updateExcLayer(network, 1, dt_tauDict["exc"], inputSpikes[i])
 	
 	# Update inhibitory layer
-	updateInhLayer(network, 1, dt_tauDict["inh"])
+	updateInhLayer(network, 1)
 
 	# Update the synapse's weights
 	stdp(network, 1, stdpDict, inputSpikes[i])
