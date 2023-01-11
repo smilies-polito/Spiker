@@ -12,7 +12,7 @@ from files import *
 # List of layer sizes
 networkList = [784, 400]
 
-mode = "test"
+mode = "train"
 
 
 # Training and resting periods in milliseconds
@@ -21,7 +21,7 @@ restTime = 0.15*b2.second
 
 
 # Update and print intervals expressed in number of images
-updateInterval = 250
+updateInterval = 100
 printInterval = 10
 
 
