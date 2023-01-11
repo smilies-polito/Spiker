@@ -2,18 +2,20 @@ import sys
 import scipy.sparse as sp
 import matplotlib.pyplot as plt
 
+# Initialize the evaluation parameters
+from runParameters import *
+
 development = "../"
 
 if development not in sys.path:
 	sys.path.insert(1,development)
 
-
+from utils import initAssignments
 from createNetwork import createNetwork
 from network import updateNetwork
 
-
-# Initialize the evaluation parameters
-from evaluationParameters import *
+# Initialize the output classification
+assignments = initAssignments(mode, networkList, assignmentsFile)
 
 
 # Create the network
