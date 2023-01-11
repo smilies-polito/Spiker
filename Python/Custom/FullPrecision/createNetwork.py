@@ -5,7 +5,7 @@ import sys
 def createNetwork(networkList, weightFilename, thresholdFilename, mode,
 			excDictList, scaleFactors, inh2excWeights):
 
-	'''
+	"""
 	Create the complete network dictionary.
 
 	INPUT:
@@ -35,7 +35,9 @@ def createNetwork(networkList, weightFilename, thresholdFilename, mode,
 		each layer. This is the same for all the connections within the
 		layer.
 
-	'''
+	OUTPUT:
+		network. dictionary containing the full initialized network.
+	"""
 
 	network = {}
 
@@ -70,7 +72,7 @@ def createNetwork(networkList, weightFilename, thresholdFilename, mode,
 def createLayer(network, layerType, initDict, networkList, layer, mode,
 		thresholdFile):
 
-	'''
+	"""
 	Create the layer dictionary and add it to the network dictionary.
 
 	INPUT:
@@ -92,7 +94,7 @@ def createLayer(network, layerType, initDict, networkList, layer, mode,
 		7) thresholdFile: complete name of the file containing the
 		thresholds for the current layers.
 	
-	'''
+	"""
 
 	# Create the name for the layer
 	layerName = layerType + "Layer" + str(layer)
@@ -135,7 +137,7 @@ def createLayer(network, layerType, initDict, networkList, layer, mode,
 
 def initializeThreshold(mode, thresholdFile, initDict, numberOfNeurons):
 
-	'''
+	"""
 	Initialize the dynamic homeostasis parameter theta.
 
 	INPUT:
@@ -154,7 +156,7 @@ def initializeThreshold(mode, thresholdFile, initDict, numberOfNeurons):
 	The function initialize the theta parameter depending on the mode in
 	which the network will be run, train or test.
 
-	'''
+	"""
 
 	if mode == "train":
 
@@ -164,13 +166,13 @@ def initializeThreshold(mode, thresholdFile, initDict, numberOfNeurons):
 	elif mode == "test":
 
 		# Load thresholds values from file
-		with open(thresholdFile, 'rb') as fp: 
+		with open(thresholdFile, "rb") as fp: 
 			return np.load(fp)
 	else:
 
 		# Invalid mode, print error and exit
-		print('Invalid operation mode. Accepted values: \n\t1) test\
-			\n\t2) train')
+		print("Invalid operation mode. Accepted values: \n\t1) test\
+			\n\t2) train")
 		sys.exit()
 
 
@@ -180,7 +182,7 @@ def initializeThreshold(mode, thresholdFile, initDict, numberOfNeurons):
 def intraLayersSynapses(network, synapseName, mode, networkList, weightFile,
 			layer, scaleFactor):
 
-	'''	
+	"""	
 	Initialize the intra layer synapses and add it to the network dictionary.
 
 	INPUT:
@@ -208,7 +210,7 @@ def intraLayersSynapses(network, synapseName, mode, networkList, weightFile,
 		generated weights. Needed in training mode. In test mode "None" 
 		can be used.
 		
-	'''
+	"""
 	
 	# Append the number of the current layer to the name
 	synapseName = synapseName + str(layer)
@@ -235,7 +237,7 @@ def intraLayersSynapses(network, synapseName, mode, networkList, weightFile,
 
 def initializeWeights(mode, networkList, weightFile, layer, scaleFactor):
 
-	'''
+	"""
 	Initialize the weights of the connections between two layers.
 
 	INPUT:	
@@ -260,7 +262,7 @@ def initializeWeights(mode, networkList, weightFile, layer, scaleFactor):
 	The function initializes the weights depending on the mode in
 	which the network will be run, train or test.
 
-	'''
+	"""
 
 	if mode == "train":
 
@@ -272,13 +274,13 @@ def initializeWeights(mode, networkList, weightFile, layer, scaleFactor):
 	elif mode == "test":
 
 		# Load weights from file
-		with open(weightFile, 'rb') as fp:
+		with open(weightFile, "rb") as fp:
 			return np.load(fp)
 	
 	else:
 		# Invalid mode, print error and exit
-		print('Invalid operation mode. Accepted values:\n\t1) test\
-		\n\t2) train')
+		print("Invalid operation mode. Accepted values:\n\t1) test\
+		\n\t2) train")
 		sys.exit()
 
 
@@ -288,7 +290,7 @@ def initializeWeights(mode, networkList, weightFile, layer, scaleFactor):
 
 def interLayerSynapses(network, synapseName, synapseWeight, layer):
 
-	'''
+	"""
 	Initialize the inter layer synapses and add it to the network dictionary.
 
 	INPUT:
@@ -303,7 +305,7 @@ def interLayerSynapses(network, synapseName, synapseWeight, layer):
 
 		4) layer: index of the current layer. The count starts from 1.
 
-	'''
+	"""
 
 	# Append the number of the current layer to the name
 	synapseName = synapseName + str(layer)
