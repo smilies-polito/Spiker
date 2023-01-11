@@ -1,5 +1,5 @@
 import numpy as np
-# import brian2 as b2
+import brian2 as b2
 import timeit
 import sys
 
