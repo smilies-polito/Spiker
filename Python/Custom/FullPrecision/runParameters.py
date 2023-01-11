@@ -7,8 +7,6 @@ from files import *
 # List of layer sizes
 networkList = [784, 400]
 
-mode = "test"
-
 # List of dictionaries of parameters for the layers
 excDictList = [excDict.copy()] * (len(networkList) - 1)
 
