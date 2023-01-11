@@ -1,6 +1,6 @@
 import timeit
+import sys
 
-from mnist import loadDataset
 from createNetwork import createNetwork
 from trainFunctions import singleImageTraining
 from storeParameters import *
@@ -9,6 +9,11 @@ from utils import createDir, initAssignments
 # Initialize the training parameters
 from files import *
 from runParameters import *
+
+if mnistDir not in sys.path:
+	sys.path.append(mnistDir)
+
+from mnist import loadDataset
 
 mode = "train"
 
