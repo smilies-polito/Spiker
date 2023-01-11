@@ -10,7 +10,7 @@ excDict = {
 }
 
 # STDP synapses
-stdpDict = {
+stdpParam = {
 
 	# Learning rates
 	"eta_pre"	: 1e-4,		# mV
