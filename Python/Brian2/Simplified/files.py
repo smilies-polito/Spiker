@@ -4,9 +4,12 @@ trainLabels = "../../../brian2/mnist/train-labels-idx1-ubyte"
 testImages = "../../../brian2/mnist/t10k-images-idx3-ubyte"
 testLabels = "../../../brian2/mnist/t10k-labels-idx1-ubyte"
 
+# Directory containing equations and their parameters
+equationsDir = "./Equations"
+
 
 # Directory in which parameters and performance of the network are stored
-paramDir = "./parameters"
+paramDir = "./Parameters"
 
 
 # Name of the parameters files

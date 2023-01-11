@@ -2,9 +2,12 @@ import brian2 as b2
 import numpy as np
 import sys
 
+from files import equationsDir
+
+if equationsDir not in sys.path:
+	sys.path.append(equationsDir)
 
 from equations import excInhConnectionDict
-
 from equationsParameters import *
 
 
