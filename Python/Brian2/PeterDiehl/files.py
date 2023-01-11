@@ -9,7 +9,7 @@ labels = mnistDir + "/train-labels-idx1-ubyte"
 # labels = mnistDir + "/t10k-labels-idx1-ubyte"
 
 # Where to store the trained hyper-parameters and the time/accuracy results
-paramDir = "./parameters"
+paramDir = "./Parameters"
 
 weightFilename = paramDir + "/weights"
 thetaFilename = paramDir + "/theta"
