@@ -3,13 +3,13 @@ import numpy as np
 
 def createDir(dirName):
 
-	'''
+	"""
 	Create a new directory. If it already exists it is firstly remove.
 
 	INPUT:
 
 		dirName: string. Name of the directory to create
-	'''
+	"""
 
 	# Check if the directory exists
 	cmdString = "if [[ -d " + dirName + " ]]; then "
@@ -30,8 +30,8 @@ def createDir(dirName):
 
 def initAssignments(mode, networkList, assignmentsFile):
 
-	'''
-	Initialize the assignments of the output layer's neurons.
+	"""
+	Initialize the assignments of the output layer"s neurons.
 
 	INPUT:
 		
@@ -44,7 +44,7 @@ def initAssignments(mode, networkList, assignmentsFile):
 		3) assignmentsFile: string. Complete name of the file which
 		contains the assignments of the output layer.
 
-	'''
+	"""
 
 	if mode == "train":
 
@@ -54,12 +54,12 @@ def initAssignments(mode, networkList, assignmentsFile):
 	elif mode == "test":
 
 		# Load the assignments from file	
-		with open(assignmentsFile, 'rb') as fp:
+		with open(assignmentsFile, "rb") as fp:
 			return np.load(fp)
 
 	else:
-		print('Invalid operation mode. Accepted values: \n\t1) test\
-			\n\t2) train')
+		print("Invalid operation mode. Accepted values: \n\t1) test\
+			\n\t2) train")
 		sys.exit()
 
 
@@ -68,7 +68,7 @@ def initAssignments(mode, networkList, assignmentsFile):
 
 def seconds2hhmmss(seconds):
 
-	'''
+	"""
 	Convert a time value from seconds to hh.mm.ss format
 
 	INPUT:
@@ -78,7 +78,7 @@ def seconds2hhmmss(seconds):
 	OUTPUT:
 
 		string containing the time expressed in hh.mm.ss format
-	'''
+	"""
 
 	hours = int(seconds // 3600)
 	minutes = int((seconds % 3600) // 60)
