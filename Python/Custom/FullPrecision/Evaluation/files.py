@@ -15,3 +15,10 @@ assignmentsFile = paramDir + "/assignments.npy"
 # Name of the performance files
 trainPerformanceFile = paramDir + "/performance.txt"
 testPerformanceFile = paramDir + "/testPerformance.txt"
+
+# Figures
+figuresDir = "./Figures"
+excSpikesFile = figuresDir + "/excSpikes.svg"
+inhSpikesFile = figuresDir + "/inhSpikes.svg"
+voltageFile = figuresDir + "/v.svg"
+outSpikesFile = figuresDir + "/outSpikes.svg"
