@@ -5,7 +5,7 @@ import numpy as np
 
 def imgToSpikeTrain(image, dt, trainingSteps, inputIntensity, rng):
 
-	''' 
+	""" 
 	Convert a black and white image into spike trains using the Poisson
 	method.
 
@@ -14,12 +14,12 @@ def imgToSpikeTrain(image, dt, trainingSteps, inputIntensity, rng):
 		1) image: NumPy array containing the value of each pixel
 		expressed as an integer.
 
-		2) dt: time step duration, expressed in milliseconds. 
+		2) dt: float. Time step duration, expressed in milliseconds. 
 
 		3) trainingSteps: total amount of time steps associated to the
-		pixels' spikes trains.
+		pixels" spikes trains.
 
-		4) inputIntensity: current value of the pixel's intensity.
+		4) inputIntensity: current value of the pixel"s intensity.
 
 		5) rng: NumPy random generator.
 
@@ -28,7 +28,7 @@ def imgToSpikeTrain(image, dt, trainingSteps, inputIntensity, rng):
 
 		Two-dimensional boolean NumPy array. Each row corresponds to a
 		time step. Each column corresponds to a pixel.
-	'''
+	"""
 
 	# Create two-dimensional array of random values
 	random2D = rng.uniform(size = (trainingSteps, image.shape[0]))
@@ -42,7 +42,7 @@ def imgToSpikeTrain(image, dt, trainingSteps, inputIntensity, rng):
 
 def poisson(image, dt, random2D, inputIntensity):
 
-	''' 
+	""" 
 	Poisson convertion of the numerical values of the pixels into spike
 	trains. 
 
@@ -56,14 +56,14 @@ def poisson(image, dt, random2D, inputIntensity):
 		3) random2D: teo-dimensional NumPy array containing random
 		values between pixelMin and pixelMax.
 
-		4) inputIntensity: current value of the pixel's intensity.
+		4) inputIntensity: current value of the pixel"s intensity.
 
 
 	OUTPUT:
 
-		Boolean two-dimensional array containing one spikes'
+		Boolean two-dimensional array containing one spikes"
 		train for each pixel.  
-	'''
+	"""
 
 	# Convert dt from milliseconds to seconds
 	dt = dt*1e-3

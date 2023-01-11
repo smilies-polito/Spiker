@@ -6,7 +6,7 @@ from utils import expDecay
 
 def updateExcLayer(network, layer, dt_tau_exc, inputSpikes):
 
-	'''
+	"""
 	One training step update of the excitatory layer.
 
 	INPUT:
@@ -20,7 +20,7 @@ def updateExcLayer(network, layer, dt_tau_exc, inputSpikes):
 
 		4) inputSpikes: boolean NumPy array containing the input spikes.
 
-	'''
+	"""
 
 	layerName = "excLayer" + str(layer)
 	
@@ -50,7 +50,7 @@ def updateExcLayer(network, layer, dt_tau_exc, inputSpikes):
 
 def updateInhLayer(network, layer):
 
-	'''
+	"""
 	One training step update of the inhibitory layer.
 
 	INPUT:
@@ -59,7 +59,7 @@ def updateInhLayer(network, layer):
 
 		2) layer: index of the current layer. The count starts from 1.
 
-	'''
+	"""
 
 	layerName = "excLayer" + str(layer)
 
@@ -72,7 +72,7 @@ def updateInhLayer(network, layer):
 
 def generateOutputSpikes(network, layerName): 
 
-	''' 
+	""" 
 	Generate the output spikes for all those neurons whose membrane
 	potential exceeds the threshold (variable with the homeostasis).
 
@@ -82,7 +82,7 @@ def generateOutputSpikes(network, layerName):
 
 		2) layerName: string. Complete name of the layer, including the
 		index of the layer itself.
-	'''
+	"""
 	
 	network[layerName]["outSpikes"][0] = network[layerName]["v"][0] > \
 		network[layerName]["vThresh"]
@@ -92,7 +92,7 @@ def generateOutputSpikes(network, layerName):
 
 def resetPotentials(network, layerName):
 
-	''' 
+	""" 
 	Reset the membrane potential of all those neurons whose membrane
 	potential has exceeded the threshold. 
 
@@ -102,7 +102,7 @@ def resetPotentials(network, layerName):
 		2) layerName: string. Complete name of the layer, including the
 		index of the layer itself.
 
-	'''
+	"""
 
 
 	network[layerName]["v"][0][network[layerName]["outSpikes"][0]] = \
@@ -113,7 +113,7 @@ def resetPotentials(network, layerName):
 
 def all2allUpdate(network, layerName, synapseName, inputSpikes):
 
-	''' 
+	""" 
 	Update the membrane potential of a fully connected layer.
 
 	INPUT:
@@ -128,7 +128,7 @@ def all2allUpdate(network, layerName, synapseName, inputSpikes):
 
 		4) inputSpikes: boolean NumPy array containing the input spikes.
 
-	'''
+	"""
 
 	network[layerName]["v"][0] = network[layerName]["v"][0] + np.sum(
 				network[synapseName]["weights"][:, inputSpikes],
@@ -139,7 +139,7 @@ def all2allUpdate(network, layerName, synapseName, inputSpikes):
 
 def all2othersUpdate(network, layerName, synapseName):
 
-	''' 
+	""" 
 	Update the membrane potential of a layer with a connection of type
 	i!=j, with i = index of a neuron in the origin layer and j = index of a
 	neuron in the target layer.
@@ -153,7 +153,7 @@ def all2othersUpdate(network, layerName, synapseName):
 		3) synapseName: string. Complete name of the synapse, including the
 		index of the synapse itself.
 
-	'''
+	"""
 
 	# Update the potential of the neurons excluded from one spike
 	network[layerName]["v"][0][network[layerName]["inhSpikes"][0]] += \
@@ -174,7 +174,7 @@ def all2othersUpdate(network, layerName, synapseName):
 
 def unconnectedSpikes(spikes):
 
-	'''
+	"""
 	Compute the amount of spikes received by a neuron which is excluded by
 	one spike.
 
@@ -182,8 +182,8 @@ def unconnectedSpikes(spikes):
 		spikes: boolean NumPy array containing the input spikes.
 
 	OUTPUT:
-		total amount of received spikes.
-	'''
+		Total amount of received spikes.
+	"""
 
 	# Add together all the received spikes
 	totalSpikes = np.sum(spikes)
@@ -202,8 +202,8 @@ def unconnectedSpikes(spikes):
 
 def allSpikes(spikes):
 
-	'''
-	Comput the amount of spikes received by a neuron which is connected to
+	"""
+	Compute the amount of spikes received by a neuron which is connected to
 	all the input spikes.
 
 	INPUT:
@@ -212,7 +212,7 @@ def allSpikes(spikes):
 
 	OUTPUT: 
 		total amount of received spikes
-	'''
+	"""
 
 	# Add together all the received spikes
 	return np.sum(spikes)
@@ -223,7 +223,7 @@ def allSpikes(spikes):
 
 def homeostasis(network, layerName, dt_tau):
 
-	'''
+	"""
 	Increase the threshold for the active neurons, decrease it for the
 	inactive ones.
 
@@ -235,9 +235,7 @@ def homeostasis(network, layerName, dt_tau):
 
 		3) dt_tau: ratio of the time step and the exponential time
 		constant.
-
-		4) vThresh0: steady state value of the threshold.
-	'''
+	"""
 
 	# Exponentially decrease the dynamic homeostasis
 	expDecay(network, layerName, dt_tau, network[layerName]["vThresh0"],
@@ -246,4 +244,3 @@ def homeostasis(network, layerName, dt_tau):
 	# Increase homeostasis of the active neurons
 	network[layerName]["vThresh"][0][network[layerName]["outSpikes"][0]] += \
 		network[layerName]["vThreshPlus"]
-

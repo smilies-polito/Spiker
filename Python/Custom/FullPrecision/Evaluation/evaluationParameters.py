@@ -4,7 +4,6 @@ import numpy as np
 from parameters import *
 
 
-
 N_sim = 1500
 
 density = 0.005
@@ -29,6 +28,3 @@ dt_tauDict = {
 	"thresh"	: dt/tauThresh
 
 }
-
-stdpDict["ltp_dt_tau"] = dt/stdpDict["ltp_tau"]
-stdpDict["ltd_dt_tau"] = dt/stdpDict["ltd_tau"]

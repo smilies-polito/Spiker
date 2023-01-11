@@ -3,12 +3,18 @@ import matplotlib.pyplot as plt
 import sys
 import timeit
 
+from files import *
+
 development = "../"
 
 if development not in sys.path:
 	sys.path.insert(1,development)
 
+print(sys.path)
 
+
+if mnistDir not in sys.path:
+	sys.path.append(mnistDir)
 
 from mnist import loadDataset
 from createNetwork import createNetwork
@@ -17,22 +23,16 @@ from network import run
 from storeParameters import storeArray
 
 # Initialize the training parameters
-from files import *
 from runParameters import *
 
-storeArray("../parameters/assignments.npy", -1*np.ones(networkList[-1]))
-storeArray("../parameters/weights1.npy", np.random.rand(networkList[1],
-networkList[0])
-+ 0.01)
-storeArray("../parameters/thresholds1.npy", -1*np.ones(networkList[-1]))
+# storeArray(assignmentsFile, -1*np.ones(networkList[-1]))
+# storeArray(weightFilename + "1.npy", np.random.rand(networkList[1],
+# networkList[0])
+# + 0.01)
+# storeArray(thresholdFilename + "1.npy", -1*np.ones(networkList[-1]))
 
 # Load the MNIST dataset
 imgArray, labelsArray = loadDataset(trainImages, trainLabels)
-
-
-# Load the MNIST dataset
-imgArray, labelsArray = loadDataset(trainImages, trainLabels)
-
 
 
 
@@ -42,6 +42,8 @@ network = createNetwork(networkList, weightFilename, thresholdFilename, mode,
 
 # Convert the train duration from milliseconds to elaboration steps
 trainDuration = int(trainDuration/dt)
+
+finalLabel = -1
 
 
 for i in range(100):
@@ -56,7 +58,8 @@ for i in range(100):
 
 
 	# Convert the image into trains of spikes
-	spikesTrains = imgToSpikeTrain(image, dt, trainDuration, inputIntensity)
+	spikesTrains = imgToSpikeTrain(image, dt, trainDuration, inputIntensity,
+			rng)
 
 	spikesCounter = np.zeros(networkList[-1])
 

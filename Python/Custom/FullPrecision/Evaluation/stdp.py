@@ -1,5 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
+from files import *
 
 tau = 200
 
@@ -24,4 +25,4 @@ plt.arrow(-1200, 0, 2400, 0, head_width = 0.03, head_length = 30, color = 'k')
 plt.arrow(0, -1.2, 0, 2.4, head_width = 20, head_length = 0.05, color = 'k')
 
 
-plt.savefig(fname = "stdp.png", dpi = 1000)
+plt.savefig(fname = stdpFile, dpi = 1000)

@@ -18,8 +18,7 @@ def repeatImage(inputIntensity, currentIndex):
 
 	OUTPUT:
 
-		current value of the pixel's intensity increased by 1.
-
+		Updated pixels' intensity
 	'''
 
 	# Print a message to say that the training will be repeated

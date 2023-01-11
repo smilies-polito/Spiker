@@ -1,4 +1,4 @@
-mnistDir = "../../../MNIST"
+mnistDir = "../../../../MNIST"
 
 # Training
 trainImages = mnistDir + "/train-images-idx3-ubyte"
@@ -9,7 +9,7 @@ testImages = mnistDir + "/t10k-images-idx3-ubyte"
 testLabels = mnistDir + "/t10k-labels-idx1-ubyte"
 
 # Directory in which parameters and performance of the network are stored
-paramDir = "./Parameters"
+paramDir = "../Parameters"
 
 # Name of the parameters files
 weightFilename = paramDir + "/weights"
@@ -17,5 +17,13 @@ thresholdFilename = paramDir + "/thresholds"
 assignmentsFile = paramDir + "/assignments.npy"
 
 # Name of the performance files
-trainPerformanceFile = paramDir + "/trainPerformance.txt"
+trainPerformanceFile = paramDir + "/performance.txt"
 testPerformanceFile = paramDir + "/testPerformance.txt"
+
+# Figures
+figuresDir = "./Figures"
+excSpikesFile = figuresDir + "/excSpikes.svg"
+inhSpikesFile = figuresDir + "/inhSpikes.svg"
+voltageFile = figuresDir + "/v.svg"
+outSpikesFile = figuresDir + "/outSpikes.svg"
+stdpFile = figuresDir + "/stdp.png"

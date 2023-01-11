@@ -1,24 +1,27 @@
 import timeit
+import sys
 
-from mnist import loadDataset
 from createNetwork import createNetwork
 from testFunctions import singleImageTest
 from storeParameters import *
-
-
-
+from utils import initAssignments
 
 # Initialize the training parameters
 from files import *
 from runParameters import *
 
+if mnistDir not in sys.path:
+	sys.path.append(mnistDir)
 
+from mnist import loadDataset
+
+mode = "test"
+
+# Initialize the output classification
+assignments = initAssignments(mode, networkList, assignmentsFile)
 
 # Load the MNIST dataset
 imgArray, labelsArray = loadDataset(testImages, testLabels)
-
-
-
 
 # Create the network data structure
 network = createNetwork(networkList, weightFilename, thresholdFilename, mode, 

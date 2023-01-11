@@ -15,7 +15,7 @@ def singleImageTraining(trainDuration, restTime, dt, image, network,
 			accuracies, labelsArray, assignments,
 			startInputIntensity, mode, constSums, rng):
 
-	'''
+	"""
 	Train the network over an image of the dataset.
 
 	INPUT:
@@ -46,7 +46,7 @@ def singleImageTraining(trainDuration, restTime, dt, image, network,
 		9) countThreshold: minimum acceptable number of output spikes
 		generated during the training.
 
-		10) inputIntensity: current value of the pixel's intensity.
+		10) inputIntensity: current value of the pixel"s intensity.
 
 		11) currentIndex: index of the current image.
 
@@ -73,7 +73,7 @@ def singleImageTraining(trainDuration, restTime, dt, image, network,
 		18) assignments: NumPy array containing one label assignment for
 		each output neuron.
 
-		19) startInputIntensity: starting value of the pixel's intensity.
+		19) startInputIntensity: starting value of the pixel"s intensity.
 		The default value is 2.
 
 		20) mode: string. It can be "train" or "test".
@@ -87,14 +87,14 @@ def singleImageTraining(trainDuration, restTime, dt, image, network,
 	
 	OUTPUT:
 
-		1) inputIntensity: update value of the pixel's intensity.
+		1) inputIntensity: update value of the pixel"s intensity.
 
 		2) currentIndex: index of the next image to analyse.
 
 		3) accuracies: updated list of strings containing the history of 
 		the accuracy.
 
-	'''
+	"""
 
 
 	# Convert the time into number of training steps
@@ -150,7 +150,7 @@ def train(network, networkList, spikesTrains, dt_tauDict, stdpDict,
 		startTimeTraining, accuracies, labelsArray, assignments,
 		startInputIntensity, mode, constSums):
 
-	'''
+	"""
 	Train the network with the spikes sequences associated to the pixels.
 
 	INPUT:
@@ -173,7 +173,7 @@ def train(network, networkList, spikesTrains, dt_tauDict, stdpDict,
 		6) countThreshold: minimum acceptable number of output spikes
 		generated during the training.
 
-		7) inputIntensity: current value of the pixel's intensity.
+		7) inputIntensity: current value of the pixel"s intensity.
 
 		8) currentIndex: index of the current image.
 
@@ -203,14 +203,17 @@ def train(network, networkList, spikesTrains, dt_tauDict, stdpDict,
 		16) assignments: NumPy array containing one label assignment for
 		each output neuron.
 
-		17) startInputIntensity: starting value of the pixel's intensity.
+		17) startInputIntensity: starting value of the pixel"s intensity.
 		The default value is 2.
 
 		18) mode: string. It can be "train" or "test".
 
+		19) constSums: numpy array. Normalization factor of the weights
+		for each layer.
+
 	OUTPUT:
 
-		1) inputIntensity: update value of the pixel's intensity.
+		1) inputIntensity: update value of the pixel"s intensity.
 
 		2) currentIndex: index of the next image to analyse.
 
@@ -218,11 +221,11 @@ def train(network, networkList, spikesTrains, dt_tauDict, stdpDict,
 		the accuracy.
 
 
-	'''
+	"""
 
 
 	
-	# Train the network over the pixels' spikes train
+	# Train the network over the pixels" spikes train
 	spikesCounter = run(network, networkList, spikesTrains, dt_tauDict,
 				stdpDict, mode, constSums)
 
@@ -258,7 +261,7 @@ def train(network, networkList, spikesTrains, dt_tauDict, stdpDict,
 
 def rest(network, networkList):
 
-	'''
+	"""
 	Bring the network into a rest state.
 
 	INPUT:
@@ -268,7 +271,7 @@ def rest(network, networkList):
 		2) networkList: list of integer numbers. Each element of the 
 		list corresponds to a layer and identifies the number of nodes
 		in that layer.
-	'''
+	"""
 
 	for layer in range(1, len(networkList)):
 

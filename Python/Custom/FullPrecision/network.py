@@ -11,7 +11,7 @@ def run(network, networkList, spikesTrains, dt_tauDict, stdpDict, mode,
 	constSums):
 
 
-	'''
+	"""
 	Run the training of the network over the duration of the input spikes
 	trains.
 
@@ -34,12 +34,15 @@ def run(network, networkList, spikesTrains, dt_tauDict, stdpDict, mode,
 
 		6) mode: string. It can be "train" or "test".
 
+		7) constSums: numpy array. Normalization factor of the weights
+		for each layer.
+
 	OUTPUT:
 
 		spikesCounter: NumPy array containing the total amount of 
 		generate spike for each neuron.
 
-	'''
+	"""
 
 	lastLayerSize = networkList[-1]
 	lastLayerIndex = len(networkList) - 1
@@ -73,7 +76,7 @@ def run(network, networkList, spikesTrains, dt_tauDict, stdpDict, mode,
 def updateNetwork(networkList, network, inputSpikes, dt_tauDict, stdpDict, 
 			mode):
 
-	'''
+	"""
 	One training step update for the entire network.
 
 	INPUT:
@@ -93,11 +96,9 @@ def updateNetwork(networkList, network, inputSpikes, dt_tauDict, stdpDict,
 
 		5) stdpDict: dictionary containing the STDP parameters.
 
-		6) currentStep: current value of the training loop index. 
+		6) mode: string. It can be "train" or "test".
 
-		7) mode: string. It can be "train" or "test".
-
-	'''	
+	"""	
 
 	layerName = "excLayer1"
 
@@ -143,7 +144,7 @@ def updateNetwork(networkList, network, inputSpikes, dt_tauDict, stdpDict,
 
 def normalizeWeights(network, networkList, constSums):
 
-	'''
+	"""
 	Normalize the weights of all the layers in the network.
 
 	INPUT:
@@ -158,7 +159,7 @@ def normalizeWeights(network, networkList, constSums):
 		value corresponding to the sum of all the weights of a single 
 		neuron in the specific layer.
 		
-	'''
+	"""
 	
 	for layer in range(1, len(networkList)):
 
@@ -173,7 +174,7 @@ def normalizeWeights(network, networkList, constSums):
 
 def normalizeLayerWeights(network, synapseName, constSum):
 
-	'''
+	"""
 	Normalize the weights of the given layer.
 
 	INPUT:
@@ -187,7 +188,7 @@ def normalizeLayerWeights(network, synapseName, constSum):
 		3) constSum: constant value corresponding to the sum of all the
 		weights of a single neuron.
 
-	'''
+	"""
 
 	# Compute the sum of the weights for each neuron
 	weightsSum = np.sum(network[synapseName]["weights"], 

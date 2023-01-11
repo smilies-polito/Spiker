@@ -1,14 +1,11 @@
 import numpy as np
 from parameters import *
-from utils import initAssignments
 
 from files import *
 
 
 # List of layer sizes
 networkList = [784, 400]
-
-mode = "test"
 
 # List of dictionaries of parameters for the layers
 excDictList = [excDict.copy()] * (len(networkList) - 1)
@@ -90,10 +87,6 @@ accuracies = []
 
 # Initialize history of spikes
 spikesEvolution = np.zeros((updateInterval, networkList[-1]))
-
-
-# Initialize the output classification
-assignments = initAssignments(mode, networkList, assignmentsFile)
 
 
 # Minimum acceptable number of output spikes generated during the training.

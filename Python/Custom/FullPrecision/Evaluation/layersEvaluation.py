@@ -10,10 +10,12 @@ if development not in sys.path:
 
 from createNetwork import createNetwork
 from layers import updateExcLayer, updateInhLayer
+from utils import createDir
 
 
 # Initialize the evaluation parameters
 from evaluationParameters import *
+from files import *
 
 
 # Create the network
@@ -36,6 +38,7 @@ threshold = np.zeros((N_sim, networkList[1]))
 network["exc2exc1"]["weights"][0] *= 2
 network["exc2exc1"]["weights"][1] *= 2.5
 
+createDir(figuresDir)
 
 
 for i in range(N_sim):
@@ -74,7 +77,7 @@ plt.plot(inputSpikes[0].astype(int))
 plt.grid()
 plt.title("Excitatory spikes", fontsize = 30)
 
-plt.savefig("excSpikes.svg", format = 'svg', bbox_inches = 'tight', transparent
+plt.savefig(excSpikesFile, format = 'svg', bbox_inches = 'tight', transparent
 		= True)
 
 
@@ -85,7 +88,7 @@ plt.plot(inhSpikes[1])
 plt.grid()
 plt.title("Inhibitory spikes", fontsize = 30)
 
-plt.savefig("inhSpikes.svg", format = 'svg', bbox_inches = 'tight', transparent
+plt.savefig(inhSpikesFile, format = 'svg', bbox_inches = 'tight', transparent
 		= True)
 
 
@@ -96,7 +99,7 @@ plt.plot(threshold[0])
 plt.grid()
 plt.title("Membrane potential", fontsize = 30)
 
-plt.savefig("v.svg", format = 'svg', bbox_inches = 'tight', transparent
+plt.savefig(voltageFile, format = 'svg', bbox_inches = 'tight', transparent
 		= True)
 
 
@@ -106,7 +109,7 @@ plt.plot(excSpikes[0])
 plt.grid()
 plt.title("Output spikes", fontsize = 30)
 
-plt.savefig("outSpikes.svg", format = 'svg', bbox_inches = 'tight', transparent
+plt.savefig(outSpikesFile, format = 'svg', bbox_inches = 'tight', transparent
 		= True)
 
 
