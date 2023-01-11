@@ -1,6 +1,5 @@
 import numpy as np
 from parameters import *
-from utils import initAssignments
 
 from files import *
 
@@ -90,10 +89,6 @@ accuracies = []
 
 # Initialize history of spikes
 spikesEvolution = np.zeros((updateInterval, networkList[-1]))
-
-
-# Initialize the output classification
-assignments = initAssignments(mode, networkList, assignmentsFile)
 
 
 # Minimum acceptable number of output spikes generated during the training.
