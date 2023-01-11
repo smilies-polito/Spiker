@@ -2,7 +2,7 @@
 
 parallelismFile="parallelisms.py"
 tmpFile="tmp.py"
-mnistTest="mnistTest.py"
+mnistTest="mnistTestOriginal.py"
 
 for i in {10..32}
 do
