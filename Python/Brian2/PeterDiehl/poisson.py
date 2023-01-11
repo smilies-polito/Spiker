@@ -17,10 +17,12 @@ def imgToSpikeTrain(network, image, inputIntensity):
 		increased.
 	"""
 	
+	# Normalize input values and treat them as average spiking frequencies
 	values = {
 		"poissongroup":{
 			"rates": image*b2.Hz/8*inputIntensity
 		}
 	}
 
+	# Set the frequencies in the input layer
 	network.set_states(values, units=True, format='dict', level=0)

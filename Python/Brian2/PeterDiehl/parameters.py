@@ -44,6 +44,7 @@ wMu_post = 0.2
 tauTheta = 1e7*b2.ms
 thetaPlus = 0.05*b2.mV
 
+# Excitatory threshold offset
 offset = 20.0*b2.mV
 
 

@@ -47,12 +47,12 @@ prevSpikesCount = np.zeros(networkList[-1])
 
 # Array of scale factors for the random generation of the weights
 scaleFactors = np.ones(len(networkList) - 1)
-for i in range(1, len(networkList)):
-	scaleFactors[i-1] = scaleFactor*refInLayerSize/networkList[i-1]\
-			*refCurrLayerSize/networkList[i]
+# for i in range(1, len(networkList)):
+# 	scaleFactors[i-1] = scaleFactor*refInLayerSize/networkList[i-1]\
+# 			*refCurrLayerSize/networkList[i]
 
 # Array of normalizing factors
-constSums = np.ones(len(networkList) - 1)
-for i in range(1, len(networkList)):
-	constSums[i-1] = constSum*refInLayerSize/networkList[i-1]\
-			*refCurrLayerSize/networkList[i]
+# constSums = np.ones(len(networkList) - 1)
+# for i in range(1, len(networkList)):
+# 	constSums[i-1] = constSum*refInLayerSize/networkList[i-1]\
+# 			*refCurrLayerSize/networkList[i]
