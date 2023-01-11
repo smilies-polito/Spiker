@@ -3,7 +3,7 @@ import brian2 as b2
 
 def imgToSpikeTrain(network, image, inputIntensity):
 	
-	''' 
+	""" 
 	Convert a black and white image into spike trains using the Poisson
 	method.
 
@@ -15,11 +15,11 @@ def imgToSpikeTrain(network, image, inputIntensity):
 		2) image: NumPy array containing the value of each pixel
 		expressed as an integer.
 
-		3) inputIntensity: current value of the pixel's intensity.
+		3) inputIntensity: current value of the pixel"s intensity.
 
-	'''
+	"""
 
-	# Interpret each pixel's value as a frequency value
+	# Interpret each pixel"s value as a frequency value
 	values = {
 		"poissongroup":{
 			"rates": image*b2.Hz/8*inputIntensity
@@ -27,4 +27,4 @@ def imgToSpikeTrain(network, image, inputIntensity):
 	}
 
 	# Set the rates of the Poisson layer
-	network.set_states(values, units=True, format='dict', level=0)
+	network.set_states(values, units=True, format="dict", level=0)
