@@ -5,13 +5,13 @@ import sys
 
 def createDir(dirName):
 
-	'''
+	"""
 	Create a new directory. If it already exists it is firstly remove.
 
 	INPUT:
 
 		dirName: string. Name of the directory to create
-	'''
+	"""
 
 	# Check if the directory exists
 	cmdString = "if [[ -d " + dirName + " ]]; then "
@@ -31,8 +31,8 @@ def createDir(dirName):
 
 def initAssignments(mode, networkList, assignmentsFile):
 
-	'''
-	Initialize the assignments of the output layer's neurons.
+	"""
+	Initialize the assignments of the output layer"s neurons.
 
 	INPUT:
 		
@@ -45,7 +45,7 @@ def initAssignments(mode, networkList, assignmentsFile):
 		3) assignmentsFile: string. Complete name of the file which
 		contains the assignments of the output layer.
 
-	'''
+	"""
 
 	if mode == "train":
 
@@ -55,18 +55,18 @@ def initAssignments(mode, networkList, assignmentsFile):
 	elif mode == "test":
 
 		# Load the assignments from file	
-		with open(assignmentsFile, 'rb') as fp:
+		with open(assignmentsFile, "rb") as fp:
 			return np.load(fp)
 
 	else:
-		print('Invalid operation mode. Accepted values: \n\t1) test\
-			\n\t2) train')
+		print("Invalid operation mode. Accepted values: \n\t1) test\
+			\n\t2) train")
 		sys.exit()
 
 
 def seconds2hhmmss(seconds):
 
-	'''
+	"""
 	Convert a time value from seconds to hh.mm.ss format
 
 	INPUT:
@@ -76,7 +76,7 @@ def seconds2hhmmss(seconds):
 	OUTPUT:
 
 		string containing the time expressed in hh.mm.ss format
-	'''
+	"""
 
 	hours = int(seconds // 3600)
 	minutes = int((seconds % 3600) // 60)
@@ -89,7 +89,7 @@ def seconds2hhmmss(seconds):
 
 def expDecay(dictionary, key, exp_shift, variable): 
 	
-	''' 
+	""" 
 	Decrease the desired integer variable belonging to an entry of the dictionary
 	with exponential decay.
 
@@ -103,7 +103,7 @@ def expDecay(dictionary, key, exp_shift, variable):
 
 		4) variable: string. Name of the variable to update. This is the
 		key of dictionary[key].
-	'''
+	"""
 
 	dictionary[key][variable] -= dictionary[key][variable] >> exp_shift
 
@@ -112,7 +112,7 @@ def expDecay(dictionary, key, exp_shift, variable):
 
 def fixedPoint(value, fixed_point_decimals):
 
-	'''
+	"""
 	Convert a value into fixed point notation.
 
 	INPUT:
@@ -122,7 +122,7 @@ def fixedPoint(value, fixed_point_decimals):
 		2) fixed_point_decimals: number of decimal bits in the fixed
 		point representation.
 
-	'''
+	"""
 	return int(value * 2**fixed_point_decimals)
 
 
@@ -130,7 +130,7 @@ def fixedPoint(value, fixed_point_decimals):
 
 def fixedPointArray(numpyArray, fixed_point_decimals):
 
-	'''
+	"""
 	Convert a NumPy array into fixed point notation.
 
 	INPUT:
@@ -140,30 +140,30 @@ def fixedPointArray(numpyArray, fixed_point_decimals):
 		2) fixed_point_decimals: number of decimal bits in the fixed
 		point representation.
 
-	'''
+	"""
 
 	numpyArray = numpyArray * 2**fixed_point_decimals
 	return numpyArray.astype(int)
 
 
 
-def checkParallelism(numpyArray, parallelism):
+def checkBitWidth(numpyArray, bitWidth):
 
-	'''
-	Check that values inside NumPy array don't exceed a threshold.
+	"""
+	Check that values inside NumPy array don"t exceed a threshold.
 
 	INPUT:
 
 		1) numpyArray: array of values to check.
 
-		2) parallelism: number of bits on which the neuron works.
-	'''
+		2) bitWidth: number of bits on which the neuron works.
+	"""
 	
 
-	if (numpyArray > 2**(parallelism-1)-1).any():
+	if (numpyArray > 2**(bitWidth-1)-1).any():
 		print("Value too high")
-		# sys.exit()
+		sys.exit()
 
-	elif (numpyArray < -2**(parallelism-1)).any():
+	elif (numpyArray < -2**(bitWidth-1)).any():
 		print("Value too low")
-		# sys.exit()
+		sys.exit()
