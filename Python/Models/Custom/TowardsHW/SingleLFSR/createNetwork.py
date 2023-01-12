@@ -8,7 +8,7 @@ def createNetwork(networkList, weightFilename, thresholdFilename, mode,
 			excDictList, scaleFactors, inh2excWeights,
 			fixed_point_decimals, trainPrecision, rng):
 
-	'''
+	"""
 	Create the complete network dictionary.
 
 	INPUT:
@@ -45,7 +45,10 @@ def createNetwork(networkList, weightFilename, thresholdFilename, mode,
 		It can be "fixedPoint" or "float". Needed only in test mode. 
 
 		10) rng: NumPy random generator.
-	'''
+
+	OUTPUT:
+		network: dictionary containing the initialized network.
+	"""
 
 	network = {}
 
@@ -82,7 +85,7 @@ def createNetwork(networkList, weightFilename, thresholdFilename, mode,
 def createLayer(network, layerType, initDict, networkList, layer, mode,
 		thresholdFile, fixed_point_decimals, trainPrecision):
 
-	'''
+	"""
 	Create the layer dictionary and add it to the network dictionary.
 
 	INPUT:
@@ -109,7 +112,7 @@ def createLayer(network, layerType, initDict, networkList, layer, mode,
 
 		9) trainPrecision: string. Numerical precision of the training.
 		It can be "fixedPoint" or "float". Needed only in test mode. 
-	'''
+	"""
 
 	# Create the name for the layer
 	layerName = layerType + "Layer" + str(layer)
@@ -155,8 +158,8 @@ def createLayer(network, layerType, initDict, networkList, layer, mode,
 def initializeThreshold(mode, thresholdFile, initDict, numberOfNeurons,
 		fixed_point_decimals, trainPrecision):
 
-	'''
-	Initialize the dynamic homeostasis parameter theta.
+	"""
+	Initialize the thresholds.
 
 	INPUT:
 
@@ -176,10 +179,10 @@ def initializeThreshold(mode, thresholdFile, initDict, numberOfNeurons,
 		6) trainPrecision: string. Numerical precision of the training.
 		It can be "fixedPoint" or "float". Needed only in test mode. 
 
-	The function initialize the theta parameter depending on the mode in
-	which the network will be run, train or test.
+	The function initialize the thresholds depending on the mode in which
+	the network will be run, train or test.
 
-	'''
+	"""
 
 	if mode == "train":
 
@@ -190,7 +193,7 @@ def initializeThreshold(mode, thresholdFile, initDict, numberOfNeurons,
 	elif mode == "test":
 
 		# Load thresholds values from file
-		with open(thresholdFile, 'rb') as fp: 
+		with open(thresholdFile, "rb") as fp: 
 			thresholds = np.load(fp)
 
 		# Check if the thresholds are already in fixed point or not
@@ -202,15 +205,15 @@ def initializeThreshold(mode, thresholdFile, initDict, numberOfNeurons,
 
 		else:
 			# Invalid mode, print error and exit
-			print('Invalid  training precision. Accepted values:\
-				\n\t1) fixedPoint \n\t2) float')
+			print("Invalid  training precision. Accepted values:\
+				\n\t1) fixedPoint \n\t2) float")
 			sys.exit()
 
 	else:
 
 		# Invalid mode, print error and exit
-		print('Invalid operation mode. Accepted values: \n\t1) test\
-			\n\t2) train')
+		print("Invalid operation mode. Accepted values: \n\t1) test\
+			\n\t2) train")
 		sys.exit()
 
 
@@ -221,7 +224,7 @@ def intraLayersSynapses(network, synapseName, mode, networkList, weightFile,
 			layer, scaleFactor, fixed_point_decimals,
 			trainPrecision, rng):
 
-	'''	
+	"""	
 	Initialize the intra layer synapses and add it to the network dictionary.
 
 	INPUT:
@@ -256,7 +259,7 @@ def intraLayersSynapses(network, synapseName, mode, networkList, weightFile,
 		It can be "fixedPoint" or "float". Needed only in test mode. 
 
 		10) rng: NumPy random generator.
-	'''
+	"""
 	
 	# Append the number of the current layer to the name
 	synapseName = synapseName + str(layer)
@@ -286,7 +289,7 @@ def intraLayersSynapses(network, synapseName, mode, networkList, weightFile,
 def initializeWeights(mode, networkList, weightFile, layer, scaleFactor,
 		fixed_point_decimals, trainPrecision, rng):
 
-	'''
+	"""
 	Initialize the weights of the connections between two layers.
 
 	INPUT:	
@@ -318,7 +321,7 @@ def initializeWeights(mode, networkList, weightFile, layer, scaleFactor,
 	The function initializes the weights depending on the mode in
 	which the network will be run, train or test.
 
-	'''
+	"""
 
 	if mode == "train":
 
@@ -332,7 +335,7 @@ def initializeWeights(mode, networkList, weightFile, layer, scaleFactor,
 	elif mode == "test":
 
 		# Load weights from file
-		with open(weightFile, 'rb') as fp:
+		with open(weightFile, "rb") as fp:
 			weights = np.load(fp)
 
 		# Check if the weights are already in fixed point or not
@@ -344,14 +347,14 @@ def initializeWeights(mode, networkList, weightFile, layer, scaleFactor,
 
 		else:
 			# Invalid mode, print error and exit
-			print('Invalid  training precision. Accepted values:\
-			\n\t1) fixedPoint \n\t2) float')
+			print("Invalid  training precision. Accepted values:\
+			\n\t1) fixedPoint \n\t2) float")
 			sys.exit()
 	
 	else:
 		# Invalid mode, print error and exit
-		print('Invalid operation mode. Accepted values:\n\t1) test\
-		\n\t2) train')
+		print("Invalid operation mode. Accepted values:\n\t1) test\
+		\n\t2) train")
 		sys.exit()
 
 
@@ -361,7 +364,7 @@ def initializeWeights(mode, networkList, weightFile, layer, scaleFactor,
 
 def interLayerSynapses(network, synapseName, synapseWeight, layer):
 
-	'''
+	"""
 	Initialize the inter layer synapses and add it to the network dictionary.
 
 	INPUT:
@@ -376,7 +379,7 @@ def interLayerSynapses(network, synapseName, synapseWeight, layer):
 
 		4) layer: index of the current layer. The count starts from 1.
 
-	'''
+	"""
 
 	# Append the number of the current layer to the name
 	synapseName = synapseName + str(layer)
