@@ -13,10 +13,10 @@ def singleImageTest(trainDuration, restTime, dt, image, network, networkList,
 			currentIndex, spikesEvolution, updateInterval,
 			printInterval, startTimeTraining, accuracies,
 			labelsArray, assignments, startInputIntensity, mode,
-			constSums, rng, exp_shift, neuron_parallelism,
+			constSums, rng, exp_shift, neuron_bitWidth,
 			inputFilename):
 
-	'''
+	"""
 	Test the network over an image of the dataset.
 
 	INPUT:
@@ -45,7 +45,7 @@ def singleImageTest(trainDuration, restTime, dt, image, network, networkList,
 		8) countThreshold: minimum acceptable number of output spikes
 		generated during the training.
 
-		9) inputIntensity: current value of the pixel's intensity.
+		9) inputIntensity: current value of the pixel"s intensity.
 
 		10) currentIndex: index of the current image.
 
@@ -74,7 +74,7 @@ def singleImageTest(trainDuration, restTime, dt, image, network, networkList,
 		17) assignments: NumPy array containing one label assignment for
 		each output neuron.
 
-		18) startInputIntensity: starting value of the pixel's intensity.
+		18) startInputIntensity: starting value of the pixel"s intensity.
 		The default value is 2.
 
 		19) mode: string. It can be "train" or "test".
@@ -87,7 +87,7 @@ def singleImageTest(trainDuration, restTime, dt, image, network, networkList,
 		
 		22) exp_shift: bit shift for the exponential decay.
 
-		23) neuron_parallelism: number of bits on which the neuron works.
+		23) neuron_bitWidth: number of bits on which the neuron works.
 
 		24) inputFilename: string. Name of the file containing the input
 		spikes.
@@ -95,14 +95,19 @@ def singleImageTest(trainDuration, restTime, dt, image, network, networkList,
 	
 	OUTPUT:
 
-		1) inputIntensity: update value of the pixel's intensity.
+		1) inputIntensity: update value of the pixel"s intensity.
 
 		2) currentIndex: index of the next image to analyse.
 
 		3) accuracies: updated list of strings containing the history of 
 		the accuracy.
 
-	'''
+		4) spikesMonitor: numpy array. Temporal evolution of the spikes.
+
+		5) membraneMonitor: numpy array. Temporal evolution of the
+		membrane potential
+
+	"""
 
 
 	# Convert the time into number of training steps
@@ -139,7 +144,7 @@ def singleImageTest(trainDuration, restTime, dt, image, network, networkList,
 			mode,
 			constSums,
 			exp_shift,
-			neuron_parallelism
+			neuron_bitWidth
 			)
 
 	# Bring the network into a rest state
@@ -158,9 +163,9 @@ def test(network, networkList, spikesTrains, dt_tauDict, countThreshold,
 	inputIntensity, currentIndex, spikesEvolution, updateInterval,
 	printInterval, startTimeImage, startTimeTraining, accuracies,
 	labelsArray, assignments, startInputIntensity, mode, constSums,
-	exp_shift, neuron_parallelism):
+	exp_shift, neuron_bitWidth):
 
-	'''
+	"""
 	Test the network with the spikes sequences associated to the pixels.
 
 	INPUT:
@@ -181,7 +186,7 @@ def test(network, networkList, spikesTrains, dt_tauDict, countThreshold,
 		5) countThreshold: minimum acceptable number of output spikes
 		generated during the training.
 
-		6) inputIntensity: current value of the pixel's intensity.
+		6) inputIntensity: current value of the pixel"s intensity.
 
 		7) currentIndex: index of the current image.
 
@@ -211,33 +216,42 @@ def test(network, networkList, spikesTrains, dt_tauDict, countThreshold,
 		15) assignments: NumPy array containing one label assignment for
 		each output neuron.
 
-		16) startInputIntensity: starting value of the pixel's intensity.
+		16) startInputIntensity: starting value of the pixel"s intensity.
 		The default value is 2.
 
 		17) mode: string. It can be "train" or "test".
-		
-		18) exp_shift: bit shift for the exponential decay.
 
-		19) neuron_parallelism: number of bits on which the neuron works.
+		18) constSums: NumPy array. Each element represents the constant
+		value corresponding to the sum of all the weights of a single 
+		neuron in the specific layer.
+		
+		19) exp_shift: bit shift for the exponential decay.
+
+		20) neuron_bitWidth: number of bits on which the neuron works.
 
 	OUTPUT:
 
-		1) inputIntensity: update value of the pixel's intensity.
+		1) inputIntensity: update value of the pixel"s intensity.
 
 		2) currentIndex: index of the next image to analyse.
 
 		3) accuracies: updated list of strings containing the history of 
 		the accuracy.
 
+		4) spikesMonitor: numpy array. Temporal evolution of the spikes.
 
-	'''
+		5) membraneMonitor: numpy array. Temporal evolution of the
+		membrane potential
+
+
+	"""
 
 
 	
-	# Train the network over the pixels' spikes train
+	# Train the network over the pixels" spikes train
 	spikesCounter, spikesMonitor, membraneMonitor = run(network,
 			networkList, spikesTrains, dt_tauDict, exp_shift, None,
-			mode, constSums, neuron_parallelism)
+			mode, constSums, neuron_bitWidth)
 
 
 	if np.sum(spikesCounter) < countThreshold:
@@ -272,7 +286,7 @@ def test(network, networkList, spikesTrains, dt_tauDict, countThreshold,
 
 def rest(network, networkList):
 
-	'''
+	"""
 	Bring the network into a rest state.
 
 	INPUT:
@@ -282,7 +296,7 @@ def rest(network, networkList):
 		2) networkList: list of integer numbers. Each element of the 
 		list corresponds to a layer and identifies the number of nodes
 		in that layer.
-	'''
+	"""
 
 	for layer in range(1, len(networkList)):
 
