@@ -47,9 +47,6 @@ def run(network, networkList, spikesTrains, dt_tauDict, exp_shift, stdpDict,
 
 		3) membraneMonitor: numpy array. Temporal evolution of the
 		membrane potential
-
-
-
 	"""
 
 	lastLayerSize = networkList[-1]
