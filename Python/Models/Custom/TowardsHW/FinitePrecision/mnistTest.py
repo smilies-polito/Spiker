@@ -65,8 +65,7 @@ while currentIndex < numberOfCycles:
 			constSums,
 			rng,
 			exp_shift,
-			neuron_bitWidth,
-			inputFilename
+			neuron_bitWidth
 		)
 
 
