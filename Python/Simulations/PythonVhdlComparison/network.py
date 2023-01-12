@@ -8,11 +8,11 @@ import matplotlib.pyplot as plt
 
 
 def run(network, networkList, spikesTrains, dt_tauDict, exp_shift, stdpDict,
-		mode, constSums, neuron_parallelism):
+		mode, constSums, neuron_bitWidth):
 
 
-	'''
-	Run the training of the network over the duration of the input spikes
+	"""
+	Run the network over the duration of the input spikes
 	trains.
 
 	INPUT:
@@ -28,7 +28,7 @@ def run(network, networkList, spikesTrains, dt_tauDict, exp_shift, stdpDict,
 
 		4) dt_tauDict: dictionary containing the exponential constants
 		of the excitatory and inhibitory membrane and of the 
-		homeostasis parameter theta .
+		threshold .
 
 		5) exp_shift: bit shift for the exponential decay.
 
@@ -36,14 +36,18 @@ def run(network, networkList, spikesTrains, dt_tauDict, exp_shift, stdpDict,
 
 		7) mode: string. It can be "train" or "test".
 
-		8) neuron_parallelism: number of bits on which the neuron works.
+		8) neuron_bitWidth: number of bits on which the neuron works.
 
 	OUTPUT:
 
-		spikesCounter: NumPy array containing the total amount of 
+		1) spikesCounter: NumPy array containing the total amount of 
 		generate spike for each neuron.
 
-	'''
+		2) spikesMonitor: numpy array. Temporal evolution of the spikes.
+
+		3) membraneMonitor: numpy array. Temporal evolution of the
+		membrane potential
+	"""
 
 	lastLayerSize = networkList[-1]
 	lastLayerIndex = len(networkList) - 1
@@ -58,7 +62,7 @@ def run(network, networkList, spikesTrains, dt_tauDict, exp_shift, stdpDict,
 
 		# Train the network over a single step
 		updateNetwork(networkList, network, spikesTrains[i], dt_tauDict,
-				exp_shift, stdpDict, mode, neuron_parallelism)
+				exp_shift, stdpDict, mode, neuron_bitWidth)
 
 		spikesMonitor[i] = network["excLayer" +
 				str(lastLayerIndex)]["outSpikes"][0][0]
@@ -82,9 +86,9 @@ def run(network, networkList, spikesTrains, dt_tauDict, exp_shift, stdpDict,
 
 
 def updateNetwork(networkList, network, inputSpikes, dt_tauDict, exp_shift,
-		stdpDict, mode, neuron_parallelism):
+		stdpDict, mode, neuron_bitWidth):
 
-	'''
+	"""
 	One training step update for the entire network.
 
 	INPUT:
@@ -100,24 +104,24 @@ def updateNetwork(networkList, network, inputSpikes, dt_tauDict, exp_shift,
 		
 		4) dt_tauDict: dictionary containing the exponential constants
 		of the excitatory and inhibitory membrane and of the 
-		homeostasis parameter theta .
+		threshold .
 
 		5) stdpDict: dictionary containing the STDP parameters.
 
 		6) exp_shift: bit shift for the exponential decay.
 
-		7) currentStep: current value of the training loop index. 
+		7) stdpDict: dictionary containing the STDP parameters.
 
 		8) mode: string. It can be "train" or "test".
 
-		9) neuron_parallelism: number of bits on which the neuron works.
+		9) neuron_bitWidth: number of bits on which the neuron works.
 
-	'''	
+	"""	
 
 	layerName = "excLayer1"
 
 	# Update the first excitatory layer
-	updateExcLayer(network, 1, exp_shift, inputSpikes, neuron_parallelism)
+	updateExcLayer(network, 1, exp_shift, inputSpikes, neuron_bitWidth)
 
 	# Update the first inhibitory layer
 	updateInhLayer(network, 1)
@@ -140,7 +144,7 @@ def updateNetwork(networkList, network, inputSpikes, dt_tauDict, exp_shift,
 		# Update the excitatory layer
 		updateExcLayer(network, layer, exp_shift,
 			network["excLayer" + str(layer - 1)]["outSpikes"][0],
-			neuron_parallelism)
+			neuron_bitWidth)
 		
 		# Update the inhibitory layer
 		updateInhLayer(network, layer)
@@ -157,7 +161,7 @@ def updateNetwork(networkList, network, inputSpikes, dt_tauDict, exp_shift,
 
 def normalizeWeights(network, networkList, constSums):
 
-	'''
+	"""
 	Normalize the weights of all the layers in the network.
 
 	INPUT:
@@ -172,7 +176,7 @@ def normalizeWeights(network, networkList, constSums):
 		value corresponding to the sum of all the weights of a single 
 		neuron in the specific layer.
 		
-	'''
+	"""
 	
 	for layer in range(1, len(networkList)):
 
@@ -187,7 +191,7 @@ def normalizeWeights(network, networkList, constSums):
 
 def normalizeLayerWeights(network, synapseName, constSum):
 
-	'''
+	"""
 	Normalize the weights of the given layer.
 
 	INPUT:
@@ -201,7 +205,7 @@ def normalizeLayerWeights(network, synapseName, constSum):
 		3) constSum: constant value corresponding to the sum of all the
 		weights of a single neuron.
 
-	'''
+	"""
 
 	# Compute the sum of the weights for each neuron
 	weightsSum = np.sum(network[synapseName]["weights"], 
