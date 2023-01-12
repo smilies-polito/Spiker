@@ -5,7 +5,7 @@ import numpy as np
 np.set_printoptions(threshold=np.inf)
 
 from createNetwork import createNetwork
-from testFunctionsOriginal import singleImageTest
+from testFunctions import singleImageTest
 from storeParameters import *
 from utils import checkParallelism
 
