@@ -1,12 +1,12 @@
 #!/Users/alessio/anaconda3/bin/python3
 
 import numpy as np
-from utils import expDecay, checkParallelism
+from utils import expDecay, checkBitWidth
 
 
-def updateExcLayer(network, layer, exp_shift, inputSpikes, neuron_parallelism):
+def updateExcLayer(network, layer, exp_shift, inputSpikes, neuron_bitWidth):
 
-	'''
+	"""
 	One training step update of the excitatory layer.
 
 	INPUT:
@@ -19,9 +19,9 @@ def updateExcLayer(network, layer, exp_shift, inputSpikes, neuron_parallelism):
 		
 		4) inputSpikes: boolean NumPy array containing the input spikes.
 
-		5) neuron_parallelism: number of bits on which the neuron works.
+		5) neuron_bitWidth: number of bits on which the neuron works.
 
-	'''
+	"""
 
 	layerName = "excLayer" + str(layer)
 	
@@ -45,8 +45,8 @@ def updateExcLayer(network, layer, exp_shift, inputSpikes, neuron_parallelism):
 		all2othersUpdate(network, layerName, "inh2exc" +
 			str(layer))
 
-	checkParallelism(network["excLayer" + str(layer)]["v"],
-			neuron_parallelism)
+	checkBitWidth(network["excLayer" + str(layer)]["v"],
+			neuron_bitWidth)
 
 
 
@@ -54,7 +54,7 @@ def updateExcLayer(network, layer, exp_shift, inputSpikes, neuron_parallelism):
 
 def updateInhLayer(network, layer):
 
-	'''
+	"""
 	One training step update of the inhibitory layer.
 
 	INPUT:
@@ -63,7 +63,7 @@ def updateInhLayer(network, layer):
 
 		2) layer: index of the current layer. The count starts from 1.
 
-	'''
+	"""
 
 	layerName = "excLayer" + str(layer)
 
@@ -76,7 +76,7 @@ def updateInhLayer(network, layer):
 
 def generateOutputSpikes(network, layerName): 
 
-	''' 
+	""" 
 	Generate the output spikes for all those neurons whose membrane
 	potential exceeds the threshold (variable with the homeostasis).
 
@@ -86,7 +86,7 @@ def generateOutputSpikes(network, layerName):
 
 		2) layerName: string. Complete name of the layer, including the
 		index of the layer itself.
-	'''
+	"""
 	
 	network[layerName]["outSpikes"][0] = network[layerName]["v"][0] > \
 		network[layerName]["vThresh"]
@@ -96,7 +96,7 @@ def generateOutputSpikes(network, layerName):
 
 def resetPotentials(network, layerName):
 
-	''' 
+	""" 
 	Reset the membrane potential of all those neurons whose membrane
 	potential has exceeded the threshold. 
 
@@ -106,7 +106,7 @@ def resetPotentials(network, layerName):
 		2) layerName: string. Complete name of the layer, including the
 		index of the layer itself.
 
-	'''
+	"""
 
 
 	network[layerName]["v"][0][network[layerName]["outSpikes"][0]] = \
@@ -117,7 +117,7 @@ def resetPotentials(network, layerName):
 
 def all2allUpdate(network, layerName, synapseName, inputSpikes):
 
-	''' 
+	""" 
 	Update the membrane potential of a fully connected layer.
 
 	INPUT:
@@ -132,7 +132,7 @@ def all2allUpdate(network, layerName, synapseName, inputSpikes):
 
 		4) inputSpikes: boolean NumPy array containing the input spikes.
 
-	'''
+	"""
 
 	network[layerName]["v"][0] = network[layerName]["v"][0] + np.sum(
 				network[synapseName]["weights"][:, inputSpikes],
@@ -143,7 +143,7 @@ def all2allUpdate(network, layerName, synapseName, inputSpikes):
 
 def all2othersUpdate(network, layerName, synapseName):
 
-	''' 
+	""" 
 	Update the membrane potential of a layer with a connection of type
 	i!=j, with i = index of a neuron in the origin layer and j = index of a
 	neuron in the target layer.
@@ -157,7 +157,7 @@ def all2othersUpdate(network, layerName, synapseName):
 		3) synapseName: string. Complete name of the synapse, including the
 		index of the synapse itself.
 
-	'''
+	"""
 
 	# Update the potential of the neurons excluded from one spike
 	network[layerName]["v"][0][network[layerName]["inhSpikes"][0]] += \
@@ -178,7 +178,7 @@ def all2othersUpdate(network, layerName, synapseName):
 
 def unconnectedSpikes(spikes):
 
-	'''
+	"""
 	Compute the amount of spikes received by a neuron which is excluded by
 	one spike.
 
@@ -187,7 +187,7 @@ def unconnectedSpikes(spikes):
 
 	OUTPUT:
 		total amount of received spikes.
-	'''
+	"""
 
 	# Add together all the received spikes
 	totalSpikes = np.sum(spikes)
@@ -206,8 +206,8 @@ def unconnectedSpikes(spikes):
 
 def allSpikes(spikes):
 
-	'''
-	Comput the amount of spikes received by a neuron which is connected to
+	"""
+	Compute the amount of spikes received by a neuron which is connected to
 	all the input spikes.
 
 	INPUT:
@@ -216,7 +216,7 @@ def allSpikes(spikes):
 
 	OUTPUT: 
 		total amount of received spikes
-	'''
+	"""
 
 	# Add together all the received spikes
 	return np.sum(spikes)
@@ -227,7 +227,7 @@ def allSpikes(spikes):
 
 def homeostasis(network, layerName):
 
-	'''
+	"""
 	Increase the threshold for the active neurons, decrease it for the
 	inactive ones.
 
@@ -236,7 +236,7 @@ def homeostasis(network, layerName):
 
 		2) layerName: string. Complete name of the layer, including the
 		index of the layer itself.
-	'''
+	"""
 
 	# Increase homeostasis of the active neurons
 	network[layerName]["vThresh"][0][network[layerName]["outSpikes"][0]] += \

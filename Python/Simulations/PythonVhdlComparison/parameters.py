@@ -1,4 +1,4 @@
-from parallelisms import *
+from bitWidths import *
 from utils import fixedPoint
 
 # Excitatory layer

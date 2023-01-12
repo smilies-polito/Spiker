@@ -7,7 +7,7 @@ from network import run
 
 def repeatImage(inputIntensity, currentIndex):
 
-	'''
+	"""
 	Prepare the training over the same image.
 
 	INPUT:
@@ -20,7 +20,7 @@ def repeatImage(inputIntensity, currentIndex):
 
 		current value of the pixel's intensity increased by 1.
 
-	'''
+	"""
 
 	# Print a message to say that the training will be repeated
 	print("Increase inputIntensity from " + str(inputIntensity) + \
@@ -39,7 +39,7 @@ def nextImage(networkList, spikesEvolution, updateInterval, printInterval,
 	labelsArray, assignments, startInputIntensity, currentIndex, mode):
 
 
-	'''
+	"""
 	Prepare the training over the next image.
 
 	INPUT:
@@ -94,7 +94,7 @@ def nextImage(networkList, spikesEvolution, updateInterval, printInterval,
 		3) accuracies: updated list of strings containing the history of 
 		the accuracy.
 
-	'''
+	"""
 
 	# Update the temporal evolution of the spikes
 	spikesEvolution[currentIndex % updateInterval] = spikesCounter
@@ -137,7 +137,7 @@ def nextImage(networkList, spikesEvolution, updateInterval, printInterval,
 def printProgress(currentIndex, printInterval, startTimeImage, 
 			startTimeTraining):
 
-	'''
+	"""
 	Print the training progress.
 
 	INPUT:
@@ -153,7 +153,7 @@ def printProgress(currentIndex, printInterval, startTimeImage,
 		4) startTimeTraining: system time corresponfing to the beginning
 		of the training.
 
-	'''
+	"""
 
 	# End of print interval?
 	if currentIndex % printInterval == 0 and currentIndex > 0:
@@ -176,7 +176,7 @@ def printProgress(currentIndex, printInterval, startTimeImage,
 def computePerformance(currentIndex, updateInterval, spikesEvolution, 
 			labelsSequence, assignments, accuracies):
 
-	'''
+	"""
 	Compute the network performance.
 
 	INPUT:	
@@ -205,7 +205,7 @@ def computePerformance(currentIndex, updateInterval, spikesEvolution,
 		accuracies: updated list of strings containing the history of the
 		accuracy.
 
-	'''
+	"""
 
 
 	# End of update interval?
@@ -246,7 +246,7 @@ def computePerformance(currentIndex, updateInterval, spikesEvolution,
 
 def updateAccuracy(classification, labelsSequence, accuracies):
 
-	'''
+	"""
 	Compute the accuracy and add it to the list of accuracies.
 
 	INPUT:
@@ -266,7 +266,7 @@ def updateAccuracy(classification, labelsSequence, accuracies):
 		accuracies: updated list of strings containing the history of the
 		accuracy.
 
-	'''
+	"""
 
 	# Number of instants in which the classification is equal to the label
 	correct = np.where(classification == labelsSequence)[0].size
@@ -288,7 +288,7 @@ def updateAccuracy(classification, labelsSequence, accuracies):
 def updateAssignments(currentIndex, updateInterval, lastLayerSize,
 			spikesEvolution, labelsSequence, assignments):
 
-	'''
+	"""
 	Update the output classification.
 
 	INPUT:
@@ -311,7 +311,7 @@ def updateAssignments(currentIndex, updateInterval, lastLayerSize,
 		6) assignments: NumPy array containing one label assignment for
 		each output neuron.
 
-	'''
+	"""
 
 	# End of update interval?
 	if currentIndex % updateInterval == 0 and currentIndex > 0:
