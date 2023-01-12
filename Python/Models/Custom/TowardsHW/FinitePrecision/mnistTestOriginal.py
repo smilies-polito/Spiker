@@ -4,19 +4,18 @@ import matplotlib.pyplot as plt
 import numpy as np
 np.set_printoptions(threshold=np.inf)
 
-from mnist import loadDataset
 from createNetwork import createNetwork
 from testFunctionsOriginal import singleImageTest
 from storeParameters import *
 from utils import checkParallelism
 
-
-
-
-# Initialize the training parameters
 from files import *
 from runParameters import *
 
+if mnistDir not in sys.path:
+	sys.path.append(mnistDir)
+
+from mnist import loadDataset
 
 
 # Load the MNIST dataset
