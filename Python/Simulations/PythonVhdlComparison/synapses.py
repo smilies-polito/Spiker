@@ -4,7 +4,7 @@ from utils import expDecay
 
 def stdp(network, layer, stdpDict, inputSpikes):
 
-	'''
+	"""
 	Increase or decrease the weights through STDP.
 
 	INPUT:
@@ -16,16 +16,16 @@ def stdp(network, layer, stdpDict, inputSpikes):
 		4) stdpDict: dictionary containing the STDP parameters.
 
 		5) inputSpikes: boolean NumPy array containing the input spikes.
-	'''
+	"""
 
 	synapseName = "exc2exc" + str(layer)
 	layerName = "excLayer" + str(layer)
 
-	# Increase the weights of the active neurons' synapses through LTP.
+	# Increase the weights of the active neurons" synapses through LTP.
 	ltp(network, synapseName, layerName, stdpDict["eta_post"],
 		stdpDict["ltp_dt_tau"])
 
-	# Decrease the weights of the inactive neurons' synapses through LTD.
+	# Decrease the weights of the inactive neurons" synapses through LTD.
 	ltd(network, synapseName, layerName, stdpDict["eta_pre"],
 		stdpDict["ltd_dt_tau"], inputSpikes)
 
@@ -39,7 +39,7 @@ def stdp(network, layer, stdpDict, inputSpikes):
 
 def ltp(network, synapseName, layerName, eta_post, dt_tau):
 
-	'''
+	"""
 	Increase the weights of the active neurons' synapses through LTP.
 
 	INPUT:
@@ -52,12 +52,12 @@ def ltp(network, synapseName, layerName, eta_post, dt_tau):
 		3) layerName: string. Complete name of the layer, including the
 		index of the layer itself.
 
-		4) A_ltd: LTD learning rate. 
+		4) eta_post: LTP learning rate. 
 
 		5) dt_tau: ratio of the time step and the LTP exponential
 		time constant.
  
-	'''
+	"""
 
 	# Exponentially decrease the post-synaptic trace
 	expDecay(network, synapseName, dt_tau, 0, "post")
@@ -76,8 +76,8 @@ def ltp(network, synapseName, layerName, eta_post, dt_tau):
 
 def ltd(network, synapseName, layerName, eta_pre, dt_tau, inputSpikes):
 
-	'''
-	Decrease the weights of the inactive neurons' synapses through LTD.
+	"""
+	Decrease the weights of the inactive neurons" synapses through LTD.
 
 	INPUT:
 
@@ -89,13 +89,13 @@ def ltd(network, synapseName, layerName, eta_pre, dt_tau, inputSpikes):
 		3) layerName: string. Complete name of the layer, including the
 		index of the layer itself.
 
-		4) A_ltp: LTP learning rate. 
+		4) eta_pre: LTD learning rate. 
 
 		5) dt_tau: ratio of the time step and the LTD exponential
 		time constant.
  
 		6) inputSpikes: boolean NumPy array containing the input spikes.
-	'''
+	"""
 	
 	# Exponentially decrease the pre-synaptic trace
 	expDecay(network, synapseName, dt_tau, 0, "pre")
