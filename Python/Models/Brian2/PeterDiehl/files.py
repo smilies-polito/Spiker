@@ -1,4 +1,4 @@
-mnistDir = "../../../MNIST"
+mnistDir = "../../../../MNIST"
 
 # Training
 images = mnistDir + "/train-images-idx3-ubyte"
