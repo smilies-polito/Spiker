@@ -14,7 +14,7 @@ def singleImageTest(trainDuration, restTime, dt, image, network, networkList,
 			printInterval, startTimeTraining, accuracies,
 			labelsArray, assignments, startInputIntensity, mode,
 			constSums, bitWidth, taps, seed, exp_shift,
-			neuron_parallelism, inputFilename):
+			neuron_parallelism):
 
 	'''
 	Test the network over an image of the dataset.
@@ -88,9 +88,6 @@ def singleImageTest(trainDuration, restTime, dt, image, network, networkList,
 		22) exp_shift: bit shift for the exponential decay.
 
 		23) neuron_parallelism: number of bits on which the neuron works.
-
-		24) inputFilename: string. Name of the file containing the input
-		spikes.
 
 	
 	OUTPUT:

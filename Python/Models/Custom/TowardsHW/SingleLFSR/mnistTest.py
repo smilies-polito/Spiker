@@ -8,7 +8,7 @@ from mnist import loadDataset
 from createNetwork import createNetwork
 from testFunctions import singleImageTest
 from storeParameters import *
-from utils import checkParallelism
+from utils import checkBitWidth
 
 
 
@@ -28,7 +28,7 @@ network = createNetwork(networkList, weightFilename, thresholdFilename, mode,
 			excDictList, scaleFactors, inh2excWeights,
 			fixed_point_decimals, trainPrecision, rng)
 
-checkParallelism(network["exc2exc1"]["weights"], weights_parallelism)
+checkBitWidth(network["exc2exc1"]["weights"], weights_bitWidth)
 
 currentIndex = 0
 numberOfCycles = imgArray.shape[0]
@@ -68,8 +68,7 @@ while currentIndex < numberOfCycles:
 			taps,
 			seed,
 			exp_shift,
-			neuron_parallelism,
-			inputFilename
+			neuron_bitWidth
 		)
 
 
