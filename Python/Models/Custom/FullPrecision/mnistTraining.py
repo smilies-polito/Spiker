@@ -30,7 +30,7 @@ network = createNetwork(networkList, weightFilename, thresholdFilename, mode,
 
 
 currentIndex = 0
-numberOfCycles = 20#imgArray.shape[0]
+numberOfCycles = imgArray.shape[0]
 
 
 # Measure the training starting time
