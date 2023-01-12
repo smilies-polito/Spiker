@@ -19,11 +19,3 @@ assignmentsFile = paramDir + "/assignments.npy"
 # Name of the performance files
 trainPerformanceFile = paramDir + "/trainPerformance.txt"
 testPerformanceFile = paramDir + "/testPerformance.txt"
-
-
-vhdlIoDir = "../../../Vhdl/mark3/sim/inputOutput"
-
-inputFilename = vhdlIoDir + "/inputSpikes.txt"
-outSpikesFilename = vhdlIoDir + "/pythonOutSpikes.txt"
-membraneFilename = vhdlIoDir + "/pythonMembrane.txt"
-countersFilename = vhdlIoDir + "/pythonCounters.txt"
