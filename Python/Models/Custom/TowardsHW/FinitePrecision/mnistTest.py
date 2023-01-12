@@ -7,7 +7,7 @@ np.set_printoptions(threshold=np.inf)
 from createNetwork import createNetwork
 from testFunctions import singleImageTest
 from storeParameters import *
-from utils import checkParallelism
+from utils import checkBitWidth
 
 from files import *
 from runParameters import *
@@ -27,7 +27,7 @@ network = createNetwork(networkList, weightFilename, thresholdFilename, mode,
 			excDictList, scaleFactors, inh2excWeights,
 			fixed_point_decimals, trainPrecision, rng)
 
-checkParallelism(network["exc2exc1"]["weights"], weights_parallelism)
+checkBitWidth(network["exc2exc1"]["weights"], weights_bitWidth)
 
 currentIndex = 0
 numberOfCycles = imgArray.shape[0]
@@ -65,7 +65,7 @@ while currentIndex < numberOfCycles:
 			constSums,
 			rng,
 			exp_shift,
-			neuron_parallelism,
+			neuron_bitWidth,
 			inputFilename
 		)
 
