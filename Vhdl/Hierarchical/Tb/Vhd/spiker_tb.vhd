@@ -48,19 +48,19 @@ architecture test of spiker_tb is
 
 
 	constant weights_filename	: string	:= "/home/alessio/Documents/"&
-		"Poli/Dottorato/Progetti/spiker/vhdl/mark3/sim/hyperparameters/"&
+		"Poli/Dottorato/Progetti/Spiker/Vhdl/Hierarchical/Sim/Hyperparameters/"&
 		"weights.mem";
 
 	constant thresholds_filename	: string	:= "/home/alessio/Documents/"&
-		"Poli/Dottorato/Progetti/spiker/vhdl/mark3/sim/hyperparameters/"&
+		"Poli/Dottorato/Progetti/Spiker/Vhdl/Hierarchical/Sim/Hyperparameters/"&
 		"thresholds.init";
 
 	constant inputs_filename	: string	:= "/home/alessio/Documents/"&
-		"Poli/Dottorato/Progetti/spiker/vhdl/mark3/sim/inputOutput/"&
+		"Poli/Dottorato/Progetti/Spiker/Vhdl/Hierarchical/Sim/Hyperparameters/"&
 		"inputImage.txt";
 
 	constant output_filename	: string	:= "/home/alessio/Documents/"&
-		"Poli/Dottorato/Progetti/spiker/vhdl/mark3/sim/inputOutput/"&
+		"Poli/Dottorato/Progetti/Spiker/Vhdl/Hierarchical/Sim/Hyperparameters/"&
 		"cntOut.txt";
 
 
@@ -443,8 +443,24 @@ begin
 		readline(inputs_file, read_line);
 		read(read_line, inputs_var);
 
-		-- Associate line to data input
-		input_data	<= unsigned(inputs_var);
+		pad	: for i in 0 to N_inputs - 1
+		loop
+
+			-- Set the MSBs to 0
+			input_data(
+				(i+1)*lfsr_bit_width-1 downto
+				(i+1)*input_data_bit_width) <= (others => '0');
+
+			-- Set the LSBs to the input data value
+			input_data(
+				(i+1)*input_data_bit_width-1 downto
+				i*input_data_bit_width) <=
+			unsigned(inputs_var(
+				(i+1)*input_data_bit_width-1 downto
+				i*input_data_bit_width));
+
+		end loop pad;
+
 		wait;
 
 	end process read_inputs;
