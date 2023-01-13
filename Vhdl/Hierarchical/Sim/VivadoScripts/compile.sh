@@ -56,6 +56,9 @@ xvhdl $VHD_DIR"/OutputInterface/out_interface.vhd"
 xvhdl $VHD_DIR"/OutputInterface/out_interface_datapath.vhd"
 xvhdl $VHD_DIR"/OutputInterface/out_interface_cu.vhd"
 
+# Load file
+xvhdl $VHD_DIR"/IO/load_file.vhd"
+
 # Spiker
 xvhdl $VHD_DIR"/spiker.vhd"
 xvhdl $TB_DIR"/spiker_tb.vhd"
