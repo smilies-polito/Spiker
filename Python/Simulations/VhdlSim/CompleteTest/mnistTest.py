@@ -4,7 +4,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 import subprocess as sp
 
-from mnist import loadDataset
 from testFunctions import singleImageTest
 from storeParameters import *
 
@@ -12,6 +11,11 @@ from storeParameters import *
 # Initialize the training parameters
 from files import *
 from runParameters import *
+
+if mnistDir not in sys.path:
+	sys.path.append(mnistDir)
+
+from mnist import loadDataset
 
 sp.run(networkCompile)
 
