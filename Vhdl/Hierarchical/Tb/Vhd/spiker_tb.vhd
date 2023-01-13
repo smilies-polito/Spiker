@@ -56,11 +56,11 @@ architecture test of spiker_tb is
 		"thresholds.init";
 
 	constant inputs_filename	: string	:= "/home/alessio/Documents/"&
-		"Poli/Dottorato/Progetti/Spiker/Vhdl/Hierarchical/Sim/Hyperparameters/"&
+		"Poli/Dottorato/Progetti/Spiker/Vhdl/Hierarchical/Sim/IO/"&
 		"inputImage.txt";
 
 	constant output_filename	: string	:= "/home/alessio/Documents/"&
-		"Poli/Dottorato/Progetti/Spiker/Vhdl/Hierarchical/Sim/Hyperparameters/"&
+		"Poli/Dottorato/Progetti/Spiker/Vhdl/Hierarchical/Sim/IO/"&
 		"cntOut.txt";
 
 
