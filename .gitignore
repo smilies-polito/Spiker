@@ -36,7 +36,3 @@ __pycache__
 
 # Temporary files
 tmp.*
-
-# Memory files for the BRAM initialization
-*.mem
-*.init
