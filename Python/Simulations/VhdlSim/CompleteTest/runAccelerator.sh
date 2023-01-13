@@ -6,5 +6,5 @@ VHDL_SIM_DIR="../../../../Vhdl/Hierarchical/Sim/VivadoScripts"
 
 echo "VHDL simulation"
 cd $VHDL_SIM_DIR
-./sim.sh > /dev/null
+./sim.sh #> /dev/null
 cd $ROOT_DIR
