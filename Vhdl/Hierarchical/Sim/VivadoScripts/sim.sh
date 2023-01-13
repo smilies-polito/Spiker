@@ -1,8 +1,7 @@
 #!/usr/bin/bash
 
-TOP_ENTITY="complete_accelerator"
+TOP_ENTITY="spiker_tb"
 
 xelab $TOP_ENTITY
 
-#xsim -t commands.tcl $TOP_ENTITY
-xsim $TOP_ENTITY
+xsim -t commands.tcl $TOP_ENTITY
