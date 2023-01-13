@@ -60,16 +60,16 @@ xvhdl $VHD_DIR"/OutputInterface/out_interface_cu.vhd"
 xvhdl $VHD_DIR"/spiker.vhd"
 xvhdl $TB_DIR"/spiker_tb.vhd"
 
-# Input buffer
-xvhdl $VHD_DIR"/InputBuffer/input_buffer.vhd"
-xvhdl $VHD_DIR"/InputBuffer/reg_unsigned.vhd"
-
-# Output selector
-xvhdl $VHD_DIR"/OutputSelector/generic_mux.vhd"
-
-# Complete accelerator
-xvhdl $VHD_DIR"/CompleteAccelerator/complete_accelerator.vhd"
-
-# Testbench
-xvhdl $TB_DIR"/CompleteAccelerator/driver.vhd"
-xvhdl $TB_DIR"/CompleteAccelerator/complete_accelerator_tb.vhd"
+# # Input buffer
+# xvhdl $VHD_DIR"/InputBuffer/input_buffer.vhd"
+# xvhdl $VHD_DIR"/InputBuffer/reg_unsigned.vhd"
+# 
+# # Output selector
+# xvhdl $VHD_DIR"/OutputSelector/generic_mux.vhd"
+# 
+# # Complete accelerator
+# xvhdl $VHD_DIR"/CompleteAccelerator/complete_accelerator.vhd"
+# 
+# # Testbench
+# xvhdl $TB_DIR"/CompleteAccelerator/driver.vhd"
+# xvhdl $TB_DIR"/CompleteAccelerator/complete_accelerator_tb.vhd"
