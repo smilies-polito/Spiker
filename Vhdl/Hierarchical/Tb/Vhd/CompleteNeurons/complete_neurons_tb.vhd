@@ -9,13 +9,13 @@ end entity complete_neurons_tb;
 architecture test of complete_neurons_tb is
 
 
-	-- internal parallelism
-	constant N		: integer := 16;
-	constant N_weights	: integer := 15;
+	-- internal neuron_bit_width
+	constant neuron_bit_width	: integer := 16;
+	constant weights_bit_widths	: integer := 15;
 
 	-- number of neurons in the layer
 	constant layer_size	: integer := 4;
-	constant N_addr		: integer := 2;
+	constant neurons_cnt_bit_width		: integer := 2;
 
 	-- shift during the exponential decay
 	constant shift		: integer := 1;
@@ -37,16 +37,18 @@ architecture test of complete_neurons_tb is
 	signal inh_stop		: std_logic;
 	signal inh		: std_logic;
 	signal load_v_th	: std_logic;
-	signal neuron_addr	: std_logic_vector(N_addr-1 downto 0);
+	signal neuron_addr	: std_logic_vector(neurons_cnt_bit_width-1 
+					downto 0);
 
 	-- input
 	signal input_spike	: std_logic;
 
 	-- input parameters
-	signal v_th_value	: signed(N-1 downto 0);		
-	signal v_reset		: signed(N-1 downto 0);		
-	signal inh_weight	: signed(N-1 downto 0);		
-	signal exc_weights	: signed(layer_size*N_weights-1 downto 0);
+	signal v_th_value	: signed(neuron_bit_width-1 downto 0);		
+	signal v_reset		: signed(neuron_bit_width-1 downto 0);		
+	signal inh_weight	: signed(neuron_bit_width-1 downto 0);		
+	signal exc_weights	: signed(layer_size*weights_bit_widths-1 
+					downto 0);
 
 	-- output
 	signal out_spikes	: std_logic_vector(layer_size-1 downto 0);
@@ -58,13 +60,13 @@ architecture test of complete_neurons_tb is
 
 		generic(
 
-			-- internal parallelism
-			parallelism		: integer := 16;
-			weightsParallelism	: integer := 5;
+			-- internal neuron_bit_width
+			neuron_bit_width		: integer := 16;
+			weights_bit_width	: integer := 5;
 
 			-- number of neurons in the layer
 			N_neurons		: integer := 400;
-			N_addr			: integer := 9;
+			neurons_cnt_bit_width			: integer := 9;
 
 			-- shift during the exponential decay
 			shift			: integer := 10
@@ -82,20 +84,26 @@ architecture test of complete_neurons_tb is
 			inh_stop	: in std_logic;
 			inh		: in std_logic;
 			load_v_th	: in std_logic;
-			neuron_addr	: in std_logic_vector(N_addr-1 downto 0);
+			neuron_addr	: in std_logic_vector(
+						neurons_cnt_bit_width-1 
+						downto 0);
 
 			-- input
 			input_spike	: in std_logic;
 
 			-- input parameters
-			v_th_value	: in signed(parallelism-1 downto 0);		
-			v_reset		: in signed(parallelism-1 downto 0);		
-			inh_weight	: in signed(parallelism-1 downto 0);		
+			v_th_value	: in signed(neuron_bit_width-1
+						downto 0);		
+			v_reset		: in signed(neuron_bit_width-1
+						downto 0);		
+			inh_weight	: in signed(neuron_bit_width-1
+						downto 0);		
 			exc_weights	: in signed(N_neurons*
-						weightsParallelism-1 downto 0);
+						weights_bit_width-1 downto 0);
 
 			-- output
-			out_spikes	: out std_logic_vector(N_neurons-1 downto 0);
+			out_spikes	: out std_logic_vector(N_neurons-1
+						downto 0);
 			all_ready	: out std_logic
 		);
 		
@@ -105,9 +113,9 @@ begin
 
 
 	-- model parameters binary conversion
-	v_th_value	<= to_signed(v_th_value_int, N);
-	v_reset		<= to_signed(v_reset_int, N);
-	inh_weight	<= to_signed(inh_weight_int, N);
+	v_th_value	<= to_signed(v_th_value_int, neuron_bit_width);
+	v_reset		<= to_signed(v_reset_int, neuron_bit_width);
+	inh_weight	<= to_signed(inh_weight_int, neuron_bit_width);
 
 	input_spike	<= '1';
 
@@ -115,8 +123,10 @@ begin
 	begin
 		init	: for i in 0 to layer_size-1
 		loop
-			exc_weights((i+1)*N_weights-1 downto i*N_weights) <= 
-					to_signed(exc_weight_int, N_weights);
+			exc_weights((i+1)*weights_bit_widths-1 downto 
+					i*weights_bit_widths) <= 
+					to_signed(exc_weight_int,
+					weights_bit_widths);
 		end loop init;
 
 		wait;
@@ -170,7 +180,8 @@ begin
 		for i in 0 to layer_size-1
 		loop
 
-			neuron_addr <= std_logic_vector(to_unsigned(i, N_addr));
+			neuron_addr <= std_logic_vector(to_unsigned(i, 
+				       	neurons_cnt_bit_width));
 			wait for 12 ns;
 
 		end loop;
@@ -180,7 +191,8 @@ begin
 		for i in 0 to layer_size-1
 		loop
 
-			neuron_addr <= std_logic_vector(to_unsigned(i, N_addr));
+			neuron_addr <= std_logic_vector(to_unsigned(i, 
+				       	neurons_cnt_bit_width));
 			wait for 12 ns;
 
 		end loop;
@@ -283,44 +295,44 @@ begin
 	dut	: complete_neurons
 
 		generic map(
-			-- internal parallelism
-			parallelism		=> N,
-			weightsParallelism	=> N_weights,
+			-- internal neuron_bit_width
+			neuron_bit_width	=> neuron_bit_width,
+			weights_bit_width	=> weights_bit_widths,
 
 			-- number of neurons in the layer
-			N_neurons	=> layer_size,
-			N_addr		=> N_addr,
+			N_neurons		=> layer_size,
+			neurons_cnt_bit_width	=> neurons_cnt_bit_width,
 
 			-- shift during the exponential decay
-			shift		=> shift
+			shift			=> shift
 		)
 
 		port map(
 			-- control input
-			clk		=> clk,
-			rst_n		=> rst_n,
-			start		=> start,
-			stop		=> stop,
-			exc_or		=> exc_or,
-			exc_stop	=> exc_stop,
-			inh_or		=> inh_or,
-			inh_stop	=> inh_stop,
-			inh		=> inh,
-			load_v_th	=> load_v_th,
-			neuron_addr	=> neuron_addr,
+			clk			=> clk,
+			rst_n			=> rst_n,
+			start			=> start,
+			stop			=> stop,
+			exc_or			=> exc_or,
+			exc_stop		=> exc_stop,
+			inh_or			=> inh_or,
+			inh_stop		=> inh_stop,
+			inh			=> inh,
+			load_v_th		=> load_v_th,
+			neuron_addr		=> neuron_addr,
 
 			-- input
-			input_spike	=> input_spike,
+			input_spike		=> input_spike,
 
 			-- input parameters
-			v_th_value	=> v_th_value,
-			v_reset		=> v_reset,
-			inh_weight	=> inh_weight,
-			exc_weights	=> exc_weights,
+			v_th_value		=> v_th_value,
+			v_reset			=> v_reset,
+			inh_weight		=> inh_weight,
+			exc_weights		=> exc_weights,
 
 			-- output
-			out_spikes	=> out_spikes,
-			all_ready	=> all_ready
+			out_spikes		=> out_spikes,
+			all_ready		=> all_ready
 		);
 
 end architecture test;
