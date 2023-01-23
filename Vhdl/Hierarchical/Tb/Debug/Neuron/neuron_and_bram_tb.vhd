@@ -17,8 +17,8 @@ end entity neuron_and_bram_tb;
 architecture test of neuron_and_bram_tb is
 
 	-- parallelism
-	constant N			: integer := 16;
-	constant N_weight		: integer := 5;
+	constant neuron_bit_width	: integer := 16;
+	constant weights_bit_width	: integer := 5;
 
 	-- shift amount
 	constant shift			: integer := 1;
@@ -26,13 +26,13 @@ architecture test of neuron_and_bram_tb is
 	constant inh_weight_int		: integer := -15*2**3;
 	constant v_th_value_int		: integer :=  589;
 
-	constant weights_filename	: string	:= "/home/alessio/"&
-		"OneDrive/Dottorato/Progetti/SNN/Miei/spiker/vhdl/mark3/"&
-		"hyperparameters/dummyWeights.mem";
+	constant weights_filename	: string	:= "/home/alessio"&
+		"/Documents/Poli/Dottorato/Progetti/Spiker/Vhdl/Hierarchical"&
+		"/Sim/Parameters/weights.mem";
 
-	constant inputs_filename	: string	:= "/home/alessio/"&
-		"OneDrive/Dottorato/Progetti/SNN/Miei/spiker/vhdl/mark3/"&
-		"sim/inputs.txt";
+	constant inputs_filename	: string	:="/home/alessio"&
+		"/Documents/Poli/Dottorato/Progetti/Spiker/Vhdl/Hierarchical"&
+		"/Sim/Parameters/inSpikes.txt"; 
 
 	constant N_inputs		: integer := 784;
 	constant N_inputs_cnt		: integer := 11;
@@ -68,25 +68,26 @@ architecture test of neuron_and_bram_tb is
 	signal v_th_en			: std_logic;
 
 	-- input parameters
-	signal v_th_value		: signed(N-1 downto 0);
-	signal v_reset			: signed(N-1 downto 0);
-	signal inh_weight		: signed(N-1 downto 0);
-	signal exc_weight		: signed(N_weight-1 downto 0);
+	signal v_th_value		: signed(neuron_bit_width-1 downto 0);
+	signal v_reset			: signed(neuron_bit_width-1 downto 0);
+	signal inh_weight		: signed(neuron_bit_width-1 downto 0);
+	signal exc_weight		: signed(weights_bit_width-1 downto 0);
 
 	-- output
 	signal out_spike		: std_logic;
 	signal neuron_ready		: std_logic;
 
 	-- debug output
-	signal v_out			: signed(N-1 downto 0);
+	signal v_out			: signed(neuron_bit_width-1 downto 0);
 
 	signal input_spikes		: std_logic_vector(N_inputs-1 downto 0);
 	signal sample			: std_logic;
 	signal exc_cnt_en		: std_logic;
 	signal exc_cnt_rst_n		: std_logic;
-	signal exc_cnt			: std_logic_vector(N_inputs_cnt-1 downto 0);
-	signal N_inputs_tc		: std_logic_vector
-						(N_inputs_cnt-1 downto 0);
+	signal exc_cnt			: std_logic_vector(N_inputs_cnt-1 
+						downto 0);
+	signal N_inputs_tc		: std_logic_vector(N_inputs_cnt-1
+						downto 0);
 	signal out_w_en			: std_logic;
 
 
@@ -127,8 +128,8 @@ architecture test of neuron_and_bram_tb is
 
 		generic(
 			-- parallelism
-			N		: integer := 16;
-			N_weight	: integer := 5;
+			neuron_bit_width		: integer := 16;
+			weights_bit_width	: integer := 5;
 
 			-- shift amount
 			shift		: integer := 1
@@ -150,17 +151,22 @@ architecture test of neuron_and_bram_tb is
 			v_th_en		: in std_logic;
 
 			-- input parameters
-			v_th_value	: in signed(N-1 downto 0);
-			v_reset		: in signed(N-1 downto 0);
-			inh_weight	: in signed(N-1 downto 0);
-			exc_weight	: in signed(N_weight-1 downto 0);
+			v_th_value	: in signed(neuron_bit_width-1
+						downto 0);
+			v_reset		: in signed(neuron_bit_width-1
+						downto 0);
+			inh_weight	: in signed(neuron_bit_width-1
+						downto 0);
+			exc_weight	: in signed(weights_bit_width-1
+						downto 0);
 
 			-- output
 			out_spike	: out std_logic;
 			neuron_ready	: out std_logic;
 
 			-- debug output
-			v_out		: out signed(N-1 downto 0)
+			v_out		: out signed(neuron_bit_width-1
+						downto 0)
 		);
 
 
@@ -188,11 +194,14 @@ architecture test of neuron_and_bram_tb is
 			rden			: in std_logic;
 
 			-- output
-			di			: out std_logic_vector(word_length-1
+			di			: out std_logic_vector(
+							word_length-1
 							downto 0);
-			bram_addr		: out std_logic_vector(bram_addr_length
-							-1 downto 0);
-			wraddr			: out std_logic_vector(addr_length-1
+			bram_addr		: out std_logic_vector(
+							bram_addr_length-1 
+							downto 0);
+			wraddr			: out std_logic_vector(
+							addr_length-1
 							downto 0);
 			wren			: out std_logic
 		);
@@ -385,14 +394,17 @@ begin
 
 	file_write : process(clk, out_w_en)
 
-		file in_spikes_file	: text open write_mode is
-			"/home/alessio/OneDrive/Dottorato/Progetti/SNN/Miei/spiker/vhdl/mark3/plot/data/inSpikes.txt";
+		file in_spikes_file	: text open write_mode is "/home/"&
+		"alessio/Documents/Poli/Dottorato/Progetti/Spiker/Vhdl/"&
+		"Hierarchical/Sim/Parameters/inSpikes.txt";
 
-		file out_spikes_file	: text open write_mode is
-			"/home/alessio/OneDrive/Dottorato/Progetti/SNN/Miei/spiker/vhdl/mark3/plot/data/outSpikes.txt";
+		file out_spikes_file	: text open write_mode is "/home/"&
+		"alessio/Documents/Poli/Dottorato/Progetti/Spiker/Vhdl/"&
+		"Hierarchical/Sim/Parameters/outSpikes.txt";
 
-		file v_file		: text open write_mode is 
-			"/home/alessio/OneDrive/Dottorato/Progetti/SNN/Miei/spiker/vhdl/mark3/plot/data/v.txt";
+		file v_file		: text open write_mode is "/home/"&
+		"alessio/Documents/Poli/Dottorato/Progetti/Spiker/Vhdl/"&
+		"Hierarchical/Sim/Parameters/v.txt";
 
 		variable row		: line;
 		variable write_var	: integer;
@@ -455,8 +467,8 @@ begin
 
 		generic map(
 			-- parallelism
-			N		=> N,
-			N_weight	=> N_weight,
+			neuron_bit_width	=> neuron_bit_width,
+			weights_bit_width	=> weights_bit_width,
 
 			-- shift amount
 			shift		=> shift
