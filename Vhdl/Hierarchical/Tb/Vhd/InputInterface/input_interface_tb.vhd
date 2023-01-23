@@ -42,10 +42,12 @@ architecture test of input_interface_tb is
 
 			-- data input
 			seed		: in unsigned(bit_width-1 downto 0);
-			input_data	: in unsigned(N_inputs*bit_width-1 downto 0);
+			input_data	: in unsigned(N_inputs*bit_width-1
+						downto 0);
 
 			-- output
-			output_spikes	: out std_logic_vector(N_inputs-1 downto 0)
+			output_spikes	: out std_logic_vector(N_inputs-1
+						downto 0)
 		);
 
 	end component input_interface;
@@ -61,9 +63,10 @@ begin
 
 		file input_file	: text open read_mode is
 			"/home/alessio/Documents/Poli/Dottorato/Progetti/"&
-			"spiker/vhdl/mark3/sim/inputOutput/vhdlImage.txt";
+			"Spiker/Vhdl/Hierarchical/Sim/IO/vhdlImage.txt";
 		variable read_line	: line;
-		variable read_var	: std_logic_vector(N_inputs*bit_width-1 downto 0);
+		variable read_var	: std_logic_vector(N_inputs*bit_width-1
+						downto 0);
 
 	begin
 
@@ -83,8 +86,8 @@ begin
 
 		file lfsr_file	: text open write_mode is
 			"/home/alessio/Documents/Poli/Dottorato/Progetti/"&
-			"spiker/vhdl/mark3/sim/inputOutput/vhdlSpikes.txt";
-		variable row		: line;
+			"Spiker/Vhdl/Hierarchical/Sim/IO/vhdlSpikes.txt";
+variable row		: line;
 		variable write_var	: std_logic_vector(N_inputs-1 downto 0);
 
 	begin

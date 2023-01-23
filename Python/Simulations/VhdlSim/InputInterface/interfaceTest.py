@@ -1,10 +1,16 @@
 import subprocess as sp
 import numpy as np
+import sys
 
-from mnist import loadDataset
 from poisson import imgToSpikeTrain
 from runParameters import *
 from files import *
+
+if mnistDir not in sys.path:
+	sys.path.insert(1, mnistDir)
+
+from mnist import loadDataset
+
 
 # Load the MNIST dataset
 imgArray , labelsArray = loadDataset(testImages, testLabels)
