@@ -14,14 +14,14 @@ entity layer is
 		-- input spikes
 		N_inputs		: integer := 392; --784;
 
-		-- must be one bit larger that the parallelism required to count
+		-- must be one bit larger that the bit-width required to count
 		-- up to N_inputs
 		inputs_cnt_bit_width	: integer := 11;
 
 		-- inhibitory spikes
 		N_neurons		: integer := 400;
 
-		-- must be one bit larger that the parallelism required to count
+		-- must be one bit larger that the bit-width required to count
 		-- up to N_neurons
 		neurons_cnt_bit_width	: integer := 10;
 
