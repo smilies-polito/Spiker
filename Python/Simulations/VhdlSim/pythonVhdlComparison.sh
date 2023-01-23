@@ -1,12 +1,15 @@
 #!/usr/bin/bash
 
-ROOT_DIR=`pwd`
+ROOT_DIR=$(pwd)
 
-BRAM_INIT_DIR="bramInit"
-PYTHON_SIM_DIR="../../../python/custom/mark4_finitePrecision"
-COUNTERS_CONVERTION_DIR="vhdlCountersConvertion"
-VHDL_SIM_DIR="vivadoScripts"
-INPUT_GEN_DIR="inputGen"
+VHDL_DIR="../../../Vhdl"
+PYTHON_SIM_DIR=$ROOT_DIR
+
+BRAM_INIT_DIR="$PYTHON_SIM_DIR/BramInit"
+PYTHON_MODEL="$PYTHON_SIM_DIR/PythonModel"
+COUNTERS_CONVERTION_DIR="$PYTHON_SIM_DIR/VhdlCountersConvertion"
+VHDL_SIM_DIR="$VHDL_DIR/Hierarchical/Sim/VivadoScripts"
+INPUT_GEN_DIR="$PYTHON_SIM_DIR/SpikesGen"
 IMAGE_INDEX=30
 
 echo "Generate input spikes"
@@ -15,7 +18,7 @@ python imgToSpikes.py $IMAGE_INDEX
 cd $ROOT_DIR
 
 echo "Python simulation"
-cd $PYTHON_SIM_DIR
+cd $PYTHON_MODEL
 python mnistTest.py $IMAGE_INDEX
 cd $ROOT_DIR
 
