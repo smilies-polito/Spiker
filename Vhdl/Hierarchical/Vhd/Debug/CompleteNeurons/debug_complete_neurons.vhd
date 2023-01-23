@@ -5,9 +5,9 @@ use ieee.numeric_std.all;
 entity debug_complete_neurons is
 
 	generic(
-		-- internal parallelism
-		parallelism		: integer := 16;
-		weightsParallelism	: integer := 5;
+		-- internal neuron_bit_width
+		neuron_bit_width	: integer := 16;
+		weights_bit_width	: integer := 5;
 
 		-- number of neurons in the layer
 		N_neurons		: integer := 400;
@@ -36,11 +36,14 @@ entity debug_complete_neurons is
 		input_spike		: in std_logic;
 
 		-- input parameters
-		v_th_value		: in signed(parallelism-1 downto 0);		
-		v_reset			: in signed(parallelism-1 downto 0);		
-		inh_weight		: in signed(parallelism-1 downto 0);		
+		v_th_value		: in signed(neuron_bit_width-1
+						downto 0);		
+		v_reset			: in signed(neuron_bit_width-1
+						downto 0);		
+		inh_weight		: in signed(neuron_bit_width-1
+						downto 0);		
 		exc_weights		: in signed(N_neurons*
-						weightsParallelism-1 downto 0);
+						weights_bit_width-1 downto 0);
 
 		-- output
 		out_spikes		: out std_logic_vector(N_neurons-1
@@ -48,7 +51,8 @@ entity debug_complete_neurons is
 		all_ready		: out std_logic;
 
 		-- debug output
-		v_out			: out signed(parallelism-1 downto 0)
+		v_out			: out signed(neuron_bit_width-1 
+						downto 0)
 	);
 	
 end entity debug_complete_neurons;
@@ -63,9 +67,9 @@ architecture behaviour of debug_complete_neurons is
 	component debug_bare_neurons is
 
 		generic(
-			-- internal parallelism
-			parallelism		: integer := 16;
-			weightsParallelism	: integer := 5;
+			-- internal neuron_bit_width
+			neuron_bit_width		: integer := 16;
+			weights_bit_width	: integer := 5;
 
 			-- number of neurons in the layer
 			N_neurons		: integer := 400;
@@ -92,14 +96,14 @@ architecture behaviour of debug_complete_neurons is
 							N_neurons-1 downto 0);
 
 			-- input parameters
-			v_th_value		: in signed(parallelism-1 
+			v_th_value		: in signed(neuron_bit_width-1 
 							downto 0);		
-			v_reset			: in signed(parallelism-1
+			v_reset			: in signed(neuron_bit_width-1
 							downto 0);		
-			inh_weight		: in signed(parallelism-1
+			inh_weight		: in signed(neuron_bit_width-1
 							downto 0);		
 			exc_weights		: in signed(N_neurons*
-							  weightsParallelism-1
+							  weights_bit_width-1
 							  downto 0);
 
 			-- output
@@ -108,7 +112,8 @@ architecture behaviour of debug_complete_neurons is
 			all_ready		: out std_logic;
 
 			-- debug output
-			v_out			: out signed(parallelism-1 downto 0)
+			v_out			: out signed(neuron_bit_width-1
+							downto 0)
 		);
 
 	end component debug_bare_neurons;
@@ -175,9 +180,9 @@ begin
 	neurons_layer	: debug_bare_neurons 
 
 		generic map(
-			-- internal parallelism
-			parallelism		=> parallelism,
-			weightsParallelism	=> weightsParallelism,
+			-- internal neuron_bit_width
+			neuron_bit_width		=> neuron_bit_width,
+			weights_bit_width	=> weights_bit_width,
 
 			-- number of neurons in the layer
 			N_neurons		=> N_neurons,
