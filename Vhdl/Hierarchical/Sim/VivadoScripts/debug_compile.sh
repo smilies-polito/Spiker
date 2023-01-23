@@ -14,10 +14,10 @@ xvhdl $VHD_DIR"/Neuron/mux4to1_signed.vhd"
 xvhdl $VHD_DIR"/Neuron/neuron_cu.vhd"
 xvhdl $VHD_DIR"/Neuron/neuron_datapath.vhd"
 xvhdl $VHD_DIR"/Neuron/neuron.vhd"
-xvhdl $DEBUG_DIR"/Neuron/debug_neuron_datapath.vhd"
-xvhdl $DEBUG_DIR"/Neuron/debug_neuron.vhd"
 xvhdl $VHD_DIR"/Neuron/reg_signed_sync_rst.vhd"
 xvhdl $VHD_DIR"/Neuron/shifter.vhd"
+xvhdl $DEBUG_DIR"/Neuron/debug_neuron_datapath.vhd"
+xvhdl $DEBUG_DIR"/Neuron/debug_neuron.vhd"
 
 # Bare neurons
 xvhdl $DEBUG_DIR"/BareNeurons/debug_bare_neurons.vhd"
@@ -34,11 +34,11 @@ xvhdl $VHD_DIR"/Layer/bit_selection.vhd"
 xvhdl $VHD_DIR"/Layer/cmp_eq.vhd"
 xvhdl $VHD_DIR"/Layer/generic_mux_1bit.vhd"
 xvhdl $VHD_DIR"/Layer/generic_or.vhd"
-xvhdl $DEBUG_DIR"/Layer/debug_layer.vhd"
 xvhdl $VHD_DIR"/Layer/layer_cu.vhd"
-xvhdl $DEBUG_DIR"/Layer/debug_layer_datapath.vhd"
 xvhdl $VHD_DIR"/Layer/mux2to1.vhd"
 xvhdl $VHD_DIR"/Layer/reg.vhd"
+xvhdl $DEBUG_DIR"/Layer/debug_layer_datapath.vhd"
+xvhdl $DEBUG_DIR"/Layer/debug_layer.vhd"
 
 # Synapses
 xvhdl $VHD_DIR"/Synapse/weights_bram.vhd"
@@ -51,5 +51,4 @@ xvhdl $VHD_DIR"/Shared/cnt.vhd"
 
 # Testbench
 xvhdl $VHD_DIR"/IO/load_file.vhd"
-
 xvhdl $TB_DIR"/debug_layer_tb.vhd"
