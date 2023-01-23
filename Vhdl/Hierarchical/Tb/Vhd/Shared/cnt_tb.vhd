@@ -8,19 +8,19 @@ end entity cnt_tb;
 
 architecture test of cnt_tb is
 
-	constant N		: integer := 4;
+	constant bit_width		: integer := 4;
 
 	signal clk		: std_logic;
 	signal cnt_en		: std_logic;
 	signal cnt_rst_n	: std_logic;
 
-	signal cnt_out		: std_logic_vector(N-1 downto 0);
+	signal cnt_out		: std_logic_vector(bit_width-1 downto 0);
 
 
 	component cnt is
 
 		generic(
-			N		: integer := 8		
+			bit_width		: integer := 8		
 		);
 
 		port(
@@ -30,7 +30,7 @@ architecture test of cnt_tb is
 			cnt_rst_n	: in std_logic;
 
 			-- output
-			cnt_out		: out std_logic_vector(N-1 downto 0)		
+			cnt_out		: out std_logic_vector(bit_width-1 downto 0)		
 		);
 
 	end component cnt;
@@ -77,7 +77,7 @@ begin
 
 	dut	: cnt
 		generic map(
-			N		=> N
+			bit_width		=> bit_width
 		)                                          
                                                            
 		port map(                  
