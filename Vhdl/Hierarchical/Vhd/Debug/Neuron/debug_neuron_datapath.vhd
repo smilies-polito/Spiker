@@ -6,9 +6,9 @@ use ieee.numeric_std.all;
 entity debug_neuron_datapath is
 
 	generic(
-		-- parallelism
-		parallelism		: integer := 16;
-		weightsParallelism	: integer := 5;
+		-- neuron_bit_width
+		neuron_bit_width	: integer := 16;
+		weights_bit_width	: integer := 5;
 
 		-- shift amount
 		shift			: integer := 1
@@ -16,10 +16,10 @@ entity debug_neuron_datapath is
 
 	port(
 		-- input parameters
-		v_th_value		: in signed(parallelism-1 downto 0);
-		v_reset			: in signed(parallelism-1 downto 0);
-		inh_weight		: in signed(parallelism-1 downto 0);
-		exc_weight		: in signed(weightsParallelism-1 downto
+		v_th_value		: in signed(neuron_bit_width-1 downto 0);
+		v_reset			: in signed(neuron_bit_width-1 downto 0);
+		inh_weight		: in signed(neuron_bit_width-1 downto 0);
+		exc_weight		: in signed(weights_bit_width-1 downto
 						0);
 
 		-- input controls
@@ -35,7 +35,7 @@ entity debug_neuron_datapath is
 		exceed_v_th		: out std_logic;
 
 		-- debug output
-		v_out			: out signed(parallelism-1 downto 0)
+		v_out			: out signed(neuron_bit_width-1 downto 0)
 	);
 
 end entity debug_neuron_datapath;
@@ -44,19 +44,19 @@ end entity debug_neuron_datapath;
 architecture behaviour of debug_neuron_datapath is
 
 	
-	signal update		: signed(parallelism-1 downto 0);
-	signal update_value	: signed(parallelism-1 downto 0);
-	signal v_th		: signed(parallelism-1 downto 0);
-	signal v_value		: signed(parallelism-1 downto 0);
-	signal v		: signed(parallelism-1 downto 0);
-	signal v_shifted	: signed(parallelism-1 downto 0);
+	signal update		: signed(neuron_bit_width-1 downto 0);
+	signal update_value	: signed(neuron_bit_width-1 downto 0);
+	signal v_th		: signed(neuron_bit_width-1 downto 0);
+	signal v_value		: signed(neuron_bit_width-1 downto 0);
+	signal v		: signed(neuron_bit_width-1 downto 0);
+	signal v_shifted	: signed(neuron_bit_width-1 downto 0);
 
 
 
 	component shifter is
 
 		generic(
-			-- parallelism
+			-- neuron_bit_width
 			N		: integer := 8;
 		
 			-- shift
@@ -77,7 +77,7 @@ architecture behaviour of debug_neuron_datapath is
 	component mux4to1_signed is
 
 		generic(
-			-- parallelism
+			-- neuron_bit_width
 			N	: integer		
 		);
 
@@ -118,7 +118,7 @@ architecture behaviour of debug_neuron_datapath is
 	component mux2to1_signed is
 
 		generic(
-			-- parallelism
+			-- neuron_bit_width
 			N	: integer		
 		);
 
@@ -139,7 +139,7 @@ architecture behaviour of debug_neuron_datapath is
 	component reg_signed is
 
 		generic(
-			-- parallelism
+			-- neuron_bit_width
 			N	: integer	:= 16		
 		);
 
@@ -160,7 +160,7 @@ architecture behaviour of debug_neuron_datapath is
 	component reg_signed_sync_rst is
 
 		generic(
-			-- parallelism
+			-- neuron_bit_width
 			N	: integer	:= 16		
 		);
 
@@ -206,8 +206,8 @@ begin
 
 	v_shifter	: shifter
 		generic map(
-			-- parallelism
-			N		=> parallelism,
+			-- neuron_bit_width
+			N		=> neuron_bit_width,
 		
 			-- shift
 			shift		=> shift
@@ -224,17 +224,17 @@ begin
 	
 	update_mux	: mux4to1_signed
 		generic map(
-			-- parallelism
-			N	=> parallelism		
+			-- neuron_bit_width
+			N	=> neuron_bit_width		
 		)
 		port map(
 			-- input
 			sel				=> update_sel,
 			in0				=> (others => '0'),
 			in1				=> v_shifted,
-			in2(parallelism-1 downto 
-				weightsParallelism)	=> (others => '0'),
-			in2(weightsParallelism-1 
+			in2(neuron_bit_width-1 downto 
+				weights_bit_width)	=> (others => '0'),
+			in2(weights_bit_width-1 
 				downto 0)		=> exc_weight,
 			in3				=> inh_weight,
 		                               
@@ -245,7 +245,7 @@ begin
 
 	update_add_sub	: add_sub
 		generic map(
-			N		=> parallelism	
+			N		=> neuron_bit_width	
 		)
 
 		port map(
@@ -261,8 +261,8 @@ begin
 
 	v_mux	: mux2to1_signed
 		generic map(
-			-- parallelism
-			N	=> parallelism
+			-- neuron_bit_width
+			N	=> neuron_bit_width
 		)
 
 		port map(	
@@ -279,8 +279,8 @@ begin
 
 	v_th_reg	: reg_signed
 		generic map(
-			-- parallelism
-			N	=> parallelism   
+			-- neuron_bit_width
+			N	=> neuron_bit_width   
 		)
 
 		port map(	
@@ -297,8 +297,8 @@ begin
 
 	v_reg		: reg_signed_sync_rst
 		generic map(
-			-- parallelism
-			N	=> parallelism   
+			-- neuron_bit_width
+			N	=> neuron_bit_width   
 		)
 
 		port map(	
@@ -315,7 +315,7 @@ begin
 
 	fire_cmp	: cmp_gt
 		generic map(
-			N	=> parallelism	
+			N	=> neuron_bit_width	
 		)
 
 		port map(
