@@ -72,7 +72,7 @@ architecture behaviour of bit_selection_explicit_tb is
 	component cnt is
 
 		generic(
-			N		: integer := 8		
+			bit_width	: integer := 8		
 		);
 
 		port(
@@ -82,7 +82,8 @@ architecture behaviour of bit_selection_explicit_tb is
 			cnt_rst_n	: in std_logic;
 
 			-- output
-			cnt_out		: out std_logic_vector(N-1 downto 0)		
+			cnt_out		: out std_logic_vector(bit_width-1
+						downto 0)		
 		);
 
 	end component cnt;
@@ -115,9 +116,11 @@ begin
 	-- clock
 	clock_gen : process
 	begin
-		clk	<= '0';				-- falling edge i*12ns
+		-- falling edge i*12ns
+		clk	<= '0';
 		wait for 6 ns;			                    
-		clk	<= '1';         		-- rising edge 6ns + i*12ns
+         	-- rising edge 6ns + i*12ns
+		clk	<= '1';
 		wait for 6 ns;			
 	end process clock_gen;
 
@@ -152,7 +155,8 @@ begin
 		for i in 0 to 2**N_bit
 		loop
 
-			input_bits	<= std_logic_vector(to_unsigned(i, N_bit));
+			input_bits	<= std_logic_vector(to_unsigned(i, 
+				      		N_bit));
 			wait for 48 ns;
 
 		end loop;
@@ -206,7 +210,7 @@ begin
 	select_cnt	: cnt
 
 		generic map(
-			N		=> N_cnt
+			bit_width	=> N_cnt
 		)
 
 		port map(
