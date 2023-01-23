@@ -12,43 +12,43 @@ architecture behaviour of neuron_tb is
 
 
 	-- parallelism
-	constant N		: integer := 16;
-	constant N_weight	: integer := 15;
+	constant neuron_bit_width	: integer := 16;
+	constant weights_bit_width	: integer := 15;
 
 	-- exponential shift
-	constant shift		: integer := 10;
+	constant shift			: integer := 10;
 
 	-- model parameters
-	constant v_th_value_int	: integer 	:= 13*(2**10);	
-	constant v_reset_int	: integer 	:= 5*(2**10);	
-	constant inh_weight_int	: integer 	:= 7*(2**10);	
-	constant exc_weight_int	: integer 	:= 7*(2**10);
+	constant v_th_value_int		: integer 	:= 13*(2**10);	
+	constant v_reset_int		: integer 	:= 5*(2**10);	
+	constant inh_weight_int		: integer 	:= 7*(2**10);	
+	constant exc_weight_int		: integer 	:= 7*(2**10);
 
 
 	-- input parameters
-	signal v_th_value	: signed(N-1 downto 0);
-	signal v_reset		: signed(N-1 downto 0);
-	signal inh_weight	: signed(N-1 downto 0);
-	signal exc_weight	: signed(N_weight-1 downto 0);
+	signal v_th_value		: signed(neuron_bit_width-1 downto 0);
+	signal v_reset			: signed(neuron_bit_width-1 downto 0);
+	signal inh_weight		: signed(neuron_bit_width-1 downto 0);
+	signal exc_weight		: signed(weights_bit_width-1 downto 0);
 
 
 	-- input
-	signal clk		: std_logic;
-	signal rst_n		: std_logic;
-	signal start		: std_logic;
-	signal stop	        : std_logic;
-	signal exc_or	        : std_logic;
-	signal exc_stop		: std_logic;
-	signal inh_or		: std_logic;
-	signal inh_stop		: std_logic;
-        signal input_spike	: std_logic;
+	signal clk			: std_logic;
+	signal rst_n			: std_logic;
+	signal start			: std_logic;
+	signal stop			: std_logic;
+	signal exc_or			: std_logic;
+	signal exc_stop			: std_logic;
+	signal inh_or			: std_logic;
+	signal inh_stop			: std_logic;
+        signal input_spike		: std_logic;
 
-	-- to load the threshold
-	signal v_th_en		: std_logic;
+	-- to load the threshold	
+	signal v_th_en			: std_logic;
 
 	-- output
-	signal out_spike	: std_logic;
-	signal neuron_ready	: std_logic;
+	signal out_spike		: std_logic;
+	signal neuron_ready		: std_logic;
 
 
 
@@ -58,8 +58,8 @@ architecture behaviour of neuron_tb is
 
 		generic(
 			-- parallelism
-			N		: integer := 16;
-			N_weight	: integer := 5;
+			neuron_bit_width		: integer := 16;
+			weights_bit_width	: integer := 5;
 
 			-- shift amount
 			shift		: integer := 1
@@ -81,10 +81,14 @@ architecture behaviour of neuron_tb is
 			v_th_en		: in std_logic;
 
 			-- input parameters
-			v_th_value	: in signed(N-1 downto 0);
-			v_reset		: in signed(N-1 downto 0);
-			inh_weight	: in signed(N-1 downto 0);
-			exc_weight	: in signed(N_weight-1 downto 0);
+			v_th_value	: in signed(neuron_bit_width-1
+						downto 0);
+			v_reset		: in signed(neuron_bit_width-1
+						downto 0);
+			inh_weight	: in signed(neuron_bit_width-1
+						downto 0);
+			exc_weight	: in signed(weights_bit_width-1
+						downto 0);
 
 			-- output
 			out_spike	: out std_logic;
@@ -101,10 +105,10 @@ begin
 
 
 	-- model parameters binary conversion
-	v_th_value	<= to_signed(v_th_value_int, N);
-	v_reset		<= to_signed(v_reset_int, N);
-	inh_weight	<= to_signed(inh_weight_int, N);
-	exc_weight	<= to_signed(exc_weight_int, N_weight);
+	v_th_value	<= to_signed(v_th_value_int, neuron_bit_width);
+	v_reset		<= to_signed(v_reset_int, neuron_bit_width);
+	inh_weight	<= to_signed(inh_weight_int, neuron_bit_width);
+	exc_weight	<= to_signed(exc_weight_int, weights_bit_width);
 
 
 
@@ -266,8 +270,8 @@ begin
 
 		generic map(
 			-- parallelism
-			N		=> N,	
-			N_weight	=> N_weight,
+			neuron_bit_width		=> neuron_bit_width,	
+			weights_bit_width	=> weights_bit_width,
 
 			-- shift amount
 			shift		=> shift
