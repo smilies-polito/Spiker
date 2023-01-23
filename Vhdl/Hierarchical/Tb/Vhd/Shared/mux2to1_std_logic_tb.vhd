@@ -2,10 +2,10 @@ library ieee;
 use ieee.std_logic_1164.all;
 
 
-entity mux2to1_tb is
-end entity mux2to1_tb;
+entity mux2to1_std_logic_tb is
+end entity mux2to1_std_logic_tb;
 
-architecture test of mux2to1_tb is
+architecture test of mux2to1_std_logic_tb is
 
 	component mux2to1_std_logic is
 
