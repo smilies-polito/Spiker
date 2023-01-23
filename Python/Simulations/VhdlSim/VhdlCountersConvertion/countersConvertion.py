@@ -1,7 +1,5 @@
 import numpy as np
-
-vhdlDir = "../inputOutput" 
-countersFilename = vhdlDir + "/vhdlCounters.txt"
+from files import *
 
 countersParallelism = 16
 N_neurons = 400
