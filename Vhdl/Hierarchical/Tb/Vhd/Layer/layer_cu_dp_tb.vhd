@@ -9,21 +9,21 @@ end entity layer_cu_dp_tb;
 architecture test of layer_cu_dp_tb is
 
 
-	-- int parallelism
-	constant parallelism		: integer := 32;
-	constant weightsParallelism	: integer := 31;
+	-- int neuron_bit_width
+	constant neuron_bit_width		: integer := 32;
+	constant weights_bit_width	: integer := 31;
 
 	-- input spikes
 	constant N_inputs		: integer := 2;
 
-	-- must be one bit larger that the parallelism required to count
+	-- must be one bit larger that the neuron_bit_width required to count
 	-- up to N_inputs
 	constant N_inputs_cnt		: integer := 2;
 
 	-- inhibitory spikes
 	constant N_neurons		: integer := 3;
 
-	-- must be one bit larger that the parallelism required to count
+	-- must be one bit larger that the neuron_bit_width required to count
 	-- up to N_neurons
 	constant N_neurons_cnt		: integer := 3;
 
@@ -52,11 +52,11 @@ architecture test of layer_cu_dp_tb is
 
 
 	-- input parameters
-	signal v_th_value		: signed(parallelism-1 downto 0);		
-	signal v_reset			: signed(parallelism-1 downto 0);	
-	signal inh_weight		: signed(parallelism-1 downto 0);		
+	signal v_th_value		: signed(neuron_bit_width-1 downto 0);		
+	signal v_reset			: signed(neuron_bit_width-1 downto 0);	
+	signal inh_weight		: signed(neuron_bit_width-1 downto 0);		
 	signal exc_weights		: signed
-						(N_neurons*weightsParallelism-1 
+						(N_neurons*weights_bit_width-1 
 						 downto 0);
 
 	-- terminal counters 
@@ -89,7 +89,8 @@ architecture test of layer_cu_dp_tb is
 	signal sample			: std_logic;
 	signal layer_ready		: std_logic;
 	signal all_ready		: std_logic;
-	signal out_spikes		: std_logic_vector(N_neurons-1 downto 0);
+	signal out_spikes		: std_logic_vector(N_neurons-1 
+						downto 0);
 
 	-- output address to select the excitatory weights
 	signal exc_cnt			: std_logic_vector
@@ -110,16 +111,19 @@ architecture test of layer_cu_dp_tb is
 
 	-- datapath internal signals
 	signal exc_spikes		: std_logic_vector(N_inputs-1 downto 0);
-	signal inh_spikes		: std_logic_vector(N_neurons-1 downto 0);
+	signal inh_spikes		: std_logic_vector(N_neurons-1 
+						downto 0);
 	signal exc_spike		: std_logic;
 	signal inh_spike		: std_logic;
-	signal inh_cnt			: std_logic_vector(N_neurons_cnt-1 downto 0);
+	signal inh_cnt			: std_logic_vector(N_neurons_cnt-1
+						downto 0);
 	signal spike			: std_logic;
 	signal exc_or_int		: std_logic;
 	signal exc_stop_int		: std_logic;
 	signal inh_or_int		: std_logic;
 	signal inh_stop_int		: std_logic;
-	signal feedback_spikes		: std_logic_vector(N_neurons-1 downto 0);
+	signal feedback_spikes		: std_logic_vector(N_neurons-1
+						downto 0);
 	signal neuron_addr		: std_logic_vector(N_neurons_cnt-1
 						downto 0);
 
@@ -127,7 +131,7 @@ architecture test of layer_cu_dp_tb is
 	component anticipate_bits is
 
 		generic(
-			-- parallelism
+			-- neuron_bit_width
 			N		: integer := 8		
 		);
 
@@ -151,22 +155,25 @@ architecture test of layer_cu_dp_tb is
 			-- number of input bits
 			N_bit			: integer := 8;
 
-			-- selection counter parallelism
+			-- selection counter neuron_bit_width
 			N_cnt			: integer := 3		
 		);
 
 		port(
 			-- input
 			clk			: in std_logic;
-			input_bits		: in std_logic_vector(N_bit-1 downto 0);
+			input_bits		: in std_logic_vector(N_bit-1
+							downto 0);
 			select_cnt_en		: in std_logic;
 			select_cnt_rst_n	: in std_logic;
-			N_inputs		: in std_logic_vector(N_cnt-1 downto 0);
+			N_inputs		: in std_logic_vector(N_cnt-1
+							downto 0);
 
 			-- output
 			all_inputs		: out std_logic;
 			selected_input		: out std_logic;
-			input_index		: out std_logic_vector(N_cnt-1 downto 0);
+			input_index		: out std_logic_vector(N_cnt-1
+							downto 0);
 			stop			: out std_logic		
 		);
 
@@ -192,7 +199,7 @@ architecture test of layer_cu_dp_tb is
 	component mux2to1 is
 
 		generic(
-			-- parallelism
+			-- neuron_bit_width
 			N	: integer		
 		);
 
@@ -216,9 +223,9 @@ architecture test of layer_cu_dp_tb is
 	component bare_neurons is
 
 		generic(
-			-- internal parallelism
-			parallelism		: integer := 16;
-			weightsParallelism	: integer := 5;
+			-- internal neuron_bit_width
+			neuron_bit_width		: integer := 16;
+			weights_bit_width	: integer := 5;
 
 			-- number of neurons in the layer
 			N_neurons		: integer := 400;
@@ -237,20 +244,27 @@ architecture test of layer_cu_dp_tb is
 			exc_stop		: in std_logic;
 			inh_or			: in std_logic;
 			inh_stop		: in std_logic;
-			v_th_en			: in std_logic_vector(N_neurons-1 downto 0);
+			v_th_en			: in std_logic_vector(
+							N_neurons-1 downto 0);
 
 			-- input
-			input_spikes		: in std_logic_vector(N_neurons-1 downto 0);
+			input_spikes		: in std_logic_vector(
+							N_neurons-1 downto 0);
 
 			-- input parameters
-			v_th_value		: in signed(parallelism-1 downto 0);		
-			v_reset			: in signed(parallelism-1 downto 0);		
-			inh_weight		: in signed(parallelism-1 downto 0);		
+			v_th_value		: in signed(neuron_bit_width-1
+							downto 0);		
+			v_reset			: in signed(neuron_bit_width-1
+							downto 0);		
+			inh_weight		: in signed(neuron_bit_width-1
+							downto 0);		
 			exc_weights		: in signed(N_neurons*
-							  weightsParallelism-1 downto 0);
+							  weights_bit_width-1
+							  downto 0);
 
 			-- output
-			out_spikes		: out std_logic_vector(N_neurons-1 downto 0);
+			out_spikes		: out std_logic_vector(
+							N_neurons-1 downto 0);
 			all_ready		: out std_logic
 		);
 
@@ -269,7 +283,8 @@ architecture test of layer_cu_dp_tb is
 			encoded_in	: in std_logic_vector(N-1 downto 0);
 
 			-- output
-			decoded_out	: out  std_logic_vector(2**N -1 downto 0)
+			decoded_out	: out  std_logic_vector(2**N -1
+						downto 0)
 		);
 
 	end component decoder;
@@ -327,18 +342,18 @@ begin
 
 
 	-- model parameters binary conversion
-	v_th_value	<= to_signed(v_th_value_int, parallelism);
-	v_reset		<= to_signed(v_reset_int, parallelism);
-	inh_weight	<= to_signed(inh_weight_int, parallelism);
+	v_th_value	<= to_signed(v_th_value_int, neuron_bit_width);
+	v_reset		<= to_signed(v_reset_int, neuron_bit_width);
+	inh_weight	<= to_signed(inh_weight_int, neuron_bit_width);
 
 	exc_weights_init	: process
 	begin
 		init	: for i in 0 to N_neurons-1
 		loop
-			exc_weights((i+1)*weightsParallelism-1 downto 
-					i*weightsParallelism) <= 
+			exc_weights((i+1)*weights_bit_width-1 downto 
+					i*weights_bit_width) <= 
 					to_signed(exc_weight_int, 
-					weightsParallelism);
+					weights_bit_width);
 		end loop init;
 
 		wait;
@@ -608,7 +623,7 @@ begin
 
 	anticipate_exc_spikes	: anticipate_bits
 		generic map(
-			-- parallelism
+			-- neuron_bit_width
 			N		=> N_inputs		
 		)
 
@@ -627,7 +642,7 @@ begin
 
 	anticipate_inh_spikes	: anticipate_bits
 		generic map(
-			-- parallelism
+			-- neuron_bit_width
 			N		=> N_neurons	
 		)
 
@@ -649,7 +664,7 @@ begin
 			-- number of input bits
 			N_bit			=> N_inputs,
 
-			-- selection counter parallelism
+			-- selection counter neuron_bit_width
 			N_cnt			=> N_inputs_cnt
 		)
 
@@ -674,7 +689,7 @@ begin
 			-- number of input bits
 			N_bit			=> N_neurons,
 
-			-- selection counter parallelism
+			-- selection counter neuron_bit_width
 			N_cnt			=> N_neurons_cnt
 		)
 
@@ -729,9 +744,9 @@ begin
 	bare_layer	: bare_neurons 
 
 		generic map(
-			-- internal parallelism
-			parallelism		=> parallelism,
-			weightsParallelism	=> weightsParallelism,
+			-- internal neuron_bit_width
+			neuron_bit_width		=> neuron_bit_width,
+			weights_bit_width	=> weights_bit_width,
 
 			-- number of neurons in the layer
 			N_neurons		=> N_neurons,
@@ -792,7 +807,8 @@ begin
 
 		port map(
 			-- input
-			input_bits	=> unmasked_select(N_neurons-1 downto 0),
+			input_bits	=> unmasked_select(N_neurons-1
+						downto 0),
 			mask_bit	=> init_v_th,
                                                       
 			-- output
@@ -808,7 +824,8 @@ begin
 
 		port map(
 			-- input
-			input_bits	=> unmasked_select(N_neurons-1 downto 0),
+			input_bits	=> unmasked_select(N_neurons-1
+						downto 0),
 			mask_bit0	=> inh,
 			mask_bit1	=> spike,
                                                       
