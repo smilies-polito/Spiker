@@ -6,9 +6,9 @@ use ieee.numeric_std.all;
 entity debug_neuron is
 
 	generic(
-		-- parallelism
-		parallelism		: integer := 16;
-		weightsParallelism	: integer := 5;
+		-- neuron_bit_width
+		neuron_bit_width	: integer := 16;
+		weights_bit_width	: integer := 5;
 
 		-- shift amount
 		shift			: integer := 1
@@ -30,10 +30,10 @@ entity debug_neuron is
 		v_th_en			: in std_logic;
 
 		-- input parameters
-		v_th_value		: in signed(parallelism-1 downto 0);
-		v_reset			: in signed(parallelism-1 downto 0);
-		inh_weight		: in signed(parallelism-1 downto 0);
-		exc_weight		: in signed(weightsParallelism-1 downto
+		v_th_value		: in signed(neuron_bit_width-1 downto 0);
+		v_reset			: in signed(neuron_bit_width-1 downto 0);
+		inh_weight		: in signed(neuron_bit_width-1 downto 0);
+		exc_weight		: in signed(weights_bit_width-1 downto
 						0);
 
 		-- output
@@ -41,7 +41,7 @@ entity debug_neuron is
 		neuron_ready		: out std_logic;
 
 		-- debug output
-		v_out			: out signed(parallelism-1 downto 0)
+		v_out			: out signed(neuron_bit_width-1 downto 0)
 	);
 
 
@@ -67,9 +67,9 @@ architecture behaviour of debug_neuron is
 	component debug_neuron_datapath is
 
 		generic(
-			-- parallelism
-			parallelism		: integer := 16;
-			weightsParallelism	: integer := 5;
+			-- neuron_bit_width
+			neuron_bit_width		: integer := 16;
+			weights_bit_width	: integer := 5;
 
 			-- shift amount
 			shift			: integer := 1
@@ -77,10 +77,10 @@ architecture behaviour of debug_neuron is
 
 		port(
 			-- input parameters
-			v_th_value		: in signed(parallelism-1 downto 0);
-			v_reset			: in signed(parallelism-1 downto 0);
-			inh_weight		: in signed(parallelism-1 downto 0);
-			exc_weight		: in signed(weightsParallelism-1 downto
+			v_th_value		: in signed(neuron_bit_width-1 downto 0);
+			v_reset			: in signed(neuron_bit_width-1 downto 0);
+			inh_weight		: in signed(neuron_bit_width-1 downto 0);
+			exc_weight		: in signed(weights_bit_width-1 downto
 							0);
 
 			-- input controls
@@ -96,7 +96,7 @@ architecture behaviour of debug_neuron is
 			exceed_v_th		: out std_logic;
 
 			-- debug output
-			v_out			: out signed(parallelism-1 downto 0)
+			v_out			: out signed(neuron_bit_width-1 downto 0)
 		);
 	end component debug_neuron_datapath;
 
@@ -138,9 +138,9 @@ begin
 
 	datapath : debug_neuron_datapath
 		generic map(
-			-- parallelism
-			parallelism		=> parallelism,
-			weightsParallelism	=> weightsParallelism,
+			-- neuron_bit_width
+			neuron_bit_width	=> neuron_bit_width,
+			weights_bit_width	=> weights_bit_width,
 
 			-- shift amount
 			shift			=> shift
