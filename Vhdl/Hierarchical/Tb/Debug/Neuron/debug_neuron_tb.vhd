@@ -13,49 +13,49 @@ architecture behaviour of debug_neuron_tb is
 
 
 	-- parallelism
-	constant N		: integer := 16;
-	constant N_weight	: integer := 15;
+	constant neuron_bit_width	: integer := 16;
+	constant weights_bit_width		: integer := 15;
 
 	-- exponential shift
-	constant shift		: integer := 10;
+	constant shift			: integer := 10;
 
 	-- model parameters
-	constant v_th_value_int	: integer 	:= 13*(2**10);	
-	constant v_reset_int	: integer 	:= 5*(2**10);	
-	constant inh_weight_int	: integer 	:= -7*(2**10);	
-	constant exc_weight_int	: integer 	:= 7*(2**10);
+	constant v_th_value_int		: integer 	:= 13*(2**10);	
+	constant v_reset_int		: integer 	:= 5*(2**10);	
+	constant inh_weight_int		: integer 	:= -7*(2**10);	
+	constant exc_weight_int		: integer 	:= 7*(2**10);
 
 
 	-- input parameters
-	signal v_th_value	: signed(N-1 downto 0);
-	signal v_reset		: signed(N-1 downto 0);
-	signal inh_weight	: signed(N-1 downto 0);
-	signal exc_weight	: signed(N_weight-1 downto 0);
+	signal v_th_value		: signed(neuron_bit_width-1 downto 0);
+	signal v_reset			: signed(neuron_bit_width-1 downto 0);
+	signal inh_weight		: signed(neuron_bit_width-1 downto 0);
+	signal exc_weight		: signed(weights_bit_width-1 downto 0);
 
 
 	-- input
-	signal clk		: std_logic;
-	signal rst_n		: std_logic;
-	signal start		: std_logic;
-	signal stop	        : std_logic;
-	signal exc_or	        : std_logic;
-	signal exc_stop		: std_logic;
-	signal inh_or		: std_logic;
-	signal inh_stop		: std_logic;
-        signal input_spike	: std_logic;
+	signal clk			: std_logic;
+	signal rst_n			: std_logic;
+	signal start			: std_logic;
+	signal stop			: std_logic;
+	signal exc_or			: std_logic;
+	signal exc_stop			: std_logic;
+	signal inh_or			: std_logic;
+	signal inh_stop			: std_logic;
+        signal input_spike		: std_logic;
 
-	-- to load the threshold
-	signal v_th_en		: std_logic;
+	-- to load the threshold	
+	signal v_th_en			: std_logic;
 
 	-- output
-	signal out_spike	: std_logic;
-	signal neuron_ready	: std_logic;
+	signal out_spike		: std_logic;
+	signal neuron_ready		: std_logic;
 
 	-- debug output
-	signal v_out		: signed(N-1 downto 0);
+	signal v_out			: signed(neuron_bit_width-1 downto 0);
 
 	-- file signals
-	signal w_en		: std_logic;
+	signal w_en			: std_logic;
 
 
 
@@ -63,40 +63,45 @@ architecture behaviour of debug_neuron_tb is
 
 		generic(
 			-- parallelism
-			N		: integer := 16;
-			N_weight	: integer := 5;
+			neuron_bit_width	: integer := 16;
+			weights_bit_width		: integer := 5;
 
 			-- shift amount
-			shift		: integer := 1
+			shift			: integer := 1
 		);
 
 		port(
-			-- input controls
-			clk		: in std_logic;
-			rst_n		: in std_logic;
-			start		: in std_logic;
-			stop		: in std_logic;
-			exc_or		: in std_logic;
-			exc_stop	: in std_logic;
-			inh_or		: in std_logic;
-			inh_stop	: in std_logic;
-			input_spike	: in std_logic;
+			-- input control	s
+			clk			: in std_logic;
+			rst_n			: in std_logic;
+			start			: in std_logic;
+			stop			: in std_logic;
+			exc_or			: in std_logic;
+			exc_stop		: in std_logic;
+			inh_or			: in std_logic;
+			inh_stop		: in std_logic;
+			input_spike		: in std_logic;
 
 			-- to load the threshold
-			v_th_en		: in std_logic;
+			v_th_en			: in std_logic;
 
 			-- input parameters
-			v_th_value	: in signed(N-1 downto 0);
-			v_reset		: in signed(N-1 downto 0);
-			inh_weight	: in signed(N-1 downto 0);
-			exc_weight	: in signed(N_weight-1 downto 0);
+			v_th_value		: in signed(neuron_bit_width-1
+							downto 0);
+			v_reset			: in signed(neuron_bit_width-1
+							downto 0);
+			inh_weight		: in signed(neuron_bit_width-1
+							downto 0);
+			exc_weight		: in signed(weights_bit_width-1
+							downto 0);
 
 			-- output
-			out_spike	: out std_logic;
-			neuron_ready	: out std_logic;
+			out_spike		: out std_logic;
+			neuron_ready		: out std_logic;
 
 			-- debug output
-			v_out		: out signed(N-1 downto 0)
+			v_out			: out signed(neuron_bit_width-1 
+							downto 0)
 		);
 
 	end component debug_neuron;
@@ -109,10 +114,10 @@ begin
 
 
 	-- model parameters binary conversion
-	v_th_value	<= to_signed(v_th_value_int, N);
-	v_reset		<= to_signed(v_reset_int, N);
-	inh_weight	<= to_signed(inh_weight_int, N);
-	exc_weight	<= to_signed(exc_weight_int, N_weight);
+	v_th_value	<= to_signed(v_th_value_int, neuron_bit_width);
+	v_reset		<= to_signed(v_reset_int, neuron_bit_width);
+	inh_weight	<= to_signed(inh_weight_int, neuron_bit_width);
+	exc_weight	<= to_signed(exc_weight_int, weights_bit_width);
 
 
 
@@ -251,40 +256,40 @@ begin
 
 		generic map(
 			-- parallelism
-			N		=> N,	
-			N_weight	=> N_weight,
+			neuron_bit_width	=> neuron_bit_width,	
+			weights_bit_width	=> weights_bit_width,
 
 			-- shift amount
-			shift		=> shift
+			shift			=> shift
 		)
 
 		port map(
 			-- input controls
-			clk		=> clk,
-			rst_n		=> rst_n,
-			start		=> start,
-			stop		=> stop,
-			exc_or	       	=> exc_or,
-			exc_stop       	=> exc_stop,
-			inh_or	        => inh_or,
-			inh_stop        => inh_stop,
-                       	input_spike	=> input_spike,
+			clk			=> clk,
+			rst_n			=> rst_n,
+			start			=> start,
+			stop			=> stop,
+			exc_or			=> exc_or,
+			exc_stop		=> exc_stop,
+			inh_or			=> inh_or,
+			inh_stop		=> inh_stop,
+                       	input_spike		=> input_spike,
 
 			-- to load the threshold
-			v_th_en		=> v_th_en,
+			v_th_en			=> v_th_en,
 
 			-- input parameters
-			v_th_value	=> v_th_value,
-			v_reset		=> v_reset,
-			inh_weight	=> inh_weight,
-			exc_weight	=> exc_weight,
-                                                       
-			-- output          
-			out_spike	=> out_spike,
-			neuron_ready	=> neuron_ready,
+			v_th_value		=> v_th_value,
+			v_reset			=> v_reset,
+			inh_weight		=> inh_weight,
+			exc_weight		=> exc_weight,
+							       
+			-- output		   
+			out_spike		=> out_spike,
+			neuron_ready		=> neuron_ready,
 
 			-- debug output
-			v_out		=> v_out
+			v_out			=> v_out
 		);
 
 
@@ -303,14 +308,19 @@ begin
 
 	file_write : process(clk, w_en)
 
-		file in_spikes_file	: text open write_mode is
-			"/home/alessio/Documents/Poli/Dottorato/progetti/snn/spiker/vhdl/mark3/plot/data/inSpikes.txt";
+		file in_spikes_file	: text open write_mode is "/home"&
+			"/alessio/Documents/Poli/Dottorato/Progetti/Spiker"&
+			"/Vhdl/Hierarchical/Sim/IO/inSpikes.txt";
 
-		file out_spikes_file	: text open write_mode is
-			"/home/alessio/Documents/Poli/Dottorato/progetti/snn/spiker/vhdl/mark3/plot/data/outSpikes.txt";
+		file out_spikes_file	: text open write_mode is "/home"&
+			"/alessio/Documents/Poli/Dottorato/Progetti/Spiker"&
+			"/Vhdl/Hierarchical/Sim/IO/outSpikes.txt";
 
-		file v_file		: text open write_mode is 
-			"/home/alessio/Documents/Poli/Dottorato/progetti/snn/spiker/vhdl/mark3/plot/data/v.txt";
+
+		file v_file		: text open write_mode is "/home"&
+			"/alessio/Documents/Poli/Dottorato/Progetti/Spiker"&
+			"/Vhdl/Hierarchical/Sim/IO/v.txt";
+
 
 		variable row		: line;
 		variable write_var	: integer;
