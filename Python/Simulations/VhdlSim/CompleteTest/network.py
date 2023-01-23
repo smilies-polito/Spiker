@@ -6,12 +6,12 @@ def run(networkScript, countersFilename, lastLayerSize, countBitWidth):
 
 	sp.run(networkScript)
 
-	return loadCOunters(countersFilename, lastLayerSize, countBitWidth)
+	return loadCounters(countersFilename, lastLayerSize, countBitWidth)
 
 
 
 
-def loadCOunters(countersFilename, lastLayerSize, countBitWidth):
+def loadCounters(countersFilename, lastLayerSize, countBitWidth):
 
 	with open(countersFilename) as fp:
 
