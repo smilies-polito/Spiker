@@ -10,22 +10,22 @@ end entity debug_layer_tb;
 architecture test of debug_layer_tb is
 
 	-- Parallelisms
-	constant parallelism		: integer := 16;
-	constant weightsParallelism	: integer := 5;
+	constant neuron_bit_width	: integer := 16;
+	constant weights_bit_width	: integer := 5;
 
 	-- Input spikes
 	constant N_inputs		: integer := 784;
 
-	-- Must be one bit larger that the parallelism required to count
+	-- Must be one bit larger that the bit-width required to count
 	-- up to N_inputs
-	constant N_inputs_cnt		: integer := 11;
+	constant inputs_cnt_bit_width	: integer := 11;
 
 	-- Inhibitory spikes
 	constant N_neurons		: integer := 400;
 
-	-- Must be one bit larger that the parallelism required to count
+	-- Must be one bit larger that the bit-width required to count
 	-- up to N_neurons
-	constant N_neurons_cnt		: integer := 10;
+	constant neurons_cnt_bit_width	: integer := 10;
 
 	-- Exponential decay shift
 	constant shift			: integer := 10;
@@ -43,43 +43,46 @@ architecture test of debug_layer_tb is
 
 
 	--File names
-	constant weights_filename	: string	:= "/home/alessio/"&
-		"OneDrive/Dottorato/Progetti/SNN/Miei/spiker/vhdl/mark3/sim/"&
-		"hyperparameters/weights.mem";
+	constant weights_filename	: string	:= "/home/alessio"&
+		"/Documents/Poli/Dottorato/Progetti/Spiker/Vhdl/Hierarchical"&
+		"/Sim/Parameters/weights.mem";
 
-	constant thresholds_filename	: string	:= "/home/alessio/"&
-		"OneDrive/Dottorato/Progetti/SNN/Miei/spiker/vhdl/mark3/sim/"&
-		"hyperparameters/thresholds.init";
+	constant thresholds_filename	: string	:= "/home/alessio"&
+		"/Documents/Poli/Dottorato/Progetti/Spiker/Vhdl/Hierarchical"&
+		"/Sim/Parameters/thresholds.init";
 
-	constant inputs_filename	: string	:= "/home/alessio/"&
-		"OneDrive/Dottorato/Progetti/SNN/Miei/spiker/vhdl/mark3/"&
-		"sim/inputOutput/inputSpikes.txt";
+	constant inputs_filename	: string	:= "/home/alessio"&
+		"/Documents/Poli/Dottorato/Progetti/Spiker/Vhdl/Hierarchical"&
+		"/Sim/IO/inputSpikes.txt";
 
-	constant out_spikes1_filename	: string	:= "/home/alessio/"&
-		"OneDrive/Dottorato/Progetti/SNN/Miei/spiker/vhdl/mark3/"&
-		"sim/inputOutput/vhdlOutSpikesFirstNeuron.txt";
+	constant out_spikes1_filename	: string	:= "/home/alessio"&
+		"/Documents/Poli/Dottorato/Progetti/Spiker/Vhdl/Hierarchical"&
+		"/Sim/IO/vhdlOutSpikesFirstNeuron.txt"; 
 
-	constant out_spikes_filename	: string	:= "/home/alessio/"&
-		"OneDrive/Dottorato/Progetti/SNN/Miei/spiker/vhdl/mark3/"&
-		"sim/inputOutput/vhdlOutSpikes.txt";
+	constant out_spikes_filename	: string	:= "/home/alessio"&
+		"/Documents/Poli/Dottorato/Progetti/Spiker/Vhdl/Hierarchical"&
+		"/Sim/IO/vhdlOutSpikes.txt"; 
 
-	constant membrane_filename	: string	:= "/home/alessio/"&
-		"OneDrive/Dottorato/Progetti/SNN/Miei/spiker/vhdl/mark3/"&
-		"sim/inputOutput/vhdlMembrane.txt";
+	constant membrane_filename	: string	:="/home/alessio"&
+		"/Documents/Poli/Dottorato/Progetti/Spiker/Vhdl/Hierarchical"&
+		"/Sim/IO/vhdlMembrane.txt";  
 
-	constant out_weights_filename	: string	:= "/home/alessio/"&
-		"OneDrive/Dottorato/Progetti/SNN/Miei/spiker/vhdl/mark3/"&
-		"sim/inputOutput/outWeights.txt";
+	constant out_weights_filename	: string	:="/home/alessio"&
+		"/Documents/Poli/Dottorato/Progetti/Spiker/Vhdl/Hierarchical"&
+		"/Sim/IO/outWeights.txt";  
 
-	constant cnt_out_filename	: string	:= "/home/alessio/"&
-		"OneDrive/Dottorato/Progetti/SNN/Miei/spiker/vhdl/mark3/"&
-		"sim/inputOutput/vhdlCounters.txt";
+	constant cnt_out_filename	: string	:="/home/alessio"&
+		"/Documents/Poli/Dottorato/Progetti/Spiker/Vhdl/Hierarchical"&
+		"/Sim/IO/vhdlCounters.txt";  
 
 	-- BRAM parameters
 	constant weightsWord		: integer := 36;
 	constant bram_addr_length	: integer := 6;
 	constant weights_addr_length	: integer := 10;
 	constant N_bram			: integer := 58;
+	constant N_weights_per_word	: integer := 7;
+	constant bram_we_length		: integer := 4;
+
 
 	-- Output counters parameters
 	constant N_out			: integer := 16;
@@ -112,7 +115,8 @@ architecture test of debug_layer_tb is
 
 	
 	-- Layer signals: address to select the neurons
-	signal v_th_addr		: std_logic_vector(N_neurons_cnt-1
+	signal v_th_addr		: std_logic_vector(
+						neurons_cnt_bit_width-1
 						downto 0);
 
 	-- Layer signals: data input
@@ -120,17 +124,19 @@ architecture test of debug_layer_tb is
 					     (N_inputs-1 downto 0);
 
 	-- Layer signals: input parameters
-	signal v_th_value		: signed(parallelism-1 downto 0);	
-	signal v_reset			: signed(parallelism-1 downto 0);	
-	signal inh_weight		: signed(parallelism-1 downto 0);	
-	signal exc_weights		: signed(N_neurons*weightsParallelism-1
+	signal v_th_value		: signed(neuron_bit_width-1 downto 0);	
+	signal v_reset			: signed(neuron_bit_width-1 downto 0);	
+	signal inh_weight		: signed(neuron_bit_width-1 downto 0);	
+	signal exc_weights		: signed(N_neurons*weights_bit_width-1
 						downto 0);
 
 	-- Terminal counters
 	signal N_inputs_tc		: std_logic_vector
-						(N_inputs_cnt-1 downto 0);
+						(inputs_cnt_bit_width-1
+						downto 0);
 	signal N_neurons_tc		: std_logic_vector
-						(N_neurons_cnt-1 downto 0);
+						(neurons_cnt_bit_width-1
+						downto 0);
 	signal N_cycles_tc		: std_logic_vector
 						(N_cycles_cnt-1 downto 0);
 
@@ -144,11 +150,12 @@ architecture test of debug_layer_tb is
 
 
 	-- Layer signals: output address to select the excitatory weights
-	signal exc_cnt			: std_logic_vector(N_inputs_cnt-1 
+	signal exc_cnt			: std_logic_vector(
+						inputs_cnt_bit_width-1 
 						downto 0);
 
 	-- Layer signals: debug output
-	signal v_out			: signed(parallelism-1 downto 0);
+	signal v_out			: signed(neuron_bit_width-1 downto 0);
 
 
 
@@ -160,8 +167,13 @@ architecture test of debug_layer_tb is
 	signal wren			: std_logic;
 	signal wraddr			: std_logic_vector(weights_addr_length-1
 						downto 0);
+	signal rdaddr			: std_logic_vector(weights_addr_length-1 
+						downto 0);
 	signal bram_sel			: std_logic_vector(bram_addr_length-1
 						downto 0);
+	signal do			: std_logic_vector(N_bram
+						*N_weights_per_word
+						*weights_bit_width-1 downto 0);
 						
 
 	-- Cycles counter signals
@@ -214,23 +226,23 @@ architecture test of debug_layer_tb is
 
 		generic(
 
-			-- int parallelism
-			parallelism		: integer := 16;
-			weightsParallelism	: integer := 5;
+			-- int neuron_bit_width
+			neuron_bit_width		: integer := 16;
+			weights_bit_width	: integer := 5;
 
 			-- input spikes
 			N_inputs		: integer := 784;
 
-			-- must be one bit larger that the parallelism required
+			-- must be one bit larger that the bit-width required
 			-- to count up to N_inputs
-			N_inputs_cnt		: integer := 11;
+			inputs_cnt_bit_width		: integer := 11;
 
 			-- inhibitory spikes
 			N_neurons		: integer := 400;
 
-			-- must be one bit larger that the parallelism required
+			-- must be one bit larger that the bit-width required
 			-- to count up to N_neurons
-			N_neurons_cnt		: integer := 10;
+			neurons_cnt_bit_width		: integer := 10;
 
 			-- exponential decay shift
 			shift			: integer := 10
@@ -246,30 +258,30 @@ architecture test of debug_layer_tb is
 
 			-- address to select the neurons
 			v_th_addr		: in std_logic_vector(
-							N_neurons_cnt-1 downto
-							0);
+							neurons_cnt_bit_width-1
+							downto 0);
 
 			-- data input
 			input_spikes		: in std_logic_vector
 							(N_inputs-1 downto 0);
 
 			-- input parameters
-			v_th_value		: in signed(parallelism-1 downto
-							0);		
-			v_reset			: in signed(parallelism-1 downto
-							0);	
-			inh_weight		: in signed(parallelism-1 downto
-							0);		
+			v_th_value		: in signed(neuron_bit_width-1
+							downto 0);		
+			v_reset			: in signed(neuron_bit_width-1
+							downto 0);	
+			inh_weight		: in signed(neuron_bit_width-1
+							downto 0);		
 			exc_weights		: in signed(N_neurons*
-							weightsParallelism-1
+							weights_bit_width-1
 						       	downto 0);
 
 			-- terminal counters 
 			N_inputs_tc		: in std_logic_vector
-							(N_inputs_cnt-1 
+							(inputs_cnt_bit_width-1 
 							downto 0);
 			N_neurons_tc		: in std_logic_vector
-							(N_neurons_cnt-1 
+							(neurons_cnt_bit_width-1 
 							downto 0);
 
 			-- output
@@ -282,11 +294,11 @@ architecture test of debug_layer_tb is
 
 			-- output address to select the excitatory weights
 			exc_cnt			: out std_logic_vector
-							(N_inputs_cnt-1 
+							(inputs_cnt_bit_width-1 
 							downto 0);
 
 			-- debug output
-			v_out			: out signed(parallelism-1
+			v_out			: out signed(neuron_bit_width-1
 							downto 0)
 		);
 
@@ -295,19 +307,37 @@ architecture test of debug_layer_tb is
 
 	component weights_bram is
 
+		generic(
+			word_length		: integer := 36;
+			N_weights_per_word	: integer := 7;
+			rdwr_addr_length	: integer := 10;
+			we_length		: integer := 4;
+			N_neurons		: integer := 400;
+			weights_bit_width	: integer := 5;
+			N_bram			: integer := 58;
+			bram_sel_length		: integer := 6
+		);
+
 		port(
 			-- input
 			clk		: in std_logic;
-			di		: in std_logic_vector(35 downto 0);
+			di		: in std_logic_vector(word_length-1
+						downto 0);
 			rst_n		: in std_logic;
-			rdaddr		: in std_logic_vector(9 downto 0);
+			rdaddr		: in std_logic_vector(rdwr_addr_length-1 
+						downto 0);
 			rden		: in std_logic;
 			wren		: in std_logic;
-			wraddr		: in std_logic_vector(9 downto 0);
-			bram_sel	: in std_logic_vector(5 downto 0);
+			wraddr		: in std_logic_vector(rdwr_addr_length-1
+						downto 0);
+			bram_sel	: in std_logic_vector(bram_sel_length-1 
+						downto 0);
 
 			-- output
-			do		: out std_logic_vector(400*5-1 downto 0)
+			do		: out std_logic_vector(N_bram*
+						N_weights_per_word*
+						weights_bit_width-1 
+						downto 0)
 					
 		);
 
@@ -317,7 +347,7 @@ architecture test of debug_layer_tb is
 	component cnt is
 
 		generic(
-			N		: integer := 8		
+			bit_width	: integer := 8		
 		);
 
 		port(
@@ -327,7 +357,8 @@ architecture test of debug_layer_tb is
 			cnt_rst_n	: in std_logic;
 
 			-- output
-			cnt_out		: out std_logic_vector(N-1 downto 0)		
+			cnt_out		: out std_logic_vector(bit_width-1
+						downto 0)		
 		);
 
 	end component cnt;
@@ -364,11 +395,20 @@ begin
 					N_cycles_tc'length));
 
 	v_th_addr(
-		N_neurons_cnt
+		neurons_cnt_bit_width
 		-1) 		<= '0';
 
 	dummy_addr		<= "0";
 	cnt_out_rst_n		<= not start;
+
+	exc_weights		<= signed(do(N_neurons*weights_bit_width-1 
+					downto 0));
+
+	rdaddr(weights_addr_length-1 downto inputs_cnt_bit_width-1) 
+				<= (others => '0');
+
+	rdaddr(inputs_cnt_bit_width-2 downto 0) 
+				<= exc_cnt(inputs_cnt_bit_width-2 downto 0);
 
 
 
@@ -401,9 +441,9 @@ begin
 	init_thresholds : load_file 
 
 		generic map(
-			word_length		=> parallelism,
+			word_length		=> neuron_bit_width,
 			bram_addr_length	=> 1,
-			addr_length		=> N_neurons_cnt-1,
+			addr_length		=> neurons_cnt_bit_width-1,
 			N_bram			=> 1,
 			N_words			=> N_neurons,
 			weights_filename	=> thresholds_filename
@@ -417,7 +457,8 @@ begin
 			-- output
 			std_logic_vector(di)	=> v_th_value,
 			bram_addr		=> dummy_addr,
-			wraddr			=> v_th_addr(N_neurons_cnt-2
+			wraddr			=> v_th_addr(
+							neurons_cnt_bit_width-2
 							downto 0),
 			wren			=> init_v_th 
 		);
@@ -667,23 +708,23 @@ begin
 	layer	: debug_layer 
 		generic map(
 
-			-- int parallelism
-			parallelism		=> parallelism,
-			weightsParallelism	=> weightsParallelism,
+			-- int neuron_bit_width
+			neuron_bit_width		=> neuron_bit_width,
+			weights_bit_width	=> weights_bit_width,
 
 			-- input spikes
 			N_inputs		=> N_inputs,
 
-			-- must be one bit larger that the parallelism required
+			-- must be one bit larger that the bit-width required
 			-- to count up to N_inputs
-			N_inputs_cnt		=> N_inputs_cnt,
+			inputs_cnt_bit_width	=> inputs_cnt_bit_width,
 
 			-- inhibitory spikes
 			N_neurons		=> N_neurons,
 
-			-- must be one bit larger that the parallelism required
+			-- must be one bit larger that the bit-width required
 			-- to count up to N_neurons
-			N_neurons_cnt		=> N_neurons_cnt,
+			neurons_cnt_bit_width	=> neurons_cnt_bit_width,
 
 			-- exponential decay shift
 			shift			=> shift
@@ -728,27 +769,41 @@ begin
 		);
 
 
-	synapses_weights	: weights_bram 
+	synapse_weights:	weights_bram
+		generic map(
+			word_length		=> weightsWord,
+			N_weights_per_word	=> N_weights_per_word,
+			rdwr_addr_length	=> weights_addr_length, 
+			we_length		=> bram_we_length,
+			N_neurons		=> N_neurons,
+			weights_bit_width	=> weights_bit_width,	
+			N_bram			=> N_bram,
+			bram_sel_length		=> bram_addr_length
+		)
+
 		port map(
 			-- input
-			clk		=> clk,
-			di		=> input_weights,
-			rst_n		=> rst_n,
-			rdaddr		=> exc_cnt(9 downto 0),
-			rden		=> rden,
-			wren		=> wren,
-			wraddr		=> wraddr,
-			bram_sel	=> bram_sel,
+			clk			=> clk,
+			di			=> input_weights,
+			rst_n			=> rst_n,
+			rdaddr			=> rdaddr,
+			rden			=> rden,
+			wren			=> wren,
+			wraddr			=> wraddr,
+			bram_sel		=> bram_sel,
 
 			-- output
-			signed(do)		=> exc_weights
+			do			=> do
+					
+					
+					
 					
 		);
 
 
 	cycles_counter	: cnt
 		generic map(
-			N		=> N_cycles_cnt
+			bit_width	=> N_cycles_cnt
 		)
 
 		port map(
@@ -783,7 +838,7 @@ begin
  		
  		out_cnt : cnt
  			generic map(
- 				N		=> N_out
+ 				bit_width	=> N_out
  			)
  
  			port map(
