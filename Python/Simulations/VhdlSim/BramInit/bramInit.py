@@ -66,6 +66,6 @@ def bramInit(hyperparametersDir, weightsFilename, inThreshFilename,
 
 
 # Create files for the initialization of the BRAMs and the thresholds
-bramInit(hyperparametersDir, weightsFilename, inThreshFilename,
+bramInit(parametersDir, weightsFilename, inThreshFilename,
 		wordWidthsList, bramSize, numberOfInputs, weightsBitWidth,
 		neuronsBitWidth, bramRootFilename, outThreshFilename)

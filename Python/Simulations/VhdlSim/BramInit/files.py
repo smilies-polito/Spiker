@@ -1,9 +1,11 @@
+vhdlDir = "../../../../Vhdl"
+pythonDir = "../../../../Python"
+
 # Directory in which the initialization files will be stored
-hyperparametersDir = "../hyperparameters"
+parametersDir = vhdlDir + "/Hierarchical/Sim/Parameters"
 
 # Directory containing all the trained hyperparameters
-trainedParamDir  = "../../../../python/custom/mark3_simplified/"\
-			"parameters"
+trainedParamDir  = pythonDir + "/Models/Custom/FullPrecision/Parameters"
 
 # Trained weights
 weightsFilename = trainedParamDir + "/weights1.npy"
@@ -13,7 +15,7 @@ inThreshFilename = trainedParamDir + "/thresholds1.npy"
 
 # Root name of the BRAM initialization file. The index of the BRAM will be
 # appended to it
-bramRootFilename = hyperparametersDir + "/weights"
+bramRootFilename = parametersDir + "/weights"
 
 # Name of the threshold registers initialization file
-outThreshFilename = hyperparametersDir + "/thresholds.init"
+outThreshFilename = parametersDir + "/thresholds.init"
