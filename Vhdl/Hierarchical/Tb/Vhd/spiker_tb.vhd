@@ -48,11 +48,11 @@ architecture test of spiker_tb is
 
 
 	constant weights_filename	: string	:= "/home/alessio/Documents/"&
-		"Poli/Dottorato/Progetti/Spiker/Vhdl/Hierarchical/Sim/Hyperparameters/"&
+		"Poli/Dottorato/Progetti/Spiker/Vhdl/Hierarchical/Sim/Parameters/"&
 		"weights.mem";
 
 	constant thresholds_filename	: string	:= "/home/alessio/Documents/"&
-		"Poli/Dottorato/Progetti/Spiker/Vhdl/Hierarchical/Sim/Hyperparameters/"&
+		"Poli/Dottorato/Progetti/Spiker/Vhdl/Hierarchical/Sim/Parameters/"&
 		"thresholds.init";
 
 	constant inputs_filename	: string	:= "/home/alessio/Documents/"&
