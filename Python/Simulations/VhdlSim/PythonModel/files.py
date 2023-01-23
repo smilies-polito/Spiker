@@ -1,4 +1,4 @@
-mnistDir = "../../../MNIST"
+mnistDir = "../../../../MNIST"
 
 # Training
 trainImages = mnistDir + "/train-images-idx3-ubyte"
@@ -20,8 +20,7 @@ assignmentsFile = paramDir + "/assignments.npy"
 trainPerformanceFile = paramDir + "/trainPerformance.txt"
 testPerformanceFile = paramDir + "/testPerformance.txt"
 
-
-vhdlIoDir = "../../../Vhdl/mark3/sim/inputOutput"
+vhdlIoDir = "../../../../Vhdl/Hierarchical/Sim/IO"
 
 inputFilename = vhdlIoDir + "/inputSpikes.txt"
 outSpikesFilename = vhdlIoDir + "/pythonOutSpikes.txt"
