@@ -7,23 +7,23 @@ entity debug_layer_datapath is
 
 	generic(
 
-		-- int parallelism
-		parallelism		: integer := 16;
-		weightsParallelism	: integer := 5;
+		-- int neuron_bit_width
+		neuron_bit_width	: integer := 16;
+		weights_bit_width	: integer := 5;
 
 		-- input spikes
 		N_inputs		: integer := 784;
 
-		-- must be one bit larger that the parallelism required to count
-		-- up to N_inputs
-		N_inputs_cnt		: integer := 11;
+		-- must be one bit larger that the bit-width required to
+		-- count up to N_inputs
+		inputs_cnt_bit_width	: integer := 11;
 
 		-- inhibitory spikes
 		N_neurons		: integer := 400;
 
-		-- must be one bit larger that the parallelism required to count
+		-- must be one bit larger that the bit-width required to count
 		-- up to N_neurons
-		N_neurons_cnt		: integer := 10;
+		neurons_cnt_bit_width	: integer := 10;
 
 		-- exponential decay shift
 		shift			: integer := 10
@@ -49,26 +49,31 @@ entity debug_layer_datapath is
 		inh			: in std_logic;	
 
 		-- address to select the neurons
-		v_th_addr		: in std_logic_vector(N_neurons_cnt-1
-						  downto 0);
+		v_th_addr		: in std_logic_vector(
+						neurons_cnt_bit_width-1
+						downto 0);
 
 		-- data input
-		input_spikes		: in std_logic_vector
-						(N_inputs-1 downto 0);
+		input_spikes		: in std_logic_vector(N_inputs-1
+						downto 0);
 
 		-- input parameters
-		v_th_value		: in signed(parallelism-1 downto 0);		
-		v_reset			: in signed(parallelism-1 downto 0);	
-		inh_weight		: in signed(parallelism-1 downto 0);		
-		exc_weights		: in signed
-						(N_neurons*weightsParallelism-1
-						 downto 0);
+		v_th_value		: in signed(neuron_bit_width-1 
+						downto 0);		
+		v_reset			: in signed(neuron_bit_width-1
+						downto 0);	
+		inh_weight		: in signed(neuron_bit_width-1
+						downto 0);		
+		exc_weights		: in signed (N_neurons*
+						weights_bit_width-1 downto 0);
 
 		-- terminal counters 
-		N_inputs_tc		: in std_logic_vector
-						(N_inputs_cnt-1 downto 0);
-		N_neurons_tc		: in std_logic_vector
-						(N_neurons_cnt-1 downto 0);
+		N_inputs_tc		: in std_logic_vector(
+						inputs_cnt_bit_width-1
+						downto 0);
+		N_neurons_tc		: in std_logic_vector(
+						neurons_cnt_bit_width-1
+						downto 0);
 
 		-- control output
 		exc_or			: out std_logic;
@@ -82,11 +87,12 @@ entity debug_layer_datapath is
 		all_ready		: out std_logic;
 
 		-- output address to select the excitatory weights
-		exc_cnt			: out std_logic_vector
-						(N_inputs_cnt-1 downto 0);
+		exc_cnt			: out std_logic_vector(
+						inputs_cnt_bit_width-1
+						downto 0);
 
 		-- debug output
-		v_out			: out signed(parallelism-1
+		v_out			: out signed(neuron_bit_width-1
 						downto 0)
 	
 	);
@@ -101,7 +107,8 @@ architecture behaviour of debug_layer_datapath is
 						downto 0);
 	signal exc_spike		: std_logic;
 	signal inh_spike		: std_logic;
-	signal inh_cnt			: std_logic_vector(N_neurons_cnt-1 
+	signal inh_cnt			: std_logic_vector(
+						neurons_cnt_bit_width-1
 						downto 0);
 	signal spike			: std_logic;
 	signal exc_or_int		: std_logic;
@@ -110,14 +117,15 @@ architecture behaviour of debug_layer_datapath is
 	signal inh_stop_int		: std_logic;
 	signal feedback_spikes		: std_logic_vector(N_neurons-1 
 						downto 0);
-	signal neuron_addr		: std_logic_vector(N_neurons_cnt-1
+	signal neuron_addr		: std_logic_vector(
+						neurons_cnt_bit_width-1
 						downto 0);
 
 
 	component anticipate_bits is
 
 		generic(
-			-- parallelism
+			-- neuron_bit_width
 			N		: integer := 8		
 		);
 
@@ -141,7 +149,7 @@ architecture behaviour of debug_layer_datapath is
 			-- number of input bits
 			N_bit			: integer := 8;
 
-			-- selection counter parallelism
+			-- selection counter neuron_bit_width
 			N_cnt			: integer := 3		
 		);
 
@@ -185,7 +193,7 @@ architecture behaviour of debug_layer_datapath is
 	component mux2to1 is
 
 		generic(
-			-- parallelism
+			-- neuron_bit_width
 			N	: integer		
 		);
 
@@ -206,9 +214,9 @@ architecture behaviour of debug_layer_datapath is
 	component debug_complete_neurons is
 
 		generic(
-			-- int parallelism_
-			parallelism		: integer := 16;
-			weightsParallelism	: integer := 5;
+			-- int neuron_bit_width_
+			neuron_bit_width		: integer := 16;
+			weights_bit_width	: integer := 5;
 
 			-- number of neurons in the layer
 			N_neurons		: integer := 400;
@@ -237,14 +245,14 @@ architecture behaviour of debug_layer_datapath is
 			input_spike		: in std_logic;
 
 			-- input parameters
-			v_th_value		: in signed(parallelism-1 
+			v_th_value		: in signed(neuron_bit_width-1 
 							downto 0);		
-			v_reset			: in signed(parallelism-1 
+			v_reset			: in signed(neuron_bit_width-1 
 							downto 0);		
-			inh_weight		: in signed(parallelism-1 
+			inh_weight		: in signed(neuron_bit_width-1 
 							downto 0);		
 			exc_weights		: in signed(N_neurons*
-							weightsParallelism-1
+							weights_bit_width-1
 							downto 0);
 
 			-- output
@@ -253,7 +261,7 @@ architecture behaviour of debug_layer_datapath is
 			all_ready		: out std_logic;
 
 			-- debug output
-			v_out			: out signed(parallelism-1
+			v_out			: out signed(neuron_bit_width-1
 							downto 0)
 		);
 		
@@ -271,7 +279,7 @@ begin
 
 	anticipate_exc_spikes	: anticipate_bits
 		generic map(
-			-- parallelism
+			-- neuron_bit_width
 			N		=> N_inputs		
 		)
 
@@ -290,7 +298,7 @@ begin
 
 	anticipate_inh_spikes	: anticipate_bits
 		generic map(
-			-- parallelism
+			-- neuron_bit_width
 			N		=> N_neurons	
 		)
 
@@ -312,8 +320,8 @@ begin
 			-- number of input bits
 			N_bit			=> N_inputs,
 
-			-- selection counter parallelism
-			N_cnt			=> N_inputs_cnt
+			-- selection counter neuron_bit_width
+			N_cnt			=> inputs_cnt_bit_width
 		)
 
 		port map(
@@ -337,8 +345,8 @@ begin
 			-- number of input bits
 			N_bit			=> N_neurons,
 
-			-- selection counter parallelism
-			N_cnt			=> N_neurons_cnt
+			-- selection counter neuron_bit_width
+			N_cnt			=> neurons_cnt_bit_width
 		)
 
 		port map(
@@ -374,7 +382,7 @@ begin
 	addr_mux		:  mux2to1
 
 		generic map(
-			N			=> N_neurons_cnt		
+			N			=> neurons_cnt_bit_width		
 		)
 
 		port map(
@@ -393,13 +401,13 @@ begin
 
 		generic map(
 
-			-- parallelism
-			parallelism		=> parallelism,	
-			weightsParallelism	=> weightsParallelism,
+			-- neuron_bit_width
+			neuron_bit_width		=> neuron_bit_width,	
+			weights_bit_width	=> weights_bit_width,
 
 			-- number of neurons in the layer
 			N_neurons		=> N_neurons,
-			N_addr			=> N_neurons_cnt,
+			N_addr			=> neurons_cnt_bit_width,
 
 			-- shift amount
 			shift			=> shift
