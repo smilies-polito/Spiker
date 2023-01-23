@@ -9,43 +9,73 @@ end entity weights_bram_tb;
 
 architecture test of weights_bram_tb is
 
-	constant weights_filename	: string	:= "/home/alessio/Documents/"&
-		"Poli/Dottorato/progetti/snn/spiker/vhdl/mark3/"&
-		"hyperparameters/weights1.mem";
+	constant weights_filename	: string	:= "/home/alessio"&
+		"/Documents/Poli/Dottorato/Progetti/Spiker/Vhdl/Hierarchical"&
+		"/Sim/Parameters/weights1.mem";
 
-	constant out_filename	: string	:= "out_file.mem";
+	constant out_filename	: string	:="/home/alessio"&
+		"/Documents/Poli/Dottorato/Progetti/Spiker/Vhdl/Hierarchical"&
+		"/Sim/Parameters/out_file.mem";
+
+	constant word_length		: integer := 36;
+	constant N_weights_per_word	: integer := 7;
+	constant rdwr_addr_length	: integer := 10;
+	constant we_length		: integer := 4;
+	constant N_neurons		: integer := 400;
+	constant weights_bit_width	: integer := 5;
+	constant N_bram			: integer := 58;
+	constant bram_sel_length	: integer := 6;
 
 	-- input
 	signal clk		: std_logic;
-	signal di		: std_logic_vector(35 downto 0);
+	signal di		: std_logic_vector(word_length-1 downto 0);
 	signal rst_n		: std_logic;
-	signal rdaddr		: std_logic_vector(9 downto 0);
+	signal rdaddr		: std_logic_vector(rdwr_addr_length-1 downto 0);
 	signal rden		: std_logic;
 	signal wren		: std_logic;
-	signal wraddr		: std_logic_vector(9 downto 0);
-	signal bram_sel		: std_logic_vector(5 downto 0);
+	signal wraddr		: std_logic_vector(rdwr_addr_length-1 downto 0);
+	signal bram_sel		: std_logic_vector(bram_sel_length-1 downto 0);
 
 	-- output
-	signal do		: std_logic_vector(400*5-1 downto 0);
+	signal do		: std_logic_vector(N_bram*N_weights_per_word
+					*weights_bit_width-1 downto 0);
 
 	signal rd_ok		: std_logic;
 
 	
 	component weights_bram is
 
+		generic(
+			word_length		: integer := 36;
+			N_weights_per_word	: integer := 7;
+			rdwr_addr_length	: integer := 10;
+			we_length		: integer := 4;
+			N_neurons		: integer := 400;
+			weights_bit_width	: integer := 5;
+			N_bram			: integer := 58;
+			bram_sel_length		: integer := 6
+		);
+
 		port(
 			-- input
 			clk		: in std_logic;
-			di		: in std_logic_vector(35 downto 0);
+			di		: in std_logic_vector(word_length-1
+						downto 0);
 			rst_n		: in std_logic;
-			rdaddr		: in std_logic_vector(9 downto 0);
+			rdaddr		: in std_logic_vector(rdwr_addr_length-1 
+						downto 0);
 			rden		: in std_logic;
 			wren		: in std_logic;
-			wraddr		: in std_logic_vector(9 downto 0);
-			bram_sel	: in std_logic_vector(5 downto 0);
+			wraddr		: in std_logic_vector(rdwr_addr_length-1
+						downto 0);
+			bram_sel	: in std_logic_vector(bram_sel_length-1 
+						downto 0);
 
 			-- output
-			do		: out std_logic_vector(400*5-1 downto 0)
+			do		: out std_logic_vector(N_bram*
+						N_weights_per_word*
+						weights_bit_width-1 
+						downto 0)
 					
 		);
 
@@ -192,7 +222,18 @@ begin
 	-- end process read_process;
 
 
-	dut	: weights_bram 
+	dut	: weights_bram
+
+		generic map(
+			word_length		=> word_length,
+			N_weights_per_word	=> N_weights_per_word,
+			rdwr_addr_length	=> rdwr_addr_length,
+			we_length		=> we_length,
+			N_neurons		=> N_neurons,
+			weights_bit_width	=> weights_bit_width,
+			N_bram			=> N_bram,
+			bram_sel_length		=> bram_sel_length
+		)
 
 		port map(
 			-- input
@@ -204,11 +245,11 @@ begin
 			wren		=> wren,
 			wraddr		=> wraddr,
 			bram_sel	=> bram_sel,
-
+                                                   
 			-- output
-			do		=> do
-					
+			do		=> do		
 		);
-
+					
+					
 
 end architecture test;
