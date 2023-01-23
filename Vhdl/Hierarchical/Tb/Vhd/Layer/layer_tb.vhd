@@ -9,23 +9,23 @@ end entity layer_tb;
 architecture test of layer_tb is
 
 
-	-- int parallelism
-	constant parallelism		: integer := 32;
-	constant weightsParallelism	: integer := 31;
+	-- int neuron_bit_width
+	constant neuron_bit_width	: integer := 32;
+	constant weights_bit_width	: integer := 31;
 
 	-- input spikes
 	constant N_inputs		: integer := 2;
 
-	-- must be one bit larger that the parallelism required to count
+	-- must be one bit larger that the neuron_bit_width required to count
 	-- up to N_inputs
-	constant N_inputs_cnt		: integer := 2;
+	constant inputs_cnt_bit_width		: integer := 2;
 
 	-- inhibitory spikes
 	constant N_neurons		: integer := 3;
 
-	-- must be one bit larger that the parallelism required to count
+	-- must be one bit larger that the neuron_bit_width required to count
 	-- up to N_neurons
-	constant N_neurons_cnt		: integer := 3;
+	constant neurons_cnt_bit_width		: integer := 3;
 
 	-- exponential decay shift
 	constant shift			: integer := 10;
@@ -44,7 +44,8 @@ architecture test of layer_tb is
 	signal init_v_th		: std_logic;
 
 	-- address to select the neurons
-	signal v_th_addr		: std_logic_vector(N_neurons_cnt-1
+	signal v_th_addr		: std_logic_vector(
+						neurons_cnt_bit_width-1
 						downto 0);
 
 	-- data input
@@ -52,29 +53,32 @@ architecture test of layer_tb is
 
 
 	-- input parameters
-	signal v_th_value		: signed(parallelism-1 downto 0);		
-	signal v_reset			: signed(parallelism-1 downto 0);	
-	signal inh_weight		: signed(parallelism-1 downto 0);		
+	signal v_th_value		: signed(neuron_bit_width-1 downto 0);		
+	signal v_reset			: signed(neuron_bit_width-1 downto 0);	
+	signal inh_weight		: signed(neuron_bit_width-1 downto 0);		
 	signal exc_weights		: signed
-						(N_neurons*weightsParallelism-1 
+						(N_neurons*weights_bit_width-1 
 						 downto 0);
 
 	-- terminal counters 
 	signal N_inputs_tc		: std_logic_vector
-					     (N_inputs_cnt-1 downto 0);
+					     (inputs_cnt_bit_width-1 downto 0);
 	signal N_neurons_tc		: std_logic_vector
-						(N_neurons_cnt-1 downto 0);
+						(neurons_cnt_bit_width-1
+						downto 0);
 
 	-- output
 	signal cycles_cnt_rst_n		: std_logic;	
 	signal cycles_cnt_en		: std_logic;	
 	signal sample			: std_logic;
 	signal ready			: std_logic;
-	signal out_spikes		: std_logic_vector(N_neurons-1 downto 0);
+	signal out_spikes		: std_logic_vector(N_neurons-1
+						downto 0);
 
 	-- output address to select the excitatory weights
 	signal exc_cnt			: std_logic_vector
-						(N_inputs_cnt-1 downto 0);
+						(inputs_cnt_bit_width-1
+						downto 0);
 
 
 
@@ -82,23 +86,23 @@ architecture test of layer_tb is
 
 		generic(
 
-			-- int parallelism
-			parallelism		: integer := 16;
-			weightsParallelism	: integer := 5;
+			-- int neuron_bit_width
+			neuron_bit_width		: integer := 16;
+			weights_bit_width	: integer := 5;
 
 			-- input spikes
 			N_inputs		: integer := 784;
 
-			-- must be one bit larger that the parallelism required to count
-			-- up to N_inputs
-			N_inputs_cnt		: integer := 11;
+			-- must be one bit larger that the bit-width
+			-- required to count up to N_inputs
+			inputs_cnt_bit_width		: integer := 11;
 
 			-- inhibitory spikes
 			N_neurons		: integer := 400;
 
-			-- must be one bit larger that the parallelism required to count
-			-- up to N_neurons
-			N_neurons_cnt		: integer := 10;
+			-- must be one bit larger that the bit-width
+			-- required to count up to N_neurons
+			neurons_cnt_bit_width		: integer := 10;
 
 			-- exponential decay shift
 			shift			: integer := 10
@@ -113,26 +117,32 @@ architecture test of layer_tb is
 			init_v_th		: in std_logic;
 
 			-- address to select the neurons
-			v_th_addr		: in std_logic_vector(N_neurons_cnt-1
-							  downto 0);
+			v_th_addr		: in std_logic_vector(
+							neurons_cnt_bit_width-1
+							downto 0);
 
 			-- data input
 			input_spikes		: in std_logic_vector
 							(N_inputs-1 downto 0);
 
 			-- input parameters
-			v_th_value		: in signed(parallelism-1 downto 0);		
-			v_reset			: in signed(parallelism-1 downto 0);	
-			inh_weight		: in signed(parallelism-1 downto 0);		
-			exc_weights		: in signed
-							(N_neurons*weightsParallelism-1
-							 downto 0);
+			v_th_value		: in signed(neuron_bit_width-1
+							downto 0);		
+			v_reset			: in signed(neuron_bit_width-1
+							downto 0);	
+			inh_weight		: in signed(neuron_bit_width-1
+							downto 0);		
+			exc_weights		: in signed(N_neurons
+							*weights_bit_width-1
+							downto 0);
 
 			-- terminal counters 
 			N_inputs_tc		: in std_logic_vector
-							(N_inputs_cnt-1 downto 0);
+							(inputs_cnt_bit_width-1
+							downto 0);
 			N_neurons_tc		: in std_logic_vector
-							(N_neurons_cnt-1 downto 0);
+							(neurons_cnt_bit_width-1
+							downto 0);
 
 			-- output
 			out_spikes		: out std_logic_vector
@@ -144,7 +154,8 @@ architecture test of layer_tb is
 
 			-- output address to select the excitatory weights
 			exc_cnt			: out std_logic_vector
-							(N_inputs_cnt-1 downto 0)
+							(inputs_cnt_bit_width-1
+							downto 0)
 		);
 
 	end component layer;
@@ -160,18 +171,18 @@ begin
 
 
 	-- model parameters binary conversion
-	v_th_value	<= to_signed(v_th_value_int, parallelism);
-	v_reset		<= to_signed(v_reset_int, parallelism);
-	inh_weight	<= to_signed(inh_weight_int, parallelism);
+	v_th_value	<= to_signed(v_th_value_int, neuron_bit_width);
+	v_reset		<= to_signed(v_reset_int, neuron_bit_width);
+	inh_weight	<= to_signed(inh_weight_int, neuron_bit_width);
 
 	exc_weights_init	: process
 	begin
 		init	: for i in 0 to N_neurons-1
 		loop
-			exc_weights((i+1)*weightsParallelism-1 downto 
-					i*weightsParallelism) <= 
+			exc_weights((i+1)*weights_bit_width-1 downto 
+					i*weights_bit_width) <= 
 					to_signed(exc_weight_int, 
-					weightsParallelism);
+					weights_bit_width);
 		end loop init;
 
 		wait;
@@ -225,7 +236,7 @@ begin
 		loop
 
 			v_th_addr <= std_logic_vector(to_unsigned(i,
-						N_neurons_cnt));
+						neurons_cnt_bit_width));
 			wait for 12 ns;
 
 		end loop;
@@ -272,23 +283,23 @@ begin
 
 		generic map(
 
-			-- internal parallelism
-			parallelism		=> parallelism,	
-			weightsParallelism	=> weightsParallelism,
+			-- internal neuron_bit_width
+			neuron_bit_width	=> neuron_bit_width,	
+			weights_bit_width	=> weights_bit_width,
                                                                    
 			-- input spikes       
 			N_inputs		=> N_inputs,
 
-			-- must be one bit larger that the parallelism required
-			-- to count up to N_inputs
-			N_inputs_cnt		=> N_inputs_cnt,
+			-- must be one bit larger that the bit-width
+			-- required to count up to N_inputs
+			inputs_cnt_bit_width	=> inputs_cnt_bit_width,
                                                                    
 			-- inhibitory spikes       
 			N_neurons		=> N_neurons,
 
-			-- must be one bit larger that the parallelism required
-			-- to count up to N_neurons
-			N_neurons_cnt		=> N_neurons_cnt,
+			-- must be one bit larger that the bit-width
+			-- required to count up to N_neurons
+			neurons_cnt_bit_width	=> neurons_cnt_bit_width,
                                                                    
 			-- exponential decay shift 
 			shift			=> shift
