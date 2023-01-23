@@ -1,11 +1,16 @@
 # Directpory containing the approximated python simulation of the model
-pythonSrcDir = "../../../../python/custom/mark4_finitePrecision"
+pythonSrcDir = "../../../../Python/Models/Custom/TowardsHW/FinitePrecision"
 
+mnistDir = "../../../../MNIST"
 
-# Complete path of the MNIST files
-trainImages = "../../../../mnist/train-images-idx3-ubyte"
-trainLabels = "../../../../mnist/train-labels-idx1-ubyte"
-testImages = "../../../../mnist/t10k-images-idx3-ubyte"
-testLabels = "../../../../mnist/t10k-labels-idx1-ubyte"
+# Training
+trainImages = mnistDir + "/train-images-idx3-ubyte"
+trainLabels = mnistDir + "/train-labels-idx1-ubyte"
 
-inSpikesFilename = "../inputOutput/inputSpikes.txt"
+# Test
+testImages = mnistDir + "/t10k-images-idx3-ubyte"
+testLabels = mnistDir + "/t10k-labels-idx1-ubyte"
+
+vhdlIoDir = "../../../../Vhdl/Hierarchical/Sim/IO"
+
+inSpikesFilename = vhdlIoDir + "/inputSpikes.txt"

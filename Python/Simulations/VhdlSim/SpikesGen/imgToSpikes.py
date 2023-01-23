@@ -5,6 +5,9 @@ from parameters import *
 if pythonSrcDir not in sys.path:
 	sys.path.insert(1, pythonSrcDir)
 
+if mnistDir not in sys.path:
+	sys.path.insert(1, mnistDir)
+
 from poisson import imgToSpikeTrain
 from mnist import loadDataset
 
@@ -22,5 +25,3 @@ with open(inSpikesFilename, "w") as spikes_fp:
 		spikes_fp.write(str(list(inputSpikes.astype(int))).replace(",",
 			"").replace(" ", "")[1:-1])
 		spikes_fp.write("\n")
-
-
