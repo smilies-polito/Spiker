@@ -11,11 +11,11 @@ end entity bare_neurons_tb;
 architecture test of bare_neurons_tb is
 
 	-- parallelism
-	constant N		: integer := 16;
-	constant N_weights	: integer := 15;
+	constant neuron_bit_width		: integer := 16;
+	constant weights_bit_width	: integer := 15;
 
 	-- number of neurons in the layer
-	constant layer_size	: integer := 4;
+	constant N_neurons	: integer := 4;
 
 	-- exponential shift
 	constant shift		: integer := 10;
@@ -28,10 +28,10 @@ architecture test of bare_neurons_tb is
 
 
 	-- input parameters
-	signal v_th_value	: signed(N-1 downto 0);
-	signal v_reset		: signed(N-1 downto 0);
-	signal inh_weight	: signed(N-1 downto 0);
-	signal exc_weights	: signed(layer_size*N_weights-1 downto 0);
+	signal v_th_value	: signed(neuron_bit_width-1 downto 0);
+	signal v_reset		: signed(neuron_bit_width-1 downto 0);
+	signal inh_weight	: signed(neuron_bit_width-1 downto 0);
+	signal exc_weights	: signed(N_neurons*weights_bit_width-1 downto 0);
 
 	-- control input
 	signal clk		: std_logic;
@@ -44,14 +44,14 @@ architecture test of bare_neurons_tb is
 	signal inh_stop		: std_logic;
 	
 	-- to load the threshold
-	signal v_th_en		: std_logic_vector(layer_size-1 downto 0);
+	signal v_th_en		: std_logic_vector(N_neurons-1 downto 0);
 
 	-- input
-        signal input_spikes	: std_logic_vector(layer_size-1 downto 0);
+        signal input_spikes	: std_logic_vector(N_neurons-1 downto 0);
 
 
 	-- output
-	signal out_spikes	: std_logic_vector(layer_size-1 downto 0);
+	signal out_spikes	: std_logic_vector(N_neurons-1 downto 0);
 	signal all_ready	: std_logic;
 
 
@@ -60,11 +60,11 @@ architecture test of bare_neurons_tb is
 
 		generic(
 			-- internal parallelism
-			N		: integer := 16;
-			N_weights	: integer := 5;
+			neuron_bit_width	: integer := 16;
+			weights_bit_width	: integer := 5;
 
 			-- number of neurons in the layer
-			layer_size	: integer := 400;
+			N_neurons	: integer := 400;
 
 			-- shift during the exponential decay
 			shift		: integer := 1
@@ -80,19 +80,19 @@ architecture test of bare_neurons_tb is
 			exc_stop	: in std_logic;
 			inh_or		: in std_logic;
 			inh_stop	: in std_logic;
-			v_th_en		: in std_logic_vector(layer_size-1 downto 0);
+			v_th_en		: in std_logic_vector(N_neurons-1 downto 0);
 
 			-- input
-			input_spikes	: in std_logic_vector(layer_size-1 downto 0);
+			input_spikes	: in std_logic_vector(N_neurons-1 downto 0);
 
 			-- input parameters
-			v_th_value	: in signed(N-1 downto 0);		
-			v_reset		: in signed(N-1 downto 0);		
-			inh_weight	: in signed(N-1 downto 0);		
-			exc_weights	: in signed(layer_size*N_weights-1 downto 0);
+			v_th_value	: in signed(neuron_bit_width-1 downto 0);		
+			v_reset		: in signed(neuron_bit_width-1 downto 0);		
+			inh_weight	: in signed(neuron_bit_width-1 downto 0);		
+			exc_weights	: in signed(N_neurons*weights_bit_width-1 downto 0);
 
 			-- output
-			out_spikes	: out std_logic_vector(layer_size-1 downto 0);
+			out_spikes	: out std_logic_vector(N_neurons-1 downto 0);
 			all_ready	: out std_logic
 		);
 
@@ -104,16 +104,16 @@ begin
 
 
 	-- model parameters binary conversion
-	v_th_value	<= to_signed(v_th_value_int, N);
-	v_reset		<= to_signed(v_reset_int, N);
-	inh_weight	<= to_signed(inh_weight_int, N);
+	v_th_value	<= to_signed(v_th_value_int, neuron_bit_width);
+	v_reset		<= to_signed(v_reset_int, neuron_bit_width);
+	inh_weight	<= to_signed(inh_weight_int, neuron_bit_width);
 
 	exc_weights_init	: process
 	begin
-		init	: for i in 0 to layer_size-1
+		init	: for i in 0 to N_neurons-1
 		loop
-			exc_weights((i+1)*N_weights-1 downto i*N_weights) <= 
-					to_signed(exc_weight_int, N_weights);
+			exc_weights((i+1)*weights_bit_width-1 downto i*weights_bit_width) <= 
+					to_signed(exc_weight_int, weights_bit_width);
 		end loop init;
 
 		wait;
@@ -280,11 +280,11 @@ begin
 
 		generic map(
 			-- parallelism
-			N		=> N,	
-			N_weights	=> N_weights,
+			neuron_bit_width	=> neuron_bit_width,	
+			weights_bit_width	=> weights_bit_width,
 
 			-- number of neurons in the layer
-			layer_size	=> layer_size,
+			N_neurons	=> N_neurons,
 
 			-- shift amount
 			shift		=> shift
