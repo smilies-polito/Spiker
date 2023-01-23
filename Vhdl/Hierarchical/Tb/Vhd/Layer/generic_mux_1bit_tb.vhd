@@ -2,11 +2,11 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
-entity generic_mux_tb is
-end entity generic_mux_tb;
+entity generic_mux_1bit_tb is
+end entity generic_mux_1bit_tb;
 
 
-architecture test of generic_mux_tb is
+architecture test of generic_mux_1bit_tb is
 
 	constant N_sel	: integer := 2;
 
@@ -15,7 +15,7 @@ architecture test of generic_mux_tb is
 	signal mux_out	: std_logic;
 
 
-	component generic_mux is
+	component generic_mux_1bit is
 
 
 		generic(
@@ -31,7 +31,7 @@ architecture test of generic_mux_tb is
 			mux_out	: out std_logic
 		);
 
-	end component generic_mux;
+	end component generic_mux_1bit;
 
 
 
@@ -75,7 +75,7 @@ begin
 
 
 
-	dut	: generic_mux 
+	dut	: generic_mux_1bit 
 
 		generic map(
 			N_sel	=> N_sel	
