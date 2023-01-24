@@ -74,19 +74,21 @@ architecture test_3x2x30 of complete_accelerator_tb is
 	constant shift			: integer := 10;
 
 	-- Initialization files
-	constant weights_filename	: string  := "/home/alessio/"&
-		"Documents/Poli/Dottorato/Progetti/spiker/vhdl/mark3/"&
-		"tb/vhd/complete_accelerator/weights.txt";
-	constant v_th_filename		: string  := "/home/alessio/"&
-		"Documents/Poli/Dottorato/Progetti/spiker/vhdl/mark3/"&
-		"tb/vhd/complete_accelerator/v_th.txt";
-	constant inputs_filename	: string  := "/home/alessio/"&
-		"Documents/Poli/Dottorato/Progetti/spiker/vhdl/mark3/"&
-		"tb/vhd/complete_accelerator/pixels.txt";
-	constant cnt_out_filename	: string  := "/home/alessio/"&
-		"Documents/Poli/Dottorato/Progetti/spiker/vhdl/mark3/"&
-		"tb/vhd/complete_accelerator/cnt_out.txt";
+	constant weights_filename	: string  := "/home/alessio/Documents"&
+		"/Poli/Dottorato/Progetti/Spiker/Vhdl/Hierarchical/Sim/IO"&
+		"/weights.txt";
 
+	constant v_th_filename		: string  := "/home/alessio/Documents"&
+		"/Poli/Dottorato/Progetti/Spiker/Vhdl/Hierarchical/Sim/IO"&
+		"/v_th.txt";
+
+	constant inputs_filename	: string  := "/home/alessio/Documents"&
+		"/Poli/Dottorato/Progetti/Spiker/Vhdl/Hierarchical/Sim/IO"&
+		"/pixels.txt";
+
+	constant cnt_out_filename	: string  := "/home/alessio/Documents"&
+		"/Poli/Dottorato/Progetti/Spiker/Vhdl/Hierarchical/Sim/IO"&
+		"/cnt_out.txt";
 
 
 	-- Driver signals
@@ -147,7 +149,8 @@ architecture test_3x2x30 of complete_accelerator_tb is
 			cnt_rst_n	: in std_logic;
 
 			-- output
-			cnt_out		: out std_logic_vector(bit_width-1 downto 0)		
+			cnt_out		: out std_logic_vector(bit_width-1
+						downto 0)		
 		);
 
 	end component cnt;
@@ -189,16 +192,16 @@ architecture test_3x2x30 of complete_accelerator_tb is
 			N_neurons_cnt		: in std_logic_vector(
 							addr_bit_width-1
 							downto 0);
-			input_word		: in std_logic_vector(word_length-1 
-							downto 0);
+			input_word		: in std_logic_vector(
+							word_length-1 downto 0);
 
 			-- output
 			N_neurons_cnt_en	: out std_logic;
 			N_inputs_cnt_en		: out std_logic;
 			N_neurons_cnt_rst_n	: out std_logic;
 			N_inputs_cnt_rst_n	: out std_logic;
-			output_word		: out std_logic_vector(word_length-1
-							downto 0)
+			output_word		: out std_logic_vector(
+							word_length-1 downto 0)
 		    
 		);
 	end component driver;
