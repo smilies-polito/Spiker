@@ -4,8 +4,6 @@ from layers import updateExcLayer, updateInhLayer, homeostasis
 from synapses import stdp 
 
 
-import matplotlib.pyplot as plt
-
 
 def run(network, networkList, spikesTrains, dt_tauDict, exp_shift, stdpDict,
 		mode, constSums, neuron_bitWidth):
