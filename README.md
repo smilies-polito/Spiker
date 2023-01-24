@@ -1,7 +1,7 @@
 ## Spiker: FPGA-oriented hardware accelerator for Spiking Neural Networks (SNN)
 Spiker 
 
-![DesignFlow](./Doc/Figures/designFlow.png)
+![DesignFlow](Doc/Figures/designFlow.png)
 
 
 # HOW TO CITE
