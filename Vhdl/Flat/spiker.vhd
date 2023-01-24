@@ -117,8 +117,8 @@ architecture behaviour of spiker is
 						downto 0);
 
 	-- Memory signals: output
-	signal exc_weights		:
-		std_logic_vector(N_neurons*weights_bit_width-1 downto 0);
+	signal exc_weights		: std_logic_vector(N_neurons*
+						weights_bit_width-1 downto 0);
 
 	-- Layer signals: input
 	signal stop			: std_logic;	
@@ -147,6 +147,7 @@ architecture behaviour of spiker is
 
 		generic(
 			word_length		: integer := 36;
+			N_weights_per_word	: integer := 7;
 			rdwr_addr_length	: integer := 10;
 			we_length		: integer := 4;
 			N_neurons		: integer := 400;
@@ -158,7 +159,7 @@ architecture behaviour of spiker is
 		port(
 			-- input
 			clk		: in std_logic;
-			di		: in std_logic_vector(word_length-1
+			di		: in std_logic_vector(word_length-1 
 						downto 0);
 			rst_n		: in std_logic;
 			rdaddr		: in std_logic_vector(rdwr_addr_length-1 
@@ -171,8 +172,10 @@ architecture behaviour of spiker is
 						downto 0);
 
 			-- output
-			do		: out std_logic_vector(N_neurons*
-						weights_bit_width-1 downto 0)
+			do		: out std_logic_vector(N_bram*
+						N_weights_per_word*
+						weights_bit_width-1 
+						downto 0)
 					
 		);
 
@@ -368,6 +371,7 @@ begin
 
 		generic map(
 			word_length		=> bram_word_length,
+			N_weights_per_word	=> N_weights_per_word,
 			rdwr_addr_length	=> bram_addr_length,
 			we_length		=> bram_we_length,
 			N_neurons		=> N_neurons,
