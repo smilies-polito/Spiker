@@ -36,3 +36,6 @@ __pycache__
 
 # Temporary files
 tmp.*
+
+# Vim back-up files
+*.swp
