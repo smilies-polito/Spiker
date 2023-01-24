@@ -26,15 +26,17 @@ architecture test of driver_tb is
 	constant seed_value		: integer := 5;
 
 	-- Initialization files
-	constant weights_filename	: string  := "/home/alessio/"&
-		"Documents/Poli/Dottorato/Progetti/spiker/vhdl/mark3/"&
-		"tb/vhd/complete_accelerator/weights.txt";
-	constant v_th_filename		: string  := "/home/alessio/"&
-		"Documents/Poli/Dottorato/Progetti/spiker/vhdl/mark3/"&
-		"tb/vhd/complete_accelerator/v_th.txt";
-	constant inputs_filename	: string  := "/home/alessio/"&
-		"Documents/Poli/Dottorato/Progetti/spiker/vhdl/mark3/"&
-		"tb/vhd/complete_accelerator/pixels.txt";
+	constant weights_filename	: string  := "/home/alessio/Documents"&
+		"/Poli/Dottorato/Progetti/Spiker/Vhdl/Hierarchical/Sim/IO"&
+		"/weights.txt";
+
+	constant v_th_filename		: string  := "/home/alessio/Documents"&
+		"/Poli/Dottorato/Progetti/Spiker/Vhdl/Hierarchical/Sim/IO"&
+		"/v_th.txt"; 
+
+	constant inputs_filename	: string  := "/home/alessio/Documents"&
+		"/Poli/Dottorato/Progetti/Spiker/Vhdl/Hierarchical/Sim/IO"&
+		"/pixels.txt"; 
 		
 
 	-- input
@@ -123,7 +125,8 @@ architecture test of driver_tb is
 			cnt_rst_n	: in std_logic;
 
 			-- output
-			cnt_out		: out std_logic_vector(bit_width-1 downto 0)		
+			cnt_out		: out std_logic_vector(bit_width-1
+						downto 0)		
 		);
 
 	end component cnt;
@@ -551,8 +554,8 @@ begin
 
 		variable read_line	: line;
 
-		variable data_var	: std_logic_vector(data'length-1 downto
-						0);
+		variable data_var	: std_logic_vector(data'length-1
+						downto 0);
 
 	begin
 
@@ -659,10 +662,10 @@ begin
 					read(read_line, data_var);
 
 					-- Associate line to data input
-					data			<= data_var;
+					data		<= data_var;
 
-					load			<= "0001";
-					addr			<= N_neurons_cnt;
+					load		<= "0001";
+					addr		<= N_neurons_cnt;
 				end if;
 
 			-- v_th_wait
