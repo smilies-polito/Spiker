@@ -1,4 +1,4 @@
-# HOW TO
+# Spiker: FPGA-oriented hardware accelerator for Spiking Neural Networks (SNN)
 Explain here how to work with this project (compile, build, execute, install etc. etc.)
 
 
