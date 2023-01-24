@@ -12,18 +12,11 @@ Explain here how to work with this project (compile, build, execute, install etc
 
 
 # RELATED DOCUMENTS
-1. Sixu Li, Zhaomin Zhang, Ruixin Mao, Jianbiao Xiao, Liang Chang and Jun Zhou "A
-  Fast and Energy-Efficient SNN Processor With Adaptive Clock/Event-Driven
-  Computation Scheme and Online Learning", IEEE transactions on circuits and
-  systems—i: regular papers, vol. 68, no. 4, april 2021
-2. Peter U. Diehl and Matthew Cook, "Unsupervised learning of digit recognition using 
-  spike-timing-dependent plasticity", Institute of Neuroinformatics, ETH Zurich and 
-  University Zurich, Zurich, Switzerland
-3. Professor David Heeger, "Poisson Model of Spike Generation", September 5, 2000
-  networks on FPGA", in Tsinghua Science and Technology, vol. 25, no. 4, pp. 479-486, 
-  Aug. 2020, doi: 10.26599/TST.2019.9010019.
+1. S. Li, Z. Zhang, R. Mao, J. Xiao, L. Chang and J. Zhou, "A Fast and Energy-Efficient SNN Processor With Adaptive Clock/Event-Driven Computation Scheme and Online Learning," in IEEE Transactions on Circuits and Systems I: Regular Papers, vol. 68, no. 4, pp. 1543-1552, April 2021, doi: [10.1109/TCSI.2021.3052885](https://doi.org/10.1109/TCSI.2021.3052885).
 
+2. Diehl, P. U., & Cook, M. (2015). Unsupervised learning of digit recognition using spike-timing-dependent plasticity. Frontiers in Computational Neuroscience, doi: [10.3389/fncom.2015.00099](https://doi.org/10.3389/fncom.2015.00099) 
 
+3. Heeger, David. "Poisson model of spike generation." Handout, University of Standford 5.1-13 (2000): 76.
 
 # TODO
 1) Implement the developed model in VHDL. 
