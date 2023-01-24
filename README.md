@@ -4,7 +4,6 @@ Explain here how to work with this project (compile, build, execute, install etc
 
 
 # HOW TO CITE THIS WORK
-
 1. A. Carpegna, A. Savino and S. Di Carlo, "Spiker: an FPGA-optimized Hardware accelerator for Spiking Neural Networks," 2022 IEEE Computer Society Annual Symposium on VLSI (ISVLSI), Nicosia, Cyprus, 2022, pp. 14-19, doi: [10.1109/ISVLSI54635.2022.00016](https://doi.org/10.1109/ISVLSI54635.2022.00016).
 
 2. Alessio Carpegna: [Design of an hardware accelerator for a Spiking Neural Network](https://webthesis.biblio.polito.it/20606/).  Rel. Stefano Di Carlo, Alessandro Savino. Politecnico di Torino, Corso di laurea magistrale in Ingegneria Elettronica (Electronic Engineering), 2021 
@@ -18,12 +17,13 @@ Explain here how to work with this project (compile, build, execute, install etc
 
 3. Heeger, David. "Poisson model of spike generation." Handout, University of Standford 5.1-13 (2000): 76.
 
-# TODO
-1) Implement the developed model in VHDL. 
-2) Test the developed neuron on the FPGA, evaluate the performances and
-   the required resources in order to have an idea of the maximum reachable
-   dimensions of the network.
-3) Write the linux driver in order to be able to test, evaluate and use the
-   developed structure.
-4) Write a complete python program that, provided the characteristics of
-   the network, creates the accelerator and interacts with it.
+
+
+# TO DO
+1. Fix Peter Diehl Parameters
+2. Fix automatic VHDL simulation in Python/Simulations/VhdlSim
+3. Upload python models' flowcharts
+4. Upload architecture schematics
+5. Merge Linux driver to interface the accelerator
+6. Upload complete Xilinx project with compiled accelerator + linux driver
+7. Singularity container
