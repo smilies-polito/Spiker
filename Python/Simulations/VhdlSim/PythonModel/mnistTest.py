@@ -1,6 +1,5 @@
 import timeit
 import sys
-import matplotlib.pyplot as plt
 import numpy as np
 np.set_printoptions(threshold=np.inf)
 
