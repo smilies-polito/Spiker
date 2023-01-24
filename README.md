@@ -1,9 +1,8 @@
-# Spiker: FPGA-oriented hardware accelerator for Spiking Neural Networks (SNN)
-Explain here how to work with this project (compile, build, execute, install etc. etc.)
+## Spiker: FPGA-oriented hardware accelerator for Spiking Neural Networks (SNN)
+Spiker 
 
 
-
-# HOW TO CITE THIS WORK
+# HOW TO CITE
 1. A. Carpegna, A. Savino and S. Di Carlo, "Spiker: an FPGA-optimized Hardware accelerator for Spiking Neural Networks," 2022 IEEE Computer Society Annual Symposium on VLSI (ISVLSI), Nicosia, Cyprus, 2022, pp. 14-19, doi: [10.1109/ISVLSI54635.2022.00016](https://doi.org/10.1109/ISVLSI54635.2022.00016).
 
 2. Alessio Carpegna: [Design of an hardware accelerator for a Spiking Neural Network](https://webthesis.biblio.polito.it/20606/).  Rel. Stefano Di Carlo, Alessandro Savino. Politecnico di Torino, Corso di laurea magistrale in Ingegneria Elettronica (Electronic Engineering), 2021 
