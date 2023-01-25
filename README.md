@@ -6,12 +6,12 @@ Here you can find all the code developed to obtain a VHDL description of Spiker.
 ![DesignFlow](Doc/Figures/designFlow.png){fig:spikerDesignFlow}
 Spiker design flow
 
-### CHARACTERISTICS
+## CHARACTERISTICS
 * __Neuron model__: Leaky Integrate and Fire
 * __Network architecture__: single layer fully-connected
 * __Target dataset__: MNIST
 
-### PROJECT ORGANIZATION
+## PROJECT ORGANIZATION
 * __MNIST__
 	* MNIST dataset files in IDX format
 	* mnist.py: script to import the dataset in form of numpy array
@@ -19,7 +19,8 @@ Spiker design flow
 * __Python__
 	* Models: python models of the Spiking Neural Network.
 		* Brian2: models developed using [Brian 2 simulator](https://brian2.readthedocs.io/en/stable/)
-	
+			* PeterDiehl: brian2 translation of the original work from Peter Diel et al. (see related documents).
+			* Simplified: simplified LIF neuron model with respect to the conductance-based model used by Peter Diehl et al.
 	* Simulations: scripts to atomate simulations.
 
 * __Vhdl__
