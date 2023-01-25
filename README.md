@@ -17,13 +17,48 @@ Spiker design flow
 	* mnist.py: script to import the dataset in form of numpy array
 
 * __Python__
-	* Models: python models of the Spiking Neural Network.
+	* __Models__: python models of the Spiking Neural Network.
 		* Brian2: models developed using [Brian 2 simulator](https://brian2.readthedocs.io/en/stable/)
 			* PeterDiehl: brian2 translation of the original work from Peter Diel et al. (see related documents).
 			* Simplified: simplified LIF neuron model with respect to the conductance-based model used by Peter Diehl et al.
-	* Simulations: scripts to atomate simulations.
+
+		* Custom: models developed without using any external module expept numpy to accelerate the execution throgh vectorization
+			* Full precision model: float64 model
+			* TowardsHW: simplifications of the full-precision model to make it more suitable for the VHDL implementation.
+				* FinitePrecision: integer transaltion of the full precison model.
+				* SingleLFSR: input interface substituted by the python simulation of a Linear Feedback Shift Register (LFSR)
+		* __Simulations__: scripts to automate simulations.
+		* VhdlSim: scripts to simulate the VHDL components
 
 * __Vhdl__
+	* __Hierarchical__: complete VHDL accelerator, organized hierarchical blocks.
+		* __Vhd__: VHDL components
+			* __Vhd__: VHDL components
+			* __Debug__: VHDL components with additional in/out signals for debugging
+		* __Tb__: testbenches for VHDL components
+			* __Vhd__: testbenches for the VHDL components
+			* __Debug__: testbenches for the debug components
+		* __Sim__
+			* Bash and Xilinx TCL simulation scripts
+	* __Flat__: 
+		* Directory containing all the VHDL components requires to create the accelerator, without any hierarchical organization
+	
+	* updateFlat.sh: bash script to copy the components from the hierarchical directory to the flat one. The idea is to develop and simulates component in the hierarchical directory, using the scripts contained in the Sim directory, and then to copy the updated code in the flat directory to easily compile the full accelerator.
+
+
+## DEPENDENCIES
+* __MNIST__
+
+* __Python__
+	* __Models__: python models of the Spiking Neural Network.
+		* Brian2: models developed using [Brian 2 simulator](https://brian2.readthedocs.io/en/stable/)
+			* PeterDiehl: brian2 translation of the original work from Peter Diel et al. (see related documents).
+			* Simplified: simplified LIF neuron model with respect to the conductance-based model used by Peter Diehl et al.
+	* __Simulations__: scripts to automate simulations.
+		* VhdlSim: scripts to simulate the VHDL components
+
+* __Vhdl__
+
 
 
 ## HOW TO CITE
