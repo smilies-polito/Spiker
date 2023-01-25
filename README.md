@@ -1,10 +1,28 @@
-## Spiker: FPGA-oriented hardware accelerator for Spiking Neural Networks (SNN)
+# Spiker: FPGA-oriented hardware accelerator for Spiking Neural Networks (SNN)
 Spiker is a neuromorphic processor to accelerate inference in edge applications, targeting area- and performance-constrained applications.
 
-Here you can find all the code developed to obtain a VHDL description of Spiker.
+Here you can find all the code developed to obtain a VHDL description of Spiker. Next image shows the step followed for the design.
 
 ![DesignFlow](Doc/Figures/designFlow.png){fig:spikerDesignFlow}
 Spiker design flow
+
+### CHARACTERISTICS
+* __Neuron model__: Leaky Integrate and Fire
+* __Network architecture__: single layer fully-connected
+* __Target dataset__: MNIST
+
+### PROJECT ORGANIZATION
+* __MNIST__
+	* MNIST dataset files in IDX format
+	* mnist.py: script to import the dataset in form of numpy array
+
+* __Python__
+	* Models: python models of the Spiking Neural Network.
+		* Brian2: models developed using [Brian 2 simulator](https://brian2.readthedocs.io/en/stable/)
+	
+	* Simulations: scripts to atomate simulations.
+
+* __Vhdl__
 
 
 ## HOW TO CITE
