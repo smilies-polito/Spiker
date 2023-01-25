@@ -1,7 +1,10 @@
 ## Spiker: FPGA-oriented hardware accelerator for Spiking Neural Networks (SNN)
 Spiker is a neuromorphic processor to accelerate inference in edge applications, targeting area- and performance-constrained applications.
 
-![DesignFlow](Doc/Figures/designFlow.png)
+Here you can find all the code developed to obtain a VHDL description of Spiker.
+
+![DesignFlow](Doc/Figures/designFlow.png){fig:spikerDesignFlow}
+Spiker design flow
 
 
 ## HOW TO CITE
