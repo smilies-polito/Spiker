@@ -58,6 +58,11 @@ Spiker design flow
 		* VhdlSim: scripts to simulate the VHDL components
 
 * __Vhdl__
+	* The accelerator was developed using Vivado design suite. 
+		* All the TCL scripts follows the Xilinx standard. 
+		* The BRAM components are instantiated from the Vivado libraries for the target FPGA. You need to instantiate memory blocks that are specific for your target platform. This can be done by modifying the weights_bram component.
+
+	  The rest of the VHDL code itself can be synthesized with whichever tool you like
 
 
 
