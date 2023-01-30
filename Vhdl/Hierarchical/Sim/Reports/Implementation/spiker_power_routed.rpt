@@ -1,0 +1,1352 @@
+Copyright 1986-2020 Xilinx, Inc. All Rights Reserved.
+----------------------------------------------------------------------------------------------------------------------------------------
+| Tool Version     : Vivado v.2020.2 (lin64) Build 3064766 Wed Nov 18 09:12:47 MST 2020
+| Date             : Mon Jan 10 23:27:37 2022
+| Host             : MacBookProDiAlessio running 64-bit Ubuntu 20.04.1 LTS
+| Command          : report_power -file spiker_power_routed.rpt -pb spiker_power_summary_routed.pb -rpx spiker_power_routed.rpx
+| Design           : spiker
+| Device           : xc7z020clg400-2
+| Design State     : routed
+| Grade            : commercial
+| Process          : typical
+| Characterization : Production
+----------------------------------------------------------------------------------------------------------------------------------------
+
+Power Report
+
+Table of Contents
+-----------------
+1. Summary
+1.1 On-Chip Components
+1.2 Power Supply Summary
+1.3 Confidence Level
+2. Settings
+2.1 Environment
+2.2 Clock Constraints
+3. Detailed Reports
+3.1 By Hierarchy
+
+1. Summary
+----------
+
++--------------------------+-----------------------------------+
+| Total On-Chip Power (W)  | 374.194 (Junction temp exceeded!) |
+| Design Power Budget (W)  | Unspecified*                      |
+| Power Budget Margin (W)  | NA                                |
+| Dynamic (W)              | 373.077                           |
+| Device Static (W)        | 1.117                             |
+| Effective TJA (C/W)      | 11.5                              |
+| Max Ambient (C)          | 0.0                               |
+| Junction Temperature (C) | 125.0                             |
+| Confidence Level         | Low                               |
+| Setting File             | ---                               |
+| Simulation Activity File | ---                               |
+| Design Nets Matched      | NA                                |
++--------------------------+-----------------------------------+
+* Specify Design Power Budget using, set_operating_conditions -design_power_budget <value in Watts>
+
+
+1.1 On-Chip Components
+----------------------
+
++----------------+-----------+----------+-----------+-----------------+
+| On-Chip        | Power (W) | Used     | Available | Utilization (%) |
++----------------+-----------+----------+-----------+-----------------+
+| Slice Logic    |   213.733 |    78680 |       --- |             --- |
+|   LUT as Logic |   192.637 |    29192 |     53200 |           54.87 |
+|   CARRY4       |    18.034 |     5180 |     13300 |           38.95 |
+|   Register     |     2.674 |    26853 |    106400 |           25.24 |
+|   F7/F8 Muxes  |     0.382 |     1164 |     53200 |            2.19 |
+|   BUFG         |     0.006 |        1 |        32 |            3.13 |
+|   Others       |     0.000 |     4141 |       --- |             --- |
+| Signals        |   153.768 |    47935 |       --- |             --- |
+| Block RAM      |     0.000 |       45 |       140 |           32.14 |
+| I/O            |     5.577 |      113 |       125 |           90.40 |
+| Static Power   |     1.117 |          |           |                 |
+| Total          |   374.194 |          |           |                 |
++----------------+-----------+----------+-----------+-----------------+
+
+
+1.2 Power Supply Summary
+------------------------
+
++-----------+-------------+-----------+-------------+------------+-------------+-------------+------------+
+| Source    | Voltage (V) | Total (A) | Dynamic (A) | Static (A) | Powerup (A) | Budget (A)  | Margin (A) |
++-----------+-------------+-----------+-------------+------------+-------------+-------------+------------+
+| Vccint    |       1.000 |   368.222 |     367.897 |      0.325 |       NA    | Unspecified | NA         |
+| Vccaux    |       1.800 |     0.524 |       0.424 |      0.100 |       NA    | Unspecified | NA         |
+| Vcco33    |       3.300 |     0.000 |       0.000 |      0.000 |       NA    | Unspecified | NA         |
+| Vcco25    |       2.500 |     0.000 |       0.000 |      0.000 |       NA    | Unspecified | NA         |
+| Vcco18    |       1.800 |     2.455 |       2.454 |      0.001 |       NA    | Unspecified | NA         |
+| Vcco15    |       1.500 |     0.000 |       0.000 |      0.000 |       NA    | Unspecified | NA         |
+| Vcco135   |       1.350 |     0.000 |       0.000 |      0.000 |       NA    | Unspecified | NA         |
+| Vcco12    |       1.200 |     0.000 |       0.000 |      0.000 |       NA    | Unspecified | NA         |
+| Vccaux_io |       1.800 |     0.000 |       0.000 |      0.000 |       NA    | Unspecified | NA         |
+| Vccbram   |       1.000 |     0.077 |       0.000 |      0.077 |       NA    | Unspecified | NA         |
+| MGTAVcc   |       1.000 |     0.000 |       0.000 |      0.000 |       NA    | Unspecified | NA         |
+| MGTAVtt   |       1.200 |     0.000 |       0.000 |      0.000 |       NA    | Unspecified | NA         |
+| MGTVccaux |       1.800 |     0.000 |       0.000 |      0.000 |       NA    | Unspecified | NA         |
+| Vccpint   |       1.000 |     0.473 |       0.000 |      0.473 |       NA    | Unspecified | NA         |
+| Vccpaux   |       1.800 |     0.010 |       0.000 |      0.010 |       NA    | Unspecified | NA         |
+| Vccpll    |       1.800 |     0.003 |       0.000 |      0.003 |       NA    | Unspecified | NA         |
+| Vcco_ddr  |       1.500 |     0.000 |       0.000 |      0.000 |       NA    | Unspecified | NA         |
+| Vcco_mio0 |       1.800 |     0.000 |       0.000 |      0.000 |       NA    | Unspecified | NA         |
+| Vcco_mio1 |       1.800 |     0.000 |       0.000 |      0.000 |       NA    | Unspecified | NA         |
+| Vccadc    |       1.800 |     0.020 |       0.000 |      0.020 |       NA    | Unspecified | NA         |
++-----------+-------------+-----------+-------------+------------+-------------+-------------+------------+
+
+
+1.3 Confidence Level
+--------------------
+
++-----------------------------+------------+--------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------+
+| User Input Data             | Confidence | Details                                                | Action                                                                                                             |
++-----------------------------+------------+--------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------+
+| Design implementation state | High       | Design is routed                                       |                                                                                                                    |
+| Clock nodes activity        | Low        | User specified less than 75% of clocks                 | Provide missing clock activity with a constraint file, simulation results or by editing the "By Clock Domain" view |
+| I/O nodes activity          | Low        | More than 75% of inputs are missing user specification | Provide missing input activity with simulation results or by editing the "By Resource Type -> I/Os" view           |
+| Internal nodes activity     | Medium     | User specified less than 25% of internal nodes         | Provide missing internal nodes activity with simulation results or by editing the "By Resource Type" views         |
+| Device models               | High       | Device models are Production                           |                                                                                                                    |
+|                             |            |                                                        |                                                                                                                    |
+| Overall confidence level    | Low        |                                                        |                                                                                                                    |
++-----------------------------+------------+--------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------+
+
+
+2. Settings
+-----------
+
+2.1 Environment
+---------------
+
++-----------------------+------------------------+
+| Ambient Temp (C)      | 25.0                   |
+| ThetaJA (C/W)         | 11.5                   |
+| Airflow (LFM)         | 250                    |
+| Heat Sink             | none                   |
+| ThetaSA (C/W)         | 0.0                    |
+| Board Selection       | medium (10"x10")       |
+| # of Board Layers     | 8to11 (8 to 11 Layers) |
+| Board Temperature (C) | 25.0                   |
++-----------------------+------------------------+
+
+
+2.2 Clock Constraints
+---------------------
+
++-------+--------+-----------------+
+| Clock | Domain | Constraint (ns) |
++-------+--------+-----------------+
+
+
+3. Detailed Reports
+-------------------
+
+3.1 By Hierarchy
+----------------
+
++---------------------------------+-----------+
+| Name                            | Power (W) |
++---------------------------------+-----------+
+| spiker                          |   373.077 |
+|   layer_1                       |   273.730 |
+|     control_unit                |     0.016 |
+|     datapath                    |   273.715 |
+|       anticipate_exc_spikes     |     3.166 |
+|       anticipate_inh_spikes     |     1.862 |
+|       bare_layer                |   262.964 |
+|       cycles_cnt                |     0.008 |
+|       select_exc_spike          |     1.083 |
+|       select_inh_spike          |     4.632 |
+|   output_layer[0].out_counter   |     0.007 |
+|   output_layer[100].out_counter |     0.007 |
+|   output_layer[101].out_counter |     0.007 |
+|   output_layer[102].out_counter |     0.007 |
+|   output_layer[103].out_counter |     0.024 |
+|   output_layer[104].out_counter |     0.007 |
+|   output_layer[105].out_counter |     0.007 |
+|   output_layer[106].out_counter |     0.007 |
+|   output_layer[107].out_counter |     0.026 |
+|   output_layer[108].out_counter |     0.007 |
+|   output_layer[109].out_counter |     0.007 |
+|   output_layer[10].out_counter  |     0.007 |
+|   output_layer[110].out_counter |     0.007 |
+|   output_layer[111].out_counter |     0.024 |
+|   output_layer[112].out_counter |     0.007 |
+|   output_layer[113].out_counter |     0.007 |
+|   output_layer[114].out_counter |     0.007 |
+|   output_layer[115].out_counter |     0.150 |
+|   output_layer[116].out_counter |     0.007 |
+|   output_layer[117].out_counter |     0.007 |
+|   output_layer[118].out_counter |     0.007 |
+|   output_layer[119].out_counter |     0.022 |
+|   output_layer[11].out_counter  |     0.027 |
+|   output_layer[120].out_counter |     0.007 |
+|   output_layer[121].out_counter |     0.007 |
+|   output_layer[122].out_counter |     0.007 |
+|   output_layer[123].out_counter |     0.026 |
+|   output_layer[124].out_counter |     0.007 |
+|   output_layer[125].out_counter |     0.007 |
+|   output_layer[126].out_counter |     0.007 |
+|   output_layer[127].out_counter |     0.023 |
+|   output_layer[128].out_counter |     0.007 |
+|   output_layer[129].out_counter |     0.007 |
+|   output_layer[12].out_counter  |     0.007 |
+|   output_layer[130].out_counter |     0.007 |
+|   output_layer[131].out_counter |     0.080 |
+|   output_layer[132].out_counter |     0.007 |
+|   output_layer[133].out_counter |     0.007 |
+|   output_layer[134].out_counter |     0.007 |
+|   output_layer[135].out_counter |     0.023 |
+|   output_layer[136].out_counter |     0.007 |
+|   output_layer[137].out_counter |     0.007 |
+|   output_layer[138].out_counter |     0.007 |
+|   output_layer[139].out_counter |     0.026 |
+|   output_layer[13].out_counter  |     0.007 |
+|   output_layer[140].out_counter |     0.007 |
+|   output_layer[141].out_counter |     0.007 |
+|   output_layer[142].out_counter |     0.007 |
+|   output_layer[143].out_counter |     0.022 |
+|   output_layer[144].out_counter |     0.007 |
+|   output_layer[145].out_counter |     0.007 |
+|   output_layer[146].out_counter |     0.007 |
+|   output_layer[147].out_counter |     0.067 |
+|   output_layer[148].out_counter |     0.007 |
+|   output_layer[149].out_counter |     0.007 |
+|   output_layer[14].out_counter  |     0.007 |
+|   output_layer[150].out_counter |     0.007 |
+|   output_layer[151].out_counter |     0.023 |
+|   output_layer[152].out_counter |     0.007 |
+|   output_layer[153].out_counter |     0.007 |
+|   output_layer[154].out_counter |     0.007 |
+|   output_layer[155].out_counter |     0.026 |
+|   output_layer[156].out_counter |     0.007 |
+|   output_layer[157].out_counter |     0.007 |
+|   output_layer[158].out_counter |     0.007 |
+|   output_layer[159].out_counter |     0.023 |
+|   output_layer[15].out_counter  |     0.025 |
+|   output_layer[160].out_counter |     0.007 |
+|   output_layer[161].out_counter |     0.007 |
+|   output_layer[162].out_counter |     0.007 |
+|   output_layer[163].out_counter |     0.067 |
+|   output_layer[164].out_counter |     0.007 |
+|   output_layer[165].out_counter |     0.007 |
+|   output_layer[166].out_counter |     0.007 |
+|   output_layer[167].out_counter |     0.026 |
+|   output_layer[168].out_counter |     0.007 |
+|   output_layer[169].out_counter |     0.007 |
+|   output_layer[16].out_counter  |     0.007 |
+|   output_layer[170].out_counter |     0.007 |
+|   output_layer[171].out_counter |     0.028 |
+|   output_layer[172].out_counter |     0.007 |
+|   output_layer[173].out_counter |     0.007 |
+|   output_layer[174].out_counter |     0.007 |
+|   output_layer[175].out_counter |     0.023 |
+|   output_layer[176].out_counter |     0.007 |
+|   output_layer[177].out_counter |     0.007 |
+|   output_layer[178].out_counter |     0.007 |
+|   output_layer[179].out_counter |     0.221 |
+|   output_layer[17].out_counter  |     0.007 |
+|   output_layer[180].out_counter |     0.007 |
+|   output_layer[181].out_counter |     0.007 |
+|   output_layer[182].out_counter |     0.007 |
+|   output_layer[183].out_counter |     0.023 |
+|   output_layer[184].out_counter |     0.007 |
+|   output_layer[185].out_counter |     0.007 |
+|   output_layer[186].out_counter |     0.007 |
+|   output_layer[187].out_counter |     0.026 |
+|   output_layer[188].out_counter |     0.007 |
+|   output_layer[189].out_counter |     0.007 |
+|   output_layer[18].out_counter  |     0.007 |
+|   output_layer[190].out_counter |     0.007 |
+|   output_layer[191].out_counter |     0.023 |
+|   output_layer[192].out_counter |     0.007 |
+|   output_layer[193].out_counter |     0.007 |
+|   output_layer[194].out_counter |     0.007 |
+|   output_layer[195].out_counter |     0.071 |
+|   output_layer[196].out_counter |     0.007 |
+|   output_layer[197].out_counter |     0.007 |
+|   output_layer[198].out_counter |     0.007 |
+|   output_layer[199].out_counter |     0.024 |
+|   output_layer[19].out_counter  |     0.079 |
+|   output_layer[1].out_counter   |     0.007 |
+|   output_layer[200].out_counter |     0.007 |
+|   output_layer[201].out_counter |     0.007 |
+|   output_layer[202].out_counter |     0.007 |
+|   output_layer[203].out_counter |     0.027 |
+|   output_layer[204].out_counter |     0.007 |
+|   output_layer[205].out_counter |     0.007 |
+|   output_layer[206].out_counter |     0.007 |
+|   output_layer[207].out_counter |     0.022 |
+|   output_layer[208].out_counter |     0.007 |
+|   output_layer[209].out_counter |     0.007 |
+|   output_layer[20].out_counter  |     0.007 |
+|   output_layer[210].out_counter |     0.007 |
+|   output_layer[211].out_counter |     0.059 |
+|   output_layer[212].out_counter |     0.007 |
+|   output_layer[213].out_counter |     0.007 |
+|   output_layer[214].out_counter |     0.007 |
+|   output_layer[215].out_counter |     0.024 |
+|   output_layer[216].out_counter |     0.007 |
+|   output_layer[217].out_counter |     0.007 |
+|   output_layer[218].out_counter |     0.007 |
+|   output_layer[219].out_counter |     0.027 |
+|   output_layer[21].out_counter  |     0.007 |
+|   output_layer[220].out_counter |     0.007 |
+|   output_layer[221].out_counter |     0.007 |
+|   output_layer[222].out_counter |     0.007 |
+|   output_layer[223].out_counter |     0.024 |
+|   output_layer[224].out_counter |     0.007 |
+|   output_layer[225].out_counter |     0.007 |
+|   output_layer[226].out_counter |     0.007 |
+|   output_layer[227].out_counter |     0.087 |
+|   output_layer[228].out_counter |     0.007 |
+|   output_layer[229].out_counter |     0.007 |
+|   output_layer[22].out_counter  |     0.007 |
+|   output_layer[230].out_counter |     0.007 |
+|   output_layer[231].out_counter |     0.024 |
+|   output_layer[232].out_counter |     0.007 |
+|   output_layer[233].out_counter |     0.007 |
+|   output_layer[234].out_counter |     0.007 |
+|   output_layer[235].out_counter |     0.028 |
+|   output_layer[236].out_counter |     0.007 |
+|   output_layer[237].out_counter |     0.007 |
+|   output_layer[238].out_counter |     0.007 |
+|   output_layer[239].out_counter |     0.022 |
+|   output_layer[23].out_counter  |     0.024 |
+|   output_layer[240].out_counter |     0.007 |
+|   output_layer[241].out_counter |     0.007 |
+|   output_layer[242].out_counter |     0.007 |
+|   output_layer[243].out_counter |     0.129 |
+|   output_layer[244].out_counter |     0.007 |
+|   output_layer[245].out_counter |     0.007 |
+|   output_layer[246].out_counter |     0.007 |
+|   output_layer[247].out_counter |     0.024 |
+|   output_layer[248].out_counter |     0.007 |
+|   output_layer[249].out_counter |     0.007 |
+|   output_layer[24].out_counter  |     0.007 |
+|   output_layer[250].out_counter |     0.007 |
+|   output_layer[251].out_counter |     0.025 |
+|   output_layer[252].out_counter |     0.007 |
+|   output_layer[253].out_counter |     0.007 |
+|   output_layer[254].out_counter |     0.007 |
+|   output_layer[255].out_counter |     0.020 |
+|   output_layer[256].out_counter |     0.007 |
+|   output_layer[257].out_counter |     0.007 |
+|   output_layer[258].out_counter |     0.007 |
+|   output_layer[259].out_counter |     0.068 |
+|   output_layer[25].out_counter  |     0.007 |
+|   output_layer[260].out_counter |     0.007 |
+|   output_layer[261].out_counter |     0.007 |
+|   output_layer[262].out_counter |     0.007 |
+|   output_layer[263].out_counter |     0.023 |
+|   output_layer[264].out_counter |     0.007 |
+|   output_layer[265].out_counter |     0.007 |
+|   output_layer[266].out_counter |     0.007 |
+|   output_layer[267].out_counter |     0.028 |
+|   output_layer[268].out_counter |     0.007 |
+|   output_layer[269].out_counter |     0.007 |
+|   output_layer[26].out_counter  |     0.007 |
+|   output_layer[270].out_counter |     0.007 |
+|   output_layer[271].out_counter |     0.022 |
+|   output_layer[272].out_counter |     0.007 |
+|   output_layer[273].out_counter |     0.007 |
+|   output_layer[274].out_counter |     0.007 |
+|   output_layer[275].out_counter |     0.059 |
+|   output_layer[276].out_counter |     0.007 |
+|   output_layer[277].out_counter |     0.007 |
+|   output_layer[278].out_counter |     0.007 |
+|   output_layer[279].out_counter |     0.022 |
+|   output_layer[27].out_counter  |     0.030 |
+|   output_layer[280].out_counter |     0.007 |
+|   output_layer[281].out_counter |     0.007 |
+|   output_layer[282].out_counter |     0.007 |
+|   output_layer[283].out_counter |     0.029 |
+|   output_layer[284].out_counter |     0.007 |
+|   output_layer[285].out_counter |     0.007 |
+|   output_layer[286].out_counter |     0.007 |
+|   output_layer[287].out_counter |     0.023 |
+|   output_layer[288].out_counter |     0.007 |
+|   output_layer[289].out_counter |     0.007 |
+|   output_layer[28].out_counter  |     0.007 |
+|   output_layer[290].out_counter |     0.007 |
+|   output_layer[291].out_counter |     0.087 |
+|   output_layer[292].out_counter |     0.007 |
+|   output_layer[293].out_counter |     0.007 |
+|   output_layer[294].out_counter |     0.007 |
+|   output_layer[295].out_counter |     0.021 |
+|   output_layer[296].out_counter |     0.007 |
+|   output_layer[297].out_counter |     0.007 |
+|   output_layer[298].out_counter |     0.007 |
+|   output_layer[299].out_counter |     0.030 |
+|   output_layer[29].out_counter  |     0.007 |
+|   output_layer[2].out_counter   |     0.007 |
+|   output_layer[300].out_counter |     0.007 |
+|   output_layer[301].out_counter |     0.007 |
+|   output_layer[302].out_counter |     0.007 |
+|   output_layer[303].out_counter |     0.023 |
+|   output_layer[304].out_counter |     0.007 |
+|   output_layer[305].out_counter |     0.007 |
+|   output_layer[306].out_counter |     0.007 |
+|   output_layer[307].out_counter |     0.220 |
+|   output_layer[308].out_counter |     0.007 |
+|   output_layer[309].out_counter |     0.007 |
+|   output_layer[30].out_counter  |     0.007 |
+|   output_layer[310].out_counter |     0.007 |
+|   output_layer[311].out_counter |     0.025 |
+|   output_layer[312].out_counter |     0.007 |
+|   output_layer[313].out_counter |     0.007 |
+|   output_layer[314].out_counter |     0.007 |
+|   output_layer[315].out_counter |     0.027 |
+|   output_layer[316].out_counter |     0.007 |
+|   output_layer[317].out_counter |     0.007 |
+|   output_layer[318].out_counter |     0.007 |
+|   output_layer[319].out_counter |     0.025 |
+|   output_layer[31].out_counter  |     0.024 |
+|   output_layer[320].out_counter |     0.007 |
+|   output_layer[321].out_counter |     0.007 |
+|   output_layer[322].out_counter |     0.007 |
+|   output_layer[323].out_counter |     0.079 |
+|   output_layer[324].out_counter |     0.007 |
+|   output_layer[325].out_counter |     0.007 |
+|   output_layer[326].out_counter |     0.007 |
+|   output_layer[327].out_counter |     0.023 |
+|   output_layer[328].out_counter |     0.007 |
+|   output_layer[329].out_counter |     0.007 |
+|   output_layer[32].out_counter  |     0.007 |
+|   output_layer[330].out_counter |     0.007 |
+|   output_layer[331].out_counter |     0.027 |
+|   output_layer[332].out_counter |     0.007 |
+|   output_layer[333].out_counter |     0.007 |
+|   output_layer[334].out_counter |     0.007 |
+|   output_layer[335].out_counter |     0.024 |
+|   output_layer[336].out_counter |     0.007 |
+|   output_layer[337].out_counter |     0.007 |
+|   output_layer[338].out_counter |     0.007 |
+|   output_layer[339].out_counter |     0.067 |
+|   output_layer[33].out_counter  |     0.007 |
+|   output_layer[340].out_counter |     0.007 |
+|   output_layer[341].out_counter |     0.007 |
+|   output_layer[342].out_counter |     0.007 |
+|   output_layer[343].out_counter |     0.026 |
+|   output_layer[344].out_counter |     0.007 |
+|   output_layer[345].out_counter |     0.007 |
+|   output_layer[346].out_counter |     0.007 |
+|   output_layer[347].out_counter |     0.028 |
+|   output_layer[348].out_counter |     0.007 |
+|   output_layer[349].out_counter |     0.007 |
+|   output_layer[34].out_counter  |     0.007 |
+|   output_layer[350].out_counter |     0.007 |
+|   output_layer[351].out_counter |     0.025 |
+|   output_layer[352].out_counter |     0.007 |
+|   output_layer[353].out_counter |     0.007 |
+|   output_layer[354].out_counter |     0.007 |
+|   output_layer[355].out_counter |     0.088 |
+|   output_layer[356].out_counter |     0.007 |
+|   output_layer[357].out_counter |     0.007 |
+|   output_layer[358].out_counter |     0.007 |
+|   output_layer[359].out_counter |     0.024 |
+|   output_layer[35].out_counter  |     0.063 |
+|   output_layer[360].out_counter |     0.007 |
+|   output_layer[361].out_counter |     0.007 |
+|   output_layer[362].out_counter |     0.007 |
+|   output_layer[363].out_counter |     0.026 |
+|   output_layer[364].out_counter |     0.007 |
+|   output_layer[365].out_counter |     0.007 |
+|   output_layer[366].out_counter |     0.007 |
+|   output_layer[367].out_counter |     0.022 |
+|   output_layer[368].out_counter |     0.007 |
+|   output_layer[369].out_counter |     0.007 |
+|   output_layer[36].out_counter  |     0.007 |
+|   output_layer[370].out_counter |     0.007 |
+|   output_layer[371].out_counter |     0.143 |
+|   output_layer[372].out_counter |     0.007 |
+|   output_layer[373].out_counter |     0.007 |
+|   output_layer[374].out_counter |     0.007 |
+|   output_layer[375].out_counter |     0.021 |
+|   output_layer[376].out_counter |     0.007 |
+|   output_layer[377].out_counter |     0.007 |
+|   output_layer[378].out_counter |     0.007 |
+|   output_layer[379].out_counter |     0.026 |
+|   output_layer[37].out_counter  |     0.007 |
+|   output_layer[380].out_counter |     0.007 |
+|   output_layer[381].out_counter |     0.007 |
+|   output_layer[382].out_counter |     0.007 |
+|   output_layer[383].out_counter |     0.026 |
+|   output_layer[384].out_counter |     0.007 |
+|   output_layer[385].out_counter |     0.007 |
+|   output_layer[386].out_counter |     0.007 |
+|   output_layer[387].out_counter |     0.487 |
+|   output_layer[388].out_counter |     0.007 |
+|   output_layer[389].out_counter |     0.007 |
+|   output_layer[38].out_counter  |     0.007 |
+|   output_layer[390].out_counter |     0.007 |
+|   output_layer[391].out_counter |     0.020 |
+|   output_layer[392].out_counter |     0.007 |
+|   output_layer[393].out_counter |     0.007 |
+|   output_layer[394].out_counter |     0.007 |
+|   output_layer[395].out_counter |     0.057 |
+|   output_layer[396].out_counter |     0.007 |
+|   output_layer[397].out_counter |     0.007 |
+|   output_layer[398].out_counter |     0.007 |
+|   output_layer[399].out_counter |     0.025 |
+|   output_layer[39].out_counter  |     0.023 |
+|   output_layer[3].out_counter   |     0.085 |
+|   output_layer[40].out_counter  |     0.007 |
+|   output_layer[41].out_counter  |     0.007 |
+|   output_layer[42].out_counter  |     0.007 |
+|   output_layer[43].out_counter  |     0.025 |
+|   output_layer[44].out_counter  |     0.007 |
+|   output_layer[45].out_counter  |     0.007 |
+|   output_layer[46].out_counter  |     0.007 |
+|   output_layer[47].out_counter  |     0.023 |
+|   output_layer[48].out_counter  |     0.007 |
+|   output_layer[49].out_counter  |     0.007 |
+|   output_layer[4].out_counter   |     0.007 |
+|   output_layer[50].out_counter  |     0.007 |
+|   output_layer[51].out_counter  |     0.316 |
+|   output_layer[52].out_counter  |     0.007 |
+|   output_layer[53].out_counter  |     0.007 |
+|   output_layer[54].out_counter  |     0.007 |
+|   output_layer[55].out_counter  |     0.025 |
+|   output_layer[56].out_counter  |     0.007 |
+|   output_layer[57].out_counter  |     0.007 |
+|   output_layer[58].out_counter  |     0.007 |
+|   output_layer[59].out_counter  |     0.025 |
+|   output_layer[5].out_counter   |     0.007 |
+|   output_layer[60].out_counter  |     0.007 |
+|   output_layer[61].out_counter  |     0.007 |
+|   output_layer[62].out_counter  |     0.007 |
+|   output_layer[63].out_counter  |     0.025 |
+|   output_layer[64].out_counter  |     0.007 |
+|   output_layer[65].out_counter  |     0.007 |
+|   output_layer[66].out_counter  |     0.007 |
+|   output_layer[67].out_counter  |     0.078 |
+|   output_layer[68].out_counter  |     0.007 |
+|   output_layer[69].out_counter  |     0.007 |
+|   output_layer[6].out_counter   |     0.007 |
+|   output_layer[70].out_counter  |     0.007 |
+|   output_layer[71].out_counter  |     0.025 |
+|   output_layer[72].out_counter  |     0.007 |
+|   output_layer[73].out_counter  |     0.007 |
+|   output_layer[74].out_counter  |     0.007 |
+|   output_layer[75].out_counter  |     0.026 |
+|   output_layer[76].out_counter  |     0.007 |
+|   output_layer[77].out_counter  |     0.007 |
+|   output_layer[78].out_counter  |     0.007 |
+|   output_layer[79].out_counter  |     0.021 |
+|   output_layer[7].out_counter   |     0.021 |
+|   output_layer[80].out_counter  |     0.007 |
+|   output_layer[81].out_counter  |     0.007 |
+|   output_layer[82].out_counter  |     0.007 |
+|   output_layer[83].out_counter  |     0.080 |
+|   output_layer[84].out_counter  |     0.007 |
+|   output_layer[85].out_counter  |     0.007 |
+|   output_layer[86].out_counter  |     0.007 |
+|   output_layer[87].out_counter  |     0.024 |
+|   output_layer[88].out_counter  |     0.007 |
+|   output_layer[89].out_counter  |     0.007 |
+|   output_layer[8].out_counter   |     0.007 |
+|   output_layer[90].out_counter  |     0.007 |
+|   output_layer[91].out_counter  |     0.027 |
+|   output_layer[92].out_counter  |     0.007 |
+|   output_layer[93].out_counter  |     0.007 |
+|   output_layer[94].out_counter  |     0.007 |
+|   output_layer[95].out_counter  |     0.023 |
+|   output_layer[96].out_counter  |     0.007 |
+|   output_layer[97].out_counter  |     0.007 |
+|   output_layer[98].out_counter  |     0.007 |
+|   output_layer[99].out_counter  |     0.101 |
+|   output_layer[9].out_counter   |     0.007 |
+|   poissonLayer                  |    58.597 |
+|     cmp_layer[0].cmp            |     0.037 |
+|     cmp_layer[100].cmp          |     0.035 |
+|     cmp_layer[101].cmp          |     0.038 |
+|     cmp_layer[102].cmp          |     0.032 |
+|     cmp_layer[103].cmp          |     0.033 |
+|     cmp_layer[104].cmp          |     0.027 |
+|     cmp_layer[105].cmp          |     0.031 |
+|     cmp_layer[106].cmp          |     0.034 |
+|     cmp_layer[107].cmp          |     0.026 |
+|     cmp_layer[108].cmp          |     0.030 |
+|     cmp_layer[109].cmp          |     0.039 |
+|     cmp_layer[10].cmp           |     0.037 |
+|     cmp_layer[110].cmp          |     0.037 |
+|     cmp_layer[111].cmp          |     0.030 |
+|     cmp_layer[112].cmp          |     0.032 |
+|     cmp_layer[113].cmp          |     0.034 |
+|     cmp_layer[114].cmp          |     0.030 |
+|     cmp_layer[115].cmp          |     0.033 |
+|     cmp_layer[116].cmp          |     0.032 |
+|     cmp_layer[117].cmp          |     0.029 |
+|     cmp_layer[118].cmp          |     0.030 |
+|     cmp_layer[119].cmp          |     0.032 |
+|     cmp_layer[11].cmp           |     0.030 |
+|     cmp_layer[120].cmp          |     0.035 |
+|     cmp_layer[121].cmp          |     0.030 |
+|     cmp_layer[122].cmp          |     0.029 |
+|     cmp_layer[123].cmp          |     0.035 |
+|     cmp_layer[124].cmp          |     0.030 |
+|     cmp_layer[125].cmp          |     0.028 |
+|     cmp_layer[126].cmp          |     0.035 |
+|     cmp_layer[127].cmp          |     0.029 |
+|     cmp_layer[128].cmp          |     0.035 |
+|     cmp_layer[129].cmp          |     0.030 |
+|     cmp_layer[12].cmp           |     0.030 |
+|     cmp_layer[130].cmp          |     0.028 |
+|     cmp_layer[131].cmp          |     0.034 |
+|     cmp_layer[132].cmp          |     0.036 |
+|     cmp_layer[133].cmp          |     0.030 |
+|     cmp_layer[134].cmp          |     0.030 |
+|     cmp_layer[135].cmp          |     0.033 |
+|     cmp_layer[136].cmp          |     0.028 |
+|     cmp_layer[137].cmp          |     0.034 |
+|     cmp_layer[138].cmp          |     0.027 |
+|     cmp_layer[139].cmp          |     0.033 |
+|     cmp_layer[13].cmp           |     0.033 |
+|     cmp_layer[140].cmp          |     0.032 |
+|     cmp_layer[141].cmp          |     0.027 |
+|     cmp_layer[142].cmp          |     0.029 |
+|     cmp_layer[143].cmp          |     0.033 |
+|     cmp_layer[144].cmp          |     0.037 |
+|     cmp_layer[145].cmp          |     0.035 |
+|     cmp_layer[146].cmp          |     0.034 |
+|     cmp_layer[147].cmp          |     0.036 |
+|     cmp_layer[148].cmp          |     0.033 |
+|     cmp_layer[149].cmp          |     0.029 |
+|     cmp_layer[14].cmp           |     0.032 |
+|     cmp_layer[150].cmp          |     0.028 |
+|     cmp_layer[151].cmp          |     0.031 |
+|     cmp_layer[152].cmp          |     0.032 |
+|     cmp_layer[153].cmp          |     0.032 |
+|     cmp_layer[154].cmp          |     0.038 |
+|     cmp_layer[155].cmp          |     0.033 |
+|     cmp_layer[156].cmp          |     0.034 |
+|     cmp_layer[157].cmp          |     0.030 |
+|     cmp_layer[158].cmp          |     0.029 |
+|     cmp_layer[159].cmp          |     0.030 |
+|     cmp_layer[15].cmp           |     0.033 |
+|     cmp_layer[160].cmp          |     0.030 |
+|     cmp_layer[161].cmp          |     0.032 |
+|     cmp_layer[162].cmp          |     0.028 |
+|     cmp_layer[163].cmp          |     0.031 |
+|     cmp_layer[164].cmp          |     0.031 |
+|     cmp_layer[165].cmp          |     0.026 |
+|     cmp_layer[166].cmp          |     0.030 |
+|     cmp_layer[167].cmp          |     0.031 |
+|     cmp_layer[168].cmp          |     0.035 |
+|     cmp_layer[169].cmp          |     0.032 |
+|     cmp_layer[16].cmp           |     0.031 |
+|     cmp_layer[170].cmp          |     0.032 |
+|     cmp_layer[171].cmp          |     0.030 |
+|     cmp_layer[172].cmp          |     0.033 |
+|     cmp_layer[173].cmp          |     0.030 |
+|     cmp_layer[174].cmp          |     0.029 |
+|     cmp_layer[175].cmp          |     0.036 |
+|     cmp_layer[176].cmp          |     0.035 |
+|     cmp_layer[177].cmp          |     0.034 |
+|     cmp_layer[178].cmp          |     0.035 |
+|     cmp_layer[179].cmp          |     0.035 |
+|     cmp_layer[17].cmp           |     0.033 |
+|     cmp_layer[180].cmp          |     0.032 |
+|     cmp_layer[181].cmp          |     0.036 |
+|     cmp_layer[182].cmp          |     0.027 |
+|     cmp_layer[183].cmp          |     0.034 |
+|     cmp_layer[184].cmp          |     0.033 |
+|     cmp_layer[185].cmp          |     0.032 |
+|     cmp_layer[186].cmp          |     0.029 |
+|     cmp_layer[187].cmp          |     0.031 |
+|     cmp_layer[188].cmp          |     0.031 |
+|     cmp_layer[189].cmp          |     0.034 |
+|     cmp_layer[18].cmp           |     0.034 |
+|     cmp_layer[190].cmp          |     0.036 |
+|     cmp_layer[191].cmp          |     0.033 |
+|     cmp_layer[192].cmp          |     0.038 |
+|     cmp_layer[193].cmp          |     0.036 |
+|     cmp_layer[194].cmp          |     0.031 |
+|     cmp_layer[195].cmp          |     0.034 |
+|     cmp_layer[196].cmp          |     0.029 |
+|     cmp_layer[197].cmp          |     0.035 |
+|     cmp_layer[198].cmp          |     0.035 |
+|     cmp_layer[199].cmp          |     0.028 |
+|     cmp_layer[19].cmp           |     0.031 |
+|     cmp_layer[1].cmp            |     0.032 |
+|     cmp_layer[200].cmp          |     0.032 |
+|     cmp_layer[201].cmp          |     0.030 |
+|     cmp_layer[202].cmp          |     0.033 |
+|     cmp_layer[203].cmp          |     0.034 |
+|     cmp_layer[204].cmp          |     0.028 |
+|     cmp_layer[205].cmp          |     0.031 |
+|     cmp_layer[206].cmp          |     0.027 |
+|     cmp_layer[207].cmp          |     0.036 |
+|     cmp_layer[208].cmp          |     0.036 |
+|     cmp_layer[209].cmp          |     0.029 |
+|     cmp_layer[20].cmp           |     0.034 |
+|     cmp_layer[210].cmp          |     0.031 |
+|     cmp_layer[211].cmp          |     0.035 |
+|     cmp_layer[212].cmp          |     0.030 |
+|     cmp_layer[213].cmp          |     0.036 |
+|     cmp_layer[214].cmp          |     0.032 |
+|     cmp_layer[215].cmp          |     0.031 |
+|     cmp_layer[216].cmp          |     0.031 |
+|     cmp_layer[217].cmp          |     0.031 |
+|     cmp_layer[218].cmp          |     0.031 |
+|     cmp_layer[219].cmp          |     0.031 |
+|     cmp_layer[21].cmp           |     0.034 |
+|     cmp_layer[220].cmp          |     0.032 |
+|     cmp_layer[221].cmp          |     0.032 |
+|     cmp_layer[222].cmp          |     0.030 |
+|     cmp_layer[223].cmp          |     0.030 |
+|     cmp_layer[224].cmp          |     0.027 |
+|     cmp_layer[225].cmp          |     0.033 |
+|     cmp_layer[226].cmp          |     0.029 |
+|     cmp_layer[227].cmp          |     0.028 |
+|     cmp_layer[228].cmp          |     0.033 |
+|     cmp_layer[229].cmp          |     0.031 |
+|     cmp_layer[22].cmp           |     0.034 |
+|     cmp_layer[230].cmp          |     0.027 |
+|     cmp_layer[231].cmp          |     0.031 |
+|     cmp_layer[232].cmp          |     0.032 |
+|     cmp_layer[233].cmp          |     0.029 |
+|     cmp_layer[234].cmp          |     0.034 |
+|     cmp_layer[235].cmp          |     0.028 |
+|     cmp_layer[236].cmp          |     0.028 |
+|     cmp_layer[237].cmp          |     0.035 |
+|     cmp_layer[238].cmp          |     0.035 |
+|     cmp_layer[239].cmp          |     0.031 |
+|     cmp_layer[23].cmp           |     0.028 |
+|     cmp_layer[240].cmp          |     0.030 |
+|     cmp_layer[241].cmp          |     0.034 |
+|     cmp_layer[242].cmp          |     0.028 |
+|     cmp_layer[243].cmp          |     0.034 |
+|     cmp_layer[244].cmp          |     0.029 |
+|     cmp_layer[245].cmp          |     0.029 |
+|     cmp_layer[246].cmp          |     0.027 |
+|     cmp_layer[247].cmp          |     0.031 |
+|     cmp_layer[248].cmp          |     0.029 |
+|     cmp_layer[249].cmp          |     0.032 |
+|     cmp_layer[24].cmp           |     0.033 |
+|     cmp_layer[250].cmp          |     0.030 |
+|     cmp_layer[251].cmp          |     0.031 |
+|     cmp_layer[252].cmp          |     0.035 |
+|     cmp_layer[253].cmp          |     0.029 |
+|     cmp_layer[254].cmp          |     0.032 |
+|     cmp_layer[255].cmp          |     0.031 |
+|     cmp_layer[256].cmp          |     0.043 |
+|     cmp_layer[257].cmp          |     0.033 |
+|     cmp_layer[258].cmp          |     0.030 |
+|     cmp_layer[259].cmp          |     0.028 |
+|     cmp_layer[25].cmp           |     0.032 |
+|     cmp_layer[260].cmp          |     0.032 |
+|     cmp_layer[261].cmp          |     0.028 |
+|     cmp_layer[262].cmp          |     0.029 |
+|     cmp_layer[263].cmp          |     0.037 |
+|     cmp_layer[264].cmp          |     0.035 |
+|     cmp_layer[265].cmp          |     0.031 |
+|     cmp_layer[266].cmp          |     0.033 |
+|     cmp_layer[267].cmp          |     0.032 |
+|     cmp_layer[268].cmp          |     0.034 |
+|     cmp_layer[269].cmp          |     0.033 |
+|     cmp_layer[26].cmp           |     0.034 |
+|     cmp_layer[270].cmp          |     0.032 |
+|     cmp_layer[271].cmp          |     0.030 |
+|     cmp_layer[272].cmp          |     0.037 |
+|     cmp_layer[273].cmp          |     0.028 |
+|     cmp_layer[274].cmp          |     0.027 |
+|     cmp_layer[275].cmp          |     0.031 |
+|     cmp_layer[276].cmp          |     0.030 |
+|     cmp_layer[277].cmp          |     0.029 |
+|     cmp_layer[278].cmp          |     0.032 |
+|     cmp_layer[279].cmp          |     0.034 |
+|     cmp_layer[27].cmp           |     0.026 |
+|     cmp_layer[280].cmp          |     0.036 |
+|     cmp_layer[281].cmp          |     0.033 |
+|     cmp_layer[282].cmp          |     0.035 |
+|     cmp_layer[283].cmp          |     0.032 |
+|     cmp_layer[284].cmp          |     0.031 |
+|     cmp_layer[285].cmp          |     0.033 |
+|     cmp_layer[286].cmp          |     0.031 |
+|     cmp_layer[287].cmp          |     0.036 |
+|     cmp_layer[288].cmp          |     0.035 |
+|     cmp_layer[289].cmp          |     0.032 |
+|     cmp_layer[28].cmp           |     0.032 |
+|     cmp_layer[290].cmp          |     0.030 |
+|     cmp_layer[291].cmp          |     0.037 |
+|     cmp_layer[292].cmp          |     0.026 |
+|     cmp_layer[293].cmp          |     0.031 |
+|     cmp_layer[294].cmp          |     0.034 |
+|     cmp_layer[295].cmp          |     0.033 |
+|     cmp_layer[296].cmp          |     0.030 |
+|     cmp_layer[297].cmp          |     0.035 |
+|     cmp_layer[298].cmp          |     0.032 |
+|     cmp_layer[299].cmp          |     0.030 |
+|     cmp_layer[29].cmp           |     0.035 |
+|     cmp_layer[2].cmp            |     0.027 |
+|     cmp_layer[300].cmp          |     0.032 |
+|     cmp_layer[301].cmp          |     0.034 |
+|     cmp_layer[302].cmp          |     0.026 |
+|     cmp_layer[303].cmp          |     0.031 |
+|     cmp_layer[304].cmp          |     0.034 |
+|     cmp_layer[305].cmp          |     0.030 |
+|     cmp_layer[306].cmp          |     0.032 |
+|     cmp_layer[307].cmp          |     0.029 |
+|     cmp_layer[308].cmp          |     0.030 |
+|     cmp_layer[309].cmp          |     0.033 |
+|     cmp_layer[30].cmp           |     0.038 |
+|     cmp_layer[310].cmp          |     0.031 |
+|     cmp_layer[311].cmp          |     0.035 |
+|     cmp_layer[312].cmp          |     0.035 |
+|     cmp_layer[313].cmp          |     0.035 |
+|     cmp_layer[314].cmp          |     0.032 |
+|     cmp_layer[315].cmp          |     0.038 |
+|     cmp_layer[316].cmp          |     0.036 |
+|     cmp_layer[317].cmp          |     0.035 |
+|     cmp_layer[318].cmp          |     0.027 |
+|     cmp_layer[319].cmp          |     0.031 |
+|     cmp_layer[31].cmp           |     0.035 |
+|     cmp_layer[320].cmp          |     0.031 |
+|     cmp_layer[321].cmp          |     0.030 |
+|     cmp_layer[322].cmp          |     0.031 |
+|     cmp_layer[323].cmp          |     0.031 |
+|     cmp_layer[324].cmp          |     0.034 |
+|     cmp_layer[325].cmp          |     0.036 |
+|     cmp_layer[326].cmp          |     0.032 |
+|     cmp_layer[327].cmp          |     0.033 |
+|     cmp_layer[328].cmp          |     0.038 |
+|     cmp_layer[329].cmp          |     0.037 |
+|     cmp_layer[32].cmp           |     0.035 |
+|     cmp_layer[330].cmp          |     0.030 |
+|     cmp_layer[331].cmp          |     0.030 |
+|     cmp_layer[332].cmp          |     0.032 |
+|     cmp_layer[333].cmp          |     0.033 |
+|     cmp_layer[334].cmp          |     0.036 |
+|     cmp_layer[335].cmp          |     0.034 |
+|     cmp_layer[336].cmp          |     0.035 |
+|     cmp_layer[337].cmp          |     0.032 |
+|     cmp_layer[338].cmp          |     0.034 |
+|     cmp_layer[339].cmp          |     0.034 |
+|     cmp_layer[33].cmp           |     0.030 |
+|     cmp_layer[340].cmp          |     0.033 |
+|     cmp_layer[341].cmp          |     0.036 |
+|     cmp_layer[342].cmp          |     0.032 |
+|     cmp_layer[343].cmp          |     0.036 |
+|     cmp_layer[344].cmp          |     0.035 |
+|     cmp_layer[345].cmp          |     0.030 |
+|     cmp_layer[346].cmp          |     0.033 |
+|     cmp_layer[347].cmp          |     0.033 |
+|     cmp_layer[348].cmp          |     0.034 |
+|     cmp_layer[349].cmp          |     0.029 |
+|     cmp_layer[34].cmp           |     0.036 |
+|     cmp_layer[350].cmp          |     0.031 |
+|     cmp_layer[351].cmp          |     0.033 |
+|     cmp_layer[352].cmp          |     0.028 |
+|     cmp_layer[353].cmp          |     0.034 |
+|     cmp_layer[354].cmp          |     0.034 |
+|     cmp_layer[355].cmp          |     0.032 |
+|     cmp_layer[356].cmp          |     0.034 |
+|     cmp_layer[357].cmp          |     0.029 |
+|     cmp_layer[358].cmp          |     0.033 |
+|     cmp_layer[359].cmp          |     0.034 |
+|     cmp_layer[35].cmp           |     0.033 |
+|     cmp_layer[360].cmp          |     0.034 |
+|     cmp_layer[361].cmp          |     0.036 |
+|     cmp_layer[362].cmp          |     0.034 |
+|     cmp_layer[363].cmp          |     0.027 |
+|     cmp_layer[364].cmp          |     0.035 |
+|     cmp_layer[365].cmp          |     0.035 |
+|     cmp_layer[366].cmp          |     0.029 |
+|     cmp_layer[367].cmp          |     0.036 |
+|     cmp_layer[368].cmp          |     0.034 |
+|     cmp_layer[369].cmp          |     0.032 |
+|     cmp_layer[36].cmp           |     0.031 |
+|     cmp_layer[370].cmp          |     0.035 |
+|     cmp_layer[371].cmp          |     0.030 |
+|     cmp_layer[372].cmp          |     0.027 |
+|     cmp_layer[373].cmp          |     0.030 |
+|     cmp_layer[374].cmp          |     0.032 |
+|     cmp_layer[375].cmp          |     0.027 |
+|     cmp_layer[376].cmp          |     0.034 |
+|     cmp_layer[377].cmp          |     0.028 |
+|     cmp_layer[378].cmp          |     0.025 |
+|     cmp_layer[379].cmp          |     0.031 |
+|     cmp_layer[37].cmp           |     0.034 |
+|     cmp_layer[380].cmp          |     0.031 |
+|     cmp_layer[381].cmp          |     0.032 |
+|     cmp_layer[382].cmp          |     0.028 |
+|     cmp_layer[383].cmp          |     0.032 |
+|     cmp_layer[384].cmp          |     0.033 |
+|     cmp_layer[385].cmp          |     0.034 |
+|     cmp_layer[386].cmp          |     0.028 |
+|     cmp_layer[387].cmp          |     0.024 |
+|     cmp_layer[388].cmp          |     0.033 |
+|     cmp_layer[389].cmp          |     0.029 |
+|     cmp_layer[38].cmp           |     0.032 |
+|     cmp_layer[390].cmp          |     0.030 |
+|     cmp_layer[391].cmp          |     0.035 |
+|     cmp_layer[392].cmp          |     0.036 |
+|     cmp_layer[393].cmp          |     0.035 |
+|     cmp_layer[394].cmp          |     0.031 |
+|     cmp_layer[395].cmp          |     0.028 |
+|     cmp_layer[396].cmp          |     0.030 |
+|     cmp_layer[397].cmp          |     0.034 |
+|     cmp_layer[398].cmp          |     0.034 |
+|     cmp_layer[399].cmp          |     0.030 |
+|     cmp_layer[39].cmp           |     0.036 |
+|     cmp_layer[3].cmp            |     0.031 |
+|     cmp_layer[400].cmp          |     0.036 |
+|     cmp_layer[401].cmp          |     0.028 |
+|     cmp_layer[402].cmp          |     0.033 |
+|     cmp_layer[403].cmp          |     0.033 |
+|     cmp_layer[404].cmp          |     0.033 |
+|     cmp_layer[405].cmp          |     0.030 |
+|     cmp_layer[406].cmp          |     0.033 |
+|     cmp_layer[407].cmp          |     0.032 |
+|     cmp_layer[408].cmp          |     0.031 |
+|     cmp_layer[409].cmp          |     0.034 |
+|     cmp_layer[40].cmp           |     0.033 |
+|     cmp_layer[410].cmp          |     0.032 |
+|     cmp_layer[411].cmp          |     0.027 |
+|     cmp_layer[412].cmp          |     0.029 |
+|     cmp_layer[413].cmp          |     0.037 |
+|     cmp_layer[414].cmp          |     0.031 |
+|     cmp_layer[415].cmp          |     0.031 |
+|     cmp_layer[416].cmp          |     0.035 |
+|     cmp_layer[417].cmp          |     0.029 |
+|     cmp_layer[418].cmp          |     0.029 |
+|     cmp_layer[419].cmp          |     0.029 |
+|     cmp_layer[41].cmp           |     0.036 |
+|     cmp_layer[420].cmp          |     0.025 |
+|     cmp_layer[421].cmp          |     0.029 |
+|     cmp_layer[422].cmp          |     0.031 |
+|     cmp_layer[423].cmp          |     0.029 |
+|     cmp_layer[424].cmp          |     0.035 |
+|     cmp_layer[425].cmp          |     0.032 |
+|     cmp_layer[426].cmp          |     0.030 |
+|     cmp_layer[427].cmp          |     0.034 |
+|     cmp_layer[428].cmp          |     0.035 |
+|     cmp_layer[429].cmp          |     0.035 |
+|     cmp_layer[42].cmp           |     0.033 |
+|     cmp_layer[430].cmp          |     0.031 |
+|     cmp_layer[431].cmp          |     0.033 |
+|     cmp_layer[432].cmp          |     0.030 |
+|     cmp_layer[433].cmp          |     0.031 |
+|     cmp_layer[434].cmp          |     0.032 |
+|     cmp_layer[435].cmp          |     0.033 |
+|     cmp_layer[436].cmp          |     0.032 |
+|     cmp_layer[437].cmp          |     0.031 |
+|     cmp_layer[438].cmp          |     0.034 |
+|     cmp_layer[439].cmp          |     0.034 |
+|     cmp_layer[43].cmp           |     0.034 |
+|     cmp_layer[440].cmp          |     0.035 |
+|     cmp_layer[441].cmp          |     0.029 |
+|     cmp_layer[442].cmp          |     0.036 |
+|     cmp_layer[443].cmp          |     0.027 |
+|     cmp_layer[444].cmp          |     0.028 |
+|     cmp_layer[445].cmp          |     0.027 |
+|     cmp_layer[446].cmp          |     0.038 |
+|     cmp_layer[447].cmp          |     0.031 |
+|     cmp_layer[448].cmp          |     0.027 |
+|     cmp_layer[449].cmp          |     0.029 |
+|     cmp_layer[44].cmp           |     0.026 |
+|     cmp_layer[450].cmp          |     0.032 |
+|     cmp_layer[451].cmp          |     0.034 |
+|     cmp_layer[452].cmp          |     0.026 |
+|     cmp_layer[453].cmp          |     0.032 |
+|     cmp_layer[454].cmp          |     0.032 |
+|     cmp_layer[455].cmp          |     0.033 |
+|     cmp_layer[456].cmp          |     0.031 |
+|     cmp_layer[457].cmp          |     0.032 |
+|     cmp_layer[458].cmp          |     0.033 |
+|     cmp_layer[459].cmp          |     0.029 |
+|     cmp_layer[45].cmp           |     0.033 |
+|     cmp_layer[460].cmp          |     0.031 |
+|     cmp_layer[461].cmp          |     0.031 |
+|     cmp_layer[462].cmp          |     0.028 |
+|     cmp_layer[463].cmp          |     0.026 |
+|     cmp_layer[464].cmp          |     0.033 |
+|     cmp_layer[465].cmp          |     0.031 |
+|     cmp_layer[466].cmp          |     0.025 |
+|     cmp_layer[467].cmp          |     0.031 |
+|     cmp_layer[468].cmp          |     0.035 |
+|     cmp_layer[469].cmp          |     0.032 |
+|     cmp_layer[46].cmp           |     0.029 |
+|     cmp_layer[470].cmp          |     0.034 |
+|     cmp_layer[471].cmp          |     0.031 |
+|     cmp_layer[472].cmp          |     0.029 |
+|     cmp_layer[473].cmp          |     0.034 |
+|     cmp_layer[474].cmp          |     0.030 |
+|     cmp_layer[475].cmp          |     0.031 |
+|     cmp_layer[476].cmp          |     0.033 |
+|     cmp_layer[477].cmp          |     0.037 |
+|     cmp_layer[478].cmp          |     0.034 |
+|     cmp_layer[479].cmp          |     0.027 |
+|     cmp_layer[47].cmp           |     0.031 |
+|     cmp_layer[480].cmp          |     0.034 |
+|     cmp_layer[481].cmp          |     0.034 |
+|     cmp_layer[482].cmp          |     0.037 |
+|     cmp_layer[483].cmp          |     0.031 |
+|     cmp_layer[484].cmp          |     0.032 |
+|     cmp_layer[485].cmp          |     0.035 |
+|     cmp_layer[486].cmp          |     0.033 |
+|     cmp_layer[487].cmp          |     0.028 |
+|     cmp_layer[488].cmp          |     0.035 |
+|     cmp_layer[489].cmp          |     0.029 |
+|     cmp_layer[48].cmp           |     0.033 |
+|     cmp_layer[490].cmp          |     0.032 |
+|     cmp_layer[491].cmp          |     0.034 |
+|     cmp_layer[492].cmp          |     0.035 |
+|     cmp_layer[493].cmp          |     0.030 |
+|     cmp_layer[494].cmp          |     0.034 |
+|     cmp_layer[495].cmp          |     0.030 |
+|     cmp_layer[496].cmp          |     0.036 |
+|     cmp_layer[497].cmp          |     0.030 |
+|     cmp_layer[498].cmp          |     0.029 |
+|     cmp_layer[499].cmp          |     0.033 |
+|     cmp_layer[49].cmp           |     0.026 |
+|     cmp_layer[4].cmp            |     0.034 |
+|     cmp_layer[500].cmp          |     0.032 |
+|     cmp_layer[501].cmp          |     0.028 |
+|     cmp_layer[502].cmp          |     0.034 |
+|     cmp_layer[503].cmp          |     0.030 |
+|     cmp_layer[504].cmp          |     0.037 |
+|     cmp_layer[505].cmp          |     0.038 |
+|     cmp_layer[506].cmp          |     0.030 |
+|     cmp_layer[507].cmp          |     0.031 |
+|     cmp_layer[508].cmp          |     0.032 |
+|     cmp_layer[509].cmp          |     0.029 |
+|     cmp_layer[50].cmp           |     0.031 |
+|     cmp_layer[510].cmp          |     0.035 |
+|     cmp_layer[511].cmp          |     0.031 |
+|     cmp_layer[512].cmp          |     0.037 |
+|     cmp_layer[513].cmp          |     0.036 |
+|     cmp_layer[514].cmp          |     0.034 |
+|     cmp_layer[515].cmp          |     0.031 |
+|     cmp_layer[516].cmp          |     0.032 |
+|     cmp_layer[517].cmp          |     0.035 |
+|     cmp_layer[518].cmp          |     0.033 |
+|     cmp_layer[519].cmp          |     0.032 |
+|     cmp_layer[51].cmp           |     0.034 |
+|     cmp_layer[520].cmp          |     0.030 |
+|     cmp_layer[521].cmp          |     0.029 |
+|     cmp_layer[522].cmp          |     0.029 |
+|     cmp_layer[523].cmp          |     0.029 |
+|     cmp_layer[524].cmp          |     0.034 |
+|     cmp_layer[525].cmp          |     0.035 |
+|     cmp_layer[526].cmp          |     0.035 |
+|     cmp_layer[527].cmp          |     0.031 |
+|     cmp_layer[528].cmp          |     0.036 |
+|     cmp_layer[529].cmp          |     0.032 |
+|     cmp_layer[52].cmp           |     0.033 |
+|     cmp_layer[530].cmp          |     0.036 |
+|     cmp_layer[531].cmp          |     0.029 |
+|     cmp_layer[532].cmp          |     0.036 |
+|     cmp_layer[533].cmp          |     0.025 |
+|     cmp_layer[534].cmp          |     0.029 |
+|     cmp_layer[535].cmp          |     0.031 |
+|     cmp_layer[536].cmp          |     0.032 |
+|     cmp_layer[537].cmp          |     0.031 |
+|     cmp_layer[538].cmp          |     0.036 |
+|     cmp_layer[539].cmp          |     0.037 |
+|     cmp_layer[53].cmp           |     0.031 |
+|     cmp_layer[540].cmp          |     0.033 |
+|     cmp_layer[541].cmp          |     0.034 |
+|     cmp_layer[542].cmp          |     0.035 |
+|     cmp_layer[543].cmp          |     0.030 |
+|     cmp_layer[544].cmp          |     0.031 |
+|     cmp_layer[545].cmp          |     0.031 |
+|     cmp_layer[546].cmp          |     0.036 |
+|     cmp_layer[547].cmp          |     0.032 |
+|     cmp_layer[548].cmp          |     0.034 |
+|     cmp_layer[549].cmp          |     0.028 |
+|     cmp_layer[54].cmp           |     0.032 |
+|     cmp_layer[550].cmp          |     0.032 |
+|     cmp_layer[551].cmp          |     0.031 |
+|     cmp_layer[552].cmp          |     0.031 |
+|     cmp_layer[553].cmp          |     0.025 |
+|     cmp_layer[554].cmp          |     0.033 |
+|     cmp_layer[555].cmp          |     0.031 |
+|     cmp_layer[556].cmp          |     0.035 |
+|     cmp_layer[557].cmp          |     0.034 |
+|     cmp_layer[558].cmp          |     0.032 |
+|     cmp_layer[559].cmp          |     0.034 |
+|     cmp_layer[55].cmp           |     0.034 |
+|     cmp_layer[560].cmp          |     0.035 |
+|     cmp_layer[561].cmp          |     0.033 |
+|     cmp_layer[562].cmp          |     0.032 |
+|     cmp_layer[563].cmp          |     0.035 |
+|     cmp_layer[564].cmp          |     0.030 |
+|     cmp_layer[565].cmp          |     0.032 |
+|     cmp_layer[566].cmp          |     0.037 |
+|     cmp_layer[567].cmp          |     0.037 |
+|     cmp_layer[568].cmp          |     0.035 |
+|     cmp_layer[569].cmp          |     0.032 |
+|     cmp_layer[56].cmp           |     0.030 |
+|     cmp_layer[570].cmp          |     0.033 |
+|     cmp_layer[571].cmp          |     0.034 |
+|     cmp_layer[572].cmp          |     0.036 |
+|     cmp_layer[573].cmp          |     0.034 |
+|     cmp_layer[574].cmp          |     0.033 |
+|     cmp_layer[575].cmp          |     0.035 |
+|     cmp_layer[576].cmp          |     0.032 |
+|     cmp_layer[577].cmp          |     0.031 |
+|     cmp_layer[578].cmp          |     0.033 |
+|     cmp_layer[579].cmp          |     0.033 |
+|     cmp_layer[57].cmp           |     0.034 |
+|     cmp_layer[580].cmp          |     0.029 |
+|     cmp_layer[581].cmp          |     0.033 |
+|     cmp_layer[582].cmp          |     0.031 |
+|     cmp_layer[583].cmp          |     0.028 |
+|     cmp_layer[584].cmp          |     0.033 |
+|     cmp_layer[585].cmp          |     0.033 |
+|     cmp_layer[586].cmp          |     0.022 |
+|     cmp_layer[587].cmp          |     0.029 |
+|     cmp_layer[588].cmp          |     0.026 |
+|     cmp_layer[589].cmp          |     0.036 |
+|     cmp_layer[58].cmp           |     0.034 |
+|     cmp_layer[590].cmp          |     0.029 |
+|     cmp_layer[591].cmp          |     0.029 |
+|     cmp_layer[592].cmp          |     0.034 |
+|     cmp_layer[593].cmp          |     0.028 |
+|     cmp_layer[594].cmp          |     0.037 |
+|     cmp_layer[595].cmp          |     0.035 |
+|     cmp_layer[596].cmp          |     0.034 |
+|     cmp_layer[597].cmp          |     0.030 |
+|     cmp_layer[598].cmp          |     0.033 |
+|     cmp_layer[599].cmp          |     0.035 |
+|     cmp_layer[59].cmp           |     0.028 |
+|     cmp_layer[5].cmp            |     0.027 |
+|     cmp_layer[600].cmp          |     0.033 |
+|     cmp_layer[601].cmp          |     0.034 |
+|     cmp_layer[602].cmp          |     0.034 |
+|     cmp_layer[603].cmp          |     0.033 |
+|     cmp_layer[604].cmp          |     0.032 |
+|     cmp_layer[605].cmp          |     0.033 |
+|     cmp_layer[606].cmp          |     0.029 |
+|     cmp_layer[607].cmp          |     0.034 |
+|     cmp_layer[608].cmp          |     0.031 |
+|     cmp_layer[609].cmp          |     0.033 |
+|     cmp_layer[60].cmp           |     0.034 |
+|     cmp_layer[610].cmp          |     0.035 |
+|     cmp_layer[611].cmp          |     0.033 |
+|     cmp_layer[612].cmp          |     0.032 |
+|     cmp_layer[613].cmp          |     0.028 |
+|     cmp_layer[614].cmp          |     0.034 |
+|     cmp_layer[615].cmp          |     0.032 |
+|     cmp_layer[616].cmp          |     0.033 |
+|     cmp_layer[617].cmp          |     0.033 |
+|     cmp_layer[618].cmp          |     0.030 |
+|     cmp_layer[619].cmp          |     0.030 |
+|     cmp_layer[61].cmp           |     0.036 |
+|     cmp_layer[620].cmp          |     0.031 |
+|     cmp_layer[621].cmp          |     0.029 |
+|     cmp_layer[622].cmp          |     0.031 |
+|     cmp_layer[623].cmp          |     0.028 |
+|     cmp_layer[624].cmp          |     0.031 |
+|     cmp_layer[625].cmp          |     0.034 |
+|     cmp_layer[626].cmp          |     0.034 |
+|     cmp_layer[627].cmp          |     0.030 |
+|     cmp_layer[628].cmp          |     0.034 |
+|     cmp_layer[629].cmp          |     0.032 |
+|     cmp_layer[62].cmp           |     0.030 |
+|     cmp_layer[630].cmp          |     0.035 |
+|     cmp_layer[631].cmp          |     0.036 |
+|     cmp_layer[632].cmp          |     0.032 |
+|     cmp_layer[633].cmp          |     0.032 |
+|     cmp_layer[634].cmp          |     0.032 |
+|     cmp_layer[635].cmp          |     0.029 |
+|     cmp_layer[636].cmp          |     0.034 |
+|     cmp_layer[637].cmp          |     0.030 |
+|     cmp_layer[638].cmp          |     0.034 |
+|     cmp_layer[639].cmp          |     0.030 |
+|     cmp_layer[63].cmp           |     0.030 |
+|     cmp_layer[640].cmp          |     0.028 |
+|     cmp_layer[641].cmp          |     0.034 |
+|     cmp_layer[642].cmp          |     0.034 |
+|     cmp_layer[643].cmp          |     0.026 |
+|     cmp_layer[644].cmp          |     0.030 |
+|     cmp_layer[645].cmp          |     0.037 |
+|     cmp_layer[646].cmp          |     0.033 |
+|     cmp_layer[647].cmp          |     0.027 |
+|     cmp_layer[648].cmp          |     0.029 |
+|     cmp_layer[649].cmp          |     0.035 |
+|     cmp_layer[64].cmp           |     0.031 |
+|     cmp_layer[650].cmp          |     0.028 |
+|     cmp_layer[651].cmp          |     0.029 |
+|     cmp_layer[652].cmp          |     0.030 |
+|     cmp_layer[653].cmp          |     0.028 |
+|     cmp_layer[654].cmp          |     0.032 |
+|     cmp_layer[655].cmp          |     0.028 |
+|     cmp_layer[656].cmp          |     0.032 |
+|     cmp_layer[657].cmp          |     0.033 |
+|     cmp_layer[658].cmp          |     0.034 |
+|     cmp_layer[659].cmp          |     0.029 |
+|     cmp_layer[65].cmp           |     0.031 |
+|     cmp_layer[660].cmp          |     0.029 |
+|     cmp_layer[661].cmp          |     0.029 |
+|     cmp_layer[662].cmp          |     0.031 |
+|     cmp_layer[663].cmp          |     0.025 |
+|     cmp_layer[664].cmp          |     0.032 |
+|     cmp_layer[665].cmp          |     0.031 |
+|     cmp_layer[666].cmp          |     0.030 |
+|     cmp_layer[667].cmp          |     0.029 |
+|     cmp_layer[668].cmp          |     0.031 |
+|     cmp_layer[669].cmp          |     0.032 |
+|     cmp_layer[66].cmp           |     0.031 |
+|     cmp_layer[670].cmp          |     0.037 |
+|     cmp_layer[671].cmp          |     0.031 |
+|     cmp_layer[672].cmp          |     0.033 |
+|     cmp_layer[673].cmp          |     0.029 |
+|     cmp_layer[674].cmp          |     0.037 |
+|     cmp_layer[675].cmp          |     0.033 |
+|     cmp_layer[676].cmp          |     0.033 |
+|     cmp_layer[677].cmp          |     0.028 |
+|     cmp_layer[678].cmp          |     0.037 |
+|     cmp_layer[679].cmp          |     0.037 |
+|     cmp_layer[67].cmp           |     0.031 |
+|     cmp_layer[680].cmp          |     0.028 |
+|     cmp_layer[681].cmp          |     0.034 |
+|     cmp_layer[682].cmp          |     0.035 |
+|     cmp_layer[683].cmp          |     0.035 |
+|     cmp_layer[684].cmp          |     0.029 |
+|     cmp_layer[685].cmp          |     0.035 |
+|     cmp_layer[686].cmp          |     0.025 |
+|     cmp_layer[687].cmp          |     0.034 |
+|     cmp_layer[688].cmp          |     0.032 |
+|     cmp_layer[689].cmp          |     0.030 |
+|     cmp_layer[68].cmp           |     0.033 |
+|     cmp_layer[690].cmp          |     0.030 |
+|     cmp_layer[691].cmp          |     0.026 |
+|     cmp_layer[692].cmp          |     0.030 |
+|     cmp_layer[693].cmp          |     0.029 |
+|     cmp_layer[694].cmp          |     0.034 |
+|     cmp_layer[695].cmp          |     0.036 |
+|     cmp_layer[696].cmp          |     0.033 |
+|     cmp_layer[697].cmp          |     0.034 |
+|     cmp_layer[698].cmp          |     0.032 |
+|     cmp_layer[699].cmp          |     0.031 |
+|     cmp_layer[69].cmp           |     0.033 |
+|     cmp_layer[6].cmp            |     0.031 |
+|     cmp_layer[700].cmp          |     0.028 |
+|     cmp_layer[701].cmp          |     0.036 |
+|     cmp_layer[702].cmp          |     0.034 |
+|     cmp_layer[703].cmp          |     0.032 |
+|     cmp_layer[704].cmp          |     0.041 |
+|     cmp_layer[705].cmp          |     0.034 |
+|     cmp_layer[706].cmp          |     0.035 |
+|     cmp_layer[707].cmp          |     0.032 |
+|     cmp_layer[708].cmp          |     0.028 |
+|     cmp_layer[709].cmp          |     0.031 |
+|     cmp_layer[70].cmp           |     0.028 |
+|     cmp_layer[710].cmp          |     0.034 |
+|     cmp_layer[711].cmp          |     0.037 |
+|     cmp_layer[712].cmp          |     0.034 |
+|     cmp_layer[713].cmp          |     0.030 |
+|     cmp_layer[714].cmp          |     0.030 |
+|     cmp_layer[715].cmp          |     0.030 |
+|     cmp_layer[716].cmp          |     0.031 |
+|     cmp_layer[717].cmp          |     0.027 |
+|     cmp_layer[718].cmp          |     0.034 |
+|     cmp_layer[719].cmp          |     0.030 |
+|     cmp_layer[71].cmp           |     0.032 |
+|     cmp_layer[720].cmp          |     0.035 |
+|     cmp_layer[721].cmp          |     0.035 |
+|     cmp_layer[722].cmp          |     0.030 |
+|     cmp_layer[723].cmp          |     0.032 |
+|     cmp_layer[724].cmp          |     0.031 |
+|     cmp_layer[725].cmp          |     0.035 |
+|     cmp_layer[726].cmp          |     0.031 |
+|     cmp_layer[727].cmp          |     0.033 |
+|     cmp_layer[728].cmp          |     0.029 |
+|     cmp_layer[729].cmp          |     0.037 |
+|     cmp_layer[72].cmp           |     0.029 |
+|     cmp_layer[730].cmp          |     0.033 |
+|     cmp_layer[731].cmp          |     0.032 |
+|     cmp_layer[732].cmp          |     0.030 |
+|     cmp_layer[733].cmp          |     0.029 |
+|     cmp_layer[734].cmp          |     0.031 |
+|     cmp_layer[735].cmp          |     0.030 |
+|     cmp_layer[736].cmp          |     0.034 |
+|     cmp_layer[737].cmp          |     0.034 |
+|     cmp_layer[738].cmp          |     0.030 |
+|     cmp_layer[739].cmp          |     0.033 |
+|     cmp_layer[73].cmp           |     0.030 |
+|     cmp_layer[740].cmp          |     0.034 |
+|     cmp_layer[741].cmp          |     0.031 |
+|     cmp_layer[742].cmp          |     0.029 |
+|     cmp_layer[743].cmp          |     0.035 |
+|     cmp_layer[744].cmp          |     0.029 |
+|     cmp_layer[745].cmp          |     0.034 |
+|     cmp_layer[746].cmp          |     0.036 |
+|     cmp_layer[747].cmp          |     0.032 |
+|     cmp_layer[748].cmp          |     0.033 |
+|     cmp_layer[749].cmp          |     0.036 |
+|     cmp_layer[74].cmp           |     0.037 |
+|     cmp_layer[750].cmp          |     0.034 |
+|     cmp_layer[751].cmp          |     0.028 |
+|     cmp_layer[752].cmp          |     0.038 |
+|     cmp_layer[753].cmp          |     0.033 |
+|     cmp_layer[754].cmp          |     0.034 |
+|     cmp_layer[755].cmp          |     0.033 |
+|     cmp_layer[756].cmp          |     0.034 |
+|     cmp_layer[757].cmp          |     0.035 |
+|     cmp_layer[758].cmp          |     0.032 |
+|     cmp_layer[759].cmp          |     0.029 |
+|     cmp_layer[75].cmp           |     0.030 |
+|     cmp_layer[760].cmp          |     0.035 |
+|     cmp_layer[761].cmp          |     0.033 |
+|     cmp_layer[762].cmp          |     0.030 |
+|     cmp_layer[763].cmp          |     0.028 |
+|     cmp_layer[764].cmp          |     0.030 |
+|     cmp_layer[765].cmp          |     0.030 |
+|     cmp_layer[766].cmp          |     0.035 |
+|     cmp_layer[767].cmp          |     0.032 |
+|     cmp_layer[768].cmp          |     0.036 |
+|     cmp_layer[769].cmp          |     0.030 |
+|     cmp_layer[76].cmp           |     0.035 |
+|     cmp_layer[770].cmp          |     0.029 |
+|     cmp_layer[771].cmp          |     0.029 |
+|     cmp_layer[772].cmp          |     0.028 |
+|     cmp_layer[773].cmp          |     0.036 |
+|     cmp_layer[774].cmp          |     0.033 |
+|     cmp_layer[775].cmp          |     0.027 |
+|     cmp_layer[776].cmp          |     0.035 |
+|     cmp_layer[777].cmp          |     0.033 |
+|     cmp_layer[778].cmp          |     0.035 |
+|     cmp_layer[779].cmp          |     0.032 |
+|     cmp_layer[77].cmp           |     0.029 |
+|     cmp_layer[780].cmp          |     0.032 |
+|     cmp_layer[781].cmp          |     0.032 |
+|     cmp_layer[782].cmp          |     2.680 |
+|     cmp_layer[783].cmp          |     0.031 |
+|     cmp_layer[78].cmp           |     0.026 |
+|     cmp_layer[79].cmp           |     0.029 |
+|     cmp_layer[7].cmp            |     0.033 |
+|     cmp_layer[80].cmp           |     0.034 |
+|     cmp_layer[81].cmp           |     0.031 |
+|     cmp_layer[82].cmp           |     0.029 |
+|     cmp_layer[83].cmp           |     0.030 |
+|     cmp_layer[84].cmp           |     0.032 |
+|     cmp_layer[85].cmp           |     0.030 |
+|     cmp_layer[86].cmp           |     0.035 |
+|     cmp_layer[87].cmp           |     0.029 |
+|     cmp_layer[88].cmp           |     0.035 |
+|     cmp_layer[89].cmp           |     0.035 |
+|     cmp_layer[8].cmp            |     0.032 |
+|     cmp_layer[90].cmp           |     0.032 |
+|     cmp_layer[91].cmp           |     0.035 |
+|     cmp_layer[92].cmp           |     0.034 |
+|     cmp_layer[93].cmp           |     0.032 |
+|     cmp_layer[94].cmp           |     0.032 |
+|     cmp_layer[95].cmp           |     0.028 |
+|     cmp_layer[96].cmp           |     0.030 |
+|     cmp_layer[97].cmp           |     0.028 |
+|     cmp_layer[98].cmp           |     0.028 |
+|     cmp_layer[99].cmp           |     0.037 |
+|     cmp_layer[9].cmp            |     0.031 |
+|     lfsr                        |    28.591 |
+|       inner_shift_reg           |    28.591 |
+|     reg_decoder                 |     2.284 |
+|   weights_memory                |     0.138 |
+|     bram_decoder                |     0.138 |
++---------------------------------+-----------+
+
+

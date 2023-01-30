@@ -1,0 +1,37 @@
+# File that determines the positioning of directories and files inside
+# the current directory
+.DS_Store
+
+# Directory containing the bytecode precompiled files
+__pycache__
+
+# Report files and similar
+*.txt
+
+# Numpy arrays
+*.npy
+
+# Vivado simulation files
+*.jou
+*.log
+*.pb
+*.dir
+*.str
+*.cache
+*.hw
+*.ip_user_files
+*.sim
+*.xpr
+*.runs
+*.zip
+*.srcs
+*.gen
+
+# Files on iCloud
+*.icloud
+
+# Temporary files
+tmp.*
+
+# Vim back-up files
+*.swp
