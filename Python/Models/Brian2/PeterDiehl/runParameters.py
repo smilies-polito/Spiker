@@ -1,7 +1,7 @@
 import numpy as np
 import sys
+from files import *
 
-equationsDir = "./equations"
 
 if equationsDir not in sys.path:
 	sys.path.insert(1, equationsDir)

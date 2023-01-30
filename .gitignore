@@ -5,10 +5,6 @@
 # Directory containing the bytecode precompiled files
 __pycache__
 
-# Plots used to visualize the output results
-*.png
-*.svg
-
 # Report files and similar
 *.txt
 
