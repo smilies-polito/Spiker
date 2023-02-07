@@ -27,7 +27,7 @@ Spiker design flow
 			* TowardsHW: simplifications of the full-precision model to make it more suitable for the VHDL implementation.
 				* FinitePrecision: integer transaltion of the full precison model.
 				* SingleLFSR: input interface substituted by the python simulation of a Linear Feedback Shift Register (LFSR)
-		* __Simulations__: scripts to automate simulations.
+	* __Simulations__: scripts to automate simulations.
 		* VhdlSim: scripts to simulate the VHDL components
 
 * __Vhdl__
@@ -51,11 +51,25 @@ Spiker design flow
 
 * __Python__
 	* __Models__: python models of the Spiking Neural Network.
-		* Brian2: models developed using [Brian 2 simulator](https://brian2.readthedocs.io/en/stable/)
-			* PeterDiehl: brian2 translation of the original work from Peter Diel et al. (see related documents).
-			* Simplified: simplified LIF neuron model with respect to the conductance-based model used by Peter Diehl et al.
-	* __Simulations__: scripts to automate simulations.
+		* Brian2: 
+			* brian2
+			* numpy
+			* timeit
+			* sys
+			* subprocess
+		* Custom:
+			* numpy
+			* timeit
+			* sys
+			* subprocess
+			* matplotlib (only for evaluation purposes. Scripts in Python/Models/Custom/FullPrecision/Evaluation)
+			* scipy.sparse (only for evaluation purposes. Scripts in Python/Models/Custom/FullPrecision/Evaluation)
+	* __Simulations__:
 		* VhdlSim: scripts to simulate the VHDL components
+			* numpy
+			* timeit
+			* subprocess
+			
 
 * __Vhdl__
 	* The accelerator was developed using Vivado design suite. 
