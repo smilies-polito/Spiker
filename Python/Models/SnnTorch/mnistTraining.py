@@ -12,7 +12,7 @@ train_loader, test_loader = loadDataset(data_path, batch_size)
 
 
 
-net = Net(num_inputs, num_hidden1, num_hidden2, num_outputs, beta)
+net = Net(num_inputs, num_hidden, num_outputs, beta)
 
 loss = nn.CrossEntropyLoss()
 
