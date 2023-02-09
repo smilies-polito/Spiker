@@ -10,9 +10,9 @@ class Net(nn.Module):
 
 		# Initialize layers
 		self.fc1 = nn.Linear(num_inputs, num_hidden)
-		self.lif1 = snn.Leaky(beta=beta)
+		self.lif1 = snn.Leaky(beta=beta, reset_mechanism = "zero")
 		self.fc2 = nn.Linear(num_hidden, num_outputs)
-		self.lif2 = snn.Leaky(beta=beta)
+		self.lif2 = snn.Leaky(beta=beta, reset_mechanism = "zero")
 
 	def forward(self, input_spikes, num_steps):
 
