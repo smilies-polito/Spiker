@@ -11,7 +11,7 @@ num_hidden = 400
 num_outputs = 10
 
 # Temporal Dynamics
-num_steps = 25
+num_steps = 100
 beta = 0.9375
 
 num_epochs = 100
