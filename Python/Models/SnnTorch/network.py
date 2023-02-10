@@ -25,7 +25,8 @@ class Net(nn.Module):
 		spk2_rec = []
 		mem2_rec = []
 
-		input_spikes = spikegen.rate(data_it, num_steps = num_steps)
+		input_spikes = spikegen.rate(data_it, num_steps = num_steps,
+				gain = 0.01)
 
 		for step in range(num_steps):
 			cur1 = self.fc1(input_spikes[step])
