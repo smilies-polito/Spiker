@@ -72,8 +72,6 @@ for epoch in range(num_epochs):
 			counter += 1
 			iter_counter +=1
 
-		break
-
 
 np.save(weightsFilename + "1.npy", net.fc1.weight.data.numpy())
 np.save(weightsFilename + "2.npy", net.fc2.weight.data.numpy())
