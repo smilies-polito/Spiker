@@ -1,24 +1,24 @@
 import torch
 import torch.nn as nn
+import numpy as np
 
 from mnist import loadDataset
 from network import Net
 from trainTestFunctions import train_printer
+from utils import createDir
 
 from files import *
 from runParameters import *
 
+createDir(paramDir)
+
 train_loader, test_loader = loadDataset(data_path, batch_size)
-
-
 
 net = Net(num_inputs, num_hidden, num_outputs, beta)
 
 loss = nn.CrossEntropyLoss()
 
 optimizer = torch.optim.Adam(net.parameters(), lr=5e-4, betas=(0.9, 0.999))
-
-
 
 
 # Outer training loop
@@ -71,3 +71,12 @@ for epoch in range(num_epochs):
 						test_targets)
 			counter += 1
 			iter_counter +=1
+
+		break
+
+
+np.save(weightsFilename + "1.npy", net.fc1.weight.data.numpy())
+np.save(weightsFilename + "2.npy", net.fc2.weight.data.numpy())
+
+torch.save(net.fc1.weight.data, weightsFilename + "1.pt")
+torch.save(net.fc2.weight.data, weightsFilename + "2.pt")

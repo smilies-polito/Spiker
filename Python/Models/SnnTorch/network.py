@@ -1,4 +1,5 @@
 import snntorch as snn
+from snntorch import spikegen
 
 import torch
 import torch.nn as nn
@@ -14,7 +15,7 @@ class Net(nn.Module):
 		self.fc2 = nn.Linear(num_hidden, num_outputs)
 		self.lif2 = snn.Leaky(beta=beta)
 
-	def forward(self, input_spikes, num_steps):
+	def forward(self, data_it, num_steps):
 
 		# Initialize hidden states at t=0
 		mem1 = self.lif1.init_leaky()
@@ -24,8 +25,11 @@ class Net(nn.Module):
 		spk2_rec = []
 		mem2_rec = []
 
+		input_spikes = spikegen.rate(data_it, num_steps = num_steps,
+				gain = 0.01)
+
 		for step in range(num_steps):
-			cur1 = self.fc1(input_spikes)
+			cur1 = self.fc1(input_spikes[step])
 			spk1, mem1 = self.lif1(cur1, mem1)
 			cur2 = self.fc2(spk1)
 			spk2, mem2 = self.lif2(cur2, mem2)
