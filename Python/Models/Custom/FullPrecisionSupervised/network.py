@@ -1,40 +1,116 @@
-import snntorch as snn
-from snntorch import spikegen
+import numpy as np
 
-import torch
-import torch.nn as nn
+from layers import updateExcLayer, updateInhLayer
 
-# Define Network
-class Net(nn.Module):
-	def __init__(self, num_inputs, num_hidden, num_outputs, beta):
-		super().__init__()
 
-		# Initialize layers
-		self.fc1 = nn.Linear(num_inputs, num_hidden)
-		self.lif1 = snn.Leaky(beta=beta)
-		self.fc2 = nn.Linear(num_hidden, num_outputs)
-		self.lif2 = snn.Leaky(beta=beta)
+import matplotlib.pyplot as plt
 
-	def forward(self, data_it, num_steps):
 
-		# Initialize hidden states at t=0
-		mem1 = self.lif1.init_leaky()
-		mem2 = self.lif2.init_leaky()
+def run(network, networkList, spikesTrains, dt_tauDict, stdpDict, mode,
+	constSums):
 
-		# Record the final layer
-		spk2_rec = []
-		mem2_rec = []
 
-		input_spikes = spikegen.rate(data_it, num_steps = num_steps,
-				gain = 0.01)
+	"""
+	Run the training of the network over the duration of the input spikes
+	trains.
 
-		for step in range(num_steps):
-			cur1 = self.fc1(input_spikes[step])
-			spk1, mem1 = self.lif1(cur1, mem1)
-			cur2 = self.fc2(spk1)
-			spk2, mem2 = self.lif2(cur2, mem2)
-			spk2_rec.append(spk2)
-			mem2_rec.append(mem2)
+	INPUT:
+		
+		1) network: dictionary of the network.
 
-		return torch.stack(spk2_rec, dim=0), torch.stack(mem2_rec, dim=0)
+		2) networkList: list of integer numbers. Each element of the 
+		list corresponds to a layer and identifies the number of nodes
+		in that layer.
 
+		3) spikesTrains: two-dimensional NumPy array. One training step
+		for each row; one input for each column.
+
+		4) dt_tauDict: dictionary containing the exponential constants
+		of the excitatory and inhibitory membrane and of the 
+		homeostasis parameter theta .
+
+		5) stdpDict: dictionary containing the STDP parameters.
+
+		6) mode: string. It can be "train" or "test".
+
+		7) constSums: numpy array. Normalization factor of the weights
+		for each layer.
+
+	OUTPUT:
+
+		spikesCounter: NumPy array containing the total amount of 
+		generate spike for each neuron.
+
+	"""
+
+	lastLayerSize = networkList[-1]
+	lastLayerIndex = len(networkList) - 1
+	trainDuration = spikesTrains.shape[0]
+
+	# Initialize the output spikes counter to 0
+	spikesCounter = np.zeros((1, lastLayerSize))
+
+	for i in range(trainDuration):
+
+		# Train the network over a single step
+		updateNetwork(networkList, network, spikesTrains[i], dt_tauDict,
+			stdpDict, mode)
+
+		# Update the output spikes counter
+		spikesCounter[0][network["excLayer" +
+			str(lastLayerIndex)]["outSpikes"][0]] += 1
+
+
+
+	return spikesCounter
+
+
+
+
+
+def updateNetwork(networkList, network, inputSpikes, dt_tauDict, stdpDict, 
+			mode):
+
+	"""
+	One training step update for the entire network.
+
+	INPUT:
+
+		1) networkList: list of integer numbers. Each element of the 
+		list corresponds to a layer and identifies the number of nodes
+		in that layer.
+
+		2) network: dictionary of the network.
+
+		3) inputSpikes: NumPy array. Value of the input spikes within a
+		single training step, one for each neuron.
+		
+		4) dt_tauDict: dictionary containing the exponential constants
+		of the excitatory and inhibitory membrane and of the 
+		homeostasis parameter theta .
+
+		5) stdpDict: dictionary containing the STDP parameters.
+
+		6) mode: string. It can be "train" or "test".
+
+	"""	
+
+	layerName = "excLayer1"
+
+	# Update the first excitatory layer
+	updateExcLayer(network, 1, dt_tauDict["exc"], inputSpikes)
+
+	# Update the first inhibitory layer
+	updateInhLayer(network, 1)
+
+
+	for layer in range(2, len(networkList)):
+
+		layerName = "excLayer" + str(layer)
+		
+		# Update the excitatory layer
+		updateExcLayer(network, layer, dt_tauDict["exc"],
+			network["excLayer" + str(layer - 1)]["outSpikes"][0])
+		
+		# Update the inhibitory layer
+		updateInhLayer(network, layer)
