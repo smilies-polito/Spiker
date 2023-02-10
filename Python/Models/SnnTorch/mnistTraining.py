@@ -78,4 +78,5 @@ for epoch in range(num_epochs):
 np.save(weightsFilename + "1.npy", net.fc1.weight.data.numpy())
 np.save(weightsFilename + "2.npy", net.fc2.weight.data.numpy())
 
-print(np.load(weightsFilename + "1.npy").shape)
+torch.save(net.fc1.weight.data, weightsFilename + "1.pt")
+torch.save(net.fc2.weight.data, weightsFilename + "2.pt")
