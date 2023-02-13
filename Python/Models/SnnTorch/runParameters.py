@@ -11,10 +11,10 @@ num_hidden = 400
 num_outputs = 10
 
 # Temporal Dynamics
-num_steps = 100
+num_steps = 25
 beta = 0.9375
 
-num_epochs = 25
+num_epochs = 1
 loss_hist = []
 test_loss_hist = []
 counter = 0
