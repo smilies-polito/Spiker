@@ -34,12 +34,9 @@ inh2excWeights = np.ones(len(networkList) - 1)
 
 
 # Time step duration in milliseconds
-dt = 2**(-4) * 100		# ms
+dt = 2.0**(-4) * 100		# ms
 
-# Training and resting periods in milliseconds
-trainDuration = 25*dt	# ms
-
-num_steps = int(trainDuration / dt)
+num_steps = 25
 
 # Exponential time constants
 dt_tauDict = {
