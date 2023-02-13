@@ -79,3 +79,9 @@ with open(weightsFilename + "1.npy", "wb") as fp:
 
 with open(weightsFilename + "2.npy", "wb") as fp:
 	np.save(fp, net.fc2.weight.data.numpy())
+
+with open(weightsFilename + "1.pt", "wb") as fp:
+	torch.save(net.fc1.weight.data, fp)
+
+with open(weightsFilename + "2.pt", "wb") as fp:
+	torch.save(net.fc2.weight.data, fp)
