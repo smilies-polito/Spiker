@@ -100,9 +100,6 @@ def updateNetwork(networkList, network, inputSpikes, dt_tauDict, stdpDict,
 	# Update the first excitatory layer
 	updateExcLayer(network, 1, dt_tauDict["exc"], inputSpikes)
 
-	# Update the first inhibitory layer
-	updateInhLayer(network, 1)
-
 
 	for layer in range(2, len(networkList)):
 
@@ -111,6 +108,3 @@ def updateNetwork(networkList, network, inputSpikes, dt_tauDict, stdpDict,
 		# Update the excitatory layer
 		updateExcLayer(network, layer, dt_tauDict["exc"],
 			network["excLayer" + str(layer - 1)]["outSpikes"][0])
-		
-		# Update the inhibitory layer
-		updateInhLayer(network, layer)
