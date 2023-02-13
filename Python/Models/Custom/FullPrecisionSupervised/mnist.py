@@ -37,7 +37,7 @@ def loadDataset(data_path, batch_size):
 	test_loader = DataLoader(
 		mnist_test,
 		batch_size=batch_size,
-		shuffle=True,
+		#shuffle=True,
 		drop_last=True
 	)
 
