@@ -72,11 +72,10 @@ for epoch in range(num_epochs):
 			counter += 1
 			iter_counter +=1
 
-		break
 
 
-np.save(weightsFilename + "1.npy", net.fc1.weight.data.numpy())
-np.save(weightsFilename + "2.npy", net.fc2.weight.data.numpy())
+with open(weightsFilename + "1.npy", "wb") as fp:
+	np.save(fp, net.fc1.weight.data.numpy())
 
-torch.save(net.fc1.weight.data, weightsFilename + "1.pt")
-torch.save(net.fc2.weight.data, weightsFilename + "2.pt")
+with open(weightsFilename + "2.npy", "wb") as fp:
+	np.save(fp, net.fc2.weight.data.numpy())
