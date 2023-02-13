@@ -21,7 +21,6 @@ loss = nn.CrossEntropyLoss()
 
 test_batch = iter(test_loader)
 
-print(len(test_batch))
 iter_counter = 0
 
 # Minibatch training loop
