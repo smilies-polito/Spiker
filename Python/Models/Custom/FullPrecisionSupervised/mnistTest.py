@@ -2,6 +2,8 @@ import torch
 import torch.nn as nn
 import numpy as np
 
+from snntorch import spikegen
+
 from mnist import loadDataset
 from createNetwork import createNetwork
 from network import run
@@ -21,10 +23,30 @@ net = createNetwork(networkList, weightsFilename, thresholdsFilename, mode,
 
 test_batch = iter(test_loader)
 
-# # Minibatch training loop
-# for test_data, test_targets in test_batch:
-# 
-# 	# Print train/test loss/accuracy
-# 	test_printer(net, batch_size, num_steps, iter_counter,
-# 				test_loss_hist, counter, test_data,
-# 				test_targets)
+# Minibatch training loop
+for test_data, test_targets in test_batch:
+
+	acc = 0
+
+	for i in range(test_data.size()[0]):
+
+		image = test_data[i, :, :, :]
+		label = int(test_targets[i].int())
+
+		spikesTrains = spikegen.rate(image.reshape(networkList[0], 1),
+				num_steps).numpy().astype(bool)[:, :, 0]
+
+		outputCounters = run(net, networkList, spikesTrains, dt_tauDict,
+				None, mode, None)
+		print(outputCounters)
+
+		outputLabel = np.where(np.max(outputCounters))[0][0]
+
+		if outputLabel == label:
+			acc += 1
+
+	
+	acc = acc / test_data.size()[0]
+	print(f"Accuracy: {acc*100}%")
+
+	
