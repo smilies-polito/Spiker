@@ -28,19 +28,24 @@ for test_data, test_targets in test_batch:
 
 	acc = 0
 
+	test_data = test_data.view(batch_size, -1)
+	spikesTrainsBatch = spikegen.rate(test_data, num_steps = num_steps, 
+				gain = 1)
+
 	for i in range(test_data.size()[0]):
 
-		image = test_data[i, :, :, :]
 		label = int(test_targets[i].int())
-
-		spikesTrains = spikegen.rate(image.reshape(networkList[0], 1),
-				num_steps).numpy().astype(bool)[:, :, 0]
+		spikesTrains = spikesTrainsBatch.numpy().astype(bool)[:, i, :]
 
 		outputCounters = run(net, networkList, spikesTrains, dt_tauDict,
 				None, mode, None)
-		print(outputCounters)
 
-		outputLabel = np.where(np.max(outputCounters))[0][0]
+		outputLabel = np.where(outputCounters[0] ==
+				np.max(outputCounters[0]))[0][0]
+
+		print(outputCounters)
+		print(outputLabel)
+		print(label)
 
 		if outputLabel == label:
 			acc += 1
