@@ -1,4 +1,4 @@
 data_path='./data/mnist'
 
-paramDir = "../Custom/FullPrecisionSupervised/Parameters"
+paramDir = "./Parameters"
 weightsFilename = paramDir + "/weights"
