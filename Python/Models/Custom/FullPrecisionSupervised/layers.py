@@ -106,8 +106,8 @@ def resetPotentials(network, layerName):
 
 
 	network[layerName]["v"][0][network[layerName]["outSpikes"][0]] = \
-		network[layerName]["vReset"]
-
+	network[layerName]["v"][0][network[layerName]["outSpikes"][0]] - \
+	network[layerName]["vThresh0"]
 
 
 
