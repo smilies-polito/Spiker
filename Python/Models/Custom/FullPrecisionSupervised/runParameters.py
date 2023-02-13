@@ -32,11 +32,14 @@ excDictList = [excDict.copy()] * (len(networkList) - 1)
 # Arrays of weights for the inter layer connections
 inh2excWeights = np.ones(len(networkList) - 1)
 
-# Training and resting periods in milliseconds
-trainDuration = 350	# ms
 
 # Time step duration in milliseconds
-dt = 0.1		# ms
+dt = 2**(-4) * 100		# ms
+
+# Training and resting periods in milliseconds
+trainDuration = 25*dt	# ms
+
+num_steps = int(trainDuration / dt)
 
 # Exponential time constants
 dt_tauDict = {
@@ -67,8 +70,3 @@ rng = np.random.default_rng()
 for i in range(1, len(networkList)):
 	thresholds = np.ones((1, networkList[i]))*excDict["vThresh0"]
 	np.save(thresholdsFilename + str(i) + ".npy", thresholds)
-
-
-for i in range(1, len(networkList)):
-	weights = np.ones((networkList[i-1], networkList[i]))
-	np.save(weightsFilename + str(i) + ".npy", thresholds)
