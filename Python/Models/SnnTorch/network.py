@@ -4,6 +4,8 @@ from snntorch import spikegen
 import torch
 import torch.nn as nn
 
+from files import *
+
 # Define Network
 class Net(nn.Module):
 	def __init__(self, num_inputs, num_hidden, num_outputs, beta):
@@ -25,8 +27,8 @@ class Net(nn.Module):
 		spk2_rec = []
 		mem2_rec = []
 
-		input_spikes = spikegen.rate(data_it, num_steps = num_steps,
-				gain = 1)
+		with open(inputSpikes, "rb") as fp:
+			input_spikes = torch.load(fp)
 
 		for step in range(num_steps):
 			cur1 = self.fc1(input_spikes[step])
