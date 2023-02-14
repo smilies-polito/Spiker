@@ -5,3 +5,5 @@ spikesFilename = spikesDir + "/spikes.pt"
 
 custom = "./custom.sh"
 snntorch_model = "./snnTorchModel.sh"
+
+logDir = "./Output"
