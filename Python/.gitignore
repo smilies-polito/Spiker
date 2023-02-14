@@ -15,3 +15,6 @@ train-labels-idx1-ubyte.gz
 # Trained parameters
 *.npy
 *.pt
+
+# Function tags used in vim to jump to function def
+tags
