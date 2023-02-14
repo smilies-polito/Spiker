@@ -4,7 +4,6 @@ import numpy as np
 
 from snntorch import spikegen
 
-from mnist import loadDataset
 from createNetwork import createNetwork
 from network import run
 from trainTestFunctions import train_printer, test_printer
@@ -15,26 +14,21 @@ from runParameters import *
 
 mode = "test"
 
-train_loader, test_loader = loadDataset(data_path, batch_size)
-
 # Create the network data structure
 net = createNetwork(networkList, weightsFilename, thresholdsFilename, mode, 
 			excDictList, scaleFactors, inh2excWeights)
 
-test_batch = iter(test_loader)
+acc = 0
 
-# Minibatch training loop
-for test_data, test_targets in test_batch:
+with open(inputSpikes, "rb") as fp:
+	spikesTrainsBatch = torch.load(fp)
 
-	acc = 0
 
-	test_data = test_data.view(batch_size, -1)
-	spikesTrainsBatch = spikegen.rate(test_data, num_steps = num_steps, 
-				gain = 1)
 
-	for i in range(test_data.size()[0]):
+with open(logFile, "w") as fp:
 
-		label = int(test_targets[i].int())
+	for i in range(spikesTrainsBatch.size()[1]):
+
 		spikesTrains = spikesTrainsBatch.numpy().astype(bool)[:, i, :]
 
 		outputCounters = run(net, networkList, spikesTrains, dt_tauDict,
@@ -43,15 +37,9 @@ for test_data, test_targets in test_batch:
 		outputLabel = np.where(outputCounters[0] ==
 				np.max(outputCounters[0]))[0][0]
 
-		print(outputCounters)
-		print(outputLabel)
-		print(label)
-
-		if outputLabel == label:
-			acc += 1
-
-	
-	acc = acc / test_data.size()[0]
-	print(f"Accuracy: {acc*100}%")
-
-	
+		for counter in outputCounters[0]:
+			fp.write(str(int(counter)))
+			fp.write("\t")
+		fp.write("\t\t")
+		fp.write(str(outputLabel))
+		fp.write("\n")
