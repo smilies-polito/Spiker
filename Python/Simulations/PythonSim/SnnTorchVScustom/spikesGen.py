@@ -1,3 +1,5 @@
+import subprocess as sp
+
 import snntorch as snn
 from snntorch import spikegen
 
@@ -28,3 +30,7 @@ for test_data, test_targets in test_batch:
 
 	sp.run(custom, shell = True, executable = "/bin/bash")
 	sp.run(snntorch_model, shell = True, executable = "/bin/bash")
+
+	answer = input("\nContinue([y]/n)? ")
+	if answer == "n":
+		break
