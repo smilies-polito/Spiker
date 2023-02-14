@@ -6,13 +6,6 @@ def print_batch_accuracy(net, data, batch_size, num_steps, targets, train=False)
 
 	_, idx = output.sum(dim=0).max(1)
 
-	print(output.size())
-
-	for i in range(batch_size):
-		print(output.sum(dim=0)[i])
-		print(idx[i])
-		print(targets[i])
-
 	acc = np.mean((targets == idx).detach().cpu().numpy())
 
 	if train:
