@@ -1,6 +1,6 @@
 import numpy as np
 
-from layers import updateExcLayer, updateInhLayer
+from layers import updateExcLayer
 
 
 import matplotlib.pyplot as plt
@@ -56,10 +56,15 @@ def run(network, networkList, spikesTrains, dt_tauDict, stdpDict, mode,
 		updateNetwork(networkList, network, spikesTrains[i], dt_tauDict,
 			stdpDict, mode)
 
+	
+		
+		print(np.sum(network["exc2exc1"]["weights"][:, spikesTrains[i]],
+		 	axis=1, dtype=np.double)[0])
+
+
 		# Update the output spikes counter
 		spikesCounter[0][network["excLayer" +
 			str(lastLayerIndex)]["outSpikes"][0]] += 1
-
 
 
 	return spikesCounter
