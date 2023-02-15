@@ -16,7 +16,6 @@ net = Net(num_inputs, num_hidden, num_outputs, beta)
 net.fc1.weight.data = torch.load(weightsFilename + "1.pt")
 net.fc2.weight.data = torch.load(weightsFilename + "2.pt")
 
-loss = nn.CrossEntropyLoss()
 
 with open(logFile, "w") as fp:
 
@@ -28,9 +27,14 @@ with open(logFile, "w") as fp:
 		test_spk, test_mem = net(None, # test_data.view(batch_size, -1),
 				num_steps)
 
+
+		# for i in range(test_mem.size()[0]):
+		# 	print(float(test_mem[:, 0, 7][i]))
+
 		outputCounters = test_spk.sum(dim=0)
 
 		outputLabel = outputCounters.max(1)
+
 
 	for i in range(outputCounters.size()[0]):
 		for counter in outputCounters[i]:
