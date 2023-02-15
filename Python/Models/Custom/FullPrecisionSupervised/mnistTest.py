@@ -43,3 +43,5 @@ with open(logFile, "w") as fp:
 		fp.write("\t\t")
 		fp.write(str(outputLabel))
 		fp.write("\n")
+
+		break
