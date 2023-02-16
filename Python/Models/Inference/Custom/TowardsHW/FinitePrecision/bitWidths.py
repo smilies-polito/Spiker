@@ -1,4 +1,4 @@
-weights_bitWidth	= 5
-neuron_bitWidth		= 16
-fixed_point_decimals 	= 3
+weights_bitWidth	= 32
+neuron_bitWidth		= 32
+fixed_point_decimals 	= 16
 exp_shift		= 10
