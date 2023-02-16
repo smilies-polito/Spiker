@@ -56,10 +56,9 @@ def run(network, networkList, spikesTrains, dt_tauDict, stdpDict, mode,
 		updateNetwork(networkList, network, spikesTrains[i], dt_tauDict,
 			stdpDict, mode)
 
-	
 		
-		print(np.sum(network["exc2exc1"]["weights"][:, spikesTrains[i]],
-		 	axis=1, dtype=np.double)[0])
+		# print(np.sum(network["exc2exc1"]["weights"][:, spikesTrains[i]],
+		#  	axis=1, dtype=np.double)[7])
 
 
 		# Update the output spikes counter
@@ -113,3 +112,23 @@ def updateNetwork(networkList, network, inputSpikes, dt_tauDict, stdpDict,
 		# Update the excitatory layer
 		updateExcLayer(network, layer, dt_tauDict["exc"],
 			network["excLayer" + str(layer - 1)]["outSpikes"][0])
+
+def rest(network, networkList):
+
+	"""
+	Bring the network into a rest state.
+
+	INPUT:
+
+		1) network: dictionary of the network.
+
+		2) networkList: list of integer numbers. Each element of the 
+		list corresponds to a layer and identifies the number of nodes
+		in that layer.
+	"""
+
+	for layer in range(1, len(networkList)):
+
+		# Reset the membrane potential to the rest value
+		network["excLayer" + str(layer)]["v"][0][:] = network["excLayer"
+			+ str(layer)]["vRest"]
