@@ -34,7 +34,6 @@ class Net(nn.Module):
 
 		for step in range(num_steps):
 			cur1 = self.fc1(input_spikes[step])
-			print(float(cur1[step, 0]))
 			spk1, mem1 = self.lif1(cur1, mem1)
 			cur2 = self.fc2(spk1)
 			spk2, mem2 = self.lif2(cur2, mem2)
