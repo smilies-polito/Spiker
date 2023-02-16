@@ -1,10 +1,11 @@
 import timeit
 import sys
 import numpy as np
-np.set_printoptions(threshold=np.inf)
+
+from snntorch import spikegen
 
 from createNetwork import createNetwork
-from testFunctions import singleImageTest
+from network import run, rest
 from storeParameters import *
 from utils import checkBitWidth
 
@@ -18,55 +19,45 @@ from mnist import loadDataset
 
 
 # Load the MNIST dataset
-imgArray , labelsArray = loadDataset(testImages, testLabels)
+train_loader, test_loader = loadDataset(data_path, batch_size)
 
+test_batch = iter(test_loader)
 
 # Create the network data structure
-network = createNetwork(networkList, weightFilename, thresholdFilename, mode, 
-			excDictList, scaleFactors, inh2excWeights,
+net = createNetwork(networkList, weightFilename, thresholdFilename, mode, 
+			excDictList, scaleFactors, None,
 			fixed_point_decimals, trainPrecision, rng)
 
-checkBitWidth(network["exc2exc1"]["weights"], weights_bitWidth)
 
-currentIndex = 0
-numberOfCycles = imgArray.shape[0]
+checkBitWidth(net["exc2exc1"]["weights"], weights_bitWidth)
 
 
-# Measure the test starting time
-startTimeTraining = timeit.default_timer()
+# Minibatch training loop
+for test_data, test_targets in test_batch:
+
+	acc = 0
+	test_data = test_data.view(batch_size, -1)
+	spikesTrainsBatch = spikegen.rate(test_data, num_steps = num_steps, 
+				gain = 1)
+
+	for i in range(test_data.size()[0]):
+
+		label = int(test_targets[i].int())
+		spikesTrains = spikesTrainsBatch.numpy().astype(bool)[:, i, :]
+
+		outputCounters, _, _ = run(net, networkList, spikesTrains,
+				dt_tauDict, 4, None, mode, None,
+				neuron_bitWidth)
 
 
-while currentIndex < numberOfCycles:
+		rest(net, networkList)
 
-	# Complete test cycle over a single image
-	inputIntensity, currentIndex, accuracies, spikesMonitor, \
-		membraneMonitor = \
-		singleImageTest(
-			trainDuration,
-			restTime,
-			dt,
-			imgArray[currentIndex],
-			network,
-			networkList,
-			dt_tauDict,
-			countThreshold,
-			inputIntensity,
-			currentIndex,
-			spikesEvolution,
-			updateInterval,
-			printInterval,
-			startTimeTraining,
-			accuracies,
-			labelsArray,
-			assignments,
-			startInputIntensity,
-			mode,
-			constSums,
-			rng,
-			exp_shift,
-			neuron_bitWidth
-		)
+		outputLabel = np.where(outputCounters[0] ==
+				np.max(outputCounters[0]))[0][0]
 
+		if outputLabel == label:
+			acc += 1
 
-# Store the performance of the network into a text file
-storePerformace(startTimeTraining, accuracies, testPerformanceFile)
+	
+	acc = acc / test_data.size()[0]
+	print(f"Accuracy: {acc*100}%")
