@@ -158,23 +158,8 @@ def initializeThreshold(mode, thresholdFile, initDict, numberOfNeurons):
 
 	"""
 
-	if mode == "train":
-
-		# Initialize the thresholds to a starting value
-		return np.ones((1, numberOfNeurons))*initDict["vThresh0"]
-
-	elif mode == "test":
-
-		# Load thresholds values from file
-		with open(thresholdFile, "rb") as fp: 
-			return np.load(fp)
-	else:
-
-		# Invalid mode, print error and exit
-		print("Invalid operation mode. Accepted values: \n\t1) test\
-			\n\t2) train")
-		sys.exit()
-
+	# Initialize the thresholds to a starting value
+	return np.ones((1, numberOfNeurons))*initDict["vThresh0"]
 
 
 

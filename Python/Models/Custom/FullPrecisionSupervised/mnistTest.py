@@ -6,7 +6,7 @@ from snntorch import spikegen
 
 from mnist import loadDataset
 from createNetwork import createNetwork
-from network import run
+from network import run, rest
 from trainTestFunctions import train_printer, test_printer
 from utils import createDir
 
@@ -40,12 +40,10 @@ for test_data, test_targets in test_batch:
 		outputCounters = run(net, networkList, spikesTrains, dt_tauDict,
 				None, mode, None)
 
+		rest(net, networkList)
+
 		outputLabel = np.where(outputCounters[0] ==
 				np.max(outputCounters[0]))[0][0]
-
-		print(outputCounters)
-		print(outputLabel)
-		print(label)
 
 		if outputLabel == label:
 			acc += 1

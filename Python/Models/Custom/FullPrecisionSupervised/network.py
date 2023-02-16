@@ -1,6 +1,6 @@
 import numpy as np
 
-from layers import updateExcLayer, updateInhLayer
+from layers import updateExcLayer
 
 
 import matplotlib.pyplot as plt
@@ -61,7 +61,6 @@ def run(network, networkList, spikesTrains, dt_tauDict, stdpDict, mode,
 			str(lastLayerIndex)]["outSpikes"][0]] += 1
 
 
-
 	return spikesCounter
 
 
@@ -108,3 +107,23 @@ def updateNetwork(networkList, network, inputSpikes, dt_tauDict, stdpDict,
 		# Update the excitatory layer
 		updateExcLayer(network, layer, dt_tauDict["exc"],
 			network["excLayer" + str(layer - 1)]["outSpikes"][0])
+
+def rest(network, networkList):
+
+	"""
+	Bring the network into a rest state.
+
+	INPUT:
+
+		1) network: dictionary of the network.
+
+		2) networkList: list of integer numbers. Each element of the 
+		list corresponds to a layer and identifies the number of nodes
+		in that layer.
+	"""
+
+	for layer in range(1, len(networkList)):
+
+		# Reset the membrane potential to the rest value
+		network["excLayer" + str(layer)]["v"][0][:] = network["excLayer"
+			+ str(layer)]["vRest"]
