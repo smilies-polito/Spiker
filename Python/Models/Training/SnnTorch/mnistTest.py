@@ -12,7 +12,7 @@ from runParameters import *
 
 train_loader, test_loader = loadDataset(data_path, batch_size)
 
-net = Net(num_inputs, num_hidden1, num_hidden2, num_outputs, beta)
+net = Net(num_inputs, num_hidden, num_outputs, beta)
 
 net.fc1.weight.data = torch.load(weightsFilename + "1.pt")
 net.fc2.weight.data = torch.load(weightsFilename + "2.pt")

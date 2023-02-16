@@ -7,12 +7,11 @@ dtype = torch.float
 
 # Network Architecture
 num_inputs = 28*28
-num_hidden1 = 128
-num_hidden2 = 64
+num_hidden = 32
 num_outputs = 10
 
 # Temporal Dynamics
-num_steps = 100
+num_steps = 25
 beta = 0.9375
 
 num_epochs = 100
