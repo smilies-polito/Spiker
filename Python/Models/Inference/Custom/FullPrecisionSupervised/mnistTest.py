@@ -29,13 +29,13 @@ for test_data, test_targets in test_batch:
 	acc = 0
 
 	test_data = test_data.view(batch_size, -1)
-	spikesTrainsBatch = spikegen.rate(test_data, num_steps = num_steps, 
-				gain = 1)
 
 	for i in range(test_data.size()[0]):
 
-		label = int(test_targets[i].int())
-		spikesTrains = spikesTrainsBatch.numpy().astype(bool)[:, i, :]
+		image = test_data[i].numpy()
+		label = int(test_targets[i])
+		
+		spikesTrains = imgToSpikeTrain(image, num_steps, rng)
 
 		outputCounters = run(net, networkList, spikesTrains, dt_tauDict,
 				None, mode, None)

@@ -1,6 +1,8 @@
 import torch
 import numpy as np
 
+from poisson import imgToSpikeTrain
+
 from parameters import *
 from files import *
 
