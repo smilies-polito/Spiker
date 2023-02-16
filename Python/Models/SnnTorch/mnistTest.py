@@ -10,36 +10,39 @@ from utils import createDir
 from files import *
 from runParameters import *
 
+train_loader, test_loader = loadDataset(data_path, batch_size)
 
 net = Net(num_inputs, num_hidden, num_outputs, beta)
 
 net.fc1.weight.data = torch.load(weightsFilename + "1.pt")
 net.fc2.weight.data = torch.load(weightsFilename + "2.pt")
 
+loss = nn.CrossEntropyLoss()
 
-with open(logFile, "w") as fp:
+test_batch = iter(test_loader)
+
+iter_counter = 0
+
+# Minibatch training loop
+for test_data, test_targets in test_batch:
 
 	# Test set
 	with torch.no_grad():
 		net.eval()
 
 		# Test set forward pass
-		test_spk, test_mem = net(None, # test_data.view(batch_size, -1),
+		test_spk, test_mem = net(test_data.view(batch_size, -1),
 				num_steps)
 
+		# Test set loss
+		test_loss = torch.zeros((1), dtype=dtype)
+		for step in range(num_steps):
+			test_loss += loss(test_mem[step], test_targets)
+		test_loss_hist.append(test_loss.item())
 
-		# for i in range(test_mem.size()[0]):
-		# 	print(float(test_mem[:, 0, 7][i]))
-
-		outputCounters = test_spk.sum(dim=0)
-
-		outputLabel = outputCounters.max(1)
-
-
-	for i in range(outputCounters.size()[0]):
-		for counter in outputCounters[i]:
-			fp.write(str(int(counter)))
-			fp.write("\t")
-		fp.write("\t")
-		fp.write(str(int(outputLabel[1][i])))
-		fp.write("\n")
+		# Print train/test loss/accuracy
+		test_printer(net, batch_size, num_steps, iter_counter,
+				test_loss_hist, counter, test_data,
+				test_targets)
+		counter += 1
+		iter_counter +=1
