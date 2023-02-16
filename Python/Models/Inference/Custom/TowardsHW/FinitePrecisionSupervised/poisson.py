@@ -3,54 +3,7 @@
 import numpy as np
 
 
-def importSpikes(filename, trainingSteps, inputLayerSize):
-
-	"""
-	Read the input spikes from file and convert them into a numpy array.
-
-	INPUT:
-		1) filename: string. Name of the file containing the spikes in text
-		form.
-
-		2) trainingSteps: total amount of time steps associated to the
-		pixels" spikes trains. This must be equal to the number of lines
-		in the file.
-
-		3) inputLayerSize: total amount of input spikes per each cycle.
-		Each line of the file must contain exactly this amount of "0"
-		and "1".
-
-	OUTPUT:
-		spikesTrains: two-dimensional numpy array. Time steps on the
-		rows, input nodes on the colummns. Input spike sequences.
-	"""
-
-	spikesTrains = np.zeros((trainingSteps, inputLayerSize)).astype(bool)
-	i = 0
-
-	# Read one single string from the input file
-	with open(filename, "r") as fp:
-
-		for line in fp:
-
-			# Remove newline character
-			binaryString = line[:-1]
-
-			# Convert string into list
-			binaryList = list(binaryString)
-
-			# Convert list of characters into array of integers
-			binaryArray = np.array(binaryList).astype(int)
-
-			# Convert integers to boolean
-			spikesTrains[i] = binaryArray.astype(bool)
-			
-			i += 1
-
-	return spikesTrains
-	
-
-def imgToSpikeTrain(image, dt, trainingSteps, inputIntensity, rng):
+def imgToSpikeTrain(image, num_steps, rng):
 
 	""" 
 	Convert a black and white image into spike trains using the Poisson
@@ -61,7 +14,7 @@ def imgToSpikeTrain(image, dt, trainingSteps, inputIntensity, rng):
 		1) image: NumPy array containing the value of each pixel
 		expressed as an integer.
 
-		2) dt: time step duration, expressed in milliseconds. 
+		2) dt: float. Time step duration, expressed in milliseconds. 
 
 		3) trainingSteps: total amount of time steps associated to the
 		pixels" spikes trains.
@@ -78,16 +31,16 @@ def imgToSpikeTrain(image, dt, trainingSteps, inputIntensity, rng):
 	"""
 
 	# Create two-dimensional array of random values
-	random2D = rng.uniform(size = (trainingSteps, 1))
+	random2D = rng.uniform(size = (num_steps, image.shape[0]))
 
 	# Convert the image into spikes trains
-	return poisson(image, dt, random2D, inputIntensity)
+	return poisson(image, random2D)
 
 
 
 
 
-def poisson(image, dt, random2D, inputIntensity):
+def poisson(image, random2D):
 
 	""" 
 	Poisson convertion of the numerical values of the pixels into spike
@@ -112,8 +65,5 @@ def poisson(image, dt, random2D, inputIntensity):
 		train for each pixel.  
 	"""
 
-	# Convert dt from milliseconds to seconds
-	dt = dt*1e-3
-
 	# Create the boolean array of spikes with Poisson distribution
-	return ((image*inputIntensity/8.0)*dt)[:] > random2D
+	return image[:] > random2D

@@ -5,6 +5,7 @@ import numpy as np
 from snntorch import spikegen
 
 from createNetwork import createNetwork
+from poisson import imgToSpikeTrain
 from network import run, rest
 from storeParameters import *
 from utils import checkBitWidth
@@ -12,10 +13,6 @@ from utils import checkBitWidth
 from files import *
 from runParameters import *
 from bitWidths import *
-
-if mnistDir not in sys.path:
-	sys.path.append(mnistDir)
-
 from mnist import loadDataset
 
 
@@ -38,13 +35,13 @@ for test_data, test_targets in test_batch:
 
 	acc = 0
 	test_data = test_data.view(batch_size, -1)
-	spikesTrainsBatch = spikegen.rate(test_data, num_steps = num_steps, 
-				gain = 1)
-
+	
 	for i in range(test_data.size()[0]):
 
+		image = test_data[i].numpy()
 		label = int(test_targets[i].int())
-		spikesTrains = spikesTrainsBatch.numpy().astype(bool)[:, i, :]
+
+		spikesTrains = imgToSpikeTrain(image, num_steps, rng)
 
 		outputCounters, _, _ = run(net, networkList, spikesTrains,
 				dt_tauDict, exp_shift, None, mode, None,
