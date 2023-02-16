@@ -33,8 +33,7 @@ def train_printer(net, batch_size, num_steps, epoch, iter_counter, loss_hist,
 	print("\n")
 
 
-def test_printer(net, batch_size, num_steps, iter_counter, test_loss_hist,
-		counter, test_data, test_targets):
+def test_printer(net, batch_size, num_steps, iter_counter, test_data, test_targets):
 
 	print(f"Test Set Loss: {test_loss_hist[counter]:.2f}")
 
