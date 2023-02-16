@@ -11,6 +11,7 @@ from utils import checkBitWidth
 
 from files import *
 from runParameters import *
+from bitWidths import *
 
 if mnistDir not in sys.path:
 	sys.path.append(mnistDir)
@@ -46,7 +47,7 @@ for test_data, test_targets in test_batch:
 		spikesTrains = spikesTrainsBatch.numpy().astype(bool)[:, i, :]
 
 		outputCounters, _, _ = run(net, networkList, spikesTrains,
-				dt_tauDict, 4, None, mode, None,
+				dt_tauDict, exp_shift, None, mode, None,
 				neuron_bitWidth)
 
 
