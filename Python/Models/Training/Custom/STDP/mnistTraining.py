@@ -1,13 +1,12 @@
 import timeit
 import sys
-import numpy as np
-np.set_printoptions(threshold=np.inf)
 
 from createNetwork import createNetwork
-from testFunctions import singleImageTest
+from trainFunctions import singleImageTraining
 from storeParameters import *
-from utils import checkBitWidth
+from utils import createDir, initAssignments
 
+# Initialize the training parameters
 from files import *
 from runParameters import *
 
@@ -16,32 +15,34 @@ if mnistDir not in sys.path:
 
 from mnist import loadDataset
 
+mode = "train"
+
+# Initialize the output classification
+assignments = initAssignments(mode, networkList, assignmentsFile)
 
 # Load the MNIST dataset
-imgArray , labelsArray = loadDataset(testImages, testLabels)
-
+imgArray, labelsArray = loadDataset(trainImages, trainLabels)
 
 # Create the network data structure
 network = createNetwork(networkList, weightFilename, thresholdFilename, mode, 
-			excDictList, scaleFactors, inh2excWeights,
-			fixed_point_decimals, trainPrecision, rng)
+			excDictList, scaleFactors, inh2excWeights)
 
-checkBitWidth(network["exc2exc1"]["weights"], weights_bitWidth)
+
 
 currentIndex = 0
 numberOfCycles = imgArray.shape[0]
 
 
-# Measure the test starting time
+# Measure the training starting time
 startTimeTraining = timeit.default_timer()
+
 
 
 while currentIndex < numberOfCycles:
 
-	# Complete test cycle over a single image
-	inputIntensity, currentIndex, accuracies, spikesMonitor, \
-		membraneMonitor = \
-		singleImageTest(
+	# Complete training cycle over a single image
+	inputIntensity, currentIndex, accuracies = \
+		singleImageTraining(
 			trainDuration,
 			restTime,
 			dt,
@@ -49,6 +50,7 @@ while currentIndex < numberOfCycles:
 			network,
 			networkList,
 			dt_tauDict,
+			stdpDict,
 			countThreshold,
 			inputIntensity,
 			currentIndex,
@@ -62,11 +64,17 @@ while currentIndex < numberOfCycles:
 			startInputIntensity,
 			mode,
 			constSums,
-			rng,
-			exp_shift,
-			neuron_bitWidth
+			rng
 		)
 
 
+# Create the directory in which to store the parameters and the performance
+createDir(paramDir)
+
+
 # Store the performance of the network into a text file
-storePerformace(startTimeTraining, accuracies, testPerformanceFile)
+storePerformace(startTimeTraining, accuracies, trainPerformanceFile)
+
+# Store the network parameters into NumPy files
+storeParameters(network, networkList, assignments, weightFilename, 
+ 		thresholdFilename, assignmentsFile)
