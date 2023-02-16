@@ -71,10 +71,6 @@ def createNetwork(networkList, weightFilename, thresholdFilename, mode,
 				weightFile, layer, scaleFactors[layer-1],
 				fixed_point_decimals, trainPrecision, rng)
 
-		# Create the inhibitory to excitatory connection
-		interLayerSynapses(network, "inh2exc", inh2excWeights[layer-1],
-					layer)
-
 	return network
 
 
@@ -356,35 +352,3 @@ def initializeWeights(mode, networkList, weightFile, layer, scaleFactor,
 		print("Invalid operation mode. Accepted values:\n\t1) test\
 		\n\t2) train")
 		sys.exit()
-
-
-
-
-
-
-def interLayerSynapses(network, synapseName, synapseWeight, layer):
-
-	"""
-	Initialize the inter layer synapses and add it to the network dictionary.
-
-	INPUT:
-		1) network: dictionary of the network.
-
-		2) synapseName: string reporting the name of the connection. The
-		standard names are "inh2exc" and "exc2inh". The function
-		appends the number of the current layer.
-
-		3) synapseWeight: float. Weight of the synapse. This is the same
-		for all the connections within the layer.
-
-		4) layer: index of the current layer. The count starts from 1.
-
-	"""
-
-	# Append the number of the current layer to the name
-	synapseName = synapseName + str(layer)
-	
-	# Initialize the synapse weight
-	network[synapseName] = {
-		"weight" : synapseWeight
-	}
