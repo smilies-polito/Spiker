@@ -20,15 +20,14 @@ entity neuron_datapath is
 						downto 0);
 		v_reset			: in signed(neuron_bit_width-1 
 						downto 0);
-		inh_weight		: in signed(neuron_bit_width-1
+		inh_weight		: in signed(weights_bit_width-1
 						downto 0);
 		exc_weight		: in signed(weights_bit_width-1
 						downto 0);
 
 		-- input controls
 		clk			: in std_logic;
-		update_sel		: in std_logic_vector(1 
-						downto 0);
+		update_sel		: in std_logic_vector(1 downto 0);
 		add_or_sub		: in std_logic;
 		v_update		: in std_logic;
 		v_th_en			: in std_logic;
@@ -201,8 +200,6 @@ architecture behaviour of neuron_datapath is
 
 begin
 
-
-
 	v_shifter	: shifter
 		generic map(
 			-- parallelism
@@ -236,8 +233,12 @@ begin
 				weights_bit_width)	=> (others => '0'),
 			in2(weights_bit_width-1 
 				downto 0)		=> exc_weight,
-			in3				=> inh_weight,
-		                               
+			in3(neuron_bit_width-1 
+				downto 
+				weights_bit_width)	=> (others => '0'),
+			in3(weights_bit_width-1 
+				downto 0)		=> inh_weight,
+
 			-- output
 			mux_out	=> update
 		);
