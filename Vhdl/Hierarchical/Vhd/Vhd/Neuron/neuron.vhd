@@ -6,7 +6,7 @@ use ieee.numeric_std.all;
 entity neuron is
 
 	generic(
-		-- parallelism
+		-- bit-width
 		neuron_bit_width	: integer := 16;
 		weights_bit_width	: integer := 5;
 

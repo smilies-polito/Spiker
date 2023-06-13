@@ -5,6 +5,7 @@ use ieee.numeric_std.all;
 entity cmp_gt is
 
 	generic(
+		-- bit-width
 		N	: integer := 8		
 	);
 

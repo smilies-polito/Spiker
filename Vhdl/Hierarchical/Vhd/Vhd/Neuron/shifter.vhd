@@ -6,7 +6,7 @@ use ieee.numeric_std.all;
 entity shifter is
 
 	generic(
-		-- parallelism
+		-- bit-width
 		N		: integer := 16;
 	
 		-- shift

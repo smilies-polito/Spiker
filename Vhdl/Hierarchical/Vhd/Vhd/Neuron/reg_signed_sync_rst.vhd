@@ -5,7 +5,7 @@ use ieee.numeric_std.all;
 entity reg_signed_sync_rst is
 
 	generic(
-		-- parallelism
+		-- bit-width
 		N	: integer	:= 16		
 	);
 

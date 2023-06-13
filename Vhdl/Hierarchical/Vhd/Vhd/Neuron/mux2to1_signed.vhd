@@ -5,7 +5,7 @@ use ieee.numeric_std.all;
 entity mux2to1_signed is
 
 	generic(
-		-- parallelism
+		-- bit-width
 		N	: integer		
 	);
 

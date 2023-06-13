@@ -6,7 +6,7 @@ use ieee.numeric_std.all;
 entity neuron_datapath is
 
 	generic(
-		-- parallelism
+		-- bit-width
 		neuron_bit_width		: integer := 16;
 		weights_bit_width		: integer := 5;
 
@@ -56,7 +56,7 @@ architecture behaviour of neuron_datapath is
 	component shifter is
 
 		generic(
-			-- parallelism
+			-- bit-width
 			N		: integer := 8;
 		
 			-- shift
@@ -77,7 +77,7 @@ architecture behaviour of neuron_datapath is
 	component mux4to1_signed is
 
 		generic(
-			-- parallelism
+			-- bit-width
 			N	: integer		
 		);
 
@@ -118,7 +118,7 @@ architecture behaviour of neuron_datapath is
 	component mux2to1_signed is
 
 		generic(
-			-- parallelism
+			-- bit-width
 			N	: integer		
 		);
 
@@ -139,7 +139,7 @@ architecture behaviour of neuron_datapath is
 	component reg_signed is
 
 		generic(
-			-- parallelism
+			-- bit-width
 			N	: integer	:= 16		
 		);
 
@@ -160,7 +160,7 @@ architecture behaviour of neuron_datapath is
 	component reg_signed_sync_rst is
 
 		generic(
-			-- parallelism
+			-- bit-width
 			N	: integer	:= 16		
 		);
 
@@ -202,7 +202,7 @@ begin
 
 	v_shifter	: shifter
 		generic map(
-			-- parallelism
+			-- bit-width
 			N		=> neuron_bit_width,
 		
 			-- shift
@@ -220,7 +220,7 @@ begin
 	
 	update_mux	: mux4to1_signed
 		generic map(
-			-- parallelism
+			-- bit-width
 			N	=> neuron_bit_width
 		)
 		port map(
@@ -270,7 +270,7 @@ begin
 
 	v_mux	: mux2to1_signed
 		generic map(
-			-- parallelism
+			-- bit-width
 			N	=> neuron_bit_width
 		)
 
@@ -288,7 +288,7 @@ begin
 
 	v_th_reg	: reg_signed
 		generic map(
-			-- parallelism
+			-- bit-width
 			N	=> neuron_bit_width
 		)
 
@@ -306,7 +306,7 @@ begin
 
 	v_reg		: reg_signed_sync_rst
 		generic map(
-			-- parallelism
+			-- bit-width
 			N	=> neuron_bit_width
 		)
 
