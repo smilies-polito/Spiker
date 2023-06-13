@@ -8,13 +8,10 @@ entity neuron_cu is
 		-- input
 		clk		: in std_logic;
 		rst_n		: in std_logic;
-		start		: in std_logic;
-		stop		: in std_logic;
-		exc_or		: in std_logic;
-		exc_stop	: in std_logic;
-		inh_or		: in std_logic;
-		inh_stop	: in std_logic;
-		input_spike	: in std_logic;
+		restart		: in std_logic;
+		load_end	: in std_logic;
+		exc		: in std_logic;
+		inh		: in std_logic;
 
 		-- input from datapath
 		exceed_v_th	: in std_logic;
@@ -27,8 +24,9 @@ entity neuron_cu is
 		v_rst_n		: out std_logic;
 
 		-- output
-		out_spike	: out std_logic;
-		neuron_ready	: out std_logic
+		load_ready	: out std_logic;
+		neuron_ready	: out std_logic;
+		out_spike	: out std_logic
 	);
 
 end entity neuron_cu;
@@ -40,12 +38,12 @@ architecture behaviour of neuron_cu is
 
 	type states is (
 		reset,
+		load,
 		idle,
-		exp_decay,
-		no_exc_spike,
-		exc_spike,
-		no_inh_spike,
-		inh_spike,
+		init,
+		excite,
+		inhibit,
+		leak,
 		fire
 	);
 
@@ -76,167 +74,108 @@ begin
 
 
 	-- state evaluation
-	state_evaluation	: process(present_state, start, stop, exc_or,
-					inh_or, exc_stop, inh_stop, input_spike,
-					exceed_v_th)
+	state_evaluation	: process(present_state, load_end, restart, exc,
+					inh, exceed_v_th)
 	begin
-
-
-		-- default case
-		-- next_state	<= reset;
 
 		case present_state is
 			
 			-- reset
 			when reset =>
-				next_state <= idle;
+				next_state <= load;
+
+
+			-- load
+			when load =>
+
+				if load_end = '1'
+				then
+					next_state <= idle;
+				else
+					next_state <= load;
+				end if;
 
 			-- idle
 			when idle =>
 
-				if start = '1'
+				if restart = '1'
 				then
-					next_state <= exp_decay;
+					next_state <= init;
+
+				elsif exc = '1'
+				then
+
+					if inh = '0'
+					then
+						next_state <= excite;
+
+					elsif exceed_v_th = '0'
+					then
+						next_state <= leak;
+
+					else
+						next_state <= fire;
+
+					end if;
+
+				elsif inh = '1'
+				then
+					next_state <= inhibit;
+
 				else
 					next_state <= idle;
 				end if;
 			
 
-			-- exp_decay
-			when exp_decay =>
+			-- excite
+			when excite =>
 
-				if stop = '1'
+				if exc = '1'
 				then
+					next_state <= excite;
+
+				else
 					next_state <= idle;
 
-				elsif exc_or = '1'
-				then
-					next_state <= no_exc_spike;
+				end if;
 
-				elsif inh_or = '1'
+			-- inhibit
+			when inhibit =>
+
+				if inh = '1'
 				then
-					next_state <= no_inh_spike;
+					next_state <= inhibit;
 
 				else
-					next_state <= exp_decay;
+					next_state <= idle;
 
 				end if;
 
-			-- no_exc_spike
-			when no_exc_spike =>
-
-				if exc_stop = '1'
-				then
-					if inh_or = '1'
-					then
-						next_state <= no_inh_spike;
-
-					elsif exceed_v_th = '1'
-					then
-						next_state <= fire;
-
-					else
-						next_state <= exp_decay;
-					end if;
-
-				elsif input_spike = '1'
-				then
-					next_state <= exc_spike;
-
-				else
-					next_state <= no_exc_spike;
-				end if;
-				
-
-			-- exc_spike
-			when exc_spike =>
-
-				if exc_stop = '1'
-				then
-					if inh_or = '1'
-					then
-						next_state <= no_inh_spike;
-
-					elsif exceed_v_th = '1'
-					then
-						next_state <= fire;
-
-					else
-						next_state <= exp_decay;
-					end if;
-
-				elsif input_spike = '1'
-				then
-					next_state <= exc_spike;
-
-				else
-					next_state <= no_exc_spike;
-				end if;
-
-
-			-- no_inh_spike
-			when no_inh_spike =>
-				
-				if inh_stop = '1'
-				then
-					if exceed_v_th = '1'
-					then
-						next_state <= fire;
-
-					else
-						next_state <= exp_decay;
-					end if;
-
-				elsif input_spike = '1'
-				then
-					next_state <= inh_spike;
-
-				else
-					next_state <= no_inh_spike;
-				end if;
-
-
-
-			-- inh_spike
-			when inh_spike =>
-
-				if inh_stop = '1'
-				then
-					if exceed_v_th = '1'
-					then
-						next_state <= fire;
-
-					else
-						next_state <= exp_decay;
-					end if;
-
-				elsif input_spike = '1'
-				then
-					next_state <= inh_spike;
-
-				else
-					next_state <= no_inh_spike;
-				end if;
-
-				
-
-			
 
 			-- fire
 			when fire =>
 
-				if stop = '1'
+				if exc = '1' and inh = '1'
 				then
+					next_state <= leak;
+
+				elsif 
 					next_state <= idle;
 
-				elsif exc_or = '1'
-				then
-					next_state <= no_exc_spike;
+				end if;
 
-				else
-					next_state <= no_inh_spike;
+			-- leak
+			when leak =>
+
+				if exc = '1' and inh = '1'
+				then
+					next_state <= leak;
+
+				elsif 
+					next_state <= idle;
 
 				end if;
+
 
 			-- default case
 			when others =>
@@ -255,60 +194,55 @@ begin
 		-- default values
 		update_sel	<= "00";
 		add_or_sub	<= '0';
-		v_update	<= '1';
-		v_en		<= '1';
+		v_update	<= '0';
+		v_en		<= '0';
 		v_rst_n		<= '1';
-		out_spike	<= '0';
 		neuron_ready	<= '0';
+		load_ready	<= '0';
+		out_spike	<= '0';
 
 		case present_state is
 
 			-- reset
 			when reset =>
-				v_en 		<= '0';
 				v_rst_n		<= '0';
+
+			when load =>
+				load_ready	<= '1';
 
 			-- idle
 			when idle =>
 				neuron_ready	<= '1';
-				v_en 		<= '0';
+
+			-- init
+			when init =>
 				v_rst_n		<= '0';
 
-			-- exp_decay
-			when exp_decay =>
-				add_or_sub	<= '1';
-				update_sel	<= "01";
-				
-
-			-- no_exc_spike
-			when no_exc_spike	=>
-				v_en		<= '0';
-
-			-- exc_spike
-			when exc_spike =>
+			-- excite
+			when excite =>
 				update_sel	<= "10";
 				v_en		<= '1';
 
-				
-			-- no_inh_spike
-			when no_inh_spike	=>
-				v_en		<= '0';
-
-
-			-- inh_spike
-			when inh_spike		=>
+			-- inhibit 
+			when inhibit =>
 				update_sel	<= "11";
 				v_en		<= '1';
+				
 
+			-- leak
+			when leak =>
+				add_or_sub	<= '1';
+				update_sel	<= "01";
+				v_en		<= '1';
 
 			-- fire
 			when fire =>
-				v_update	<= '0';
+				v_update	<= '1';
+				v_en		<= '1';
 				out_spike	<= '1';
 
 			-- default case
 			when others =>
-				v_en 		<= '0';
 				v_rst_n		<= '0';
 
 		end case;
