@@ -51,6 +51,10 @@ architecture behaviour of neuron_datapath is
 	signal v		: signed(neuron_bit_width-1 downto 0);
 	signal v_shifted	: signed(neuron_bit_width-1 downto 0);
 
+	-- bit used to align weights and internal bit-width
+	signal exc_sign		: std_logic;
+	signal inh_sign		: std_logic;
+
 
 
 	component shifter is
@@ -200,6 +204,11 @@ architecture behaviour of neuron_datapath is
 
 begin
 
+
+	-- align weights and internal bit-width by replicating sign bit
+	exc_sign <= exc_weight(weights_bit_width - 1);
+	inh_sign <= inh_weight(weights_bit_width - 1);
+
 	v_shifter	: shifter
 		generic map(
 			-- bit-width
@@ -232,18 +241,14 @@ begin
 
 			in2(neuron_bit_width-1 
 			downto 
-			weights_bit_width)		=> (others =>
-							exc_weight(
-							weights_bit_width - 1)),
+			weights_bit_width)		=> (others => exc_sign),
 	
 			in2(weights_bit_width-1 
 			downto 0)			=> exc_weight,
 
 			in3(neuron_bit_width-1 
 			downto 
-			weights_bit_width)		=> (others =>
-							inh_weight(
-							weights_bit_width - 1)),
+			weights_bit_width)		=> (others => inh_sign),
 			in3(weights_bit_width-1 
 			downto 0)			=> inh_weight,
 
