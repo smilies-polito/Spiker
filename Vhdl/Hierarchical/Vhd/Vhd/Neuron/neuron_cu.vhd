@@ -159,7 +159,7 @@ begin
 				then
 					next_state <= leak;
 
-				elsif 
+				else 
 					next_state <= idle;
 
 				end if;
@@ -171,7 +171,7 @@ begin
 				then
 					next_state <= leak;
 
-				elsif 
+				else
 					next_state <= idle;
 
 				end if;
