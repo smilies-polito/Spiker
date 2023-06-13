@@ -227,17 +227,25 @@ begin
 			-- input
 			sel				=> update_sel,
 			in0				=> (others => '0'),
+
 			in1				=> v_shifted,
+
 			in2(neuron_bit_width-1 
-				downto 
-				weights_bit_width)	=> (others => '0'),
+			downto 
+			weights_bit_width)		=> (others =>
+							exc_weight(
+							weights_bit_width - 1)),
+	
 			in2(weights_bit_width-1 
-				downto 0)		=> exc_weight,
+			downto 0)			=> exc_weight,
+
 			in3(neuron_bit_width-1 
-				downto 
-				weights_bit_width)	=> (others => '0'),
+			downto 
+			weights_bit_width)		=> (others =>
+							inh_weight(
+							weights_bit_width - 1)),
 			in3(weights_bit_width-1 
-				downto 0)		=> inh_weight,
+			downto 0)			=> inh_weight,
 
 			-- output
 			mux_out	=> update
@@ -269,8 +277,8 @@ begin
 		port map(	
 			-- inputs	
 			sel	=> v_update,
-			in0	=> v_reset,
-			in1	=> update_value,
+			in0	=> update_value,
+			in1	=> v_reset,
 
 			-- outpu
 			mux_out	=> v_value
@@ -321,13 +329,11 @@ begin
 
 		port map(
 			-- input
-			in0	=> v_value, 
+			in0	=> v, 
 			in1	=> v_th,
 
 			-- output
 			cmp_out	=> exceed_v_th
 		);
-
-	
 
 end architecture behaviour;
