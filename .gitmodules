@@ -1,3 +1,3 @@
 [submodule "HdlTools"]
-	path = HdlTools
+	path = Python/HdlTools
 	url = https://github.com/smilies-polito/hdltools.git
