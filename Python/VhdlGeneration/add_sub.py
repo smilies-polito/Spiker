@@ -1,10 +1,12 @@
+import subprocess as sp
+
 import path_config
 
 from vhdl_block import VHDLblock
 
 class AddSub(VHDLblock):
 
-	def __init__(self, default_bitwidth = 8):
+	def __init__(self, default_bitwidth = 8, output_dir = "output"):
 
 		VHDLblock.__init__(self, entity_name = "add_sub")
 
@@ -40,6 +42,30 @@ class AddSub(VHDLblock):
 				"add_sub_out <= in0 - in1;")
 
 
+		self.write_file(output_dir)
 
-a = AddSub()
-a.write_file()
+
+	def compile(self, output_dir = "output"):
+
+		print("\nCompiling component %s\n"
+				%(self.entity.name))
+
+		command = "cd " + output_dir + "; "
+		command = command + "xvhdl " + self.entity.name + ".vhd" + "; "
+
+		sp.run(command, shell = True)
+
+		print("\n")
+	
+
+	def elaborate(self, output_dir = "output"):
+
+		print("\nElaborating component %s\n"
+				%(self.entity.name))
+
+		command = "cd " + output_dir + "; "
+		command = command + "xelab " + self.entity.name
+
+		sp.run(command, shell = True)
+
+		print("\n")
