@@ -70,9 +70,3 @@ class RegSigned(VHDLblock):
 		sp.run(command, shell = True)
 
 		print("\n")
-
-
-reg_signed = RegSigned()
-
-reg_signed.compile()
-reg_signed.elaborate()
