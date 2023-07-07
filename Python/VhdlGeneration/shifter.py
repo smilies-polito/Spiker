@@ -6,8 +6,7 @@ from vhdl_block import VHDLblock
 
 class Shifter(VHDLblock):
 
-	def __init__(self, default_bitwidth = 16, default_shift = 10, 
-			output_dir = "output"):
+	def __init__(self, bit_width = 16, shift = 10, output_dir = "output"):
 
 		VHDLblock.__init__(self, entity_name = "shifter")
 
@@ -16,10 +15,6 @@ class Shifter(VHDLblock):
 		self.library["ieee"].package.add("std_logic_1164")
 		self.library["ieee"].package.add("numeric_std")
 
-		# Generics
-		self.entity.generic.add("N", "integer", str(default_bitwidth))
-		self.entity.generic.add("shift", "integer", str(default_shift))
-
 		# Input ports
 		self.entity.port.add("shifter_in", "in", "signed(N-1 downto 0)")
 		
@@ -27,12 +22,47 @@ class Shifter(VHDLblock):
 		self.entity.port.add("shifted_out", "out", 
 				"signed(N-1 downto 0)")
 
-		# Add/sub process
-		self.architecture.bodyCodeHeader.add("shifted_out(N-1 "
-				"downto N-shift) <= (others => "
-				"shifter_in(N-1));")
-		self.architecture.bodyCodeHeader.add("shifted_out(N-shift-1 "
-				"downto 0) <= shifter_in(N-1 downto shift);")
+		# Generics
+		self.entity.generic.add("N", "integer", str(bit_width))
+
+		if bit_width <= 0:
+			print("Invalid bit-width in shifter\n")
+			exit(-1)
+
+		elif shift < bit_width and shift > 0:
+
+			# Generics
+			self.entity.generic.add("shift", "integer", str(shift))
+
+
+			# Add/sub process
+			self.architecture.bodyCodeHeader.add("shifted_out(N-1 "
+					"downto N-shift) <= (others => "
+					"shifter_in(N-1));")
+			self.architecture.bodyCodeHeader.add(
+					"shifted_out(N-shift-1 "
+					"downto 0) <= "
+					"shifter_in(N-1 downto shift);")
+
+		elif shift == bit_width:
+
+			# Add/sub process
+			self.architecture.bodyCodeHeader.add("shifted_out <= "
+					"(others =>"
+					"shifter_in(shifter_in'length-1));")
+
+		elif shift == 0:
+
+			print("Zero")
+
+			# Add/sub process
+			self.architecture.bodyCodeHeader.add("shifted_out <= "
+					"shifter_in;")
+
+		else:
+			print("Invalid shift value in shifter\n")
+			exit(-1)
+
 		self.write_file(output_dir)
 
 
@@ -60,14 +90,3 @@ class Shifter(VHDLblock):
 		sp.run(command, shell = True)
 
 		print("\n")
-
-bit_width = 16
-
-for shift in range(0, bit_width+1):
-
-	print("shift = %d" %(shift))
-
-	shifter = Shifter(default_bitwidth = bit_width, default_shift = shift)
-
-	shifter.compile()
-	shifter.elaborate()
