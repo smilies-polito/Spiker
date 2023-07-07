@@ -54,9 +54,6 @@ class Mux4to1_signed(VHDLblock):
 		self.architecture.processes[0].case_list["sel"].others.\
 				body.add("mux_out <= in3;")
 
-		print(self.architecture.processes[0].case_list.code())
-
-
 		self.write_file(output_dir)
 
 
