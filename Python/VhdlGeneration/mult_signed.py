@@ -8,7 +8,7 @@ class Multiplier(VHDLblock):
 
 	def __init__(self, default_bitwidth = 8, output_dir = "output"):
 
-		VHDLblock.__init__(self, entity_name = "multiplier")
+		VHDLblock.__init__(self, entity_name = "mult_signed")
 
 		# Libraries and packages
 		self.library.add("ieee")
