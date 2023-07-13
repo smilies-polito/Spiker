@@ -131,7 +131,34 @@ class LIFneuron(VHDLblock):
 			direction	= "in",
 			port_type	= "std_logic")
 
+
+		# Signals
+		self.architecture.signal.add(
+			name		= "update",
+			signal_type	= "signed(neuron_bit_width-1 downto 0)")
+
+		self.architecture.signal.add(
+			name		= "update_value",
+			signal_type	= "signed(neuron_bit_width-1 downto 0)")
+
+		self.architecture.signal.add(
+			name		= "v_th",
+			signal_type	= "signed(neuron_bit_width-1 downto 0)")
+
+		self.architecture.signal.add(
+			name		= "v_value",
+			signal_type	= "signed(neuron_bit_width-1 downto 0)")
+
+		self.architecture.signal.add(
+			name		= "v",
+			signal_type	= "signed(neuron_bit_width-1 downto 0)")
+
+		self.architecture.signal.add(
+			name		= "v_shifted",
+			signal_type	= "signed(neuron_bit_width-1 downto 0)")
+
 		# Components
+		self.architecture.component.add(self.shifter)
 		self.architecture.component.add(self.add_sub)
 		self.architecture.component.add(self.mux4to1_signed)
 		self.architecture.component.add(self.add_sub)
@@ -139,6 +166,32 @@ class LIFneuron(VHDLblock):
 		self.architecture.component.add(self.reg_signed)
 		self.architecture.component.add(self.reg_signed_sync_rst)
 		self.architecture.component.add(self.cmp_gt)
+
+
+		# Shifter port map
+		self.architecture.instances.add(self.shifter, "v_shifter")
+		self.architecture.instances["v_shifter"].generic_map()
+		self.architecture.instances["v_shifter"].g_map.add("N",
+				"neuron_bit_width")
+		self.architecture.instances["v_shifter"].port_map("pos", "v",
+				"v_shifted")
+
+		# Adder port map
+		self.architecture.instances.add(self.add_sub, "update_add_sub")
+		self.architecture.instances["update_add_sub"].generic_map()
+		self.architecture.instances["update_add_sub"].g_map.add("N",
+				"neuron_bit_width")
+		self.architecture.instances["update_add_sub"].port_map()
+		self.architecture.instances["update_add_sub"].p_map.add("in0",
+				"v")
+		self.architecture.instances["update_add_sub"].p_map.add("in1",
+				"update")
+		self.architecture.instances["update_add_sub"].p_map.add(
+				"add_sub_out", "update_value")
+
+
+
+
 
 a = LIFneuron()
 print(a.code())
