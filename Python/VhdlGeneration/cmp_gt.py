@@ -6,7 +6,7 @@ from vhdl_block import VHDLblock
 
 class CmpGt(VHDLblock):
 
-	def __init__(self, default_bitwidth = 8, output_dir = "output"):
+	def __init__(self, default_bitwidth = 8):
 
 		VHDLblock.__init__(self, entity_name = "cmp_gt")
 
@@ -40,9 +40,6 @@ class CmpGt(VHDLblock):
 				"cmp_out <= '0';")
 
 
-		self.write_file(output_dir)
-
-
 	def compile(self, output_dir = "output"):
 
 		print("\nCompiling component %s\n"
@@ -67,7 +64,3 @@ class CmpGt(VHDLblock):
 		sp.run(command, shell = True)
 
 		print("\n")
-
-a = CmpGt()
-a.compile()
-a.elaborate()

@@ -6,7 +6,7 @@ from vhdl_block import VHDLblock
 
 class Multiplier(VHDLblock):
 
-	def __init__(self, default_bitwidth = 8, output_dir = "output"):
+	def __init__(self, default_bitwidth = 8):
 
 		VHDLblock.__init__(self, entity_name = "mult_signed")
 
@@ -27,8 +27,6 @@ class Multiplier(VHDLblock):
 
 		# Multiplication
 		self.architecture.bodyCodeHeader.add("mult_out <= in0 * in1;")
-
-		self.write_file(output_dir)
 
 
 	def compile(self, output_dir = "output"):

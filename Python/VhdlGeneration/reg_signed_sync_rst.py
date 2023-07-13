@@ -7,7 +7,7 @@ from if_statement import If
 
 class RegSignedSyncRst(VHDLblock):
 
-	def __init__(self, default_bitwidth = 8, output_dir = "output"):
+	def __init__(self, default_bitwidth = 8):
 
 		VHDLblock.__init__(self, entity_name = "reg_signed_sync_rst")
 
@@ -51,8 +51,6 @@ class RegSignedSyncRst(VHDLblock):
 		self.architecture.processes[0].if_list[0]._if_.body.add(
 				reset_if)
 
-
-		self.write_file(output_dir)
 
 
 	def compile(self, output_dir = "output"):

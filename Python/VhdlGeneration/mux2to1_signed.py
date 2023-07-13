@@ -6,7 +6,7 @@ from vhdl_block import VHDLblock
 
 class Mux2to1_signed(VHDLblock):
 
-	def __init__(self, default_bitwidth = 8, output_dir = "output"):
+	def __init__(self, default_bitwidth = 8):
 
 		VHDLblock.__init__(self, entity_name = "mux2to1_signed")
 
@@ -40,8 +40,6 @@ class Mux2to1_signed(VHDLblock):
 				["'0'"].body.add("mux_out <= in0;")
 		self.architecture.processes[0].case_list["sel"].others.\
 				body.add("mux_out <= in1;")
-
-		self.write_file(output_dir)
 
 
 	def compile(self, output_dir = "output"):

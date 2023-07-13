@@ -6,7 +6,7 @@ from vhdl_block import VHDLblock
 
 class RegSigned(VHDLblock):
 
-	def __init__(self, default_bitwidth = 8, output_dir = "output"):
+	def __init__(self, default_bitwidth = 8):
 
 		VHDLblock.__init__(self, entity_name = "reg_signed")
 
@@ -41,9 +41,6 @@ class RegSigned(VHDLblock):
 
 		self.architecture.processes[0].if_list[0]._if_.body.add(
 				"reg_out <= reg_in;")
-
-
-		self.write_file(output_dir)
 
 
 	def compile(self, output_dir = "output"):

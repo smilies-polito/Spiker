@@ -6,7 +6,7 @@ from vhdl_block import VHDLblock
 
 class AddSub(VHDLblock):
 
-	def __init__(self, default_bitwidth = 8, output_dir = "output"):
+	def __init__(self, default_bitwidth = 8):
 
 		VHDLblock.__init__(self, entity_name = "add_sub")
 
@@ -40,9 +40,6 @@ class AddSub(VHDLblock):
 				"add_sub_out <= in0 + in1;")
 		self.architecture.processes[0].if_list[0]._else_.body.add(
 				"add_sub_out <= in0 - in1;")
-
-
-		self.write_file(output_dir)
 
 
 	def compile(self, output_dir = "output"):

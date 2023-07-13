@@ -6,7 +6,7 @@ from vhdl_block import VHDLblock
 
 class Shifter(VHDLblock):
 
-	def __init__(self, bit_width = 16, shift = 10, output_dir = "output"):
+	def __init__(self, bit_width = 16, shift = 10):
 
 		VHDLblock.__init__(self, entity_name = "shifter")
 
@@ -62,8 +62,6 @@ class Shifter(VHDLblock):
 		else:
 			print("Invalid shift value in shifter\n")
 			exit(-1)
-
-		self.write_file(output_dir)
 
 
 	def compile(self, output_dir = "output"):
