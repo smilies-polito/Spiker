@@ -6,7 +6,7 @@ from vhdl_block import VHDLblock
 
 class Shifter(VHDLblock):
 
-	def __init__(self, bit_width = 16, shift = 10):
+	def __init__(self, default_bitwidth = 16, default_shift = 10):
 
 		VHDLblock.__init__(self, entity_name = "shifter")
 
@@ -23,16 +23,16 @@ class Shifter(VHDLblock):
 				"signed(N-1 downto 0)")
 
 		# Generics
-		self.entity.generic.add("N", "integer", str(bit_width))
+		self.entity.generic.add("N", "integer", str(default_bitwidth))
 
-		if bit_width <= 0:
+		if default_bitwidth <= 0:
 			print("Invalid bit-width in shifter\n")
 			exit(-1)
 
-		elif shift < bit_width and shift > 0:
+		elif default_shift < default_bitwidth and default_shift > 0:
 
 			# Generics
-			self.entity.generic.add("shift", "integer", str(shift))
+			self.entity.generic.add("shift", "integer", str(default_shift))
 
 
 			# Add/sub process
@@ -44,14 +44,14 @@ class Shifter(VHDLblock):
 					"downto 0) <= "
 					"shifter_in(N-1 downto shift);")
 
-		elif shift == bit_width:
+		elif default_shift == default_bitwidth:
 
 			# Add/sub process
 			self.architecture.bodyCodeHeader.add("shifted_out <= "
 					"(others =>"
 					"shifter_in(shifter_in'length-1));")
 
-		elif shift == 0:
+		elif default_shift == 0:
 
 			print("Zero")
 
