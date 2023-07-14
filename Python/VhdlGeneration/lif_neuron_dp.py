@@ -59,14 +59,20 @@ class LIFneuron(VHDLblock):
 			name		= "neuron_bit_width", 
 			gen_type	= "integer",
 			value		= str(default_bitwidth))
-		self.entity.generic.add(
-			name		= "inh_weights_bit_width",
-			gen_type	= "integer",
-			value		= str(default_inh_weights_bitwidth))
-		self.entity.generic.add(
-			name		= "exc_weights_bit_width",
-			gen_type	= "integer",
-			value		= str(default_exc_weights_bitwidth))
+
+
+		if default_inh_weights_bitwidth < default_bitwidth:
+			self.entity.generic.add(
+				name		= "inh_weights_bit_width",
+				gen_type	= "integer",
+				value		= str(default_inh_weights_bitwidth))
+
+		if default_exc_weights_bitwidth < default_bitwidth:
+			self.entity.generic.add(
+				name		= "exc_weights_bit_width",
+				gen_type	= "integer",
+				value		= str(default_exc_weights_bitwidth))
+
 		self.entity.generic.add(
 			name		= "shift",
 			gen_type	= "integer",
@@ -81,15 +87,42 @@ class LIFneuron(VHDLblock):
 			name 		= "v_reset", 
 			direction	= "in",
 			port_type	= "signed(neuron_bit_width-1 downto 0)")
-		self.entity.port.add(
-			name 		= "inh_weight",
-			direction	= "in",
-			port_type	= "signed(inh_weights_bit_width-1 "
-						"downto 0)")
-		self.entity.port.add(
-			name 		= "exc_weight",
-			direction	= "in",
-			port_type	= "signed(exc_weights_bit_width-1 downto 0)")
+
+
+		if default_inh_weights_bitwidth < default_bitwidth:
+			self.entity.port.add(
+				name 		= "inh_weight",
+				direction	= "in",
+				port_type	= "signed(inh_weights_bit_width-1 "
+							"downto 0)")
+		elif default_inh_weights_bitwidth == default_bitwidth:
+			self.entity.port.add(
+				name 		= "inh_weight",
+				direction	= "in",
+				port_type	= "signed(neuron_bit_width-1 "
+							"downto 0)")
+		else:
+			print("Inhibitory weight bit-width cannot be larger "
+				"than the neuron's one")
+			exit(-1)
+			
+
+		if default_exc_weights_bitwidth < default_bitwidth:
+			self.entity.port.add(
+				name 		= "exc_weight",
+				direction	= "in",
+				port_type	= "signed(exc_weights_bit_width-1 downto 0)")
+
+		elif default_exc_weights_bitwidth == default_bitwidth:
+			self.entity.port.add(
+				name 		= "exc_weight",
+				direction	= "in",
+				port_type	= "signed(neuron_bit_width-1 "
+							"downto 0)")
+		else:
+			print("Excitatory weight bit-width cannot be larger "
+				"than the neuron's one")
+			exit(-1)
 
 		# Input controls
 		self.entity.port.add(
@@ -351,6 +384,20 @@ class LIFneuron(VHDLblock):
 		print("\n")
 
 
+	def write_file_all(self, output_dir = "output"):
+
+		self.shifter.write_file(output_dir = output_dir)
+		self.add_sub.write_file(output_dir = output_dir)
+		self.mux4to1_signed.write_file(output_dir = output_dir)
+		self.add_sub.write_file(output_dir = output_dir)
+		self.mux2to1_signed.write_file(output_dir = output_dir)
+		self.reg_signed.write_file(output_dir = output_dir)
+		self.reg_signed_sync_rst.write_file(output_dir = output_dir)
+		self.cmp_gt.write_file(output_dir = output_dir)
+		self.write_file(output_dir = output_dir)
+
+
+
 	def elaborate(self, output_dir = "output"):
 
 		print("\nElaborating component %s\n"
@@ -364,15 +411,14 @@ class LIFneuron(VHDLblock):
 		print("\n")
 
 
-	def write_file(self, output_dir = "output"):
+	
+a = LIFneuron(
+	default_bitwidth = 8,
+	default_exc_weights_bitwidth = 5,
+	default_inh_weights_bitwidth = 6,
+	default_shift = 3
+)
 
-		self.shifter.write_file(output_dir = output_dir)
-		self.add_sub.write_file(output_dir = output_dir)
-		self.mux4to1_signed.write_file(output_dir = output_dir)
-		self.add_sub.write_file(output_dir = output_dir)
-		self.mux2to1_signed.write_file(output_dir = output_dir)
-		self.reg_signed.write_file(output_dir = output_dir)
-		self.reg_signed_sync_rst.write_file(output_dir = output_dir)
-		self.cmp_gt.write_file(output_dir = output_dir)
-
-		super().write_file(output_dir = output_dir)
+a.write_file()
+a.compile()
+a.elaborate()
