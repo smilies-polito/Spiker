@@ -11,7 +11,7 @@ from reg_signed_sync_rst import RegSignedSyncRst
 from cmp_gt import CmpGt
 
 
-class LIFneuron(VHDLblock):
+class LIFneuronDP(VHDLblock):
 
 	def __init__(self, default_bitwidth = 16, default_inh_weights_bitwidth =
 			5, default_exc_weights_bitwidth = 5,
@@ -409,16 +409,3 @@ class LIFneuron(VHDLblock):
 		sp.run(command, shell = True)
 
 		print("\n")
-
-
-	
-a = LIFneuron(
-	default_bitwidth = 8,
-	default_exc_weights_bitwidth = 5,
-	default_inh_weights_bitwidth = 6,
-	default_shift = 3
-)
-
-a.write_file()
-a.compile()
-a.elaborate()
