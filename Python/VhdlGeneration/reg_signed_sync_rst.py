@@ -22,6 +22,7 @@ class RegSignedSyncRst(VHDLblock):
 		# Input ports
 		self.entity.port.add("clk", "in", "std_logic")
 		self.entity.port.add("en", "in", "std_logic")
+		self.entity.port.add("rst_n", "in", "std_logic")
 		self.entity.port.add("reg_in", "in", "signed(N-1 downto 0)")
 		
 		# Output ports
@@ -77,7 +78,3 @@ class RegSignedSyncRst(VHDLblock):
 		sp.run(command, shell = True)
 
 		print("\n")
-
-a = RegSignedSyncRst()
-
-
