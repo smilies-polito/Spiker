@@ -30,8 +30,8 @@ class RegSignedSyncRst(VHDLblock):
 
 		# Sample process
 		self.architecture.processes.add("sample")
-		self.architecture.processes[0].sensitivity_list.add("clk")
-		self.architecture.processes[0].sensitivity_list.add("en")
+		self.architecture.processes["sample"].sensitivity_list.add("clk")
+		self.architecture.processes["sample"].sensitivity_list.add("en")
 
 		# Reset inner if statement
 		reset_if = If()
@@ -43,13 +43,13 @@ class RegSignedSyncRst(VHDLblock):
 		reset_if._elsif_[0].body.add("reg_out <= reg_in;")
 
 		# Clk outer if statement
-		self.architecture.processes[0].if_list.add()
-		self.architecture.processes[0].if_list[0]._if_.conditions.add(
+		self.architecture.processes["sample"].if_list.add()
+		self.architecture.processes["sample"].if_list[0]._if_.conditions.add(
 				"clk'event")
-		self.architecture.processes[0].if_list[0]._if_.conditions.add(
+		self.architecture.processes["sample"].if_list[0]._if_.conditions.add(
 				"clk = '1'", "and")
 
-		self.architecture.processes[0].if_list[0]._if_.body.add(
+		self.architecture.processes["sample"].if_list[0]._if_.body.add(
 				reset_if)
 
 

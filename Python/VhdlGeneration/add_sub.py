@@ -29,16 +29,16 @@ class AddSub(VHDLblock):
 
 		# Add/sub process
 		self.architecture.processes.add("operation")
-		self.architecture.processes[0].sensitivity_list.add("in0")
-		self.architecture.processes[0].sensitivity_list.add("in1")
-		self.architecture.processes[0].sensitivity_list.add(
+		self.architecture.processes["operation"].sensitivity_list.add("in0")
+		self.architecture.processes["operation"].sensitivity_list.add("in1")
+		self.architecture.processes["operation"].sensitivity_list.add(
 				"add_or_sub")
-		self.architecture.processes[0].if_list.add()
-		self.architecture.processes[0].if_list[0]._if_.conditions.add(
+		self.architecture.processes["operation"].if_list.add()
+		self.architecture.processes["operation"].if_list[0]._if_.conditions.add(
 				"add_or_sub = '0'")
-		self.architecture.processes[0].if_list[0]._if_.body.add(
+		self.architecture.processes["operation"].if_list[0]._if_.body.add(
 				"add_sub_out <= in0 + in1;")
-		self.architecture.processes[0].if_list[0]._else_.body.add(
+		self.architecture.processes["operation"].if_list[0]._else_.body.add(
 				"add_sub_out <= in0 - in1;")
 
 

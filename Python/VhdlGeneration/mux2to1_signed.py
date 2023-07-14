@@ -29,16 +29,16 @@ class Mux2to1_signed(VHDLblock):
 
 		# Add/sub process
 		self.architecture.processes.add("selection")
-		self.architecture.processes[0].sensitivity_list.add("sel")
-		self.architecture.processes[0].sensitivity_list.add("in0")
-		self.architecture.processes[0].sensitivity_list.add("in1")
+		self.architecture.processes["selection"].sensitivity_list.add("sel")
+		self.architecture.processes["selection"].sensitivity_list.add("in0")
+		self.architecture.processes["selection"].sensitivity_list.add("in1")
 
-		self.architecture.processes[0].case_list.add("sel")
-		self.architecture.processes[0].case_list["sel"].when_list.add(
+		self.architecture.processes["selection"].case_list.add("sel")
+		self.architecture.processes["selection"].case_list["sel"].when_list.add(
 				"'0'")
-		self.architecture.processes[0].case_list["sel"].when_list\
+		self.architecture.processes["selection"].case_list["sel"].when_list\
 				["'0'"].body.add("mux_out <= in0;")
-		self.architecture.processes[0].case_list["sel"].others.\
+		self.architecture.processes["selection"].case_list["sel"].others.\
 				body.add("mux_out <= in1;")
 
 
