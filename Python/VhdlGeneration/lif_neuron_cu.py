@@ -3,6 +3,7 @@ import subprocess as sp
 import path_config
 
 from vhdl_block import VHDLblock
+from if_statement import If
 
 
 class LIFneuronCU(VHDLblock):
@@ -121,6 +122,7 @@ class LIFneuronCU(VHDLblock):
 				sensitivity_list.add("clk")
 		self.architecture.processes["state_transition"].\
 				sensitivity_list.add("rst_n")
+
 		self.architecture.processes["state_transition"].if_list.add()
 		self.architecture.processes["state_transition"].\
 				if_list[0]._if_.conditions.add("rst_n = '0'")
@@ -132,7 +134,7 @@ class LIFneuronCU(VHDLblock):
 		self.architecture.processes["state_transition"].\
 				if_list[0]._elsif_[0].conditions.add("clk'event")
 		self.architecture.processes["state_transition"].\
-				if_list[0]._elsif_[0].conditions.add("clk = 1",
+				if_list[0]._elsif_[0].conditions.add("clk = '1'",
 						"and")
 		self.architecture.processes["state_transition"].\
 				if_list[0]._elsif_[0].body.add(
@@ -156,15 +158,120 @@ class LIFneuronCU(VHDLblock):
 
 		self.architecture.processes["state_evaluation"].\
 				case_list.add("present_state")
+
 		self.architecture.processes["state_evaluation"].\
 				case_list["present_state"].when_list.\
 				add("reset")
 		self.architecture.processes["state_evaluation"].\
 				case_list["present_state"].when_list["reset"].\
-				body.add("next_state <= idle;")
+				body.add("next_state <= load;")
+
+		self.architecture.processes["state_evaluation"].\
+				case_list["present_state"].when_list.\
+				add("load")
+
+		load_end_check = If()
+		load_end_check._if_.conditions.add("load_end = '1'")
+		load_end_check._if_.body.add("next_state <= idle;")
+		load_end_check._else_.body.add("next_state <= load;")
+
+		self.architecture.processes["state_evaluation"].\
+				case_list["present_state"].when_list["load"].\
+				body.add(load_end_check)
+
+		self.architecture.processes["state_evaluation"].\
+				case_list["present_state"].when_list.\
+				add("idle")
+
+		inh_check_0 = If()
+		inh_check_0._if_.conditions.add("inh = '1'")
+		inh_check_0._if_.body.add("next_state <= inhibit;")
+		inh_check_0._else_.body.add("next_state <= idle;")
+
+		exceed_v_th_check = If()
+		exceed_v_th_check._if_.conditions.add("exceed_v_th = '1'")
+		exceed_v_th_check._if_.body.add("next_state <= fire;")
+		exceed_v_th_check._else_.body.add("next_state <= leak;")
+
+		inh_check_1 = If()
+		inh_check_1._if_.conditions.add("inh = '1'")
+		inh_check_1._if_.body.add(exceed_v_th_check)
+		inh_check_1._else_.body.add("next_state <= excite;")
+
+		exc_check = If()
+		exc_check._if_.conditions.add("exc = '1'")
+		exc_check._if_.body.add(inh_check_1)
+		exc_check._else_.body.add(inh_check_0)
+
+		restart_check = If()
+		restart_check._if_.conditions.add("restart = '1'")
+		restart_check._if_.body.add("next_state <= init;")
+		restart_check._else_.body.add(exc_check)
+
+		self.architecture.processes["state_evaluation"].\
+				case_list["present_state"].when_list["idle"].\
+				body.add(restart_check)
+
+		self.architecture.processes["state_evaluation"].\
+				case_list["present_state"].when_list.\
+				add("fire")
+
+		exc_inh_check = If()
+		exc_inh_check._if_.conditions.add("exc = '1'")
+		exc_inh_check._if_.conditions.add("inh = '1'", "and")
+		exc_inh_check._if_.body.add("next_state <= leak;")
+		exc_inh_check._else_.body.add("next_state <= idle;")
+
+		self.architecture.processes["state_evaluation"].\
+				case_list["present_state"].when_list["fire"].\
+				body.add(exc_inh_check)
+
+		self.architecture.processes["state_evaluation"].\
+				case_list["present_state"].when_list.\
+				add("leak")
+
+		exc_inh_check = If()
+		exc_inh_check._if_.conditions.add("exc = '1'")
+		exc_inh_check._if_.conditions.add("inh = '1'", "and")
+		exc_inh_check._if_.body.add("next_state <= leak;")
+		exc_inh_check._else_.body.add("next_state <= idle;")
+
+		self.architecture.processes["state_evaluation"].\
+				case_list["present_state"].when_list["leak"].\
+				body.add(exc_inh_check)
+
+		self.architecture.processes["state_evaluation"].\
+				case_list["present_state"].when_list.\
+				add("excite")
+
+		exc_check = If()
+		exc_check._if_.conditions.add("exc = '1'")
+		exc_check._if_.body.add("next_state <= excite;")
+		exc_check._else_.body.add("next_state <= idle;")
+
+		self.architecture.processes["state_evaluation"].\
+				case_list["present_state"].when_list["excite"].\
+				body.add(exc_check)
+
+		self.architecture.processes["state_evaluation"].\
+				case_list["present_state"].when_list.\
+				add("inhibit")
+
+		inh_check = If()
+		inh_check._if_.conditions.add("inh = '1'")
+		inh_check._if_.body.add("next_state <= inhibit;")
+		inh_check._else_.body.add("next_state <= idle;")
+
+		self.architecture.processes["state_evaluation"].\
+				case_list["present_state"].when_list["inhibit"].\
+				body.add(inh_check)
+
+
 		self.architecture.processes["state_evaluation"].\
 				case_list["present_state"].others.\
 				body.add("next_state <= reset;")
+
+
 
 
 
@@ -199,3 +306,7 @@ class LIFneuronCU(VHDLblock):
 a = LIFneuronCU()
 
 print(a.code())
+
+a.write_file()
+a.compile()
+a.elaborate()
