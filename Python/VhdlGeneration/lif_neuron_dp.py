@@ -161,11 +161,6 @@ class LIFneuronDP(VHDLblock):
 			direction	= "out",
 			port_type	= "std_logic")
 		
-		self.entity.port.add(
-			name 		= "v_rst_n",
-			direction	= "in",
-			port_type	= "std_logic")
-
 
 		# Signals
 		self.architecture.signal.add(
