@@ -301,12 +301,3 @@ class LIFneuronCU(VHDLblock):
 		sp.run(command, shell = True)
 
 		print("\n")
-
-
-a = LIFneuronCU()
-
-print(a.code())
-
-a.write_file()
-a.compile()
-a.elaborate()

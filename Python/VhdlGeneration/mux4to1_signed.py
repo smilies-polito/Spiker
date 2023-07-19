@@ -79,12 +79,3 @@ class Mux4to1_signed(VHDLblock):
 		sp.run(command, shell = True)
 
 		print("\n")
-
-
-
-
-a = Mux4to1_signed()
-print(a.code())
-a.write_file()
-a.compile()
-a.elaborate()
