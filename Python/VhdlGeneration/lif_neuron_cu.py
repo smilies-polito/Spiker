@@ -266,14 +266,111 @@ class LIFneuronCU(VHDLblock):
 				case_list["present_state"].when_list["inhibit"].\
 				body.add(inh_check)
 
-
 		self.architecture.processes["state_evaluation"].\
 				case_list["present_state"].others.\
 				body.add("next_state <= reset;")
 
+		
+		self.architecture.processes.add("output_evaluation")
+		self.architecture.processes["output_evaluation"].\
+				sensitivity_list.add("present_state")
+		self.architecture.processes["output_evaluation"].\
+				body.add("update_sel <= \"00\";")
+		self.architecture.processes["output_evaluation"].\
+				body.add("add_or_sub <= '0';")
+		self.architecture.processes["output_evaluation"].\
+				body.add("v_update <= '1';")
+		self.architecture.processes["output_evaluation"].\
+				body.add("v_en <= '1';")
+		self.architecture.processes["output_evaluation"].\
+				body.add("v_rst_n <= '1';")
+		self.architecture.processes["output_evaluation"].\
+				body.add("out_spike <= '0';")
+		self.architecture.processes["output_evaluation"].\
+				body.add("neuron_ready <= '0';")
 
 
 
+		self.architecture.processes["output_evaluation"].\
+				case_list.add("present_state")
+
+		self.architecture.processes["output_evaluation"].\
+				case_list["present_state"].when_list.\
+				add("reset")
+		self.architecture.processes["output_evaluation"].\
+				case_list["present_state"].when_list["reset"].\
+				body.add("v_rst_n <= '0';")
+
+		self.architecture.processes["output_evaluation"].\
+				case_list["present_state"].when_list.\
+				add("load")
+		self.architecture.processes["output_evaluation"].\
+				case_list["present_state"].when_list["load"].\
+				body.add("load_ready <= '1';")
+
+		self.architecture.processes["output_evaluation"].\
+				case_list["present_state"].when_list.\
+				add("idle")
+		self.architecture.processes["output_evaluation"].\
+				case_list["present_state"].when_list["idle"].\
+				body.add("neuron_ready <= '1';")
+
+		self.architecture.processes["output_evaluation"].\
+				case_list["present_state"].when_list.\
+				add("init")
+		self.architecture.processes["output_evaluation"].\
+				case_list["present_state"].when_list["init"].\
+				body.add("v_rst_n <= '0';")
+
+		self.architecture.processes["output_evaluation"].\
+				case_list["present_state"].when_list.\
+				add("excite")
+		self.architecture.processes["output_evaluation"].\
+				case_list["present_state"].when_list["excite"].\
+				body.add("update_sel <= \"10\";")
+		self.architecture.processes["output_evaluation"].\
+				case_list["present_state"].when_list["excite"].\
+				body.add("v_en <= '1';")
+
+		self.architecture.processes["output_evaluation"].\
+				case_list["present_state"].when_list.\
+				add("inhibit")
+		self.architecture.processes["output_evaluation"].\
+				case_list["present_state"].when_list["inhibit"].\
+				body.add("update_sel <= \"11\";")
+		self.architecture.processes["output_evaluation"].\
+				case_list["present_state"].when_list["inhibit"].\
+				body.add("v_en <= '1';")
+
+		self.architecture.processes["output_evaluation"].\
+				case_list["present_state"].when_list.\
+				add("leak")
+		self.architecture.processes["output_evaluation"].\
+				case_list["present_state"].when_list["leak"].\
+				body.add("update_sel <= \"01\";")
+		self.architecture.processes["output_evaluation"].\
+				case_list["present_state"].when_list["leak"].\
+				body.add("v_en <= '1';")
+		self.architecture.processes["output_evaluation"].\
+				case_list["present_state"].when_list["leak"].\
+				body.add("add_or_sub <= '1';")
+
+		self.architecture.processes["output_evaluation"].\
+				case_list["present_state"].when_list.\
+				add("fire")
+		self.architecture.processes["output_evaluation"].\
+				case_list["present_state"].when_list["fire"].\
+				body.add("v_update <= '1';")
+		self.architecture.processes["output_evaluation"].\
+				case_list["present_state"].when_list["fire"].\
+				body.add("v_en <= '1';")
+		self.architecture.processes["output_evaluation"].\
+				case_list["present_state"].when_list["fire"].\
+				body.add("out_spike <= '1';")
+
+		self.architecture.processes["output_evaluation"].\
+				case_list["present_state"].others.\
+				body.add("v_rst_n <= '0';")
 
 
 
