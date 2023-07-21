@@ -232,10 +232,3 @@ class LIFneuron(VHDLblock):
 		sp.run(command, shell = True)
 
 		print("\n")
-
-a = LIFneuron()
-
-print(a.code())
-a.write_file_all()
-a.compile_all()
-a.elaborate()
