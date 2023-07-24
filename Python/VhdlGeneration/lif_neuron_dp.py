@@ -10,12 +10,15 @@ from reg_signed import RegSigned
 from reg_signed_sync_rst import RegSignedSyncRst
 from cmp_gt import CmpGt
 
+from testbench import Testbench
+from utils import track_signals
+
 
 class LIFneuronDP(VHDLblock):
 
 	def __init__(self, default_bitwidth = 16, default_inh_weights_bitwidth =
 			5, default_exc_weights_bitwidth = 5,
-			default_shift = 10):
+			default_shift = 10, debug = False):
 
 		VHDLblock.__init__(self, entity_name = "neuron_datapath")
 
@@ -345,8 +348,28 @@ class LIFneuronDP(VHDLblock):
 		self.architecture.instances["fire_cmp"].p_map.add("cmp_out",
 				"exceed_v_th")
 
-	
-		
+
+		# Debug
+		if(debug):
+			debug_signals = track_signals(self.architecture.signal)
+
+			for debug_port in debug_signals:
+
+				debug_port_name = debug_port + "_out"
+
+				self.entity.port.add(
+					name 		= debug_port_name, 
+					direction	= "out",
+					port_type	= self.architecture.\
+							signal[debug_port].\
+							signal_type)
+
+				# Bring the signal out
+				connect_string = debug_port_name + " <= " + \
+							debug_port + ";"
+				self.architecture.bodyCodeHeader.\
+						add(connect_string)
+
 
 	def compile(self, output_dir = "output"):
 
@@ -408,3 +431,7 @@ class LIFneuronDP(VHDLblock):
 		sp.run(command, shell = True)
 
 		print("\n")
+
+
+	def testbench(self):
+		self.tb = Testbench(self)
