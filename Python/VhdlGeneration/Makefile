@@ -4,4 +4,5 @@ clean:
 	rm -f *.pb
 	rm -rf *.dir
 	rm -f *.str
+	rm -rf .Xil
 	rm -rf __pycache__
