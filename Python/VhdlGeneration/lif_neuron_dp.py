@@ -433,5 +433,124 @@ class LIFneuronDP(VHDLblock):
 		print("\n")
 
 
-	def testbench(self):
-		self.tb = Testbench(self)
+	def testbench(self, clock_period = 20):
+		self.tb = Testbench(self, clock_period = clock_period)
+
+
+		# exc_weight
+		self.tb.architecture.processes["exc_weight_gen"].body.\
+				add("exc_weight <= to_signed(500, "
+				"exc_weight'length);")
+
+		# inh_weight
+		self.tb.architecture.processes["inh_weight_gen"].body.\
+				add("inh_weight <= to_signed(300, "
+				"inh_weight'length);")
+
+		# v_reset
+		self.tb.architecture.processes["v_reset_gen"].body.\
+				add("v_reset <= to_signed(1000, "
+				"v_reset'length);")
+
+		# v_th_value
+		self.tb.architecture.processes["v_th_value_gen"].body.\
+				add("v_th_value <= to_signed(3000, "
+				"v_th_value'length);")
+		# v_rst_n
+		self.tb.architecture.processes["v_rst_n_gen"].body.\
+				add("v_rst_n <= '1';")
+		self.tb.architecture.processes["v_rst_n_gen"].body.\
+				add("wait for " + str(clock_period) + " ns;")
+		self.tb.architecture.processes["v_rst_n_gen"].body.\
+				add("v_rst_n <= '0';")
+		self.tb.architecture.processes["v_rst_n_gen"].body.\
+				add("wait for " + str(clock_period)  + " ns;")
+		self.tb.architecture.processes["v_rst_n_gen"].body.\
+				add("v_rst_n <= '1';")
+
+		# update_sel
+		self.tb.architecture.processes["update_sel_gen"].body.\
+				add("update_sel <= \"00\";")
+		self.tb.architecture.processes["update_sel_gen"].body.\
+				add("wait for " + str(2*clock_period) + " ns;")
+		self.tb.architecture.processes["update_sel_gen"].body.\
+				add("update_sel <= \"10\";")
+		self.tb.architecture.processes["update_sel_gen"].body.\
+				add("wait for " + str(4*clock_period) + " ns;")
+		self.tb.architecture.processes["update_sel_gen"].body.\
+				add("update_sel <= \"11\";")
+		self.tb.architecture.processes["update_sel_gen"].body.\
+				add("wait for " + str(clock_period)  + " ns;")
+		self.tb.architecture.processes["update_sel_gen"].body.\
+				add("update_sel <= \"10\";")
+		self.tb.architecture.processes["update_sel_gen"].body.\
+				add("wait for " + str(3*clock_period)  + " ns;")
+		self.tb.architecture.processes["update_sel_gen"].body.\
+				add("update_sel <= \"00\";")
+		self.tb.architecture.processes["update_sel_gen"].body.\
+				add("wait for " + str(3*clock_period)  + " ns;")
+		self.tb.architecture.processes["update_sel_gen"].body.\
+				add("update_sel <= \"01\";")
+
+		# add_or_sub
+		self.tb.architecture.processes["add_or_sub_gen"].body.\
+				add("add_or_sub <= '0';")
+		self.tb.architecture.processes["add_or_sub_gen"].body.\
+				add("wait for " + str(6*clock_period) + " ns;")
+		self.tb.architecture.processes["add_or_sub_gen"].body.\
+				add("add_or_sub <= '1';")
+		self.tb.architecture.processes["add_or_sub_gen"].body.\
+				add("wait for " + str(clock_period)  + " ns;")
+		self.tb.architecture.processes["add_or_sub_gen"].body.\
+				add("add_or_sub <= '0';")
+		self.tb.architecture.processes["add_or_sub_gen"].body.\
+				add("wait for " + str(4*clock_period)  + " ns;")
+		self.tb.architecture.processes["add_or_sub_gen"].body.\
+				add("add_or_sub <= '1';")
+
+		# v_en
+		self.tb.architecture.processes["v_en_gen"].body.\
+				add("v_en <= '0';")
+		self.tb.architecture.processes["v_en_gen"].body.\
+				add("wait for " + str(2*clock_period) + " ns;")
+		self.tb.architecture.processes["v_en_gen"].body.\
+				add("v_en <= '1';")
+
+		# v_th_en
+		self.tb.architecture.processes["v_th_en_gen"].body.\
+				add("v_th_en <= '1';")
+		self.tb.architecture.processes["v_th_en_gen"].body.\
+				add("wait for " + str(clock_period) + " ns;")
+		self.tb.architecture.processes["v_th_en_gen"].body.\
+				add("v_th_en <= '0';")
+
+		# v_update
+		self.tb.architecture.processes["v_update_gen"].body.\
+				add("v_update <= '1';")
+		self.tb.architecture.processes["v_update_gen"].body.\
+				add("wait for " + str(11*clock_period) + " ns;")
+		self.tb.architecture.processes["v_update_gen"].body.\
+				add("v_update <= '0';")
+		self.tb.architecture.processes["v_update_gen"].body.\
+				add("wait for " + str(clock_period) + " ns;")
+		self.tb.architecture.processes["v_update_gen"].body.\
+				add("v_update <= '1';")
+
+
+
+
+a = LIFneuronDP(
+	default_bitwidth = 32,
+	default_exc_weights_bitwidth = 32,
+	default_inh_weights_bitwidth = 32,
+	default_shift = 2,
+	debug = True
+)
+
+
+a.testbench()
+
+a.tb.write_file_all()
+
+a.tb.compile()
+a.tb.elaborate()
