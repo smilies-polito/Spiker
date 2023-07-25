@@ -5,7 +5,7 @@ from vhdl_block import VHDLblock
 
 class Testbench(VHDLblock):
 
-	def __init__(self, component, clock_period = "10ns"):
+	def __init__(self, component, clock_period = 20):
 
 		self.dut = component
 		self.name = self.dut.entity.name + "_tb"
@@ -58,12 +58,12 @@ class Testbench(VHDLblock):
 					"_gen"].body.add(name + " <= '0';")
 				self.architecture.processes[name +
 					"_gen"].body.add("wait for " +
-					str(clock_period) + ";")
+					str(clock_period//2) + " ns;")
 				self.architecture.processes[name +
 					"_gen"].body.add(name + " <= '1';")
 				self.architecture.processes[name +
 					"_gen"].body.add("wait for " +
-					str(clock_period) + ";")
+					str(clock_period//2) + " ns;")
 
 			elif self.dut.entity.port[name].direction == "in":
 				self.architecture.processes.add(name = name + "_gen",
