@@ -2,6 +2,8 @@ import subprocess as sp
 
 import path_config
 from vhdl_block import VHDLblock
+from if_statement import If
+
 from shifter import Shifter
 from mux4to1_signed import Mux4to1_signed
 from add_sub import AddSub
@@ -55,7 +57,7 @@ class LIFneuronDP(VHDLblock):
 		self.library.add("ieee")
 		self.library["ieee"].package.add("std_logic_1164")
 		self.library["ieee"].package.add("numeric_std")
-				
+
 
 		# Generics
 		self.entity.generic.add(
@@ -189,6 +191,7 @@ class LIFneuronDP(VHDLblock):
 		self.architecture.signal.add(
 			name		= "v_shifted",
 			signal_type	= "signed(neuron_bit_width-1 downto 0)")
+
 
 		# Components
 		self.architecture.component.add(self.shifter)
@@ -433,9 +436,26 @@ class LIFneuronDP(VHDLblock):
 		print("\n")
 
 
-	def testbench(self, clock_period = 20):
+	def testbench(self, clock_period = 20, file_output = False,
+			output_filename = "tb_out.txt"):
+
 		self.tb = Testbench(self, clock_period = clock_period)
 
+		if file_output:
+			self.tb.library["ieee"].package.add("textio", std=True)
+			self.tb.library["ieee"].package.add("std_logic_textio")
+
+			# Filename
+			self.tb.architecture.constant.add(
+				name		= "v_out_filename",
+				const_type	= "string",
+				value		= "\"" + output_filename + "\""
+			)
+
+			# Write file enable
+			self.tb.architecture.signal.add(
+				name		= "w_en",
+				signal_type	= "std_logic")
 
 		# exc_weight
 		self.tb.architecture.processes["exc_weight_gen"].body.\
@@ -536,6 +556,50 @@ class LIFneuronDP(VHDLblock):
 		self.tb.architecture.processes["v_update_gen"].body.\
 				add("v_update <= '1';")
 
+		if file_output:
+			self.tb.architecture.processes.add("w_en_gen",
+					final_wait = True)
+			self.tb.architecture.processes["w_en_gen"].\
+					body.add("w_en <= '1';")
+
+		# Write the membrane potential on file
+		if "v_out" in self.entity.port.keys() and file_output:
+			self.tb.architecture.processes.add("v_out_save")
+			self.tb.architecture.processes["v_out_save"].\
+					sensitivity_list.add("clk")
+			self.tb.architecture.processes["v_out_save"].\
+					sensitivity_list.add("w_en")
+
+			self.tb.architecture.processes["v_out_save"].variables.add(
+				name 		= "row",
+				var_type	= "line"
+			)
+			self.tb.architecture.processes["v_out_save"].variables.add(
+				name 		= "write_var",
+				var_type	= "integer"
+			)
+			self.tb.architecture.processes["v_out_save"].files.add(
+				name 		= "v_out_file",
+				file_type	= "text",
+				mode		= "write_mode",
+				filename	= "v_out_filename"
+			)
+
+
+			w_en_if = If()
+			w_en_if._if_.conditions.add("w_en = '1'")
+			w_en_if._if_.body.add("write_var := to_integer(v_out);")
+			w_en_if._if_.body.add("write(row, write_var);")
+			w_en_if._if_.body.add("writeline(v_out_file, row);")
+
+			clk_if = If()
+			clk_if._if_.conditions.add("clk'event")
+			clk_if._if_.conditions.add("clk <= '1'", "and")
+			clk_if._if_.body.add(w_en_if)
+
+			self.tb.architecture.processes["v_out_save"].body.add(clk_if)
+
+
 
 
 
@@ -548,7 +612,7 @@ a = LIFneuronDP(
 )
 
 
-a.testbench()
+a.testbench(file_output = True)
 
 a.tb.write_file_all()
 
