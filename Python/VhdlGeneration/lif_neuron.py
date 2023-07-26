@@ -5,28 +5,36 @@ from vhdl_block import VHDLblock
 from lif_neuron_dp import LIFneuronDP
 from lif_neuron_cu import LIFneuronCU
 
+from utils import track_signals
+
 
 class LIFneuron(VHDLblock):
 
 	def __init__(self, default_bitwidth = 16, default_inh_weights_bitwidth =
 			5, default_exc_weights_bitwidth = 5,
-			default_shift = 10):
+			default_shift = 10, debug = False):
 
 		VHDLblock.__init__(self, entity_name = "neuron")
 
 		self.datapath = LIFneuronDP(
-			default_bitwidth = 16,
-			default_inh_weights_bitwidth = 5,
-			default_exc_weights_bitwidth = 5, 
-			default_shift = 10
+			default_bitwidth = default_bitwidth,
+			default_inh_weights_bitwidth = 
+			default_inh_weights_bitwidth,
+			default_exc_weights_bitwidth = 
+			default_exc_weights_bitwidth, 
+			default_shift = default_shift,
+			debug = debug
 		)
 
-		self.control_unit = LIFneuronCU()
+		self.control_unit = LIFneuronCU(debug = debug)
 
 		# Libraries and packages
 		self.library.add("ieee")
 		self.library["ieee"].package.add("std_logic_1164")
 		self.library["ieee"].package.add("numeric_std")
+
+		self.library.add("work")
+		self.library["work"].package.add("spiker_pkg")
 				
 
 		# Generics
@@ -40,13 +48,15 @@ class LIFneuron(VHDLblock):
 			self.entity.generic.add(
 				name		= "inh_weights_bit_width",
 				gen_type	= "integer",
-				value		= str(default_inh_weights_bitwidth))
+				value		= str(
+					default_inh_weights_bitwidth))
 
 		if default_exc_weights_bitwidth < default_bitwidth:
 			self.entity.generic.add(
 				name		= "exc_weights_bit_width",
 				gen_type	= "integer",
-				value		= str(default_exc_weights_bitwidth))
+				value		= str(
+					default_exc_weights_bitwidth))
 
 		self.entity.generic.add(
 			name		= "shift",
@@ -68,8 +78,9 @@ class LIFneuron(VHDLblock):
 			self.entity.port.add(
 				name 		= "inh_weight",
 				direction	= "in",
-				port_type	= "signed(inh_weights_bit_width-1 "
-							"downto 0)")
+				port_type	= "signed("
+						"inh_weights_bit_width-1 "
+						"downto 0)")
 		elif default_inh_weights_bitwidth == default_bitwidth:
 			self.entity.port.add(
 				name 		= "inh_weight",
@@ -86,7 +97,8 @@ class LIFneuron(VHDLblock):
 			self.entity.port.add(
 				name 		= "exc_weight",
 				direction	= "in",
-				port_type	= "signed(exc_weights_bit_width-1 downto 0)")
+				port_type	= "signed("
+					"exc_weights_bit_width-1 downto 0)")
 
 		elif default_exc_weights_bitwidth == default_bitwidth:
 			self.entity.port.add(
@@ -180,6 +192,60 @@ class LIFneuron(VHDLblock):
 				"control_unit")
 		self.architecture.instances["control_unit"].generic_map()
 		self.architecture.instances["control_unit"].port_map()
+
+
+		if(debug):
+
+			if self.datapath.debug:
+				for debug_port in self.datapath.debug:
+
+					debug_port_name = debug_port + "_out"
+
+					self.entity.port.add(
+						name 		=
+							debug_port_name, 
+						direction	= "out",
+						port_type	= self.\
+							datapath.entity.\
+							port[debug_port_name].\
+							port_type
+					)
+
+			if self.control_unit.debug:
+				for debug_port in self.control_unit.debug:
+
+					debug_port_name = debug_port + "_out"
+
+					self.entity.port.add(
+						name 		= 
+							debug_port_name, 
+						direction	= "out",
+						port_type	= self.\
+							control_unit.entity.\
+							port[debug_port_name].\
+							port_type
+					)
+
+
+			debug_signals = track_signals(self.architecture.signal,
+					self.entity.name)
+
+			for debug_port in debug_signals:
+
+				debug_port_name = debug_port + "_out"
+
+				self.entity.port.add(
+					name 		= debug_port_name, 
+					direction	= "out",
+					port_type	= self.architecture.\
+							signal[debug_port].\
+							signal_type)
+
+				# Bring the signal out
+				connect_string = debug_port_name + " <= " + \
+							debug_port + ";"
+				self.architecture.bodyCodeHeader.\
+						add(connect_string)
 
 	
 		
