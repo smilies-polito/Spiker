@@ -1,11 +1,12 @@
 import subprocess as sp
 import path_config
 from vhdl_block import VHDLblock
+from if_statement import If
 
 
 class Testbench(VHDLblock):
 
-	def __init__(self, component, clock_period = 20):
+	def __init__(self, component, clock_period = 20, file_output = False):
 
 		self.dut = component
 		self.name = self.dut.entity.name + "_tb"
@@ -66,8 +67,98 @@ class Testbench(VHDLblock):
 					str(clock_period//2) + " ns;")
 
 			elif self.dut.entity.port[name].direction == "in":
-				self.architecture.processes.add(name = name + "_gen",
-						final_wait = True)
+				self.architecture.processes.add(name = name +
+						"_gen", final_wait = True)
+
+			elif self.dut.entity.port[name].direction == "out" and \
+				file_output :
+
+				self.library.add("std")
+				self.library["std"].package.add(
+					"textio"
+				)
+
+				self.library["ieee"].package.add(
+					"std_logic_textio"
+				)
+
+				process_name = name + "_save"
+				en_name	= name + "_w_en"
+				out_file = name + "_file"
+				out_filename = name + "_filename"
+				en_gen = en_name + "_gen"
+
+				self.architecture.constant.add(
+					name = out_filename,
+					const_type = "string",
+					value = "\"" + name + ".txt\""
+				)
+
+				self.architecture.signal.add(
+					name = en_name,
+					signal_type = "std_logic"
+				)
+
+
+				self.architecture.processes.add(en_gen, final_wait
+						= True)
+				self.architecture.processes[en_gen].body.add(
+						en_name + "<= '1';")
+
+
+				self.architecture.processes.add(name =
+						process_name)
+
+				self.architecture.processes[process_name].\
+				     	sensitivity_list.add("clk")
+				self.architecture.processes[process_name].\
+				     	sensitivity_list.add(en_name)
+
+				self.architecture.processes[process_name].\
+				     variables.add(
+				     name 		= "row",
+				     var_type	= "line"
+				)
+				self.architecture.processes[process_name].\
+				     variables.add(
+				     name 		= "write_var",
+				     var_type	= "integer"
+				)
+				self.architecture.processes[process_name].\
+					files.add(
+					name 		= out_file,
+					file_type	= "text",
+					mode		= "write_mode",
+					filename	= out_filename
+				)
+
+				w_en_if = If()
+				w_en_if._if_.conditions.add(en_name + " = '1'")
+
+				if self.dut.entity.port[name].port_type == \
+					"std_logic":
+
+					w_en_if._if_.body.add(
+						"write(row, " + name  + ");")
+
+				else:
+					w_en_if._if_.body.add(
+						"write_var := to_integer("
+						"unsigned(" + name  + "));")
+
+					w_en_if._if_.body.add(
+						"write(row, write_var);")
+				w_en_if._if_.body.add(
+					"writeline(" + out_file  + ", row);")
+
+				clk_if = If()
+				clk_if._if_.conditions.add("clk'event")
+				clk_if._if_.conditions.add("clk <= '1'", "and")
+				clk_if._if_.body.add(w_en_if)
+
+				self.architecture.processes[process_name].\
+					body.add(clk_if)
+
 
 
 	def compile(self, output_dir = "output"):
