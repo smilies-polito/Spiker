@@ -26,7 +26,7 @@ def createDir(dirName):
 	sp.run(cmdString, shell=True, executable="/bin/bash")
 
 
-def track_signals(signals_dict):
+def track_signals(signals_dict, name):
 
 	signals_list = list(signals_dict.keys())
 
@@ -52,8 +52,10 @@ def track_signals(signals_dict):
 
 		if exit_flag == 0:
 
-			input_msg = "Which signal do you want to track(write exit to " \
+			input_msg = "Component " + name  + ": which signal " \
+				"do you want to track(write exit to " \
 				"stop)?\n\n" + str(signals_list) + "\n\n"
+
 			signal = input(input_msg)
 
 			if signal == "exit":
