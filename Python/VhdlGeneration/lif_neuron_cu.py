@@ -4,17 +4,21 @@ import path_config
 
 from vhdl_block import VHDLblock
 from if_statement import If
+from utils import track_signals
 
 
 class LIFneuronCU(VHDLblock):
 
-	def __init__(self):
+	def __init__(self, debug = False):
 
 		VHDLblock.__init__(self, entity_name = "neuron_cu")
 
 		# Libraries and packages
 		self.library.add("ieee")
 		self.library["ieee"].package.add("std_logic_1164")
+
+		self.library.add("work")
+		self.library["work"].package.add("spiker_pkg")
 
 
 		# Input from outside
@@ -96,26 +100,13 @@ class LIFneuronCU(VHDLblock):
 				direction	= "out",
 				port_type	= "std_logic")
 
-		self.architecture.customTypes.add(
-				name 		= "states",
-				c_type		= "Enumeration")
-
-		self.architecture.customTypes["states"].add("reset")
-		self.architecture.customTypes["states"].add("load")
-		self.architecture.customTypes["states"].add("idle")
-		self.architecture.customTypes["states"].add("init")
-		self.architecture.customTypes["states"].add("excite")
-		self.architecture.customTypes["states"].add("inhibit")
-		self.architecture.customTypes["states"].add("fire")
-		self.architecture.customTypes["states"].add("leak")
-
 		self.architecture.signal.add(
 				name = "present_state",
-				signal_type = "states")
+				signal_type = "neuron_states")
 
 		self.architecture.signal.add(
 				name = "next_state",
-				signal_type = "states")
+				signal_type = "neuron_states")
 
 		self.architecture.processes.add("state_transition")
 		self.architecture.processes["state_transition"].\
@@ -371,6 +362,28 @@ class LIFneuronCU(VHDLblock):
 		self.architecture.processes["output_evaluation"].\
 				case_list["present_state"].others.\
 				body.add("v_rst_n <= '0';")
+
+		# Debug
+		if(debug):
+			self.debug = track_signals(self.architecture.signal,
+					self.entity.name)
+
+			for debug_port in self.debug:
+
+				debug_port_name = debug_port + "_out"
+
+				self.entity.port.add(
+					name 		= debug_port_name, 
+					direction	= "out",
+					port_type	= self.architecture.\
+							signal[debug_port].\
+							signal_type)
+
+				# Bring the signal out
+				connect_string = debug_port_name + " <= " + \
+							debug_port + ";"
+				self.architecture.bodyCodeHeader.\
+						add(connect_string)
 
 
 
