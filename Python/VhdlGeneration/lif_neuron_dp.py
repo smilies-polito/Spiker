@@ -540,8 +540,3 @@ class LIFneuronDP(VHDLblock):
 				add("wait for " + str(clock_period) + " ns;")
 		self.tb.architecture.processes["v_update_gen"].body.\
 				add("v_update <= '1';")
-
-a = LIFneuronDP()
-
-a.testbench(file_output = True)
-print(a.tb.code())
