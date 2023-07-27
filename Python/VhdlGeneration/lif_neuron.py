@@ -4,6 +4,8 @@ import path_config
 from vhdl_block import VHDLblock
 from lif_neuron_dp import LIFneuronDP
 from lif_neuron_cu import LIFneuronCU
+from and_mask import AndMask
+from testbench import Testbench
 
 from utils import track_signals
 
@@ -27,6 +29,7 @@ class LIFneuron(VHDLblock):
 		)
 
 		self.control_unit = LIFneuronCU(debug = debug)
+		self.and_mask = AndMask(data_type = "signed")
 
 		# Libraries and packages
 		self.library.add("ieee")
@@ -137,6 +140,16 @@ class LIFneuron(VHDLblock):
 			direction	= "in", 
 			port_type	= "std_logic")
 
+		self.entity.port.add(
+			name 		= "exc_spike", 
+			direction	= "in", 
+			port_type	= "std_logic")
+
+		self.entity.port.add(
+			name 		= "inh_spike", 
+			direction	= "in", 
+			port_type	= "std_logic")
+
 		# Output
 		self.entity.port.add(
 			name 		= "neuron_ready",
@@ -168,6 +181,9 @@ class LIFneuron(VHDLblock):
 			name 		= "v_th_en", 
 			signal_type	= "std_logic")
 		self.architecture.signal.add(
+			name 		= "masked_v_th_en",
+			signal_type	= "std_logic")
+		self.architecture.signal.add(
 			name 		= "v_en",
 			signal_type	= "std_logic")
 		self.architecture.signal.add(
@@ -176,22 +192,101 @@ class LIFneuron(VHDLblock):
 		self.architecture.signal.add(
 			name 		= "exceed_v_th",
 			signal_type	= "std_logic")
+		self.architecture.signal.add(
+			name 		= "load_ready_fb",
+			signal_type	= "std_logic")
+
+
+		if default_inh_weights_bitwidth < default_bitwidth:
+			self.architecture.signal.add(
+				name 		= "masked_inh_weight",
+				signal_type	= "signed("
+						"inh_weights_bit_width-1 "
+						"downto 0)")
+		elif default_inh_weights_bitwidth == default_bitwidth:
+			self.architecture.signal.add(
+				name 		= "masked_inh_weight",
+				signal_type	= "signed(neuron_bit_width-1 "
+							"downto 0)")
+		else:
+			print("Inhibitory weight bit-width cannot be larger "
+				"than the neuron's one")
+			exit(-1)
+			
+
+		if default_exc_weights_bitwidth < default_bitwidth:
+			self.architecture.signal.add(
+				name 		= "masked_exc_weight",
+				signal_type	= "signed("
+					"exc_weights_bit_width-1 downto 0)")
+
+		elif default_exc_weights_bitwidth == default_bitwidth:
+			self.architecture.signal.add(
+				name 		= "exc_weight",
+				signal_type	= "signed(neuron_bit_width-1 "
+							"downto 0)")
+		else:
+			print("Excitatory weight bit-width cannot be larger "
+				"than the neuron's one")
+			exit(-1)
+
+
+
 
 		# Components
 		self.architecture.component.add(self.datapath)
 		self.architecture.component.add(self.control_unit)
+		self.architecture.component.add(self.and_mask)
+
+		# Mask threshold enable
+		self.architecture.bodyCodeHeader.add("masked_v_th_en <= "
+				"v_th_en and load_ready_fb;")
+		self.architecture.bodyCodeHeader.add("load_ready <= "
+				"load_ready_fb;")
+
 		
 		# Datapath
 		self.architecture.instances.add(self.datapath,
 				"datapath")
 		self.architecture.instances["datapath"].generic_map()
 		self.architecture.instances["datapath"].port_map()
+		self.architecture.instances["datapath"].p_map.add("v_th_en",
+				"masked_v_th_en")
 
 		# Control unit
 		self.architecture.instances.add(self.control_unit,
 				"control_unit")
 		self.architecture.instances["control_unit"].generic_map()
 		self.architecture.instances["control_unit"].port_map()
+
+		# Excitatory weights mask
+		self.architecture.instances.add(self.and_mask,
+				"exc_mask")
+		self.architecture.instances["exc_mask"].generic_map()
+		self.architecture.instances["exc_mask"].port_map()
+		self.architecture.instances["exc_mask"].g_map.add("N",
+				"exc_weights_bit_width")
+		self.architecture.instances["exc_mask"].p_map.add("input_bits",
+				"exc_weight")
+		self.architecture.instances["exc_mask"].p_map.add("mask_bit",
+				"exc_spike")
+		self.architecture.instances["exc_mask"].p_map.add("output_bits",
+				"masked_exc_weight")
+
+		# Inhibitory weights mask
+		self.architecture.instances.add(self.and_mask,
+				"inh_mask")
+		self.architecture.instances["inh_mask"].generic_map()
+		self.architecture.instances["inh_mask"].port_map()
+		self.architecture.instances["inh_mask"].g_map.add("N",
+				"inh_weights_bit_width")
+		self.architecture.instances["inh_mask"].p_map.add("input_bits",
+				"inh_weight")
+		self.architecture.instances["inh_mask"].p_map.add("mask_bit",
+				"inh_spike")
+		self.architecture.instances["inh_mask"].p_map.add("output_bits",
+				"masked_inh_weight")
+
 
 
 		if(debug):
@@ -267,6 +362,7 @@ class LIFneuron(VHDLblock):
 
 		self.datapath.compile_all()
 		self.control_unit.compile()
+		self.and_mask.compile()
 
 		print("\nCompiling component %s\n"
 				%(self.entity.name))
@@ -283,6 +379,7 @@ class LIFneuron(VHDLblock):
 
 		self.datapath.write_file_all(output_dir = output_dir)
 		self.control_unit.write_file(output_dir = output_dir)
+		self.and_mask.write_file(output_dir = output_dir)
 		self.write_file(output_dir = output_dir)
 
 
@@ -298,3 +395,42 @@ class LIFneuron(VHDLblock):
 		sp.run(command, shell = True)
 
 		print("\n")
+
+
+	def testbench(self, clock_period = 20, file_output = False):
+
+		self.tb = Testbench(self, clock_period = clock_period,
+				file_output = file_output)
+
+		# exc_weight
+		self.tb.architecture.processes["exc_weight_gen"].body.\
+				add("exc_weight <= to_signed(500, "
+				"exc_weight'length);")
+
+		# inh_weight
+		self.tb.architecture.processes["inh_weight_gen"].body.\
+				add("inh_weight <= to_signed(300, "
+				"inh_weight'length);")
+
+		# v_reset
+		self.tb.architecture.processes["v_reset_gen"].body.\
+				add("v_reset <= to_signed(1000, "
+				"v_reset'length);")
+
+		# v_th_value
+		self.tb.architecture.processes["v_th_value_gen"].body.\
+				add("v_th_value <= to_signed(3000, "
+				"v_th_value'length);")
+
+
+
+
+a = LIFneuron()
+
+a.testbench()
+
+print(a.code())
+
+a.write_file()
+a.compile()
+a.elaborate()
