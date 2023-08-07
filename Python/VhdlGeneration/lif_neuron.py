@@ -252,12 +252,18 @@ class LIFneuron(VHDLblock):
 		self.architecture.instances["datapath"].port_map()
 		self.architecture.instances["datapath"].p_map.add("v_th_en",
 				"masked_v_th_en")
+		self.architecture.instances["datapath"].p_map.add("exc_weight",
+				"masked_exc_weight")
+		self.architecture.instances["datapath"].p_map.add("inh_weight",
+				"masked_inh_weight")
 
 		# Control unit
 		self.architecture.instances.add(self.control_unit,
 				"control_unit")
 		self.architecture.instances["control_unit"].generic_map()
 		self.architecture.instances["control_unit"].port_map()
+		self.architecture.instances["control_unit"].p_map.add(
+				"load_ready", "load_ready_fb")
 
 		# Excitatory weights mask
 		self.architecture.instances.add(self.and_mask,
@@ -400,7 +406,10 @@ class LIFneuron(VHDLblock):
 	def testbench(self, clock_period = 20, file_output = False):
 
 		self.tb = Testbench(self, clock_period = clock_period,
-				file_output = file_output)
+			file_output = file_output)
+
+		self.tb.library.add("work")
+		self.tb.library["work"].package.add("spiker_pkg")
 
 		# exc_weight
 		self.tb.architecture.processes["exc_weight_gen"].body.\
@@ -422,15 +431,61 @@ class LIFneuron(VHDLblock):
 				add("v_th_value <= to_signed(3000, "
 				"v_th_value'length);")
 
+		# rst_n
+		self.tb.architecture.processes["rst_n_gen"].body.add(
+				"rst_n <= '1';")
+		self.tb.architecture.processes["rst_n_gen"].body.add(
+				"wait for 15 ns;")
+		self.tb.architecture.processes["rst_n_gen"].body.add(
+				"rst_n <= '0';")
+		self.tb.architecture.processes["rst_n_gen"].body.add(
+				"wait for 10 ns;")
+		self.tb.architecture.processes["rst_n_gen"].body.add(
+				"rst_n <= '1';")
+
+		# load_end
+		self.tb.architecture.processes["load_end_gen"].body.add(
+				"load_end <= '0';")
+		self.tb.architecture.processes["load_end_gen"].body.add(
+				"wait for 50 ns;")
+		self.tb.architecture.processes["load_end_gen"].body.add(
+				"load_end <= '1';")
+		self.tb.architecture.processes["load_end_gen"].body.add(
+				"wait for 20 ns;")
+		self.tb.architecture.processes["load_end_gen"].body.add(
+				"load_end <= '0';")
+
+		# restart
+		self.tb.architecture.processes["restart_gen"].body.add(
+				"restart <= '0';")
+		self.tb.architecture.processes["restart_gen"].body.add(
+				"wait for 70 ns;")
+		self.tb.architecture.processes["restart_gen"].body.add(
+				"restart <= '1';")
+		self.tb.architecture.processes["restart_gen"].body.add(
+				"wait for 20 ns;")
+		self.tb.architecture.processes["restart_gen"].body.add(
+				"restart <= '0';")
+
+		# exc
+		self.tb.architecture.processes["exc_gen"].body.add(
+				"exc <= '0';")
+		self.tb.architecture.processes["exc_gen"].body.add(
+				"wait for 130 ns;")
+		self.tb.architecture.processes["exc_gen"].body.add(
+				"exc <= '1';")
+		self.tb.architecture.processes["exc_gen"].body.add(
+				"wait for 60 ns;")
+		self.tb.architecture.processes["exc_gen"].body.add(
+				"exc <= '0';")
 
 
 
-a = LIFneuron()
+
+
+a = LIFneuron(debug=True)
 
 a.testbench()
-
-print(a.code())
-
-a.write_file()
-a.compile()
-a.elaborate()
+a.tb.write_file_all()
+a.tb.compile()
+a.tb.elaborate()
