@@ -205,6 +205,13 @@ class LIFneuronCU(VHDLblock):
 
 		self.architecture.processes["state_evaluation"].\
 				case_list["present_state"].when_list.\
+				add("init")
+		self.architecture.processes["state_evaluation"].\
+				case_list["present_state"].when_list["init"].\
+				body.add("next_state <= idle;")
+
+		self.architecture.processes["state_evaluation"].\
+				case_list["present_state"].when_list.\
 				add("fire")
 
 		exc_inh_check = If()
@@ -279,6 +286,8 @@ class LIFneuronCU(VHDLblock):
 				body.add("out_spike <= '0';")
 		self.architecture.processes["output_evaluation"].\
 				body.add("neuron_ready <= '0';")
+		self.architecture.processes["output_evaluation"].\
+				body.add("load_ready <= '0';")
 
 
 
