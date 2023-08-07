@@ -9,7 +9,7 @@ from mux4to1_signed import Mux4to1_signed
 from add_sub import AddSub
 from mux2to1_signed import Mux2to1_signed
 from reg import Reg
-from cmp_gt import CmpGt
+from cmp import Cmp
 
 from testbench import Testbench
 from utils import track_signals
@@ -51,7 +51,7 @@ class LIFneuronDP(VHDLblock):
 						reg_type = "signed",
 						rst = "sync")
 
-		self.cmp_gt			= CmpGt(
+		self.cmp_gt			= Cmp(
 						default_bitwidth = 
 						default_bitwidth)
 
@@ -398,7 +398,6 @@ class LIFneuronDP(VHDLblock):
 		self.shifter.compile()
 		self.add_sub.compile()
 		self.mux4to1_signed.compile()
-		self.add_sub.compile()
 		self.mux2to1_signed.compile()
 		self.reg_signed.compile()
 		self.reg_signed_sync_rst.compile()
