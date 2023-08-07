@@ -70,13 +70,15 @@ class LIFneuronDP(VHDLblock):
 			self.entity.generic.add(
 				name		= "inh_weights_bit_width",
 				gen_type	= "integer",
-				value		= str(default_inh_weights_bitwidth))
+				value		= str(
+						default_inh_weights_bitwidth))
 
 		if default_exc_weights_bitwidth < default_bitwidth:
 			self.entity.generic.add(
 				name		= "exc_weights_bit_width",
 				gen_type	= "integer",
-				value		= str(default_exc_weights_bitwidth))
+				value		= str(
+						default_exc_weights_bitwidth))
 
 		self.entity.generic.add(
 			name		= "shift",
@@ -98,8 +100,8 @@ class LIFneuronDP(VHDLblock):
 			self.entity.port.add(
 				name 		= "inh_weight",
 				direction	= "in",
-				port_type	= "signed(inh_weights_bit_width-1 "
-							"downto 0)")
+				port_type	= "signed("
+					"inh_weights_bit_width-1 downto 0)")
 		elif default_inh_weights_bitwidth == default_bitwidth:
 			self.entity.port.add(
 				name 		= "inh_weight",
@@ -116,7 +118,8 @@ class LIFneuronDP(VHDLblock):
 			self.entity.port.add(
 				name 		= "exc_weight",
 				direction	= "in",
-				port_type	= "signed(exc_weights_bit_width-1 downto 0)")
+				port_type	= "signed("
+					"exc_weights_bit_width-1 downto 0)")
 
 		elif default_exc_weights_bitwidth == default_bitwidth:
 			self.entity.port.add(
@@ -240,8 +243,8 @@ class LIFneuronDP(VHDLblock):
 					"downto 0)")
 
 		elif default_exc_weights_bitwidth == default_bitwidth:
-			self.architecture.instances["update_mux"].p_map.add("in2",
-					"exc_weight")
+			self.architecture.instances["update_mux"].p_map.add(
+					"in2", "exc_weight")
 
 		else:
 			print("Excitatory weight bit-width cannot be larger "
@@ -262,8 +265,8 @@ class LIFneuronDP(VHDLblock):
 					"downto 0)")
 
 		elif default_inh_weights_bitwidth == default_bitwidth:
-			self.architecture.instances["update_mux"].p_map.add("in3",
-					"inh_weight")
+			self.architecture.instances["update_mux"].p_map.add(
+					"in3", "inh_weight")
 
 		else:
 			print("Inhibitory weight bit-width cannot be larger "
@@ -443,100 +446,100 @@ class LIFneuronDP(VHDLblock):
 				file_output = file_output)
 
 		# exc_weight
-		self.tb.architecture.processes["exc_weight_gen"].body.\
+		self.tb.architecture.processes["exc_weight_gen"].bodyHeader.\
 				add("exc_weight <= to_signed(500, "
 				"exc_weight'length);")
 
 		# inh_weight
-		self.tb.architecture.processes["inh_weight_gen"].body.\
+		self.tb.architecture.processes["inh_weight_gen"].bodyHeader.\
 				add("inh_weight <= to_signed(300, "
 				"inh_weight'length);")
 
 		# v_reset
-		self.tb.architecture.processes["v_reset_gen"].body.\
+		self.tb.architecture.processes["v_reset_gen"].bodyHeader.\
 				add("v_reset <= to_signed(1000, "
 				"v_reset'length);")
 
 		# v_th_value
-		self.tb.architecture.processes["v_th_value_gen"].body.\
+		self.tb.architecture.processes["v_th_value_gen"].bodyHeader.\
 				add("v_th_value <= to_signed(3000, "
 				"v_th_value'length);")
 		# v_rst_n
-		self.tb.architecture.processes["v_rst_n_gen"].body.\
+		self.tb.architecture.processes["v_rst_n_gen"].bodyHeader.\
 				add("v_rst_n <= '1';")
-		self.tb.architecture.processes["v_rst_n_gen"].body.\
+		self.tb.architecture.processes["v_rst_n_gen"].bodyHeader.\
 				add("wait for " + str(clock_period) + " ns;")
-		self.tb.architecture.processes["v_rst_n_gen"].body.\
+		self.tb.architecture.processes["v_rst_n_gen"].bodyHeader.\
 				add("v_rst_n <= '0';")
-		self.tb.architecture.processes["v_rst_n_gen"].body.\
+		self.tb.architecture.processes["v_rst_n_gen"].bodyHeader.\
 				add("wait for " + str(clock_period)  + " ns;")
-		self.tb.architecture.processes["v_rst_n_gen"].body.\
+		self.tb.architecture.processes["v_rst_n_gen"].bodyHeader.\
 				add("v_rst_n <= '1';")
 
 		# update_sel
-		self.tb.architecture.processes["update_sel_gen"].body.\
+		self.tb.architecture.processes["update_sel_gen"].bodyHeader.\
 				add("update_sel <= \"00\";")
-		self.tb.architecture.processes["update_sel_gen"].body.\
+		self.tb.architecture.processes["update_sel_gen"].bodyHeader.\
 				add("wait for " + str(2*clock_period) + " ns;")
-		self.tb.architecture.processes["update_sel_gen"].body.\
+		self.tb.architecture.processes["update_sel_gen"].bodyHeader.\
 				add("update_sel <= \"10\";")
-		self.tb.architecture.processes["update_sel_gen"].body.\
+		self.tb.architecture.processes["update_sel_gen"].bodyHeader.\
 				add("wait for " + str(4*clock_period) + " ns;")
-		self.tb.architecture.processes["update_sel_gen"].body.\
+		self.tb.architecture.processes["update_sel_gen"].bodyHeader.\
 				add("update_sel <= \"11\";")
-		self.tb.architecture.processes["update_sel_gen"].body.\
+		self.tb.architecture.processes["update_sel_gen"].bodyHeader.\
 				add("wait for " + str(clock_period)  + " ns;")
-		self.tb.architecture.processes["update_sel_gen"].body.\
+		self.tb.architecture.processes["update_sel_gen"].bodyHeader.\
 				add("update_sel <= \"10\";")
-		self.tb.architecture.processes["update_sel_gen"].body.\
+		self.tb.architecture.processes["update_sel_gen"].bodyHeader.\
 				add("wait for " + str(3*clock_period)  + " ns;")
-		self.tb.architecture.processes["update_sel_gen"].body.\
+		self.tb.architecture.processes["update_sel_gen"].bodyHeader.\
 				add("update_sel <= \"00\";")
-		self.tb.architecture.processes["update_sel_gen"].body.\
+		self.tb.architecture.processes["update_sel_gen"].bodyHeader.\
 				add("wait for " + str(3*clock_period)  + " ns;")
-		self.tb.architecture.processes["update_sel_gen"].body.\
+		self.tb.architecture.processes["update_sel_gen"].bodyHeader.\
 				add("update_sel <= \"01\";")
 
 		# add_or_sub
-		self.tb.architecture.processes["add_or_sub_gen"].body.\
+		self.tb.architecture.processes["add_or_sub_gen"].bodyHeader.\
 				add("add_or_sub <= '0';")
-		self.tb.architecture.processes["add_or_sub_gen"].body.\
+		self.tb.architecture.processes["add_or_sub_gen"].bodyHeader.\
 				add("wait for " + str(6*clock_period) + " ns;")
-		self.tb.architecture.processes["add_or_sub_gen"].body.\
+		self.tb.architecture.processes["add_or_sub_gen"].bodyHeader.\
 				add("add_or_sub <= '1';")
-		self.tb.architecture.processes["add_or_sub_gen"].body.\
+		self.tb.architecture.processes["add_or_sub_gen"].bodyHeader.\
 				add("wait for " + str(clock_period)  + " ns;")
-		self.tb.architecture.processes["add_or_sub_gen"].body.\
+		self.tb.architecture.processes["add_or_sub_gen"].bodyHeader.\
 				add("add_or_sub <= '0';")
-		self.tb.architecture.processes["add_or_sub_gen"].body.\
+		self.tb.architecture.processes["add_or_sub_gen"].bodyHeader.\
 				add("wait for " + str(4*clock_period)  + " ns;")
-		self.tb.architecture.processes["add_or_sub_gen"].body.\
+		self.tb.architecture.processes["add_or_sub_gen"].bodyHeader.\
 				add("add_or_sub <= '1';")
 
 		# v_en
-		self.tb.architecture.processes["v_en_gen"].body.\
+		self.tb.architecture.processes["v_en_gen"].bodyHeader.\
 				add("v_en <= '0';")
-		self.tb.architecture.processes["v_en_gen"].body.\
+		self.tb.architecture.processes["v_en_gen"].bodyHeader.\
 				add("wait for " + str(2*clock_period) + " ns;")
-		self.tb.architecture.processes["v_en_gen"].body.\
+		self.tb.architecture.processes["v_en_gen"].bodyHeader.\
 				add("v_en <= '1';")
 
 		# v_th_en
-		self.tb.architecture.processes["v_th_en_gen"].body.\
+		self.tb.architecture.processes["v_th_en_gen"].bodyHeader.\
 				add("v_th_en <= '1';")
-		self.tb.architecture.processes["v_th_en_gen"].body.\
+		self.tb.architecture.processes["v_th_en_gen"].bodyHeader.\
 				add("wait for " + str(clock_period) + " ns;")
-		self.tb.architecture.processes["v_th_en_gen"].body.\
+		self.tb.architecture.processes["v_th_en_gen"].bodyHeader.\
 				add("v_th_en <= '0';")
 
 		# v_update
-		self.tb.architecture.processes["v_update_gen"].body.\
+		self.tb.architecture.processes["v_update_gen"].bodyHeader.\
 				add("v_update <= '1';")
-		self.tb.architecture.processes["v_update_gen"].body.\
+		self.tb.architecture.processes["v_update_gen"].bodyHeader.\
 				add("wait for " + str(11*clock_period) + " ns;")
-		self.tb.architecture.processes["v_update_gen"].body.\
+		self.tb.architecture.processes["v_update_gen"].bodyHeader.\
 				add("v_update <= '0';")
-		self.tb.architecture.processes["v_update_gen"].body.\
+		self.tb.architecture.processes["v_update_gen"].bodyHeader.\
 				add("wait for " + str(clock_period) + " ns;")
-		self.tb.architecture.processes["v_update_gen"].body.\
+		self.tb.architecture.processes["v_update_gen"].bodyHeader.\
 				add("v_update <= '1';")

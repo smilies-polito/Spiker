@@ -56,14 +56,16 @@ class Testbench(VHDLblock):
 			if name in self.clk_names:
 				self.architecture.processes.add(name + "_gen")
 				self.architecture.processes[name +
-					"_gen"].body.add(name + " <= '0';")
+					"_gen"].bodyHeader.add(name + 
+					" <= '0';")
 				self.architecture.processes[name +
-					"_gen"].body.add("wait for " +
+					"_gen"].bodyHeader.add("wait for " +
 					str(clock_period//2) + " ns;")
 				self.architecture.processes[name +
-					"_gen"].body.add(name + " <= '1';")
+					"_gen"].bodyHeader.add(name + 
+					" <= '1';")
 				self.architecture.processes[name +
-					"_gen"].body.add("wait for " +
+					"_gen"].bodyHeader.add("wait for " +
 					str(clock_period//2) + " ns;")
 
 			elif self.dut.entity.port[name].direction == "in":
@@ -100,10 +102,10 @@ class Testbench(VHDLblock):
 				)
 
 
-				self.architecture.processes.add(en_gen, final_wait
-						= True)
-				self.architecture.processes[en_gen].body.add(
-						en_name + "<= '1';")
+				self.architecture.processes.add(en_gen, 
+						final_wait = True)
+				self.architecture.processes[en_gen].bodyHeader.\
+						add(en_name + "<= '1';")
 
 
 				self.architecture.processes.add(name =
@@ -157,7 +159,7 @@ class Testbench(VHDLblock):
 				clk_if._if_.body.add(w_en_if)
 
 				self.architecture.processes[process_name].\
-					body.add(clk_if)
+					bodyHeader.add(clk_if)
 
 
 

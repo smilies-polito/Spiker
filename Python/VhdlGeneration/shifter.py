@@ -32,7 +32,8 @@ class Shifter(VHDLblock):
 		elif default_shift < default_bitwidth and default_shift > 0:
 
 			# Generics
-			self.entity.generic.add("shift", "integer", str(default_shift))
+			self.entity.generic.add("shift", "integer", 
+					str(default_shift))
 
 
 			# Add/sub process

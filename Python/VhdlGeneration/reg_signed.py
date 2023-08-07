@@ -28,16 +28,17 @@ class RegSigned(VHDLblock):
 
 		# Add/sub process
 		self.architecture.processes.add("sample")
-		self.architecture.processes["sample"].sensitivity_list.add("clk")
+		self.architecture.processes["sample"].sensitivity_list.add(
+				"clk")
 		self.architecture.processes["sample"].sensitivity_list.add("en")
 
 		self.architecture.processes["sample"].if_list.add()
-		self.architecture.processes["sample"].if_list[0]._if_.conditions.add(
-				"clk'event")
-		self.architecture.processes["sample"].if_list[0]._if_.conditions.add(
-				"clk = '1'", "and")
-		self.architecture.processes["sample"].if_list[0]._if_.conditions.add(
-				"en = '1'", "and")
+		self.architecture.processes["sample"].if_list[0]._if_.\
+				conditions.add("clk'event")
+		self.architecture.processes["sample"].if_list[0]._if_.\
+				conditions.add("clk = '1'", "and")
+		self.architecture.processes["sample"].if_list[0]._if_.\
+				conditions.add("en = '1'", "and")
 
 		self.architecture.processes["sample"].if_list[0]._if_.body.add(
 				"reg_out <= reg_in;")

@@ -53,8 +53,3 @@ class Multiplier(VHDLblock):
 		sp.run(command, shell = True)
 
 		print("\n")
-
-a = Multiplier()
-
-a.compile()
-a.elaborate()

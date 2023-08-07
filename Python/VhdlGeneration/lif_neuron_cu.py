@@ -123,10 +123,11 @@ class LIFneuronCU(VHDLblock):
 		self.architecture.processes["state_transition"].\
 				if_list[0]._elsif_.add()
 		self.architecture.processes["state_transition"].\
-				if_list[0]._elsif_[0].conditions.add("clk'event")
+				if_list[0]._elsif_[0].conditions.add(
+				"clk'event")
 		self.architecture.processes["state_transition"].\
-				if_list[0]._elsif_[0].conditions.add("clk = '1'",
-						"and")
+				if_list[0]._elsif_[0].conditions.add(
+						"clk = '1'", "and")
 		self.architecture.processes["state_transition"].\
 				if_list[0]._elsif_[0].body.add(
 				"present_state <= next_state;")
@@ -261,8 +262,8 @@ class LIFneuronCU(VHDLblock):
 		inh_check._else_.body.add("next_state <= idle;")
 
 		self.architecture.processes["state_evaluation"].\
-				case_list["present_state"].when_list["inhibit"].\
-				body.add(inh_check)
+				case_list["present_state"].\
+				when_list["inhibit"].body.add(inh_check)
 
 		self.architecture.processes["state_evaluation"].\
 				case_list["present_state"].others.\
@@ -274,21 +275,21 @@ class LIFneuronCU(VHDLblock):
 		self.architecture.processes["output_evaluation"].\
 				sensitivity_list.add("present_state")
 		self.architecture.processes["output_evaluation"].\
-				body.add("update_sel <= \"00\";")
+				bodyHeader.add("update_sel <= \"00\";")
 		self.architecture.processes["output_evaluation"].\
-				body.add("add_or_sub <= '0';")
+				bodyHeader.add("add_or_sub <= '0';")
 		self.architecture.processes["output_evaluation"].\
-				body.add("v_update <= '1';")
+				bodyHeader.add("v_update <= '1';")
 		self.architecture.processes["output_evaluation"].\
-				body.add("v_en <= '1';")
+				bodyHeader.add("v_en <= '1';")
 		self.architecture.processes["output_evaluation"].\
-				body.add("v_rst_n <= '1';")
+				bodyHeader.add("v_rst_n <= '1';")
 		self.architecture.processes["output_evaluation"].\
-				body.add("out_spike <= '0';")
+				bodyHeader.add("out_spike <= '0';")
 		self.architecture.processes["output_evaluation"].\
-				body.add("neuron_ready <= '0';")
+				bodyHeader.add("neuron_ready <= '0';")
 		self.architecture.processes["output_evaluation"].\
-				body.add("load_ready <= '0';")
+				bodyHeader.add("load_ready <= '0';")
 
 
 
@@ -337,10 +338,12 @@ class LIFneuronCU(VHDLblock):
 				case_list["present_state"].when_list.\
 				add("inhibit")
 		self.architecture.processes["output_evaluation"].\
-				case_list["present_state"].when_list["inhibit"].\
+				case_list["present_state"].\
+				when_list["inhibit"].\
 				body.add("update_sel <= \"11\";")
 		self.architecture.processes["output_evaluation"].\
-				case_list["present_state"].when_list["inhibit"].\
+				case_list["present_state"].\
+				when_list["inhibit"].\
 				body.add("v_en <= '1';")
 
 		self.architecture.processes["output_evaluation"].\

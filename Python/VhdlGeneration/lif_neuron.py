@@ -435,139 +435,145 @@ class LIFneuron(VHDLblock):
 		self.tb.library["work"].package.add("spiker_pkg")
 
 		# exc_weight
-		self.tb.architecture.processes["exc_weight_gen"].body.\
+		self.tb.architecture.processes["exc_weight_gen"].bodyHeader.\
 				add("exc_weight <= to_signed(500, "
 				"exc_weight'length);")
 
 		# inh_weight
-		self.tb.architecture.processes["inh_weight_gen"].body.\
+		self.tb.architecture.processes["inh_weight_gen"].bodyHeader.\
 				add("inh_weight <= to_signed(-300, "
 				"inh_weight'length);")
 
 		# v_reset
-		self.tb.architecture.processes["v_reset_gen"].body.\
+		self.tb.architecture.processes["v_reset_gen"].bodyHeader.\
 				add("v_reset <= to_signed(1000, "
 				"v_reset'length);")
 
 		# v_th_value
-		self.tb.architecture.processes["v_th_value_gen"].body.\
+		self.tb.architecture.processes["v_th_value_gen"].bodyHeader.\
 				add("v_th_value <= to_signed(3000, "
 				"v_th_value'length);")
 
 		# rst_n
-		self.tb.architecture.processes["rst_n_gen"].body.add(
+		self.tb.architecture.processes["rst_n_gen"].bodyHeader.add(
 				"rst_n <= '1';")
-		self.tb.architecture.processes["rst_n_gen"].body.add(
+		self.tb.architecture.processes["rst_n_gen"].bodyHeader.add(
 				"wait for 15 ns;")
-		self.tb.architecture.processes["rst_n_gen"].body.add(
+		self.tb.architecture.processes["rst_n_gen"].bodyHeader.add(
 				"rst_n <= '0';")
-		self.tb.architecture.processes["rst_n_gen"].body.add(
+		self.tb.architecture.processes["rst_n_gen"].bodyHeader.add(
 				"wait for 10 ns;")
-		self.tb.architecture.processes["rst_n_gen"].body.add(
+		self.tb.architecture.processes["rst_n_gen"].bodyHeader.add(
 				"rst_n <= '1';")
 
 		# v_th_en
-		self.tb.architecture.processes["v_th_en_gen"].body.add(
+		self.tb.architecture.processes["v_th_en_gen"].bodyHeader.add(
 				"v_th_en <= '0';")
-		self.tb.architecture.processes["v_th_en_gen"].body.add(
+		self.tb.architecture.processes["v_th_en_gen"].bodyHeader.add(
 				"wait for 50 ns;")
-		self.tb.architecture.processes["v_th_en_gen"].body.add(
+		self.tb.architecture.processes["v_th_en_gen"].bodyHeader.add(
 				"v_th_en <= '1';")
-		self.tb.architecture.processes["v_th_en_gen"].body.add(
+		self.tb.architecture.processes["v_th_en_gen"].bodyHeader.add(
 				"wait for 20 ns;")
-		self.tb.architecture.processes["v_th_en_gen"].body.add(
+		self.tb.architecture.processes["v_th_en_gen"].bodyHeader.add(
 				"v_th_en <= '0';")
 
 		# load_end
-		self.tb.architecture.processes["load_end_gen"].body.add(
+		self.tb.architecture.processes["load_end_gen"].bodyHeader.add(
 				"load_end <= '0';")
-		self.tb.architecture.processes["load_end_gen"].body.add(
+		self.tb.architecture.processes["load_end_gen"].bodyHeader.add(
 				"wait for 50 ns;")
-		self.tb.architecture.processes["load_end_gen"].body.add(
+		self.tb.architecture.processes["load_end_gen"].bodyHeader.add(
 				"load_end <= '1';")
-		self.tb.architecture.processes["load_end_gen"].body.add(
+		self.tb.architecture.processes["load_end_gen"].bodyHeader.add(
 				"wait for 20 ns;")
-		self.tb.architecture.processes["load_end_gen"].body.add(
+		self.tb.architecture.processes["load_end_gen"].bodyHeader.add(
 				"load_end <= '0';")
 
 		# restart
-		self.tb.architecture.processes["restart_gen"].body.add(
+		self.tb.architecture.processes["restart_gen"].bodyHeader.add(
 				"restart <= '0';")
-		self.tb.architecture.processes["restart_gen"].body.add(
+		self.tb.architecture.processes["restart_gen"].bodyHeader.add(
 				"wait for 70 ns;")
-		self.tb.architecture.processes["restart_gen"].body.add(
+		self.tb.architecture.processes["restart_gen"].bodyHeader.add(
 				"restart <= '1';")
-		self.tb.architecture.processes["restart_gen"].body.add(
+		self.tb.architecture.processes["restart_gen"].bodyHeader.add(
 				"wait for 20 ns;")
-		self.tb.architecture.processes["restart_gen"].body.add(
+		self.tb.architecture.processes["restart_gen"].bodyHeader.add(
 				"restart <= '0';")
 
 		# exc
-		self.tb.architecture.processes["exc_gen"].body.add(
+		self.tb.architecture.processes["exc_gen"].bodyHeader.add(
 				"exc <= '0';")
-		self.tb.architecture.processes["exc_gen"].body.add(
+		self.tb.architecture.processes["exc_gen"].bodyHeader.add(
 				"wait for 130 ns;")
-		self.tb.architecture.processes["exc_gen"].body.add(
+		self.tb.architecture.processes["exc_gen"].bodyHeader.add(
 				"exc <= '1';")
-		self.tb.architecture.processes["exc_gen"].body.add(
+		self.tb.architecture.processes["exc_gen"].bodyHeader.add(
 				"wait for 600 ns;")
-		self.tb.architecture.processes["exc_gen"].body.add(
+		self.tb.architecture.processes["exc_gen"].bodyHeader.add(
 				"exc <= '0';")
-		self.tb.architecture.processes["exc_gen"].body.add(
+		self.tb.architecture.processes["exc_gen"].bodyHeader.add(
 				"wait for 100 ns;")
-		self.tb.architecture.processes["exc_gen"].body.add(
+		self.tb.architecture.processes["exc_gen"].bodyHeader.add(
 				"exc <= '1';")
-		self.tb.architecture.processes["exc_gen"].body.add(
+		self.tb.architecture.processes["exc_gen"].bodyHeader.add(
 				"wait for 60 ns;")
-		self.tb.architecture.processes["exc_gen"].body.add(
+		self.tb.architecture.processes["exc_gen"].bodyHeader.add(
 				"exc <= '0';")
 
 		# exc spike
-		self.tb.architecture.processes["exc_spike_gen"].body.add(
+		self.tb.architecture.processes["exc_spike_gen"].bodyHeader.add(
 				"exc_spike <= '0';")
-		self.tb.architecture.processes["exc_spike_gen"].body.add(
+		self.tb.architecture.processes["exc_spike_gen"].bodyHeader.add(
 				"wait for 130 ns;")
-		self.tb.architecture.processes["exc_spike_gen"].body.add(
+		self.tb.architecture.processes["exc_spike_gen"].bodyHeader.add(
 				"exc_spike <= '1';")
-		self.tb.architecture.processes["exc_spike_gen"].body.add(
+		self.tb.architecture.processes["exc_spike_gen"].bodyHeader.add(
 				"wait for 600 ns;")
-		self.tb.architecture.processes["exc_spike_gen"].body.add(
+		self.tb.architecture.processes["exc_spike_gen"].bodyHeader.add(
 				"exc_spike <= '0';")
 
 		# inh
-		self.tb.architecture.processes["inh_gen"].body.add(
+		self.tb.architecture.processes["inh_gen"].bodyHeader.add(
 				"inh <= '0';")
-		self.tb.architecture.processes["inh_gen"].body.add(
+		self.tb.architecture.processes["inh_gen"].bodyHeader.add(
 				"wait for 750 ns;")
-		self.tb.architecture.processes["inh_gen"].body.add(
+		self.tb.architecture.processes["inh_gen"].bodyHeader.add(
 				"inh <= '1';")
-		self.tb.architecture.processes["inh_gen"].body.add(
+		self.tb.architecture.processes["inh_gen"].bodyHeader.add(
 				"wait for 60 ns;")
-		self.tb.architecture.processes["inh_gen"].body.add(
+		self.tb.architecture.processes["inh_gen"].bodyHeader.add(
 				"inh <= '0';")
-		self.tb.architecture.processes["inh_gen"].body.add(
+		self.tb.architecture.processes["inh_gen"].bodyHeader.add(
 				"wait for 20 ns;")
-		self.tb.architecture.processes["inh_gen"].body.add(
+		self.tb.architecture.processes["inh_gen"].bodyHeader.add(
 				"inh <= '1';")
-		self.tb.architecture.processes["inh_gen"].body.add(
+		self.tb.architecture.processes["inh_gen"].bodyHeader.add(
 				"wait for 60 ns;")
-		self.tb.architecture.processes["inh_gen"].body.add(
+		self.tb.architecture.processes["inh_gen"].bodyHeader.add(
 				"inh <= '0';")
 
 		# inh spike
-		self.tb.architecture.processes["inh_spike_gen"].body.add(
+		self.tb.architecture.processes["inh_spike_gen"].bodyHeader.add(
 				"inh_spike <= '0';")
-		self.tb.architecture.processes["inh_spike_gen"].body.add(
+		self.tb.architecture.processes["inh_spike_gen"].bodyHeader.add(
 				"wait for 750 ns;")
-		self.tb.architecture.processes["inh_spike_gen"].body.add(
+		self.tb.architecture.processes["inh_spike_gen"].bodyHeader.add(
 				"inh_spike <= '1';")
-		self.tb.architecture.processes["inh_spike_gen"].body.add(
+		self.tb.architecture.processes["inh_spike_gen"].bodyHeader.add(
 				"wait for 60 ns;")
-		self.tb.architecture.processes["inh_spike_gen"].body.add(
+		self.tb.architecture.processes["inh_spike_gen"].bodyHeader.add(
 				"inh_spike <= '0';")
 
 
 
+
+from spiker_pkg import SpikerPackage
+
+pkg = SpikerPackage()
+pkg.write_file()
+pkg.compile()
 
 
 a = LIFneuron(32, 32, 32, 10, debug=True)

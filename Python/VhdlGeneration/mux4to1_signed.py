@@ -31,28 +31,33 @@ class Mux4to1_signed(VHDLblock):
 
 		# Add/sub process
 		self.architecture.processes.add("selection")
-		self.architecture.processes["selection"].sensitivity_list.add("sel")
-		self.architecture.processes["selection"].sensitivity_list.add("in0")
-		self.architecture.processes["selection"].sensitivity_list.add("in1")
-		self.architecture.processes["selection"].sensitivity_list.add("in2")
-		self.architecture.processes["selection"].sensitivity_list.add("in3")
+		self.architecture.processes["selection"].sensitivity_list.add(
+				"sel")
+		self.architecture.processes["selection"].sensitivity_list.add(
+				"in0")
+		self.architecture.processes["selection"].sensitivity_list.add(
+				"in1")
+		self.architecture.processes["selection"].sensitivity_list.add(
+				"in2")
+		self.architecture.processes["selection"].sensitivity_list.add(
+				"in3")
 
 		self.architecture.processes["selection"].case_list.add("sel")
-		self.architecture.processes["selection"].case_list["sel"].when_list.add(
-				'"00"')
-		self.architecture.processes["selection"].case_list["sel"].when_list\
-				['"00"'].body.add("mux_out <= in0;")
-		self.architecture.processes["selection"].case_list["sel"].when_list.add(
-				'"01"')
-		self.architecture.processes["selection"].case_list["sel"].when_list\
-				['"01"'].body.add("mux_out <= in1;")
-		self.architecture.processes["selection"].case_list["sel"].when_list.add(
-				'"10"')
-		self.architecture.processes["selection"].case_list["sel"].when_list\
-				['"10"'].body.add("mux_out <= in2;")
+		self.architecture.processes["selection"].case_list["sel"].\
+				when_list.add('"00"')
+		self.architecture.processes["selection"].case_list["sel"].\
+				when_list['"00"'].body.add("mux_out <= in0;")
+		self.architecture.processes["selection"].case_list["sel"].\
+				when_list.add('"01"')
+		self.architecture.processes["selection"].case_list["sel"].\
+				when_list['"01"'].body.add("mux_out <= in1;")
+		self.architecture.processes["selection"].case_list["sel"].\
+				when_list.add('"10"')
+		self.architecture.processes["selection"].case_list["sel"].\
+				when_list['"10"'].body.add("mux_out <= in2;")
 
-		self.architecture.processes["selection"].case_list["sel"].others.\
-				body.add("mux_out <= in3;")
+		self.architecture.processes["selection"].case_list["sel"].\
+				others.body.add("mux_out <= in3;")
 
 
 	def compile(self, output_dir = "output"):
