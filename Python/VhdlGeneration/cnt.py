@@ -85,8 +85,3 @@ class Cnt(VHDLblock):
 		sp.run(command, shell = True)
 
 		print("\n")
-
-a = Cnt()
-a.write_file()
-a.compile()
-a.elaborate()
