@@ -124,6 +124,10 @@ class LIFneuron(VHDLblock):
 			direction	= "in", 
 			port_type	= "std_logic")
 		self.entity.port.add(
+			name 		= "v_th_en", 
+			direction	= "in", 
+			port_type	= "std_logic")
+		self.entity.port.add(
 			name 		= "restart", 
 			direction	= "in", 
 			port_type	= "std_logic")
@@ -178,9 +182,6 @@ class LIFneuron(VHDLblock):
 			name 		= "v_update",
 			signal_type	= "std_logic")
 		self.architecture.signal.add(
-			name 		= "v_th_en", 
-			signal_type	= "std_logic")
-		self.architecture.signal.add(
 			name 		= "masked_v_th_en",
 			signal_type	= "std_logic")
 		self.architecture.signal.add(
@@ -222,7 +223,7 @@ class LIFneuron(VHDLblock):
 
 		elif default_exc_weights_bitwidth == default_bitwidth:
 			self.architecture.signal.add(
-				name 		= "exc_weight",
+				name 		= "masked_exc_weight",
 				signal_type	= "signed(neuron_bit_width-1 "
 							"downto 0)")
 		else:
@@ -270,8 +271,19 @@ class LIFneuron(VHDLblock):
 				"exc_mask")
 		self.architecture.instances["exc_mask"].generic_map()
 		self.architecture.instances["exc_mask"].port_map()
-		self.architecture.instances["exc_mask"].g_map.add("N",
+
+		if default_inh_weights_bitwidth < default_bitwidth:
+			self.architecture.instances["exc_mask"].g_map.add("N",
 				"exc_weights_bit_width")
+
+		elif default_inh_weights_bitwidth == default_bitwidth:
+			self.architecture.instances["exc_mask"].g_map.add("N",
+				"neuron_bit_width")
+		else:
+			print("Excitatory weight bit-width cannot be larger "
+				"than the neuron's one")
+			exit(-1)
+
 		self.architecture.instances["exc_mask"].p_map.add("input_bits",
 				"exc_weight")
 		self.architecture.instances["exc_mask"].p_map.add("mask_bit",
@@ -284,8 +296,19 @@ class LIFneuron(VHDLblock):
 				"inh_mask")
 		self.architecture.instances["inh_mask"].generic_map()
 		self.architecture.instances["inh_mask"].port_map()
-		self.architecture.instances["inh_mask"].g_map.add("N",
+
+		if default_inh_weights_bitwidth < default_bitwidth:
+			self.architecture.instances["inh_mask"].g_map.add("N",
 				"inh_weights_bit_width")
+
+		elif default_inh_weights_bitwidth == default_bitwidth:
+			self.architecture.instances["inh_mask"].g_map.add("N",
+				"neuron_bit_width")
+		else:
+			print("Inhibitory weight bit-width cannot be larger "
+				"than the neuron's one")
+			exit(-1)
+
 		self.architecture.instances["inh_mask"].p_map.add("input_bits",
 				"inh_weight")
 		self.architecture.instances["inh_mask"].p_map.add("mask_bit",
@@ -418,7 +441,7 @@ class LIFneuron(VHDLblock):
 
 		# inh_weight
 		self.tb.architecture.processes["inh_weight_gen"].body.\
-				add("inh_weight <= to_signed(300, "
+				add("inh_weight <= to_signed(-300, "
 				"inh_weight'length);")
 
 		# v_reset
@@ -442,6 +465,18 @@ class LIFneuron(VHDLblock):
 				"wait for 10 ns;")
 		self.tb.architecture.processes["rst_n_gen"].body.add(
 				"rst_n <= '1';")
+
+		# v_th_en
+		self.tb.architecture.processes["v_th_en_gen"].body.add(
+				"v_th_en <= '0';")
+		self.tb.architecture.processes["v_th_en_gen"].body.add(
+				"wait for 50 ns;")
+		self.tb.architecture.processes["v_th_en_gen"].body.add(
+				"v_th_en <= '1';")
+		self.tb.architecture.processes["v_th_en_gen"].body.add(
+				"wait for 20 ns;")
+		self.tb.architecture.processes["v_th_en_gen"].body.add(
+				"v_th_en <= '0';")
 
 		# load_end
 		self.tb.architecture.processes["load_end_gen"].body.add(
@@ -475,17 +510,69 @@ class LIFneuron(VHDLblock):
 		self.tb.architecture.processes["exc_gen"].body.add(
 				"exc <= '1';")
 		self.tb.architecture.processes["exc_gen"].body.add(
+				"wait for 600 ns;")
+		self.tb.architecture.processes["exc_gen"].body.add(
+				"exc <= '0';")
+		self.tb.architecture.processes["exc_gen"].body.add(
+				"wait for 100 ns;")
+		self.tb.architecture.processes["exc_gen"].body.add(
+				"exc <= '1';")
+		self.tb.architecture.processes["exc_gen"].body.add(
 				"wait for 60 ns;")
 		self.tb.architecture.processes["exc_gen"].body.add(
 				"exc <= '0';")
 
+		# exc spike
+		self.tb.architecture.processes["exc_spike_gen"].body.add(
+				"exc_spike <= '0';")
+		self.tb.architecture.processes["exc_spike_gen"].body.add(
+				"wait for 130 ns;")
+		self.tb.architecture.processes["exc_spike_gen"].body.add(
+				"exc_spike <= '1';")
+		self.tb.architecture.processes["exc_spike_gen"].body.add(
+				"wait for 600 ns;")
+		self.tb.architecture.processes["exc_spike_gen"].body.add(
+				"exc_spike <= '0';")
+
+		# inh
+		self.tb.architecture.processes["inh_gen"].body.add(
+				"inh <= '0';")
+		self.tb.architecture.processes["inh_gen"].body.add(
+				"wait for 750 ns;")
+		self.tb.architecture.processes["inh_gen"].body.add(
+				"inh <= '1';")
+		self.tb.architecture.processes["inh_gen"].body.add(
+				"wait for 60 ns;")
+		self.tb.architecture.processes["inh_gen"].body.add(
+				"inh <= '0';")
+		self.tb.architecture.processes["inh_gen"].body.add(
+				"wait for 20 ns;")
+		self.tb.architecture.processes["inh_gen"].body.add(
+				"inh <= '1';")
+		self.tb.architecture.processes["inh_gen"].body.add(
+				"wait for 60 ns;")
+		self.tb.architecture.processes["inh_gen"].body.add(
+				"inh <= '0';")
+
+		# inh spike
+		self.tb.architecture.processes["inh_spike_gen"].body.add(
+				"inh_spike <= '0';")
+		self.tb.architecture.processes["inh_spike_gen"].body.add(
+				"wait for 750 ns;")
+		self.tb.architecture.processes["inh_spike_gen"].body.add(
+				"inh_spike <= '1';")
+		self.tb.architecture.processes["inh_spike_gen"].body.add(
+				"wait for 60 ns;")
+		self.tb.architecture.processes["inh_spike_gen"].body.add(
+				"inh_spike <= '0';")
 
 
 
 
-a = LIFneuron(debug=True)
+
+a = LIFneuron(32, 32, 32, 10, debug=True)
 
 a.testbench()
 a.tb.write_file_all()
-a.tb.compile()
+a.tb.compile_all()
 a.tb.elaborate()
