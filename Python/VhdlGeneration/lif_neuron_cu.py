@@ -269,6 +269,7 @@ class LIFneuronCU(VHDLblock):
 				body.add("next_state <= reset;")
 
 		
+		# Default values
 		self.architecture.processes.add("output_evaluation")
 		self.architecture.processes["output_evaluation"].\
 				sensitivity_list.add("present_state")
@@ -360,7 +361,7 @@ class LIFneuronCU(VHDLblock):
 				add("fire")
 		self.architecture.processes["output_evaluation"].\
 				case_list["present_state"].when_list["fire"].\
-				body.add("v_update <= '1';")
+				body.add("v_update <= '0';")
 		self.architecture.processes["output_evaluation"].\
 				case_list["present_state"].when_list["fire"].\
 				body.add("v_en <= '1';")
