@@ -8,8 +8,7 @@ from shifter import Shifter
 from mux4to1_signed import Mux4to1_signed
 from add_sub import AddSub
 from mux2to1_signed import Mux2to1_signed
-from reg_signed import RegSigned
-from reg_signed_sync_rst import RegSignedSyncRst
+from reg import Reg
 from cmp_gt import CmpGt
 
 from testbench import Testbench
@@ -41,13 +40,16 @@ class LIFneuronDP(VHDLblock):
 						default_bitwidth = 
 						default_bitwidth)
 
-		self.reg_signed			= RegSigned(
+		self.reg_signed			= Reg(
 						default_bitwidth = 
-						default_bitwidth)
+						default_bitwidth,
+						reg_type = "signed")
 
-		self.reg_signed_sync_rst	= RegSignedSyncRst(
+		self.reg_signed_sync_rst	= Reg(
 						default_bitwidth = 
-						default_bitwidth)
+						default_bitwidth,
+						reg_type = "signed",
+						rst = "sync")
 
 		self.cmp_gt			= CmpGt(
 						default_bitwidth = 
