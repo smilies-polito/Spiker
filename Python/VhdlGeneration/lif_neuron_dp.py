@@ -21,21 +21,18 @@ class LIFneuronDP(VHDLblock):
 
 		VHDLblock.__init__(self, entity_name = "neuron_datapath")
 
-		self.shifter			= Shifter(bitwidth =
-						bitwidth,
-						shift =
-						shift)
+		self.shifter			= Shifter(
+							bitwidth = bitwidth,
+							shift = shift)
 
 		self.mux4to1_signed		= Mux(
 							n_in = 4,
 							in_type = "signed",
 							bitwidth =
-							bitwidth
-						)
+							bitwidth)
 
 		self.add_sub			= AddSub(
-						bitwidth = 
-						bitwidth)
+							bitwidth = bitwidth)
 
 		self.mux2to1_signed		= Mux(
 							n_in = 2,
@@ -45,19 +42,16 @@ class LIFneuronDP(VHDLblock):
 						)
 
 		self.reg_signed			= Reg(
-						bitwidth = 
-						bitwidth,
-						reg_type = "signed")
+							bitwidth = bitwidth,
+							reg_type = "signed")
 
 		self.reg_signed_sync_rst	= Reg(
-						bitwidth = 
-						bitwidth,
-						reg_type = "signed",
-						rst = "sync")
+							bitwidth = bitwidth,
+							reg_type = "signed",
+							rst = "sync")
 
 		self.cmp_gt			= Cmp(
-						bitwidth = 
-						bitwidth)
+							bitwidth = bitwidth)
 
 		# Libraries and packages
 		self.library.add("ieee")
