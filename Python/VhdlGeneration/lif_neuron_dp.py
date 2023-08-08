@@ -16,49 +16,48 @@ from utils import track_signals
 
 class LIFneuronDP(VHDLblock):
 
-	def __init__(self, default_bitwidth = 16, default_inh_weights_bitwidth =
-			5, default_exc_weights_bitwidth = 5,
-			default_shift = 10, debug = False):
+	def __init__(self, bitwidth = 16, w_inh_bw = 5, w_exc_bw = 5,
+			shift = 10, debug = False):
 
 		VHDLblock.__init__(self, entity_name = "neuron_datapath")
 
-		self.shifter			= Shifter(default_bitwidth =
-						default_bitwidth,
-						default_shift =
-						default_shift)
+		self.shifter			= Shifter(bitwidth =
+						bitwidth,
+						shift =
+						shift)
 
 		self.mux4to1_signed		= Mux(
 							n_in = 4,
 							in_type = "signed",
 							bitwidth =
-							default_bitwidth
+							bitwidth
 						)
 
 		self.add_sub			= AddSub(
-						default_bitwidth = 
-						default_bitwidth)
+						bitwidth = 
+						bitwidth)
 
 		self.mux2to1_signed		= Mux(
 							n_in = 2,
 							in_type = "signed",
 							bitwidth =
-							default_bitwidth
+							bitwidth
 						)
 
 		self.reg_signed			= Reg(
-						default_bitwidth = 
-						default_bitwidth,
+						bitwidth = 
+						bitwidth,
 						reg_type = "signed")
 
 		self.reg_signed_sync_rst	= Reg(
-						default_bitwidth = 
-						default_bitwidth,
+						bitwidth = 
+						bitwidth,
 						reg_type = "signed",
 						rst = "sync")
 
 		self.cmp_gt			= Cmp(
-						default_bitwidth = 
-						default_bitwidth)
+						bitwidth = 
+						bitwidth)
 
 		# Libraries and packages
 		self.library.add("ieee")
@@ -70,27 +69,27 @@ class LIFneuronDP(VHDLblock):
 		self.entity.generic.add(
 			name		= "neuron_bit_width", 
 			gen_type	= "integer",
-			value		= str(default_bitwidth))
+			value		= str(bitwidth))
 
 
-		if default_inh_weights_bitwidth < default_bitwidth:
+		if w_inh_bw < bitwidth:
 			self.entity.generic.add(
 				name		= "inh_weights_bit_width",
 				gen_type	= "integer",
 				value		= str(
-						default_inh_weights_bitwidth))
+						w_inh_bw))
 
-		if default_exc_weights_bitwidth < default_bitwidth:
+		if w_exc_bw < bitwidth:
 			self.entity.generic.add(
 				name		= "exc_weights_bit_width",
 				gen_type	= "integer",
 				value		= str(
-						default_exc_weights_bitwidth))
+						w_exc_bw))
 
 		self.entity.generic.add(
 			name		= "shift",
 			gen_type	= "integer",
-			value		= str(default_shift))
+			value		= str(shift))
 
 		# Input parameters
 		self.entity.port.add(
@@ -103,13 +102,13 @@ class LIFneuronDP(VHDLblock):
 			port_type	= "signed(neuron_bit_width-1 downto 0)")
 
 
-		if default_inh_weights_bitwidth < default_bitwidth:
+		if w_inh_bw < bitwidth:
 			self.entity.port.add(
 				name 		= "inh_weight",
 				direction	= "in",
 				port_type	= "signed("
 					"inh_weights_bit_width-1 downto 0)")
-		elif default_inh_weights_bitwidth == default_bitwidth:
+		elif w_inh_bw == bitwidth:
 			self.entity.port.add(
 				name 		= "inh_weight",
 				direction	= "in",
@@ -121,14 +120,14 @@ class LIFneuronDP(VHDLblock):
 			exit(-1)
 			
 
-		if default_exc_weights_bitwidth < default_bitwidth:
+		if w_exc_bw < bitwidth:
 			self.entity.port.add(
 				name 		= "exc_weight",
 				direction	= "in",
 				port_type	= "signed("
 					"exc_weights_bit_width-1 downto 0)")
 
-		elif default_exc_weights_bitwidth == default_bitwidth:
+		elif w_exc_bw == bitwidth:
 			self.entity.port.add(
 				name 		= "exc_weight",
 				direction	= "in",
@@ -227,17 +226,17 @@ class LIFneuronDP(VHDLblock):
 		self.architecture.instances.add(self.mux4to1_signed,
 				"update_mux")
 		self.architecture.instances["update_mux"].generic_map()
-		self.architecture.instances["update_mux"].g_map.add("N",
+		self.architecture.instances["update_mux"].g_map.add("bitwidth",
 				"neuron_bit_width")
 		self.architecture.instances["update_mux"].port_map(mode = "no")
-		self.architecture.instances["update_mux"].p_map.add("sel",
+		self.architecture.instances["update_mux"].p_map.add("mux_sel",
 				"update_sel")
 		self.architecture.instances["update_mux"].p_map.add("in0",
 				"(others => '0')")
 		self.architecture.instances["update_mux"].p_map.add("in1",
 				"v_shifted")
 
-		if default_exc_weights_bitwidth < default_bitwidth:
+		if w_exc_bw < bitwidth:
 
 			self.architecture.instances["update_mux"].p_map.add(
 					"in2", "(others => "
@@ -249,7 +248,7 @@ class LIFneuronDP(VHDLblock):
 					conn_range = "(exc_weights_bit_width-1 "
 					"downto 0)")
 
-		elif default_exc_weights_bitwidth == default_bitwidth:
+		elif w_exc_bw == bitwidth:
 			self.architecture.instances["update_mux"].p_map.add(
 					"in2", "exc_weight")
 
@@ -259,7 +258,7 @@ class LIFneuronDP(VHDLblock):
 			exit(-1)
 
 
-		if default_inh_weights_bitwidth < default_bitwidth:
+		if w_inh_bw < bitwidth:
 
 			self.architecture.instances["update_mux"].p_map.add(
 					"in3", "(others => "
@@ -271,7 +270,7 @@ class LIFneuronDP(VHDLblock):
 					conn_range = "(inh_weights_bit_width-1 "
 					"downto 0)")
 
-		elif default_inh_weights_bitwidth == default_bitwidth:
+		elif w_inh_bw == bitwidth:
 			self.architecture.instances["update_mux"].p_map.add(
 					"in3", "inh_weight")
 
@@ -303,10 +302,10 @@ class LIFneuronDP(VHDLblock):
 		# Multiplexer 2 to 1 signed
 		self.architecture.instances.add(self.mux2to1_signed, "v_mux")
 		self.architecture.instances["v_mux"].generic_map()
-		self.architecture.instances["v_mux"].g_map.add("N",
+		self.architecture.instances["v_mux"].g_map.add("bitwidth",
 				"neuron_bit_width")
 		self.architecture.instances["v_mux"].port_map()
-		self.architecture.instances["v_mux"].p_map.add("sel",
+		self.architecture.instances["v_mux"].p_map.add("mux_sel",
 				"v_update")
 		self.architecture.instances["v_mux"].p_map.add("in0",
 				"v_reset")
@@ -549,6 +548,3 @@ class LIFneuronDP(VHDLblock):
 				add("wait for " + str(clock_period) + " ns;")
 		self.tb.architecture.processes["v_update_gen"].bodyHeader.\
 				add("v_update <= '1';")
-
-a = LIFneuronDP()
-print(a.code())

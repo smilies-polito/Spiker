@@ -48,9 +48,6 @@ class Mux(VHDLblock):
 		if in_type != "std_logic" and in_type != "std_logic_vector":
 			self.library["ieee"].package.add("numeric_std")
 
-		# Generics
-		self.entity.generic.add("N_sel", "integer", str(n_sel))
-
 		if bitwidth > 1:
 			self.entity.generic.add("bitwidth", "integer",
 					str(bitwidth))
@@ -60,7 +57,8 @@ class Mux(VHDLblock):
 			sel_type = "std_logic"
 			quote = "\'"
 		else:
-			sel_type = "std_logic_vector(N_sel-1 downto 0)"
+			sel_type = "std_logic_vector(" + str(n_sel-1) + \
+					" downto 0)"
 			quote = "\""
 
 		self.entity.port.add("mux_sel", "in", sel_type)

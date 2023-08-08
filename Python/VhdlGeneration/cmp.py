@@ -6,7 +6,7 @@ from vhdl_block import VHDLblock
 
 class Cmp(VHDLblock):
 
-	def __init__(self, default_bitwidth = 8, cmp_type = "gt", signal_type =
+	def __init__(self, bitwidth = 8, cmp_type = "gt", signal_type =
 			"signed"):
 
 
@@ -28,7 +28,7 @@ class Cmp(VHDLblock):
 			self.library["ieee"].package.add("numeric_std")
 
 		# Generics
-		self.entity.generic.add("N", "integer", str(default_bitwidth))
+		self.entity.generic.add("N", "integer", str(bitwidth))
 
 		# Input ports
 		if signal_type == "std_logic":

@@ -7,7 +7,7 @@ from vhdl_block import VHDLblock
 
 class Reg(VHDLblock):
 
-	def __init__(self, default_bitwidth = 8, reg_type = "std_logic", rst =
+	def __init__(self, bitwidth = 8, reg_type = "std_logic", rst =
 			None, active = "low"):
 
 		if reg_type != "std_logic" and reg_type != "signed" and \
@@ -34,7 +34,7 @@ class Reg(VHDLblock):
 			self.library["ieee"].package.add("numeric_std")
 
 		# Generics
-		self.entity.generic.add("N", "integer", str(default_bitwidth))
+		self.entity.generic.add("N", "integer", str(bitwidth))
 
 		# Input ports
 		self.entity.port.add("clk", "in", "std_logic")

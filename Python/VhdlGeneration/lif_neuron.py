@@ -12,19 +12,19 @@ from utils import track_signals
 
 class LIFneuron(VHDLblock):
 
-	def __init__(self, default_bitwidth = 16, default_inh_weights_bitwidth =
-			5, default_exc_weights_bitwidth = 5,
-			default_shift = 10, debug = False):
+	def __init__(self, bitwidth = 16, w_inh_bw =
+			5, w_exc_bw = 5,
+			shift = 10, debug = False):
 
 		VHDLblock.__init__(self, entity_name = "neuron")
 
 		self.datapath = LIFneuronDP(
-			default_bitwidth = default_bitwidth,
-			default_inh_weights_bitwidth = 
-			default_inh_weights_bitwidth,
-			default_exc_weights_bitwidth = 
-			default_exc_weights_bitwidth, 
-			default_shift = default_shift,
+			bitwidth = bitwidth,
+			w_inh_bw = 
+			w_inh_bw,
+			w_exc_bw = 
+			w_exc_bw, 
+			shift = shift,
 			debug = debug
 		)
 
@@ -44,27 +44,27 @@ class LIFneuron(VHDLblock):
 		self.entity.generic.add(
 			name		= "neuron_bit_width", 
 			gen_type	= "integer",
-			value		= str(default_bitwidth))
+			value		= str(bitwidth))
 
 
-		if default_inh_weights_bitwidth < default_bitwidth:
+		if w_inh_bw < bitwidth:
 			self.entity.generic.add(
 				name		= "inh_weights_bit_width",
 				gen_type	= "integer",
 				value		= str(
-					default_inh_weights_bitwidth))
+					w_inh_bw))
 
-		if default_exc_weights_bitwidth < default_bitwidth:
+		if w_exc_bw < bitwidth:
 			self.entity.generic.add(
 				name		= "exc_weights_bit_width",
 				gen_type	= "integer",
 				value		= str(
-					default_exc_weights_bitwidth))
+					w_exc_bw))
 
 		self.entity.generic.add(
 			name		= "shift",
 			gen_type	= "integer",
-			value		= str(default_shift))
+			value		= str(shift))
 
 		# Input parameters
 		self.entity.port.add(
@@ -77,14 +77,14 @@ class LIFneuron(VHDLblock):
 			port_type	= "signed(neuron_bit_width-1 downto 0)")
 
 
-		if default_inh_weights_bitwidth < default_bitwidth:
+		if w_inh_bw < bitwidth:
 			self.entity.port.add(
 				name 		= "inh_weight",
 				direction	= "in",
 				port_type	= "signed("
 						"inh_weights_bit_width-1 "
 						"downto 0)")
-		elif default_inh_weights_bitwidth == default_bitwidth:
+		elif w_inh_bw == bitwidth:
 			self.entity.port.add(
 				name 		= "inh_weight",
 				direction	= "in",
@@ -96,14 +96,14 @@ class LIFneuron(VHDLblock):
 			exit(-1)
 			
 
-		if default_exc_weights_bitwidth < default_bitwidth:
+		if w_exc_bw < bitwidth:
 			self.entity.port.add(
 				name 		= "exc_weight",
 				direction	= "in",
 				port_type	= "signed("
 					"exc_weights_bit_width-1 downto 0)")
 
-		elif default_exc_weights_bitwidth == default_bitwidth:
+		elif w_exc_bw == bitwidth:
 			self.entity.port.add(
 				name 		= "exc_weight",
 				direction	= "in",
@@ -198,13 +198,13 @@ class LIFneuron(VHDLblock):
 			signal_type	= "std_logic")
 
 
-		if default_inh_weights_bitwidth < default_bitwidth:
+		if w_inh_bw < bitwidth:
 			self.architecture.signal.add(
 				name 		= "masked_inh_weight",
 				signal_type	= "signed("
 						"inh_weights_bit_width-1 "
 						"downto 0)")
-		elif default_inh_weights_bitwidth == default_bitwidth:
+		elif w_inh_bw == bitwidth:
 			self.architecture.signal.add(
 				name 		= "masked_inh_weight",
 				signal_type	= "signed(neuron_bit_width-1 "
@@ -215,13 +215,13 @@ class LIFneuron(VHDLblock):
 			exit(-1)
 			
 
-		if default_exc_weights_bitwidth < default_bitwidth:
+		if w_exc_bw < bitwidth:
 			self.architecture.signal.add(
 				name 		= "masked_exc_weight",
 				signal_type	= "signed("
 					"exc_weights_bit_width-1 downto 0)")
 
-		elif default_exc_weights_bitwidth == default_bitwidth:
+		elif w_exc_bw == bitwidth:
 			self.architecture.signal.add(
 				name 		= "masked_exc_weight",
 				signal_type	= "signed(neuron_bit_width-1 "
@@ -272,11 +272,11 @@ class LIFneuron(VHDLblock):
 		self.architecture.instances["exc_mask"].generic_map()
 		self.architecture.instances["exc_mask"].port_map()
 
-		if default_inh_weights_bitwidth < default_bitwidth:
+		if w_inh_bw < bitwidth:
 			self.architecture.instances["exc_mask"].g_map.add("N",
 				"exc_weights_bit_width")
 
-		elif default_inh_weights_bitwidth == default_bitwidth:
+		elif w_inh_bw == bitwidth:
 			self.architecture.instances["exc_mask"].g_map.add("N",
 				"neuron_bit_width")
 		else:
@@ -297,11 +297,11 @@ class LIFneuron(VHDLblock):
 		self.architecture.instances["inh_mask"].generic_map()
 		self.architecture.instances["inh_mask"].port_map()
 
-		if default_inh_weights_bitwidth < default_bitwidth:
+		if w_inh_bw < bitwidth:
 			self.architecture.instances["inh_mask"].g_map.add("N",
 				"inh_weights_bit_width")
 
-		elif default_inh_weights_bitwidth == default_bitwidth:
+		elif w_inh_bw == bitwidth:
 			self.architecture.instances["inh_mask"].g_map.add("N",
 				"neuron_bit_width")
 		else:

@@ -4,9 +4,9 @@ import path_config
 
 from vhdl_block import VHDLblock
 
-class GenericOr(VHDLblock):
+class Or(VHDLblock):
 
-	def __init__(self, default_bitwidth = 8):
+	def __init__(self, bitwidth = 8):
 
 		VHDLblock.__init__(self, entity_name = "generic_or")
 
@@ -16,7 +16,7 @@ class GenericOr(VHDLblock):
 
 		# Generics
 		self.entity.generic.add("N", "integer", 
-			str(default_bitwidth))
+			str(bitwidth))
 
 		# Input ports
 		self.entity.port.add("or_in", "in", 

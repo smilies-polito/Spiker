@@ -6,7 +6,7 @@ from vhdl_block import VHDLblock
 
 class AddSub(VHDLblock):
 
-	def __init__(self, default_bitwidth = 8):
+	def __init__(self, bitwidth = 8):
 
 		VHDLblock.__init__(self, entity_name = "add_sub")
 
@@ -16,7 +16,7 @@ class AddSub(VHDLblock):
 		self.library["ieee"].package.add("numeric_std")
 
 		# Generics
-		self.entity.generic.add("N", "integer", str(default_bitwidth))
+		self.entity.generic.add("N", "integer", str(bitwidth))
 
 		# Input ports
 		self.entity.port.add("in0", "in", "signed(N-1 downto 0)")
