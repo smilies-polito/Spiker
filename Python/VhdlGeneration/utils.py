@@ -75,3 +75,20 @@ def track_signals(signals_dict, name):
 			first = False
 
 	return tracked
+
+
+def ceil_pow2(x):
+
+	power = 0
+	go = True
+
+	while go:
+		if x // 2**power == 0 or x // 2**power == 1 and \
+			x % 2**power == 0:
+
+			go = False
+
+		else:
+			power += 1
+			
+	return 2**power
