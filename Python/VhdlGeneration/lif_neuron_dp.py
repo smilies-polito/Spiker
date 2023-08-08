@@ -5,9 +5,8 @@ from vhdl_block import VHDLblock
 from if_statement import If
 
 from shifter import Shifter
-from mux4to1_signed import Mux4to1_signed
 from add_sub import AddSub
-from mux2to1_signed import Mux2to1_signed
+from mux import Mux
 from reg import Reg
 from cmp import Cmp
 
@@ -28,17 +27,23 @@ class LIFneuronDP(VHDLblock):
 						default_shift =
 						default_shift)
 
-		self.mux4to1_signed		= Mux4to1_signed(
-						default_bitwidth = 
-						default_bitwidth)
+		self.mux4to1_signed		= Mux(
+							n_in = 4,
+							in_type = "signed",
+							bitwidth =
+							default_bitwidth
+						)
 
 		self.add_sub			= AddSub(
 						default_bitwidth = 
 						default_bitwidth)
 
-		self.mux2to1_signed		= Mux2to1_signed(
-						default_bitwidth = 
-						default_bitwidth)
+		self.mux2to1_signed		= Mux(
+							n_in = 2,
+							in_type = "signed",
+							bitwidth =
+							default_bitwidth
+						)
 
 		self.reg_signed			= Reg(
 						default_bitwidth = 
@@ -544,3 +549,6 @@ class LIFneuronDP(VHDLblock):
 				add("wait for " + str(clock_period) + " ns;")
 		self.tb.architecture.processes["v_update_gen"].bodyHeader.\
 				add("v_update <= '1';")
+
+a = LIFneuronDP()
+print(a.code())
