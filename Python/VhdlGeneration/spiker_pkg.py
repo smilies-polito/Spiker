@@ -22,7 +22,6 @@ class SpikerPackage(Package):
 
 		self.pkg_dec.type_list.add("mi_states", "Enumeration")
 		self.pkg_dec.type_list["mi_states"].add("reset")
-		self.pkg_dec.type_list["mi_states"].add("load")
 		self.pkg_dec.type_list["mi_states"].add("idle_wait")
 		self.pkg_dec.type_list["mi_states"].add("idle")
 		self.pkg_dec.type_list["mi_states"].add("init_wait")
