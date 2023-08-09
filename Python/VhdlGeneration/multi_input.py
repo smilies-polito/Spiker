@@ -452,10 +452,3 @@ class MultiInput(VHDLblock):
 				"wait for 60 ns;")
 		self.tb.architecture.processes["inh_spike_gen"].bodyHeader.add(
 				"inh_spike <= '0';")
-
-a = MultiInput()
-print(a.code())
-
-a.write_file_all()
-a.compile_all()
-a.elaborate()
