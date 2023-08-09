@@ -7,6 +7,7 @@ from lif_neuron_cu import LIFneuronCU
 from and_mask import AndMask
 from testbench import Testbench
 
+from spiker_pkg import SpikerPackage
 from utils import track_signals
 
 
@@ -17,6 +18,8 @@ class LIFneuron(VHDLblock):
 			shift = 10, debug = False):
 
 		VHDLblock.__init__(self, entity_name = "neuron")
+
+		self.spiker_pkg = SpikerPackage()
 
 		self.datapath = LIFneuronDP(
 			bitwidth = bitwidth,
@@ -389,9 +392,10 @@ class LIFneuron(VHDLblock):
 
 	def compile_all(self, output_dir = "output"):
 
-		self.datapath.compile_all()
-		self.control_unit.compile()
-		self.and_mask.compile()
+		self.spiker_pkg.compile(output_dir = output_dir)
+		self.datapath.compile_all(output_dir = output_dir)
+		self.control_unit.compile(output_dir = output_dir)
+		self.and_mask.compile(output_dir = output_dir)
 
 		print("\nCompiling component %s\n"
 				%(self.entity.name))
@@ -406,6 +410,7 @@ class LIFneuron(VHDLblock):
 
 	def write_file_all(self, output_dir = "output"):
 
+		self.spiker_pkg.write_file(output_dir = output_dir)
 		self.datapath.write_file_all(output_dir = output_dir)
 		self.control_unit.write_file(output_dir = output_dir)
 		self.and_mask.write_file(output_dir = output_dir)
@@ -565,20 +570,3 @@ class LIFneuron(VHDLblock):
 				"wait for 60 ns;")
 		self.tb.architecture.processes["inh_spike_gen"].bodyHeader.add(
 				"inh_spike <= '0';")
-
-
-
-
-from spiker_pkg import SpikerPackage
-
-pkg = SpikerPackage()
-pkg.write_file()
-pkg.compile()
-
-
-a = LIFneuron(32, 32, 32, 10, debug=True)
-
-a.testbench()
-a.tb.write_file_all()
-a.tb.compile_all()
-a.tb.elaborate()

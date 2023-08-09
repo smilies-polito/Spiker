@@ -4,6 +4,8 @@ import path_config
 
 from vhdl_block import VHDLblock
 from if_statement import If
+
+from spiker_pkg import SpikerPackage
 from utils import track_signals
 
 
@@ -12,6 +14,8 @@ class LIFneuronCU(VHDLblock):
 	def __init__(self, debug = False):
 
 		VHDLblock.__init__(self, entity_name = "neuron_cu")
+
+		self.spiker_pkg = SpikerPackage()
 
 		# Libraries and packages
 		self.library.add("ieee")
@@ -399,6 +403,9 @@ class LIFneuronCU(VHDLblock):
 						add(connect_string)
 
 
+	def write_file_all(self, output_dir = "output"):
+		self.spiker_pkg.write_file(output_dir = output_dir)
+		self.write_file(output_dir = output_dir)
 
 
 	def compile(self, output_dir = "output"):
@@ -412,6 +419,12 @@ class LIFneuronCU(VHDLblock):
 		sp.run(command, shell = True)
 
 		print("\n")
+
+
+	def compile_all(self, output_dir = "output"):
+		self.spiker_pkg.compile(output_dir = output_dir)
+		self.compile(output_dir = output_dir)
+
 
 	def elaborate(self, output_dir = "output"):
 
