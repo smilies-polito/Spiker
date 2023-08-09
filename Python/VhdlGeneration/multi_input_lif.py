@@ -9,7 +9,7 @@ from lif_neuron import LIFneuron
 from testbench import Testbench
 
 from spiker_pkg import SpikerPackage
-from utils import track_signals, ceil_pow2
+from utils import track_signals, ceil_pow2, debug_component
 
 
 class MultiInputLIF(VHDLblock):
@@ -167,11 +167,6 @@ class MultiInputLIF(VHDLblock):
 			port_type	= "std_logic")
 
 		self.entity.port.add(
-			name 		= "load_end", 
-			direction	= "in",
-			port_type	= "std_logic")
-
-		self.entity.port.add(
 			name 		= "start", 
 			direction	= "in",
 			port_type	= "std_logic")
@@ -202,16 +197,10 @@ class MultiInputLIF(VHDLblock):
 						"inh_cnt_bitwidth - 1 "
 						"downto 0)")
 		self.entity.port.add(
-			name 		= "load_ready", 
-			direction	= "out",
-			port_type	= "std_logic")
-
-		self.entity.port.add(
 			name 		= "mi_ready", 
 			direction	= "out",
 			port_type	= "std_logic")
 
-		# Output
 		self.entity.port.add(
 			name 		= "neuron_load_ready",
 			direction	= "out",
@@ -257,67 +246,24 @@ class MultiInputLIF(VHDLblock):
 				"mi")
 		self.architecture.instances["mi"].generic_map()
 		self.architecture.instances["mi"].port_map()
+		self.architecture.instances["mi"].p_map.add("all_ready",
+				"neuron_ready")
+		self.architecture.instances["mi"].p_map.add("ready", "mi_ready")
 
 		# LIF neuron
 		self.architecture.instances.add(self.lif_neuron,
 				"lif_neuron")
 		self.architecture.instances["lif_neuron"].generic_map()
 		self.architecture.instances["lif_neuron"].port_map()
+		self.architecture.instances["lif_neuron"].p_map.add("load_end",
+				"neuron_load_end")
+		self.architecture.instances["lif_neuron"].p_map.add("load_ready",
+				"neuron_load_ready")
 
 
-		if(debug):
-
-			if self.multi_input.debug:
-				for debug_port in self.multi_input.debug:
-
-					debug_port_name = debug_port + "_out"
-
-					self.entity.port.add(
-						name 		=
-							debug_port_name, 
-						direction	= "out",
-						port_type	= self.\
-							multi_input.entity.\
-							port[debug_port_name].\
-							port_type
-					)
-
-			if self.lif_neuron.debug:
-				for debug_port in self.lif_neuron.debug:
-
-					debug_port_name = debug_port + "_out"
-
-					self.entity.port.add(
-						name 		= 
-							debug_port_name, 
-						direction	= "out",
-						port_type	= self.\
-							lif_neuron.entity.\
-							port[debug_port_name].\
-							port_type
-					)
-
-
-			debug_signals = track_signals(self.architecture.signal,
-					self.entity.name)
-
-			for debug_port in debug_signals:
-
-				debug_port_name = debug_port + "_out"
-
-				self.entity.port.add(
-					name 		= debug_port_name, 
-					direction	= "out",
-					port_type	= self.architecture.\
-							signal[debug_port].\
-							signal_type)
-
-				# Bring the signal out
-				connect_string = debug_port_name + " <= " + \
-							debug_port + ";"
-				self.architecture.bodyCodeHeader.\
-						add(connect_string)
-
+		# Debug
+		if debug:
+			debug_component(self)
 	
 		
 
@@ -425,23 +371,35 @@ class MultiInputLIF(VHDLblock):
 		self.tb.architecture.processes["v_th_en_gen"].bodyHeader.add(
 				"v_th_en <= '0';")
 
-		# load_end
-		self.tb.architecture.processes["load_end_gen"].bodyHeader.add(
-				"load_end <= '0';")
-		self.tb.architecture.processes["load_end_gen"].bodyHeader.add(
-				"wait for 50 ns;")
-		self.tb.architecture.processes["load_end_gen"].bodyHeader.add(
-				"load_end <= '1';")
-		self.tb.architecture.processes["load_end_gen"].bodyHeader.add(
+		# neuron_load_end
+		self.tb.architecture.processes["neuron_load_end_gen"].\
+				bodyHeader.add("neuron_load_end <= '0';")
+		self.tb.architecture.processes["neuron_load_end_gen"].\
+				bodyHeader.add("wait for 50 ns;")
+		self.tb.architecture.processes["neuron_load_end_gen"].\
+				bodyHeader.add("neuron_load_end <= '1';")
+		self.tb.architecture.processes["neuron_load_end_gen"].\
+				bodyHeader.add("wait for 20 ns;")
+		self.tb.architecture.processes["neuron_load_end_gen"].\
+				bodyHeader.add("neuron_load_end <= '0';")
+
+		# start
+		self.tb.architecture.processes["start_gen"].bodyHeader.add(
+				"start <= '0';")
+		self.tb.architecture.processes["start_gen"].bodyHeader.add(
+				"wait for 150 ns;")
+		self.tb.architecture.processes["start_gen"].bodyHeader.add(
+				"start <= '1';")
+		self.tb.architecture.processes["start_gen"].bodyHeader.add(
 				"wait for 20 ns;")
-		self.tb.architecture.processes["load_end_gen"].bodyHeader.add(
-				"load_end <= '0';")
+		self.tb.architecture.processes["start_gen"].bodyHeader.add(
+				"start <= '0';")
 
 		# restart
 		self.tb.architecture.processes["restart_gen"].bodyHeader.add(
 				"restart <= '0';")
 		self.tb.architecture.processes["restart_gen"].bodyHeader.add(
-				"wait for 70 ns;")
+				"wait for 1500 ns;")
 		self.tb.architecture.processes["restart_gen"].bodyHeader.add(
 				"restart <= '1';")
 		self.tb.architecture.processes["restart_gen"].bodyHeader.add(
@@ -449,73 +407,21 @@ class MultiInputLIF(VHDLblock):
 		self.tb.architecture.processes["restart_gen"].bodyHeader.add(
 				"restart <= '0';")
 
-		# exc
-		self.tb.architecture.processes["exc_gen"].bodyHeader.add(
-				"exc <= '0';")
-		self.tb.architecture.processes["exc_gen"].bodyHeader.add(
-				"wait for 130 ns;")
-		self.tb.architecture.processes["exc_gen"].bodyHeader.add(
-				"exc <= '1';")
-		self.tb.architecture.processes["exc_gen"].bodyHeader.add(
-				"wait for 600 ns;")
-		self.tb.architecture.processes["exc_gen"].bodyHeader.add(
-				"exc <= '0';")
-		self.tb.architecture.processes["exc_gen"].bodyHeader.add(
-				"wait for 100 ns;")
-		self.tb.architecture.processes["exc_gen"].bodyHeader.add(
-				"exc <= '1';")
-		self.tb.architecture.processes["exc_gen"].bodyHeader.add(
-				"wait for 60 ns;")
-		self.tb.architecture.processes["exc_gen"].bodyHeader.add(
-				"exc <= '0';")
 
-		# exc spike
-		self.tb.architecture.processes["exc_spike_gen"].bodyHeader.add(
-				"exc_spike <= '0';")
-		self.tb.architecture.processes["exc_spike_gen"].bodyHeader.add(
-				"wait for 130 ns;")
-		self.tb.architecture.processes["exc_spike_gen"].bodyHeader.add(
-				"exc_spike <= '1';")
-		self.tb.architecture.processes["exc_spike_gen"].bodyHeader.add(
-				"wait for 600 ns;")
-		self.tb.architecture.processes["exc_spike_gen"].bodyHeader.add(
-				"exc_spike <= '0';")
+a = MultiInputLIF(
+	n_exc_inputs = 8, 
+	n_inh_inputs = 4, 
+	bitwidth = 32,
+	w_inh_bw = 32,
+	w_exc_bw = 32,
+	shift = 10,
+	debug = True
+)
 
-		# inh
-		self.tb.architecture.processes["inh_gen"].bodyHeader.add(
-				"inh <= '0';")
-		self.tb.architecture.processes["inh_gen"].bodyHeader.add(
-				"wait for 750 ns;")
-		self.tb.architecture.processes["inh_gen"].bodyHeader.add(
-				"inh <= '1';")
-		self.tb.architecture.processes["inh_gen"].bodyHeader.add(
-				"wait for 60 ns;")
-		self.tb.architecture.processes["inh_gen"].bodyHeader.add(
-				"inh <= '0';")
-		self.tb.architecture.processes["inh_gen"].bodyHeader.add(
-				"wait for 20 ns;")
-		self.tb.architecture.processes["inh_gen"].bodyHeader.add(
-				"inh <= '1';")
-		self.tb.architecture.processes["inh_gen"].bodyHeader.add(
-				"wait for 60 ns;")
-		self.tb.architecture.processes["inh_gen"].bodyHeader.add(
-				"inh <= '0';")
 
-		# inh spike
-		self.tb.architecture.processes["inh_spike_gen"].bodyHeader.add(
-				"inh_spike <= '0';")
-		self.tb.architecture.processes["inh_spike_gen"].bodyHeader.add(
-				"wait for 750 ns;")
-		self.tb.architecture.processes["inh_spike_gen"].bodyHeader.add(
-				"inh_spike <= '1';")
-		self.tb.architecture.processes["inh_spike_gen"].bodyHeader.add(
-				"wait for 60 ns;")
-		self.tb.architecture.processes["inh_spike_gen"].bodyHeader.add(
-				"inh_spike <= '0';")
 
-a = MultiInputLIF()
-print(a.code())
 
-a.write_file_all()
-a.compile_all()
-a.elaborate()
+a.testbench()
+a.tb.write_file_all()
+a.tb.compile_all()
+a.tb.elaborate()
