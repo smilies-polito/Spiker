@@ -106,3 +106,53 @@ def random_binary(min_value = 0, max_value = 255, bitwidth = 8):
 
 	return "{0:{fill}{width}{base}}".format(rand_int, fill = 0,
 		width = bitwidth, base = "b")
+
+
+def debug_component(component):
+
+	attr_list = [ attr for attr in dir(component) if not 
+			attr.startswith("__")]
+	
+	debug = []
+
+	for attr_name in attr_list:
+
+		sub_component = getattr(component, attr_name)
+
+		if hasattr(sub_component, "debug"):
+
+			debug += sub_component.debug
+
+			for debug_port in sub_component.debug:
+
+				component.entity.port.add(
+					name 		=
+						debug_port, 
+					direction	= "out",
+					port_type	= sub_component.entity.\
+						port[debug_port].port_type
+				)
+
+	debug_list = track_signals(component.architecture.signal, 
+			component.entity.name)
+
+	for debug_port in debug_list:
+
+		debug_port_name = component.entity.name + "_" + debug_port
+
+		component.entity.port.add(
+			name 		= debug_port_name, 
+			direction	= "out",
+			port_type	= component.architecture.\
+					signal[debug_port].\
+					signal_type)
+
+		# Bring the signal out
+		connect_string = debug_port_name + " <= " + \
+					debug_port + ";"
+		component.architecture.bodyCodeHeader.\
+				add(connect_string)
+
+		debug.append(debug_port_name)
+
+	setattr(component, "debug", debug)
