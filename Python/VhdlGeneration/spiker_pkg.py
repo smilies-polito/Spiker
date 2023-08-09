@@ -20,6 +20,24 @@ class SpikerPackage(Package):
 		self.pkg_dec.type_list["neuron_states"].add("fire")
 		self.pkg_dec.type_list["neuron_states"].add("leak")
 
+		self.pkg_dec.type_list.add("mi_states", "Enumeration")
+		self.pkg_dec.type_list["mi_states"].add("reset")
+		self.pkg_dec.type_list["mi_states"].add("load")
+		self.pkg_dec.type_list["mi_states"].add("idle_wait")
+		self.pkg_dec.type_list["mi_states"].add("idle")
+		self.pkg_dec.type_list["mi_states"].add("init_wait")
+		self.pkg_dec.type_list["mi_states"].add("init")
+		self.pkg_dec.type_list["mi_states"].add("sample")
+		self.pkg_dec.type_list["mi_states"].add("exc_inh_wait")
+		self.pkg_dec.type_list["mi_states"].add("exc_update_full")
+		self.pkg_dec.type_list["mi_states"].add("inh_wait_full")
+		self.pkg_dec.type_list["mi_states"].add("inh_update_full")
+		self.pkg_dec.type_list["mi_states"].add("exc_wait")
+		self.pkg_dec.type_list["mi_states"].add("inh_update")
+		self.pkg_dec.type_list["mi_states"].add("inh_wait")
+		self.pkg_dec.type_list["mi_states"].add("exc_update")
+
+
 
 	def compile(self, output_dir = "output"):
 
