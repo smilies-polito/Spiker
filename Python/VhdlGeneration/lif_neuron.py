@@ -8,7 +8,7 @@ from and_mask import AndMask
 from testbench import Testbench
 
 from spiker_pkg import SpikerPackage
-from utils import track_signals
+from utils import track_signals, debug_component
 
 
 class LIFneuron(VHDLblock):
@@ -320,60 +320,9 @@ class LIFneuron(VHDLblock):
 				"masked_inh_weight")
 
 
-
-		if(debug):
-
-			if self.datapath.debug:
-				for debug_port in self.datapath.debug:
-
-					debug_port_name = debug_port + "_out"
-
-					self.entity.port.add(
-						name 		=
-							debug_port_name, 
-						direction	= "out",
-						port_type	= self.\
-							datapath.entity.\
-							port[debug_port_name].\
-							port_type
-					)
-
-			if self.control_unit.debug:
-				for debug_port in self.control_unit.debug:
-
-					debug_port_name = debug_port + "_out"
-
-					self.entity.port.add(
-						name 		= 
-							debug_port_name, 
-						direction	= "out",
-						port_type	= self.\
-							control_unit.entity.\
-							port[debug_port_name].\
-							port_type
-					)
-
-
-			debug_signals = track_signals(self.architecture.signal,
-					self.entity.name)
-
-			for debug_port in debug_signals:
-
-				debug_port_name = debug_port + "_out"
-
-				self.entity.port.add(
-					name 		= debug_port_name, 
-					direction	= "out",
-					port_type	= self.architecture.\
-							signal[debug_port].\
-							signal_type)
-
-				# Bring the signal out
-				connect_string = debug_port_name + " <= " + \
-							debug_port + ";"
-				self.architecture.bodyCodeHeader.\
-						add(connect_string)
-
+		# Debug
+		if debug:
+			debug_component(self)
 	
 		
 

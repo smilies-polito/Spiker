@@ -12,7 +12,7 @@ from cnt import Cnt
 from cmp import Cmp
 
 from testbench import Testbench
-from utils import track_signals, ceil_pow2, random_binary
+from utils import track_signals, ceil_pow2, random_binary, debug_component\
 
 
 class MultiInputDP(VHDLblock):
@@ -422,26 +422,8 @@ class MultiInputDP(VHDLblock):
 
 
 		# Debug
-		if(debug):
-			self.debug = track_signals(self.architecture.signal,
-					self.entity.name)
-
-			for debug_port in self.debug:
-
-				debug_port_name = debug_port + "_out"
-
-				self.entity.port.add(
-					name 		= debug_port_name, 
-					direction	= "out",
-					port_type	= self.architecture.\
-							signal[debug_port].\
-							signal_type)
-
-				# Bring the signal out
-				connect_string = debug_port_name + " <= " + \
-							debug_port + ";"
-				self.architecture.bodyCodeHeader.\
-						add(connect_string)
+		if debug:
+			debug_component(self)
 
 
 	def compile(self, output_dir = "output"):

@@ -6,7 +6,7 @@ from vhdl_block import VHDLblock
 from if_statement import If
 
 from spiker_pkg import SpikerPackage
-from utils import track_signals
+from utils import track_signals, debug_component
 
 
 class MultiInputCU(VHDLblock):
@@ -38,11 +38,6 @@ class MultiInputCU(VHDLblock):
 
 		self.entity.port.add(
 				name 		= "restart", 
-				direction	= "in",
-				port_type	= "std_logic")
-
-		self.entity.port.add(
-				name 		= "load_end", 
 				direction	= "in",
 				port_type	= "std_logic")
 
@@ -124,11 +119,6 @@ class MultiInputCU(VHDLblock):
 
 		# Output towards outside
 		self.entity.port.add(
-				name 		= "load_ready", 
-				direction	= "out",
-				port_type	= "std_logic")
-
-		self.entity.port.add(
 				name 		= "ready", 
 				direction	= "out",
 				port_type	= "std_logic")
@@ -195,17 +185,7 @@ class MultiInputCU(VHDLblock):
 		# Reset
 		self.architecture.processes["state_evaluation"].\
 				case_list["present_state"].when_list["reset"].\
-				body.add("next_state <= load;")
-
-		# Load
-		load_end_check = If()
-		load_end_check._if_.conditions.add("load_end = '1'")
-		load_end_check._if_.body.add("next_state <= idle_wait;")
-		load_end_check._else_.body.add("next_state <= load;")
-
-		self.architecture.processes["state_evaluation"].\
-				case_list["present_state"].when_list["load"].\
-				body.add(load_end_check)
+				body.add("next_state <= idle_wait;")
 
 		# Idle wait
 		all_ready_check = If()
@@ -374,11 +354,6 @@ class MultiInputCU(VHDLblock):
 				case_list["present_state"].when_list["reset"].\
 				body.add("spike_rst_n <= '0';")
 
-		# Load
-		self.architecture.processes["output_evaluation"].\
-				case_list["present_state"].when_list["load"].\
-				body.add("load_ready <= '1';")
-
 		# Idle wait
 		self.architecture.processes["output_evaluation"].\
 				case_list["present_state"].when_list[
@@ -484,6 +459,12 @@ class MultiInputCU(VHDLblock):
 		self.architecture.processes["output_evaluation"].\
 				case_list["present_state"].others.\
 				body.add("spike_rst_n <= '0';")
+
+
+		# Debug
+		if debug:
+			debug_component(self)
+
 
 
 	def write_file_all(self, output_dir = "output"):

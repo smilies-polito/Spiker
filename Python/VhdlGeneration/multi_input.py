@@ -9,7 +9,7 @@ from multi_input_cu import MultiInputCU
 from testbench import Testbench
 
 from spiker_pkg import SpikerPackage
-from utils import track_signals, ceil_pow2
+from utils import track_signals, ceil_pow2, debug_component
 
 
 class MultiInput(VHDLblock):
@@ -78,11 +78,6 @@ class MultiInput(VHDLblock):
 				port_type	= "std_logic")
 
 		self.entity.port.add(
-				name 		= "load_end", 
-				direction	= "in",
-				port_type	= "std_logic")
-
-		self.entity.port.add(
 				name 		= "start", 
 				direction	= "in",
 				port_type	= "std_logic")
@@ -116,11 +111,6 @@ class MultiInput(VHDLblock):
 			port_type	= "std_logic_vector("
 						"inh_cnt_bitwidth - 1 "
 						"downto 0)")
-		self.entity.port.add(
-				name 		= "load_ready", 
-				direction	= "out",
-				port_type	= "std_logic")
-
 		self.entity.port.add(
 				name 		= "ready", 
 				direction	= "out",
@@ -205,59 +195,9 @@ class MultiInput(VHDLblock):
 		self.architecture.instances["control_unit"].port_map()
 
 
-		if(debug):
-
-			if self.datapath.debug:
-				for debug_port in self.datapath.debug:
-
-					debug_port_name = debug_port + "_out"
-
-					self.entity.port.add(
-						name 		=
-							debug_port_name, 
-						direction	= "out",
-						port_type	= self.\
-							datapath.entity.\
-							port[debug_port_name].\
-							port_type
-					)
-
-			if self.control_unit.debug:
-				for debug_port in self.control_unit.debug:
-
-					debug_port_name = debug_port + "_out"
-
-					self.entity.port.add(
-						name 		= 
-							debug_port_name, 
-						direction	= "out",
-						port_type	= self.\
-							control_unit.entity.\
-							port[debug_port_name].\
-							port_type
-					)
-
-
-			debug_signals = track_signals(self.architecture.signal,
-					self.entity.name)
-
-			for debug_port in debug_signals:
-
-				debug_port_name = debug_port + "_out"
-
-				self.entity.port.add(
-					name 		= debug_port_name, 
-					direction	= "out",
-					port_type	= self.architecture.\
-							signal[debug_port].\
-							signal_type)
-
-				# Bring the signal out
-				connect_string = debug_port_name + " <= " + \
-							debug_port + ";"
-				self.architecture.bodyCodeHeader.\
-						add(connect_string)
-
+		# Debug
+		if debug:
+			debug_component(self)
 	
 		
 
@@ -311,144 +251,3 @@ class MultiInput(VHDLblock):
 		sp.run(command, shell = True)
 
 		print("\n")
-
-
-	def testbench(self, clock_period = 20, file_output = False):
-
-		self.tb = Testbench(self, clock_period = clock_period,
-			file_output = file_output)
-
-		self.tb.library.add("work")
-		self.tb.library["work"].package.add("spiker_pkg")
-
-		# exc_weight
-		self.tb.architecture.processes["exc_weight_gen"].bodyHeader.\
-				add("exc_weight <= to_signed(500, "
-				"exc_weight'length);")
-
-		# inh_weight
-		self.tb.architecture.processes["inh_weight_gen"].bodyHeader.\
-				add("inh_weight <= to_signed(-300, "
-				"inh_weight'length);")
-
-		# v_reset
-		self.tb.architecture.processes["v_reset_gen"].bodyHeader.\
-				add("v_reset <= to_signed(1000, "
-				"v_reset'length);")
-
-		# v_th_value
-		self.tb.architecture.processes["v_th_value_gen"].bodyHeader.\
-				add("v_th_value <= to_signed(3000, "
-				"v_th_value'length);")
-
-		# rst_n
-		self.tb.architecture.processes["rst_n_gen"].bodyHeader.add(
-				"rst_n <= '1';")
-		self.tb.architecture.processes["rst_n_gen"].bodyHeader.add(
-				"wait for 15 ns;")
-		self.tb.architecture.processes["rst_n_gen"].bodyHeader.add(
-				"rst_n <= '0';")
-		self.tb.architecture.processes["rst_n_gen"].bodyHeader.add(
-				"wait for 10 ns;")
-		self.tb.architecture.processes["rst_n_gen"].bodyHeader.add(
-				"rst_n <= '1';")
-
-		# v_th_en
-		self.tb.architecture.processes["v_th_en_gen"].bodyHeader.add(
-				"v_th_en <= '0';")
-		self.tb.architecture.processes["v_th_en_gen"].bodyHeader.add(
-				"wait for 50 ns;")
-		self.tb.architecture.processes["v_th_en_gen"].bodyHeader.add(
-				"v_th_en <= '1';")
-		self.tb.architecture.processes["v_th_en_gen"].bodyHeader.add(
-				"wait for 20 ns;")
-		self.tb.architecture.processes["v_th_en_gen"].bodyHeader.add(
-				"v_th_en <= '0';")
-
-		# load_end
-		self.tb.architecture.processes["load_end_gen"].bodyHeader.add(
-				"load_end <= '0';")
-		self.tb.architecture.processes["load_end_gen"].bodyHeader.add(
-				"wait for 50 ns;")
-		self.tb.architecture.processes["load_end_gen"].bodyHeader.add(
-				"load_end <= '1';")
-		self.tb.architecture.processes["load_end_gen"].bodyHeader.add(
-				"wait for 20 ns;")
-		self.tb.architecture.processes["load_end_gen"].bodyHeader.add(
-				"load_end <= '0';")
-
-		# restart
-		self.tb.architecture.processes["restart_gen"].bodyHeader.add(
-				"restart <= '0';")
-		self.tb.architecture.processes["restart_gen"].bodyHeader.add(
-				"wait for 70 ns;")
-		self.tb.architecture.processes["restart_gen"].bodyHeader.add(
-				"restart <= '1';")
-		self.tb.architecture.processes["restart_gen"].bodyHeader.add(
-				"wait for 20 ns;")
-		self.tb.architecture.processes["restart_gen"].bodyHeader.add(
-				"restart <= '0';")
-
-		# exc
-		self.tb.architecture.processes["exc_gen"].bodyHeader.add(
-				"exc <= '0';")
-		self.tb.architecture.processes["exc_gen"].bodyHeader.add(
-				"wait for 130 ns;")
-		self.tb.architecture.processes["exc_gen"].bodyHeader.add(
-				"exc <= '1';")
-		self.tb.architecture.processes["exc_gen"].bodyHeader.add(
-				"wait for 600 ns;")
-		self.tb.architecture.processes["exc_gen"].bodyHeader.add(
-				"exc <= '0';")
-		self.tb.architecture.processes["exc_gen"].bodyHeader.add(
-				"wait for 100 ns;")
-		self.tb.architecture.processes["exc_gen"].bodyHeader.add(
-				"exc <= '1';")
-		self.tb.architecture.processes["exc_gen"].bodyHeader.add(
-				"wait for 60 ns;")
-		self.tb.architecture.processes["exc_gen"].bodyHeader.add(
-				"exc <= '0';")
-
-		# exc spike
-		self.tb.architecture.processes["exc_spike_gen"].bodyHeader.add(
-				"exc_spike <= '0';")
-		self.tb.architecture.processes["exc_spike_gen"].bodyHeader.add(
-				"wait for 130 ns;")
-		self.tb.architecture.processes["exc_spike_gen"].bodyHeader.add(
-				"exc_spike <= '1';")
-		self.tb.architecture.processes["exc_spike_gen"].bodyHeader.add(
-				"wait for 600 ns;")
-		self.tb.architecture.processes["exc_spike_gen"].bodyHeader.add(
-				"exc_spike <= '0';")
-
-		# inh
-		self.tb.architecture.processes["inh_gen"].bodyHeader.add(
-				"inh <= '0';")
-		self.tb.architecture.processes["inh_gen"].bodyHeader.add(
-				"wait for 750 ns;")
-		self.tb.architecture.processes["inh_gen"].bodyHeader.add(
-				"inh <= '1';")
-		self.tb.architecture.processes["inh_gen"].bodyHeader.add(
-				"wait for 60 ns;")
-		self.tb.architecture.processes["inh_gen"].bodyHeader.add(
-				"inh <= '0';")
-		self.tb.architecture.processes["inh_gen"].bodyHeader.add(
-				"wait for 20 ns;")
-		self.tb.architecture.processes["inh_gen"].bodyHeader.add(
-				"inh <= '1';")
-		self.tb.architecture.processes["inh_gen"].bodyHeader.add(
-				"wait for 60 ns;")
-		self.tb.architecture.processes["inh_gen"].bodyHeader.add(
-				"inh <= '0';")
-
-		# inh spike
-		self.tb.architecture.processes["inh_spike_gen"].bodyHeader.add(
-				"inh_spike <= '0';")
-		self.tb.architecture.processes["inh_spike_gen"].bodyHeader.add(
-				"wait for 750 ns;")
-		self.tb.architecture.processes["inh_spike_gen"].bodyHeader.add(
-				"inh_spike <= '1';")
-		self.tb.architecture.processes["inh_spike_gen"].bodyHeader.add(
-				"wait for 60 ns;")
-		self.tb.architecture.processes["inh_spike_gen"].bodyHeader.add(
-				"inh_spike <= '0';")

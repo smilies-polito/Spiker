@@ -6,7 +6,7 @@ from vhdl_block import VHDLblock
 from if_statement import If
 
 from spiker_pkg import SpikerPackage
-from utils import track_signals
+from utils import track_signals, debug_component
 
 
 class LIFneuronCU(VHDLblock):
@@ -381,26 +381,8 @@ class LIFneuronCU(VHDLblock):
 				body.add("v_rst_n <= '0';")
 
 		# Debug
-		if(debug):
-			self.debug = track_signals(self.architecture.signal,
-					self.entity.name)
-
-			for debug_port in self.debug:
-
-				debug_port_name = debug_port + "_out"
-
-				self.entity.port.add(
-					name 		= debug_port_name, 
-					direction	= "out",
-					port_type	= self.architecture.\
-							signal[debug_port].\
-							signal_type)
-
-				# Bring the signal out
-				connect_string = debug_port_name + " <= " + \
-							debug_port + ";"
-				self.architecture.bodyCodeHeader.\
-						add(connect_string)
+		if debug:
+			debug_component(self)
 
 
 	def write_file_all(self, output_dir = "output"):
