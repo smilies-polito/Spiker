@@ -106,7 +106,3 @@ def random_binary(min_value = 0, max_value = 255, bitwidth = 8):
 
 	return "{0:{fill}{width}{base}}".format(rand_int, fill = 0,
 		width = bitwidth, base = "b")
-
-
-print(random_binary(0, 256, 10))
-
