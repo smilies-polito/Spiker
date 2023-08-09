@@ -1,5 +1,6 @@
 import subprocess as sp
 import numpy as np
+from random import randint
 
 
 def createDir(dirName):
@@ -92,3 +93,20 @@ def ceil_pow2(x):
 			power += 1
 			
 	return 2**power
+
+
+
+def random_binary(min_value = 0, max_value = 255, bitwidth = 8):
+
+	if max_value > 2**bitwidth - 1 or min_value < 0:
+		print("Random number not representable on bitwidth\n")
+		exit(-1)
+
+	rand_int = randint(min_value, max_value)
+
+	return "{0:{fill}{width}{base}}".format(rand_int, fill = 0,
+		width = bitwidth, base = "b")
+
+
+print(random_binary(0, 256, 10))
+
