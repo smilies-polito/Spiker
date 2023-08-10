@@ -48,6 +48,10 @@ class MultiCycle(VHDLblock):
 			name		= "cycles_cnt_bitwidth", 
 			gen_type	= "integer",
 			value		= str(cycles_cnt_bitwidth))
+		self.entity.generic.add(
+			name		= "n_cycles", 
+			gen_type	= "integer",
+			value		= str(n_cycles))
 
 		# Input controls
 		self.entity.port.add(
@@ -171,12 +175,3 @@ class MultiCycle(VHDLblock):
 		sp.run(command, shell = True)
 
 		print("\n")
-
-
-a = MultiCycle()
-
-print(a.code())
-
-a.write_file_all()
-a.compile_all()
-a.elaborate()
