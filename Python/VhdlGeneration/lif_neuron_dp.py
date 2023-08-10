@@ -17,7 +17,7 @@ from utils import track_signals, debug_component
 class LIFneuronDP(VHDLblock):
 
 	def __init__(self, bitwidth = 16, w_inh_bw = 5, w_exc_bw = 5,
-			shift = 10, debug = False):
+			shift = 10, debug = False, debug_list = []):
 
 		VHDLblock.__init__(self, entity_name = "neuron_datapath")
 
@@ -357,7 +357,7 @@ class LIFneuronDP(VHDLblock):
 
 		# Debug
 		if debug:
-			debug_component(self)
+			debug_component(self, debug_list)
 
 	def compile(self, output_dir = "output"):
 

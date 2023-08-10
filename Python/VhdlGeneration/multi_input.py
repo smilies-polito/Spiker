@@ -14,7 +14,8 @@ from utils import track_signals, ceil_pow2, debug_component
 
 class MultiInput(VHDLblock):
 
-	def __init__(self, n_exc_inputs = 2, n_inh_inputs = 2, debug = False):
+	def __init__(self, n_exc_inputs = 2, n_inh_inputs = 2, debug = False,
+			debug_list = []):
 
 
 		self.n_exc_inputs = n_exc_inputs
@@ -30,10 +31,14 @@ class MultiInput(VHDLblock):
 		self.datapath = MultiInputDP(
 			n_exc_inputs = n_exc_inputs,
 			n_inh_inputs = n_inh_inputs,
-			debug = debug
+			debug = debug,
+			debug_list = debug_list
 		)
 
-		self.control_unit = MultiInputCU(debug = debug)
+		self.control_unit = MultiInputCU(
+			debug = debug,
+			debug_list = debug_list
+		)
 
 		# Libraries and packages
 		self.library.add("ieee")
@@ -197,7 +202,7 @@ class MultiInput(VHDLblock):
 
 		# Debug
 		if debug:
-			debug_component(self)
+			debug_component(self, debug_list)
 	
 		
 

@@ -15,7 +15,8 @@ from utils import track_signals, ceil_pow2, debug_component
 class MultiInputLIF(VHDLblock):
 
 	def __init__(self, n_exc_inputs = 2, n_inh_inputs = 2, bitwidth = 16,
-			w_inh_bw = 5, w_exc_bw = 5, shift = 10,debug = False):
+			w_inh_bw = 5, w_exc_bw = 5, shift = 10, debug = False,
+			debug_list = []):
 
 		self.n_exc_inputs = n_exc_inputs
 		self.n_inh_inputs = n_inh_inputs
@@ -30,7 +31,8 @@ class MultiInputLIF(VHDLblock):
 		self.multi_input = MultiInput(
 			n_exc_inputs = n_exc_inputs,
 			n_inh_inputs = n_inh_inputs,
-			debug = debug
+			debug = debug,
+			debug_list = debug_list
 		)
 
 		self.lif_neuron = LIFneuron(
@@ -38,7 +40,8 @@ class MultiInputLIF(VHDLblock):
 			w_inh_bw = w_inh_bw,
 			w_exc_bw = w_exc_bw,
 			shift = shift,
-			debug = debug
+			debug = debug,
+			debug_list = debug_list
 		)
 
 		# Libraries and packages
@@ -263,7 +266,7 @@ class MultiInputLIF(VHDLblock):
 
 		# Debug
 		if debug:
-			debug_component(self)
+			debug_component(self, debug_list)
 	
 		
 
@@ -415,11 +418,14 @@ a = MultiInputLIF(
 	w_inh_bw = 32,
 	w_exc_bw = 32,
 	shift = 10,
-	debug = True
+	debug = True,
+	debug_list = [
+		"neuron_datapath_v",
+		"neuron_cu_present_state",
+		"multi_input_cu_present_state",
+		"multi_input_lif_neuron_ready"
+	]
 )
-
-
-
 
 a.testbench()
 a.tb.write_file_all()

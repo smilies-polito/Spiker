@@ -11,7 +11,7 @@ from utils import track_signals, debug_component
 
 class LIFneuronCU(VHDLblock):
 
-	def __init__(self, debug = False):
+	def __init__(self, debug = False, debug_list = []):
 
 		VHDLblock.__init__(self, entity_name = "neuron_cu")
 
@@ -382,7 +382,7 @@ class LIFneuronCU(VHDLblock):
 
 		# Debug
 		if debug:
-			debug_component(self)
+			debug_component(self, debug_list)
 
 
 	def write_file_all(self, output_dir = "output"):

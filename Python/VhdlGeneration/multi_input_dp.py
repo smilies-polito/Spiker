@@ -18,7 +18,7 @@ from utils import track_signals, ceil_pow2, random_binary, debug_component\
 class MultiInputDP(VHDLblock):
 
 	def __init__(self, n_exc_inputs = 2, n_inh_inputs = 2, 
-			debug = False):
+			debug = False, debug_list = []):
 
 		self.n_exc_inputs = n_exc_inputs
 		self.n_inh_inputs = n_inh_inputs
@@ -423,7 +423,7 @@ class MultiInputDP(VHDLblock):
 
 		# Debug
 		if debug:
-			debug_component(self)
+			debug_component(self, debug_list)
 
 
 	def compile(self, output_dir = "output"):

@@ -13,9 +13,8 @@ from utils import track_signals, debug_component
 
 class LIFneuron(VHDLblock):
 
-	def __init__(self, bitwidth = 16, w_inh_bw =
-			5, w_exc_bw = 5,
-			shift = 10, debug = False):
+	def __init__(self, bitwidth = 16, w_inh_bw = 5, w_exc_bw = 5,
+			shift = 10, debug = False, debug_list = []):
 
 		VHDLblock.__init__(self, entity_name = "neuron")
 
@@ -28,10 +27,14 @@ class LIFneuron(VHDLblock):
 			w_exc_bw = 
 			w_exc_bw, 
 			shift = shift,
-			debug = debug
+			debug = debug,
+			debug_list = debug_list
 		)
 
-		self.control_unit = LIFneuronCU(debug = debug)
+		self.control_unit = LIFneuronCU(
+			debug = debug,
+			debug_list = debug_list
+		)
 		self.and_mask = AndMask(data_type = "signed")
 
 		# Libraries and packages
@@ -322,7 +325,7 @@ class LIFneuron(VHDLblock):
 
 		# Debug
 		if debug:
-			debug_component(self)
+			debug_component(self, debug_list)
 	
 		
 
