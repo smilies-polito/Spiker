@@ -303,11 +303,3 @@ class MultiCycleCU(VHDLblock):
 		sp.run(command, shell = True)
 
 		print("\n")
-
-a = MultiCycleCU()
-
-print(a.code())
-
-a.write_file_all()
-a.compile_all()
-a.elaborate()

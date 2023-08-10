@@ -193,15 +193,3 @@ class MultiCycleDP(VHDLblock):
 
 		self.tb.architecture.processes["cycles_cnt_rst_n_gen"].\
 			final_wait = False
-
-
-a = MultiCycleDP()
-
-print(a.code())
-
-a.testbench()
-a.tb.write_file_all()
-a.tb.compile_all()
-a.tb.elaborate()
-
-
