@@ -66,7 +66,7 @@ class MultiInput(VHDLblock):
 			gen_type	= "integer",
 			value		= str(inh_cnt_bitwidth))
 
-		# INput controls
+		# Input controls
 		self.entity.port.add(
 				name 		= "clk", 
 				direction	= "in",
@@ -117,9 +117,9 @@ class MultiInput(VHDLblock):
 						"inh_cnt_bitwidth - 1 "
 						"downto 0)")
 		self.entity.port.add(
-				name 		= "ready", 
-				direction	= "out",
-				port_type	= "std_logic")
+			name 		= "ready", 
+			direction	= "out",
+			port_type	= "std_logic")
 
 		self.entity.port.add(
 			name 		= "neuron_restart", 
@@ -133,6 +133,16 @@ class MultiInput(VHDLblock):
 
 		self.entity.port.add(
 			name 		= "inh", 
+			direction	= "out",
+			port_type	= "std_logic")
+		
+		self.entity.port.add(
+			name 		= "exc_spike", 
+			direction	= "out",
+			port_type	= "std_logic")
+
+		self.entity.port.add(
+			name 		= "inh_spike", 
 			direction	= "out",
 			port_type	= "std_logic")
 
@@ -159,16 +169,10 @@ class MultiInput(VHDLblock):
 			name 		= "exc_yes", 
 			signal_type	= "std_logic")
 		self.architecture.signal.add(
-			name 		= "exc_spike", 
-			signal_type	= "std_logic")
-		self.architecture.signal.add(
 			name 		= "exc_stop", 
 			signal_type	= "std_logic")
 		self.architecture.signal.add(
 			name 		= "inh_yes", 
-			signal_type	= "std_logic")
-		self.architecture.signal.add(
-			name 		= "inh_spike", 
 			signal_type	= "std_logic")
 		self.architecture.signal.add(
 			name 		= "inh_stop", 
