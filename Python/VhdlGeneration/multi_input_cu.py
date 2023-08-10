@@ -342,11 +342,11 @@ class MultiInputCU(VHDLblock):
 		self.architecture.processes["output_evaluation"].\
 				bodyHeader.add("exc_cnt_en <= '0';")
 		self.architecture.processes["output_evaluation"].\
-				bodyHeader.add("exc_cnt_rst_n <= '1';")
+				bodyHeader.add("exc_cnt_rst_n <= '0';")
 		self.architecture.processes["output_evaluation"].\
 				bodyHeader.add("inh_cnt_en <= '0';")
 		self.architecture.processes["output_evaluation"].\
-				bodyHeader.add("inh_cnt_rst_n <= '1';")
+				bodyHeader.add("inh_cnt_rst_n <= '0';")
 		self.architecture.processes["output_evaluation"].\
 				bodyHeader.add("exc <= '0';")
 		self.architecture.processes["output_evaluation"].\
@@ -392,18 +392,17 @@ class MultiInputCU(VHDLblock):
 				body.add("ready <= '1';")
 		self.architecture.processes["output_evaluation"].\
 				case_list["present_state"].when_list["idle"].\
-				body.add("exc_cnt_rst_n <= '0';")
-		self.architecture.processes["output_evaluation"].\
-				case_list["present_state"].when_list["idle"].\
-				body.add("inh_cnt_rst_n <= '0';")
-		self.architecture.processes["output_evaluation"].\
-				case_list["present_state"].when_list["idle"].\
 				body.add("spike_rst_n <= '0';")
 
 		# Init wait
 		self.architecture.processes["output_evaluation"].\
 				case_list["present_state"].when_list[
 				"init_wait"].body.add("ready <= '0';")
+
+		# Init
+		self.architecture.processes["output_evaluation"].\
+				case_list["present_state"].when_list["init"].\
+				body.add("neuron_restart <= '1';")
 				
 		# Sample 
 		self.architecture.processes["output_evaluation"].\
@@ -417,7 +416,7 @@ class MultiInputCU(VHDLblock):
 				body.add("spike_sample <= '1';")
 		self.architecture.processes["output_evaluation"].\
 				case_list["present_state"].when_list["sample"].\
-				body.add("ready <= '1';")
+				body.add("ready <= '0';")
 
 		# Exc inh wait
 		self.architecture.processes["output_evaluation"].\
@@ -428,6 +427,10 @@ class MultiInputCU(VHDLblock):
 		self.architecture.processes["output_evaluation"].\
 				case_list["present_state"].when_list[
 				"exc_update_full"].body.add("exc <= '1';")
+		self.architecture.processes["output_evaluation"].\
+				case_list["present_state"].when_list[
+				"exc_update_full"].body.add(
+				"exc_cnt_rst_n <= '1';")
 		self.architecture.processes["output_evaluation"].\
 				case_list["present_state"].when_list[
 				"exc_update_full"].body.add(
@@ -446,6 +449,10 @@ class MultiInputCU(VHDLblock):
 				case_list["present_state"].when_list[
 				"inh_update_full"].body.add(
 				"inh_cnt_en <= '1';")
+		self.architecture.processes["output_evaluation"].\
+				case_list["present_state"].when_list[
+				"inh_update_full"].body.add(
+				"inh_cnt_rst_n <= '1';")
 
 		# Exc wait
 		self.architecture.processes["output_evaluation"].\
@@ -456,6 +463,10 @@ class MultiInputCU(VHDLblock):
 		self.architecture.processes["output_evaluation"].\
 				case_list["present_state"].when_list[
 				"exc_update"].body.add("exc <= '1';")
+		self.architecture.processes["output_evaluation"].\
+				case_list["present_state"].when_list[
+				"exc_update"].body.add(
+				"exc_cnt_rst_n <= '1';")
 		self.architecture.processes["output_evaluation"].\
 				case_list["present_state"].when_list[
 				"exc_update"].body.add(
@@ -474,15 +485,11 @@ class MultiInputCU(VHDLblock):
 				case_list["present_state"].when_list[
 				"inh_update"].body.add(
 				"inh_cnt_en <= '1';")
-
-
-
 		self.architecture.processes["output_evaluation"].\
-				case_list["present_state"].others.\
-				body.add("exc_cnt_rst_n <= '0';")
-		self.architecture.processes["output_evaluation"].\
-				case_list["present_state"].others.\
-				body.add("inh_cnt_rst_n <= '0';")
+				case_list["present_state"].when_list[
+				"inh_update"].body.add(
+				"inh_cnt_rst_n <= '1';")
+
 		self.architecture.processes["output_evaluation"].\
 				case_list["present_state"].others.\
 				body.add("spike_rst_n <= '0';")
