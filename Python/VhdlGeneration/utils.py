@@ -139,17 +139,10 @@ def debug_component(component, db_list = []):
 
 		for signal_name in db_list:
 
-			print(component.entity.name)
-			print(signal_name)
-
 			if component.entity.name in signal_name:
-
-				print("Signal present\n")
 
 				for internal_signal in \
 				component.architecture.signal:
-
-					print(internal_signal)
 
 					if component.entity.name + "_" + \
 					internal_signal == signal_name:
