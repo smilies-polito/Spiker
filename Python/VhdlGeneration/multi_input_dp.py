@@ -27,11 +27,11 @@ class MultiInputDP(VHDLblock):
 		inh_cnt_bitwidth = int(log2(ceil_pow2(n_inh_inputs)))
 
 		n_exc = "\"" + "{0:{fill}{width}{base}}".format(
-				n_exc_inputs - 1, fill = 0, 
+				n_exc_inputs - 2, fill = 0, 
 				width = exc_cnt_bitwidth, base = "b") + "\""
 	
 		n_inh = "\"" + "{0:{fill}{width}{base}}".format(
-				n_inh_inputs - 1, fill = 0,
+				n_inh_inputs - 2, fill = 0,
 				width = inh_cnt_bitwidth, base = "b") + "\""
 
 		VHDLblock.__init__(self, entity_name = "multi_input_datapath")
@@ -51,7 +51,7 @@ class MultiInputDP(VHDLblock):
 			self.inh_mux = Mux(n_in = n_inh_inputs, 
 					in_type = "std_logic", bitwidth = 1)
 
-		self.counter = Cnt(bitwidth = exc_cnt_bitwidth)
+		self.counter = Cnt(bitwidth = exc_cnt_bitwidth) 
 
 		self.cmp = Cmp(bitwidth = exc_cnt_bitwidth, cmp_type = "eq",
 				signal_type = "std_logic")
@@ -373,6 +373,8 @@ class MultiInputDP(VHDLblock):
 		self.architecture.instances["exc_counter"].generic_map()
 		self.architecture.instances["exc_counter"].g_map.add("N",
 				"exc_cnt_bitwidth")
+		self.architecture.instances["exc_counter"].g_map.add("rst_value",
+				str(2**exc_cnt_bitwidth-1))
 		self.architecture.instances["exc_counter"].port_map()
 		self.architecture.instances["exc_counter"].p_map.add(
 				"cnt_en", "exc_cnt_en")
@@ -386,6 +388,8 @@ class MultiInputDP(VHDLblock):
 		self.architecture.instances["inh_counter"].generic_map()
 		self.architecture.instances["inh_counter"].g_map.add("N",
 				"inh_cnt_bitwidth")
+		self.architecture.instances["inh_counter"].g_map.add("rst_value",
+				str(2**inh_cnt_bitwidth-1))
 		self.architecture.instances["inh_counter"].port_map()
 		self.architecture.instances["inh_counter"].p_map.add(
 				"cnt_en", "inh_cnt_en")
