@@ -7,7 +7,11 @@ from vhdl_block import VHDLblock
 
 class Cnt(VHDLblock):
 
-	def __init__(self, bitwidth = 8):
+	def __init__(self, bitwidth = 8, reset_value = 0):
+
+		if reset_value > 2**bitwidth - 1 or reset_value < 0:
+			print("Invalid reset value for counter\n")
+			exit(-1)
 
 		VHDLblock.__init__(self, entity_name = "cnt")
 
@@ -18,6 +22,7 @@ class Cnt(VHDLblock):
 
 		# Generics
 		self.entity.generic.add("N", "integer", str(bitwidth))
+		self.entity.generic.add("rst_value", "integer", str(reset_value))
 
 		# Input ports
 		self.entity.port.add("clk", "in", "std_logic")
@@ -44,7 +49,7 @@ class Cnt(VHDLblock):
 
 		rst_if = If()
 		rst_if._if_.conditions.add("cnt_rst_n = \'0\'")
-		rst_if._if_.body.add("cnt_var := 0;")
+		rst_if._if_.body.add("cnt_var := rst_value;")
 		rst_if._else_.body.add(en_if)
 
 		self.architecture.processes["count"].if_list.add()
