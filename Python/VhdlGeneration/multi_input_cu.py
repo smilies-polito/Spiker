@@ -11,7 +11,7 @@ from utils import track_signals, debug_component
 
 class MultiInputCU(VHDLblock):
 
-	def __init__(self, debug = False):
+	def __init__(self, debug = False, debug_list = []):
 
 		VHDLblock.__init__(self, entity_name = "multi_input_cu")
 
@@ -221,6 +221,11 @@ class MultiInputCU(VHDLblock):
 		self.architecture.processes["state_evaluation"].\
 				case_list["present_state"].when_list[
 				"init_wait"].body.add(all_ready_check)
+
+		# Init
+		self.architecture.processes["state_evaluation"].\
+				case_list["present_state"].when_list["init"].\
+				body.add("next_state <= idle;")
 				
 		# Sample 
 		inh_check_0 = If()
@@ -332,6 +337,28 @@ class MultiInputCU(VHDLblock):
 		self.architecture.processes.add("output_evaluation")
 		self.architecture.processes["output_evaluation"].\
 				sensitivity_list.add("present_state")
+
+		# Default values
+		self.architecture.processes["output_evaluation"].\
+				bodyHeader.add("exc_cnt_en <= '0';")
+		self.architecture.processes["output_evaluation"].\
+				bodyHeader.add("exc_cnt_rst_n <= '1';")
+		self.architecture.processes["output_evaluation"].\
+				bodyHeader.add("inh_cnt_en <= '0';")
+		self.architecture.processes["output_evaluation"].\
+				bodyHeader.add("inh_cnt_rst_n <= '1';")
+		self.architecture.processes["output_evaluation"].\
+				bodyHeader.add("exc <= '0';")
+		self.architecture.processes["output_evaluation"].\
+				bodyHeader.add("inh <= '0';")
+		self.architecture.processes["output_evaluation"].\
+				bodyHeader.add("spike_sample <= '0';")
+		self.architecture.processes["output_evaluation"].\
+				bodyHeader.add("spike_rst_n <= '1';")
+		self.architecture.processes["output_evaluation"].\
+				bodyHeader.add("neuron_restart <= '0';")
+		self.architecture.processes["output_evaluation"].\
+				bodyHeader.add("ready <= '0';")
 
 		self.architecture.processes["output_evaluation"].\
 				case_list.add("present_state")
@@ -463,7 +490,7 @@ class MultiInputCU(VHDLblock):
 
 		# Debug
 		if debug:
-			debug_component(self)
+			debug_component(self, debug_list)
 
 
 
