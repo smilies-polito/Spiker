@@ -20,10 +20,6 @@ class MultiCycleDP(VHDLblock):
 
 		cycles_cnt_bitwidth = int(log2(ceil_pow2(n_cycles)))
 
-		n_cycles = "\"" + "{0:{fill}{width}{base}}".format(
-				n_cycles-1, fill = 0,
-				width = cycles_cnt_bitwidth, base = "b") + "\""
-
 		VHDLblock.__init__(self, entity_name = "multi_cycles_datapath")
 
 		self.counter = Cnt(bitwidth = cycles_cnt_bitwidth) 
@@ -34,12 +30,17 @@ class MultiCycleDP(VHDLblock):
 		# Libraries and packages
 		self.library.add("ieee")
 		self.library["ieee"].package.add("std_logic_1164")
+		self.library["ieee"].package.add("numeric_std")
 
 		# Generics
 		self.entity.generic.add(
 			name		= "cycles_cnt_bitwidth", 
 			gen_type	= "integer",
 			value		= str(cycles_cnt_bitwidth))
+		self.entity.generic.add(
+			name		= "n_cycles", 
+			gen_type	= "integer",
+			value		= str(n_cycles))
 
 
 		self.entity.port.add(
@@ -98,7 +99,8 @@ class MultiCycleDP(VHDLblock):
 		self.architecture.instances["cycles_cmp"].p_map.add(
 				"in0", "cycles_cnt")
 		self.architecture.instances["cycles_cmp"].p_map.add(
-				"in1", n_cycles)
+				"in1", "std_logic_vector(to_unsigned("
+				"n_cycles-1, cycles_cnt_bitwidth))")
 		self.architecture.instances["cycles_cmp"].p_map.add("cmp_out",
 				"stop")
 
