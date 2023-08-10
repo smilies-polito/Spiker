@@ -36,6 +36,13 @@ class SpikerPackage(Package):
 		self.pkg_dec.type_list["mi_states"].add("inh_wait")
 		self.pkg_dec.type_list["mi_states"].add("exc_update")
 
+		self.pkg_dec.type_list.add("mc_states", "Enumeration")
+		self.pkg_dec.type_list["mc_states"].add("reset")
+		self.pkg_dec.type_list["mc_states"].add("idle_wait")
+		self.pkg_dec.type_list["mc_states"].add("idle")
+		self.pkg_dec.type_list["mc_states"].add("init")
+		self.pkg_dec.type_list["mc_states"].add("update_wait")
+		self.pkg_dec.type_list["mc_states"].add("network_update")
 
 
 	def compile(self, output_dir = "output"):
