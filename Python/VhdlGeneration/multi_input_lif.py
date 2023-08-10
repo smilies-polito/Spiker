@@ -4,6 +4,7 @@ from math import log2
 import path_config
 
 from vhdl_block import VHDLblock
+from if_statement import If
 from multi_input import MultiInput
 from lif_neuron import LIFneuron
 from testbench import Testbench
@@ -262,6 +263,8 @@ class MultiInputLIF(VHDLblock):
 				"neuron_load_end")
 		self.architecture.instances["lif_neuron"].p_map.add("load_ready",
 				"neuron_load_ready")
+		self.architecture.instances["lif_neuron"].p_map.add("restart",
+				"neuron_restart")
 
 
 		# Debug
@@ -363,40 +366,135 @@ class MultiInputLIF(VHDLblock):
 				"rst_n <= '1';")
 
 		# v_th_en
-		self.tb.architecture.processes["v_th_en_gen"].bodyHeader.add(
-				"v_th_en <= '0';")
-		self.tb.architecture.processes["v_th_en_gen"].bodyHeader.add(
-				"wait for 50 ns;")
-		self.tb.architecture.processes["v_th_en_gen"].bodyHeader.add(
-				"v_th_en <= '1';")
-		self.tb.architecture.processes["v_th_en_gen"].bodyHeader.add(
-				"wait for 20 ns;")
-		self.tb.architecture.processes["v_th_en_gen"].bodyHeader.add(
-				"v_th_en <= '0';")
+		neuron_load_ready_if = If()
+		neuron_load_ready_if._if_.conditions.add(
+			"neuron_load_ready = '1'")
+		neuron_load_ready_if._if_.body.add("v_th_en <= '1';")
+		neuron_load_ready_if._else_.body.add("v_th_en <= '0';")
+
+
+		self.tb.architecture.processes["v_th_en_gen"].final_wait = False
+		self.tb.architecture.processes["v_th_en_gen"].sensitivity_list.\
+			add("clk")
+		self.tb.architecture.processes["v_th_en_gen"].if_list.add()
+		self.tb.architecture.processes["v_th_en_gen"].if_list[0]._if_.\
+			conditions.add("clk'event")
+		self.tb.architecture.processes["v_th_en_gen"].if_list[0]._if_.\
+			conditions.add("clk = '1'", "and")
+		self.tb.architecture.processes["v_th_en_gen"].if_list[0]._if_.\
+			body.add(neuron_load_ready_if)
 
 		# neuron_load_end
-		self.tb.architecture.processes["neuron_load_end_gen"].\
-				bodyHeader.add("neuron_load_end <= '0';")
-		self.tb.architecture.processes["neuron_load_end_gen"].\
-				bodyHeader.add("wait for 50 ns;")
-		self.tb.architecture.processes["neuron_load_end_gen"].\
-				bodyHeader.add("neuron_load_end <= '1';")
-		self.tb.architecture.processes["neuron_load_end_gen"].\
-				bodyHeader.add("wait for 20 ns;")
-		self.tb.architecture.processes["neuron_load_end_gen"].\
-				bodyHeader.add("neuron_load_end <= '0';")
+		neuron_load_ready_if = If()
+		neuron_load_ready_if._if_.conditions.add(
+			"neuron_load_ready = '1'")
+		neuron_load_ready_if._if_.body.add("neuron_load_end <= '1';")
+		neuron_load_ready_if._else_.body.add("neuron_load_end <= '0';")
 
-		# start
-		self.tb.architecture.processes["start_gen"].bodyHeader.add(
-				"start <= '0';")
-		self.tb.architecture.processes["start_gen"].bodyHeader.add(
-				"wait for 150 ns;")
-		self.tb.architecture.processes["start_gen"].bodyHeader.add(
-				"start <= '1';")
-		self.tb.architecture.processes["start_gen"].bodyHeader.add(
-				"wait for 20 ns;")
-		self.tb.architecture.processes["start_gen"].bodyHeader.add(
-				"start <= '0';")
+
+		self.tb.architecture.processes["neuron_load_end_gen"].\
+			final_wait = False
+		self.tb.architecture.processes["neuron_load_end_gen"].\
+			sensitivity_list.add("clk")
+		self.tb.architecture.processes["neuron_load_end_gen"].if_list.\
+			add()
+		self.tb.architecture.processes["neuron_load_end_gen"].\
+			if_list[0]._if_.conditions.add("clk'event")
+		self.tb.architecture.processes["neuron_load_end_gen"].\
+			if_list[0]._if_.conditions.add("clk = '1'", "and")
+		self.tb.architecture.processes["neuron_load_end_gen"].\
+				if_list[0]._if_.body.add(neuron_load_ready_if)
+
+		# Start
+		mi_ready_if = If()
+		mi_ready_if._if_.conditions.add("mi_ready = '1'")
+		mi_ready_if._if_.body.add("start <= '1';")
+		mi_ready_if._else_.body.add("start <= '0';")
+
+
+		self.tb.architecture.processes["start_gen"].final_wait = False
+		self.tb.architecture.processes["start_gen"].sensitivity_list.\
+			add("clk")
+		self.tb.architecture.processes["start_gen"].if_list.add()
+		self.tb.architecture.processes["start_gen"].if_list[0]._if_.\
+			conditions.add("clk'event")
+		self.tb.architecture.processes["start_gen"].if_list[0]._if_.\
+			conditions.add("clk = '1'", "and")
+		self.tb.architecture.processes["start_gen"].if_list[0]._if_.\
+			body.add(mi_ready_if)
+
+		# Exc spikes
+		mi_ready_if = If()
+		mi_ready_if._if_.conditions.add("start = '1'")
+		mi_ready_if._if_.conditions.add("mi_ready = '1'", "and")
+		mi_ready_if._if_.body.add("spikes_value := spikes_value + 1;")
+		mi_ready_if._if_.body.add("exc_value := spikes_value;")
+		mi_ready_if._elsif_.add()
+		mi_ready_if._elsif_[0].conditions.add("start = '0'")
+		mi_ready_if._elsif_[0].body.add("exc_value := 0;")
+
+
+		self.tb.architecture.processes["exc_spikes_gen"].\
+				final_wait = False
+		self.tb.architecture.processes["exc_spikes_gen"].\
+				sensitivity_list.add("clk")
+		self.tb.architecture.processes["exc_spikes_gen"].variables.add(
+				name		= "spikes_value",
+				var_type	= "integer",
+				value		= "0")
+		self.tb.architecture.processes["exc_spikes_gen"].variables.add(
+				name		= "exc_value",
+				var_type	= "integer",
+				value		= "0"
+		)
+		self.tb.architecture.processes["exc_spikes_gen"].if_list.add()
+		self.tb.architecture.processes["exc_spikes_gen"].if_list[0].\
+			_if_.conditions.add("clk'event")
+		self.tb.architecture.processes["exc_spikes_gen"].if_list[0].\
+			_if_.conditions.add("clk = '1'", "and")
+		self.tb.architecture.processes["exc_spikes_gen"].if_list[0].\
+			_if_.body.add(mi_ready_if)
+		self.tb.architecture.processes["exc_spikes_gen"].if_list[0].\
+			_if_.body.add("exc_spikes <= std_logic_vector("
+			"to_unsigned(exc_value, exc_spikes'length));")
+
+		# Inh spikes
+		mi_ready_if = If()
+		mi_ready_if._if_.conditions.add("start = '1'")
+		mi_ready_if._if_.conditions.add("mi_ready = '1'", "and")
+		mi_ready_if._if_.body.add("spikes_value := spikes_value + 1;")
+		mi_ready_if._if_.body.add("inh_value := spikes_value;")
+		mi_ready_if._elsif_.add()
+		mi_ready_if._elsif_[0].conditions.add("start = '0'")
+		mi_ready_if._elsif_[0].body.add("inh_value := 0;")
+
+
+		self.tb.architecture.processes["inh_spikes_gen"].\
+				final_wait = False
+		self.tb.architecture.processes["inh_spikes_gen"].\
+				sensitivity_list.add("clk")
+		self.tb.architecture.processes["inh_spikes_gen"].variables.add(
+				name		= "spikes_value",
+				var_type	= "integer",
+				value		= "0")
+		self.tb.architecture.processes["inh_spikes_gen"].variables.add(
+				name		= "inh_value",
+				var_type	= "integer",
+				value		= "0"
+		)
+		self.tb.architecture.processes["inh_spikes_gen"].if_list.add()
+		self.tb.architecture.processes["inh_spikes_gen"].if_list[0].\
+			_if_.conditions.add("clk'event")
+		self.tb.architecture.processes["inh_spikes_gen"].if_list[0].\
+			_if_.conditions.add("clk = '1'", "and")
+		self.tb.architecture.processes["inh_spikes_gen"].if_list[0].\
+			_if_.body.add(mi_ready_if)
+		self.tb.architecture.processes["inh_spikes_gen"].if_list[0].\
+			_if_.body.add("inh_spikes <= std_logic_vector("
+			"to_unsigned(inh_value, inh_spikes'length));")
+
+
+
 
 		# restart
 		self.tb.architecture.processes["restart_gen"].bodyHeader.add(
@@ -409,25 +507,3 @@ class MultiInputLIF(VHDLblock):
 				"wait for 20 ns;")
 		self.tb.architecture.processes["restart_gen"].bodyHeader.add(
 				"restart <= '0';")
-
-
-a = MultiInputLIF(
-	n_exc_inputs = 8, 
-	n_inh_inputs = 4, 
-	bitwidth = 32,
-	w_inh_bw = 32,
-	w_exc_bw = 32,
-	shift = 10,
-	debug = True,
-	debug_list = [
-		"neuron_datapath_v",
-		"neuron_cu_present_state",
-		"multi_input_cu_present_state",
-		"multi_input_lif_neuron_ready"
-	]
-)
-
-a.testbench()
-a.tb.write_file_all()
-a.tb.compile_all()
-a.tb.elaborate()
