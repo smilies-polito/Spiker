@@ -108,7 +108,7 @@ def random_binary(min_value = 0, max_value = 255, bitwidth = 8):
 		width = bitwidth, base = "b")
 
 
-def debug_component(component):
+def debug_component(component, db_list = []):
 
 	attr_list = [ attr for attr in dir(component) if not 
 			attr.startswith("__")]
@@ -133,8 +133,33 @@ def debug_component(component):
 						port[debug_port].port_type
 				)
 
-	debug_list = track_signals(component.architecture.signal, 
-			component.entity.name)
+	if db_list:
+		
+		debug_list = []
+
+		for signal_name in db_list:
+
+			print(component.entity.name)
+			print(signal_name)
+
+			if component.entity.name in signal_name:
+
+				print("Signal present\n")
+
+				for internal_signal in \
+				component.architecture.signal:
+
+					print(internal_signal)
+
+					if component.entity.name + "_" + \
+					internal_signal == signal_name:
+
+						debug_list.append(
+							internal_signal)
+
+	else:
+		debug_list = track_signals(component.architecture.signal, 
+				component.entity.name)
 
 	for debug_port in debug_list:
 
