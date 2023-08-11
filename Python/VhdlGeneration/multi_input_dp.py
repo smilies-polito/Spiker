@@ -401,7 +401,7 @@ class MultiInputDP(VHDLblock):
 				"in0", "exc_cnt_sig")
 		self.architecture.instances["exc_cmp"].p_map.add(
 				"in1", "std_logic_vector(to_unsigned("
-				"n_exc_inputs-1, exc_cnt_bitwidth))")
+				"n_exc_inputs-2, exc_cnt_bitwidth))")
 		self.architecture.instances["exc_cmp"].p_map.add("cmp_out",
 				"exc_stop")
 
@@ -415,7 +415,7 @@ class MultiInputDP(VHDLblock):
 				"in0", "inh_cnt_sig")
 		self.architecture.instances["inh_cmp"].p_map.add(
 				"in1", "std_logic_vector(to_unsigned("
-				"n_inh_inputs-1, inh_cnt_bitwidth))")
+				"n_inh_inputs-2, inh_cnt_bitwidth))")
 		self.architecture.instances["inh_cmp"].p_map.add("cmp_out",
 				"inh_stop")
 
