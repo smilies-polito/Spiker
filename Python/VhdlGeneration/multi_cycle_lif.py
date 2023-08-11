@@ -25,7 +25,7 @@ class MultiCycleLIF(VHDLblock):
 
 		exc_cnt_bitwidth = int(log2(ceil_pow2(n_exc_inputs)))
 		inh_cnt_bitwidth = int(log2(ceil_pow2(n_inh_inputs)))
-		cycles_cnt_bitwidth = int(log2(ceil_pow2(n_cycles)))
+		cycles_cnt_bitwidth = int(log2(ceil_pow2(n_cycles+1))) + 1
 
 		VHDLblock.__init__(self, entity_name = "multi_cycle_lif")
 
@@ -326,32 +326,40 @@ class MultiCycleLIF(VHDLblock):
 		print("\n")
 
 
-	def testbench(self, clock_period = 20, file_output = False):
+	def testbench(self, clock_period = 20, file_output = False,
+			output_dir = "output", file_input = False, 
+			input_dir = "", input_signal_list = []):
 
-		self.tb = Testbench(self, clock_period = clock_period,
-			file_output = file_output)
+		self.tb = Testbench(
+			self,
+			clock_period		= clock_period,
+			file_output		= file_output,
+			output_dir		= output_dir,
+			file_input		= file_input,
+			input_signal_list	= input_signal_list
+		)
 
 		self.tb.library.add("work")
 		self.tb.library["work"].package.add("spiker_pkg")
 
 		# exc_weight
 		self.tb.architecture.processes["exc_weight_gen"].bodyHeader.\
-				add("exc_weight <= to_signed(500, "
+				add("exc_weight <= to_signed(550000000, "
 				"exc_weight'length);")
 
 		# inh_weight
 		self.tb.architecture.processes["inh_weight_gen"].bodyHeader.\
-				add("inh_weight <= to_signed(-300, "
+				add("inh_weight <= to_signed(-400000000, "
 				"inh_weight'length);")
 
 		# v_reset
 		self.tb.architecture.processes["v_reset_gen"].bodyHeader.\
-				add("v_reset <= to_signed(1000, "
+				add("v_reset <= to_signed(1000000, "
 				"v_reset'length);")
 
 		# v_th_value
 		self.tb.architecture.processes["v_th_value_gen"].bodyHeader.\
-				add("v_th_value <= to_signed(3000, "
+				add("v_th_value <= to_signed(1500000000, "
 				"v_th_value'length);")
 
 		# rst_n
@@ -424,87 +432,42 @@ class MultiCycleLIF(VHDLblock):
 		self.tb.architecture.processes["start_gen"].if_list[0]._if_.\
 			body.add(mc_ready_if)
 
-		# Exc spikes
-		mc_ready_if = If()
-		mc_ready_if._if_.conditions.add("start_all = '1'")
-		mc_ready_if._if_.body.add("spikes_value := spikes_value + 1;")
-		mc_ready_if._if_.body.add("exc_value := spikes_value;")
-		mc_ready_if._elsif_.add()
-		mc_ready_if._elsif_[0].conditions.add("start_all = '0'")
-		mc_ready_if._elsif_[0].body.add("exc_value := 0;")
+
+		del self.tb.architecture.processes["exc_spikes_gen"]
+		del self.tb.architecture.processes["inh_spikes_gen"]
+		self.tb.load(signal_name = "exc_spikes", input_dir = input_dir)
+		self.tb.load(signal_name = "inh_spikes", input_dir = input_dir)
+
+		del self.tb.architecture.processes["exc_spikes_rd_en_gen"]
+		self.tb.architecture.bodyCodeHeader.add("exc_spikes_rd_en <= "
+				"start_all;")
+		del self.tb.architecture.processes["inh_spikes_rd_en_gen"]
+		self.tb.architecture.bodyCodeHeader.add("inh_spikes_rd_en <= "
+				"start_all;")
 
 
-		self.tb.architecture.processes["exc_spikes_gen"].\
-				final_wait = False
-		self.tb.architecture.processes["exc_spikes_gen"].\
-				sensitivity_list.add("clk")
-		self.tb.architecture.processes["exc_spikes_gen"].variables.add(
-				name		= "spikes_value",
-				var_type	= "integer",
-				value		= "0")
-		self.tb.architecture.processes["exc_spikes_gen"].variables.add(
-				name		= "exc_value",
-				var_type	= "integer",
-				value		= "0"
-		)
-		self.tb.architecture.processes["exc_spikes_gen"].if_list.add()
-		self.tb.architecture.processes["exc_spikes_gen"].if_list[0].\
-			_if_.conditions.add("clk'event")
-		self.tb.architecture.processes["exc_spikes_gen"].if_list[0].\
-			_if_.conditions.add("clk = '1'", "and")
-		self.tb.architecture.processes["exc_spikes_gen"].if_list[0].\
-			_if_.body.add(mc_ready_if)
-		self.tb.architecture.processes["exc_spikes_gen"].if_list[0].\
-			_if_.body.add("exc_spikes <= std_logic_vector("
-			"to_unsigned(exc_value, exc_spikes'length));")
-
-		# Inh spikes
-		mc_ready_if = If()
-		mc_ready_if._if_.conditions.add("start_all = '1'")
-		mc_ready_if._if_.body.add("spikes_value := spikes_value + 1;")
-		mc_ready_if._if_.body.add("inh_value := spikes_value;")
-		mc_ready_if._elsif_.add()
-		mc_ready_if._elsif_[0].conditions.add("start_all = '0'")
-		mc_ready_if._elsif_[0].body.add("inh_value := 0;")
-
-
-		self.tb.architecture.processes["inh_spikes_gen"].\
-				final_wait = False
-		self.tb.architecture.processes["inh_spikes_gen"].\
-				sensitivity_list.add("clk")
-		self.tb.architecture.processes["inh_spikes_gen"].variables.add(
-				name		= "spikes_value",
-				var_type	= "integer",
-				value		= "0")
-		self.tb.architecture.processes["inh_spikes_gen"].variables.add(
-				name		= "inh_value",
-				var_type	= "integer",
-				value		= "0"
-		)
-		self.tb.architecture.processes["inh_spikes_gen"].if_list.add()
-		self.tb.architecture.processes["inh_spikes_gen"].if_list[0].\
-			_if_.conditions.add("clk'event")
-		self.tb.architecture.processes["inh_spikes_gen"].if_list[0].\
-			_if_.conditions.add("clk = '1'", "and")
-		self.tb.architecture.processes["inh_spikes_gen"].if_list[0].\
-			_if_.body.add(mc_ready_if)
-		self.tb.architecture.processes["inh_spikes_gen"].if_list[0].\
-			_if_.body.add("inh_spikes <= std_logic_vector("
-			"to_unsigned(inh_value, inh_spikes'length));")
 
 a = MultiCycleLIF(
-	n_exc_inputs = 8,
-	n_inh_inputs = 4,
-	n_cycles = 10,
+	n_exc_inputs = 4,
+	n_inh_inputs = 3,
+	n_cycles = 1,
 	bitwidth = 32,
 	w_inh_bw = 32,
 	w_exc_bw = 32,
 	shift = 10,
 	debug = True,
-	debug_list = []
+	debug_list = [
+		"neuron_cu_present_state",
+		"multi_input_cu_present_state",
+		"multi_cycle_cu_present_state",
+		"multi_cycle_datapath_cycles_cnt",
+		"neuron_datapath_v",
+		"multi_cycle_stop"
+	]
 )
 
 a.testbench()
+
 a.tb.write_file_all()
 a.compile_all()
 a.tb.compile()
