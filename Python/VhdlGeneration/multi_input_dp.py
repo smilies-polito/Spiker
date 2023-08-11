@@ -34,7 +34,7 @@ class MultiInputDP(VHDLblock):
 				reg_type = "std_logic", rst = "sync", 
 				active = "low")
 
-		if n_exc_inputs == n_inh_inputs:
+		if ceil_pow2(n_exc_inputs) == ceil_pow2(n_inh_inputs):
 			self.mux = Mux(n_in = n_exc_inputs, 
 					in_type = "std_logic", bitwidth = 1)
 		else:
@@ -187,7 +187,7 @@ class MultiInputDP(VHDLblock):
 		self.architecture.component.add(self.counter)
 		self.architecture.component.add(self.cmp)
 
-		if n_exc_inputs == n_inh_inputs:
+		if ceil_pow2(n_exc_inputs) == ceil_pow2(n_inh_inputs):
 			self.architecture.component.add(self.mux)
 		else:
 			self.architecture.component.add(self.exc_mux)
@@ -253,7 +253,7 @@ class MultiInputDP(VHDLblock):
 
 
 
-		if n_exc_inputs == n_inh_inputs:
+		if ceil_pow2(n_exc_inputs) == ceil_pow2(n_inh_inputs):
 
 			# Exc multiplexer
 			self.architecture.instances.add(self.mux, "exc_mux")
@@ -443,7 +443,7 @@ class MultiInputDP(VHDLblock):
 		self.spikes_or.compile() 
 		self.reg.compile() 
 
-		if self.n_exc_inputs == self.n_inh_inputs:
+		if ceil_pow2(self.n_exc_inputs) == ceil_pow2(self.n_inh_inputs):
 			self.mux.compile()
 		else:
 			self.exc_mux.compile()
@@ -458,7 +458,7 @@ class MultiInputDP(VHDLblock):
 		self.spikes_or.write_file() 
 		self.reg.write_file() 
 
-		if self.n_exc_inputs == self.n_inh_inputs:
+		if ceil_pow2(self.n_exc_inputs) == ceil_pow2(self.n_inh_inputs):
 			self.mux.write_file()
 		else:
 			self.exc_mux.write_file()
