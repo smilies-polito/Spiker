@@ -18,9 +18,9 @@ class MultiCycle(VHDLblock):
 
 		self.n_cycles = n_cycles
 
-		cycles_cnt_bitwidth = int(log2(ceil_pow2(n_cycles)))
+		cycles_cnt_bitwidth = int(log2(ceil_pow2(n_cycles+1))) + 1
 
-		VHDLblock.__init__(self, entity_name = "multi_cycles")
+		VHDLblock.__init__(self, entity_name = "multi_cycle")
 
 		self.spiker_pkg = SpikerPackage()
 

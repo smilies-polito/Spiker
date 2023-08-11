@@ -18,9 +18,9 @@ class MultiCycleDP(VHDLblock):
 
 		self.n_cycles = n_cycles
 
-		cycles_cnt_bitwidth = int(log2(ceil_pow2(n_cycles)))
+		cycles_cnt_bitwidth = int(log2(ceil_pow2(n_cycles + 1))) + 1
 
-		VHDLblock.__init__(self, entity_name = "multi_cycles_datapath")
+		VHDLblock.__init__(self, entity_name = "multi_cycle_datapath")
 
 		self.counter = Cnt(bitwidth = cycles_cnt_bitwidth) 
 
@@ -100,7 +100,7 @@ class MultiCycleDP(VHDLblock):
 				"in0", "cycles_cnt")
 		self.architecture.instances["cycles_cmp"].p_map.add(
 				"in1", "std_logic_vector(to_unsigned("
-				"n_cycles-1, cycles_cnt_bitwidth))")
+				"n_cycles + 1, cycles_cnt_bitwidth))")
 		self.architecture.instances["cycles_cmp"].p_map.add("cmp_out",
 				"stop")
 
