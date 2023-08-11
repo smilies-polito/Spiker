@@ -166,11 +166,6 @@ class MultiCycleCU(VHDLblock):
 				case_list["present_state"].when_list["init"].\
 				body.add("next_state <= update_wait;")
 				
-		# Output evaluation
-		self.architecture.processes.add("output_evaluation")
-		self.architecture.processes["output_evaluation"].\
-				sensitivity_list.add("present_state")
-
 		# Update wait
 		stop_check = If()
 		stop_check._if_.conditions.add("stop = '1'")
@@ -182,14 +177,19 @@ class MultiCycleCU(VHDLblock):
 		all_ready_check._if_.body.add(stop_check)
 		all_ready_check._else_.body.add("next_state <= update_wait;")
 
-
 		self.architecture.processes["state_evaluation"].\
-				case_list["present_state"].when_list["idle"].\
+				case_list["present_state"].when_list["update_wait"].\
 				body.add(all_ready_check)
 
 		self.architecture.processes["state_evaluation"].\
 				case_list["present_state"].others.body.add(
 				"next_state <= reset;")
+
+		# Network update
+		self.architecture.processes["state_evaluation"].\
+				case_list["present_state"].when_list[
+				"network_update"].body.add("next_state <= "
+				"update_wait;")
 
 
 
