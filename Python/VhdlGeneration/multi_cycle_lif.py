@@ -221,10 +221,15 @@ class MultiCycleLIF(VHDLblock):
 			direction	= "out",
 			port_type	= "std_logic")
 
+		self.entity.port.add(
+			name 		= "start_all",
+			direction	= "out",
+			port_type	= "std_logic")
+
 
 		# Signals
 		self.architecture.signal.add(
-			name 		= "start_all", 
+			name 		= "start_all_sig", 
 			signal_type	= "std_logic")
 
 		self.architecture.signal.add(
@@ -239,6 +244,9 @@ class MultiCycleLIF(VHDLblock):
 		# Components
 		self.architecture.component.add(self.multi_cycle)
 		self.architecture.component.add(self.multi_input_lif)
+
+		self.architecture.bodyCodeHeader.add("start_all <= "
+				"start_all_sig;")
 		
 		# Multi-cycle
 		self.architecture.instances.add(self.multi_cycle,
@@ -246,6 +254,8 @@ class MultiCycleLIF(VHDLblock):
 		self.architecture.instances["mc"].generic_map()
 		self.architecture.instances["mc"].port_map()
 		self.architecture.instances["mc"].p_map.add("ready", "mc_ready")
+		self.architecture.instances["mc"].p_map.add("start_all",
+				"start_all_sig")
 
 		# Multi-input neuron
 		self.architecture.instances.add(self.multi_input_lif,
@@ -253,13 +263,7 @@ class MultiCycleLIF(VHDLblock):
 		self.architecture.instances["multi_input_neuron"].generic_map()
 		self.architecture.instances["multi_input_neuron"].port_map()
 		self.architecture.instances["multi_input_neuron"].p_map.add(
-				"load_end", "neuron_load_end")
-		self.architecture.instances["multi_input_neuron"].p_map.add(
-				"load_ready", "neuron_load_ready")
-		self.architecture.instances["multi_input_neuron"].p_map.add(
-				"restart", "restart")
-		self.architecture.instances["multi_input_neuron"].p_map.add(
-				"start", "start_all")
+				"start", "start_all_sig")
 		self.architecture.instances["multi_input_neuron"].p_map.add(
 				"mi_ready", "all_ready")
 
@@ -403,10 +407,10 @@ class MultiCycleLIF(VHDLblock):
 				if_list[0]._if_.body.add(neuron_load_ready_if)
 
 		# Start
-		mi_ready_if = If()
-		mi_ready_if._if_.conditions.add("mi_ready = '1'")
-		mi_ready_if._if_.body.add("start <= '1';")
-		mi_ready_if._else_.body.add("start <= '0';")
+		mc_ready_if = If()
+		mc_ready_if._if_.conditions.add("mc_ready = '1'")
+		mc_ready_if._if_.body.add("start <= '1';")
+		mc_ready_if._else_.body.add("start <= '0';")
 
 
 		self.tb.architecture.processes["start_gen"].final_wait = False
@@ -418,17 +422,16 @@ class MultiCycleLIF(VHDLblock):
 		self.tb.architecture.processes["start_gen"].if_list[0]._if_.\
 			conditions.add("clk = '1'", "and")
 		self.tb.architecture.processes["start_gen"].if_list[0]._if_.\
-			body.add(mi_ready_if)
+			body.add(mc_ready_if)
 
 		# Exc spikes
-		mi_ready_if = If()
-		mi_ready_if._if_.conditions.add("start = '1'")
-		mi_ready_if._if_.conditions.add("mi_ready = '1'", "and")
-		mi_ready_if._if_.body.add("spikes_value := spikes_value + 1;")
-		mi_ready_if._if_.body.add("exc_value := spikes_value;")
-		mi_ready_if._elsif_.add()
-		mi_ready_if._elsif_[0].conditions.add("start = '0'")
-		mi_ready_if._elsif_[0].body.add("exc_value := 0;")
+		mc_ready_if = If()
+		mc_ready_if._if_.conditions.add("start_all = '1'")
+		mc_ready_if._if_.body.add("spikes_value := spikes_value + 1;")
+		mc_ready_if._if_.body.add("exc_value := spikes_value;")
+		mc_ready_if._elsif_.add()
+		mc_ready_if._elsif_[0].conditions.add("start_all = '0'")
+		mc_ready_if._elsif_[0].body.add("exc_value := 0;")
 
 
 		self.tb.architecture.processes["exc_spikes_gen"].\
@@ -450,20 +453,19 @@ class MultiCycleLIF(VHDLblock):
 		self.tb.architecture.processes["exc_spikes_gen"].if_list[0].\
 			_if_.conditions.add("clk = '1'", "and")
 		self.tb.architecture.processes["exc_spikes_gen"].if_list[0].\
-			_if_.body.add(mi_ready_if)
+			_if_.body.add(mc_ready_if)
 		self.tb.architecture.processes["exc_spikes_gen"].if_list[0].\
 			_if_.body.add("exc_spikes <= std_logic_vector("
 			"to_unsigned(exc_value, exc_spikes'length));")
 
 		# Inh spikes
-		mi_ready_if = If()
-		mi_ready_if._if_.conditions.add("start = '1'")
-		mi_ready_if._if_.conditions.add("mi_ready = '1'", "and")
-		mi_ready_if._if_.body.add("spikes_value := spikes_value + 1;")
-		mi_ready_if._if_.body.add("inh_value := spikes_value;")
-		mi_ready_if._elsif_.add()
-		mi_ready_if._elsif_[0].conditions.add("start = '0'")
-		mi_ready_if._elsif_[0].body.add("inh_value := 0;")
+		mc_ready_if = If()
+		mc_ready_if._if_.conditions.add("start_all = '1'")
+		mc_ready_if._if_.body.add("spikes_value := spikes_value + 1;")
+		mc_ready_if._if_.body.add("inh_value := spikes_value;")
+		mc_ready_if._elsif_.add()
+		mc_ready_if._elsif_[0].conditions.add("start_all = '0'")
+		mc_ready_if._elsif_[0].body.add("inh_value := 0;")
 
 
 		self.tb.architecture.processes["inh_spikes_gen"].\
@@ -485,29 +487,25 @@ class MultiCycleLIF(VHDLblock):
 		self.tb.architecture.processes["inh_spikes_gen"].if_list[0].\
 			_if_.conditions.add("clk = '1'", "and")
 		self.tb.architecture.processes["inh_spikes_gen"].if_list[0].\
-			_if_.body.add(mi_ready_if)
+			_if_.body.add(mc_ready_if)
 		self.tb.architecture.processes["inh_spikes_gen"].if_list[0].\
 			_if_.body.add("inh_spikes <= std_logic_vector("
 			"to_unsigned(inh_value, inh_spikes'length));")
 
+a = MultiCycleLIF(
+	n_exc_inputs = 8,
+	n_inh_inputs = 4,
+	n_cycles = 10,
+	bitwidth = 32,
+	w_inh_bw = 32,
+	w_exc_bw = 32,
+	shift = 10,
+	debug = True,
+	debug_list = []
+)
 
-
-
-		# restart
-		self.tb.architecture.processes["restart_gen"].bodyHeader.add(
-				"restart <= '0';")
-		self.tb.architecture.processes["restart_gen"].bodyHeader.add(
-				"wait for 1500 ns;")
-		self.tb.architecture.processes["restart_gen"].bodyHeader.add(
-				"restart <= '1';")
-		self.tb.architecture.processes["restart_gen"].bodyHeader.add(
-				"wait for 20 ns;")
-		self.tb.architecture.processes["restart_gen"].bodyHeader.add(
-				"restart <= '0';")
-
-a = MultiCycleLIF()
-
-print(a.code())
-a.write_file()
-a.compile()
-a.elaborate()
+a.testbench()
+a.tb.write_file_all()
+a.compile_all()
+a.tb.compile()
+a.tb.elaborate()
