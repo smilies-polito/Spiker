@@ -239,11 +239,28 @@ class MultiInputLIF(VHDLblock):
 		self.architecture.signal.add(
 			name 		= "neuron_ready",
 			signal_type	= "std_logic")
+
+		self.architecture.signal.add(
+			name 		= "exc_cnt_sig", 
+			signal_type	= "std_logic_vector("
+						"exc_cnt_bitwidth - 1 "
+						"downto 0)")
+
+		self.architecture.signal.add(
+			name 		= "inh_cnt_sig", 
+			signal_type	= "std_logic_vector("
+						"inh_cnt_bitwidth - 1 "
+						"downto 0)")
+
+
 		
 
 		# Components
 		self.architecture.component.add(self.multi_input)
 		self.architecture.component.add(self.lif_neuron)
+
+		self.architecture.bodyCodeHeader.add("exc_cnt <= exc_cnt_sig;")
+		self.architecture.bodyCodeHeader.add("inh_cnt <= inh_cnt_sig;")
 		
 		# Multi-input
 		self.architecture.instances.add(self.multi_input,
@@ -253,6 +270,10 @@ class MultiInputLIF(VHDLblock):
 		self.architecture.instances["mi"].p_map.add("all_ready",
 				"neuron_ready")
 		self.architecture.instances["mi"].p_map.add("ready", "mi_ready")
+		self.architecture.instances["mi"].p_map.add("exc_cnt",
+				"exc_cnt_sig")
+		self.architecture.instances["mi"].p_map.add("inh_cnt",
+				"inh_cnt_sig")
 
 		# LIF neuron
 		self.architecture.instances.add(self.lif_neuron,
@@ -492,9 +513,6 @@ class MultiInputLIF(VHDLblock):
 		self.tb.architecture.processes["inh_spikes_gen"].if_list[0].\
 			_if_.body.add("inh_spikes <= std_logic_vector("
 			"to_unsigned(inh_value, inh_spikes'length));")
-
-
-
 
 		# restart
 		self.tb.architecture.processes["restart_gen"].bodyHeader.add(
