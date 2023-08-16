@@ -27,6 +27,65 @@ def createDir(dirName):
 	sp.run(cmdString, shell=True, executable="/bin/bash")
 
 
+def ceil_pow2(x):
+
+	power = 0
+	go = True
+
+	while go:
+		if x // 2**power == 0 or x // 2**power == 1 and \
+			x % 2**power == 0:
+
+			go = False
+
+		else:
+			power += 1
+			
+	return 2**power
+
+def n_bytes(x):
+
+	if x == 0:
+		return 1
+
+	return int((x-1) // 8) + 1
+
+
+def floor_pow2(x):
+
+	power = 0
+	go = True
+
+	while go:
+		if x // 2**power == 1 or x == 0:
+			go = False
+
+		else:
+			power += 1
+			
+	return 2**power
+
+
+def random_binary(min_value = 0, max_value = 255, bitwidth = 8):
+
+	if max_value > 2**bitwidth - 1 or min_value < 0:
+		print("Random number not representable on bitwidth\n")
+		exit(-1)
+
+	rand_int = randint(min_value, max_value)
+
+	return "{0:{fill}{width}{base}}".format(rand_int, fill = 0,
+		width = bitwidth, base = "b")
+
+def int_to_bin(value, fill = 0, width = 8):
+	return "{0:{fill}{width}{base}}".format(value, fill = fill, width =
+			width, base = "b")
+
+def int_to_hex(value, fill = 0, width = 8):
+	return "{0:{fill}{width}{base}}".format(value, fill = fill, width =
+			width, base = "x")
+
+
 def track_signals(signals_dict, name):
 
 	signals_list = list(signals_dict.keys())
@@ -77,35 +136,6 @@ def track_signals(signals_dict, name):
 
 	return tracked
 
-
-def ceil_pow2(x):
-
-	power = 0
-	go = True
-
-	while go:
-		if x // 2**power == 0 or x // 2**power == 1 and \
-			x % 2**power == 0:
-
-			go = False
-
-		else:
-			power += 1
-			
-	return 2**power
-
-
-
-def random_binary(min_value = 0, max_value = 255, bitwidth = 8):
-
-	if max_value > 2**bitwidth - 1 or min_value < 0:
-		print("Random number not representable on bitwidth\n")
-		exit(-1)
-
-	rand_int = randint(min_value, max_value)
-
-	return "{0:{fill}{width}{base}}".format(rand_int, fill = 0,
-		width = bitwidth, base = "b")
 
 
 def debug_component(component, db_list = []):
