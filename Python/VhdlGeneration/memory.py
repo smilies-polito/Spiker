@@ -6,7 +6,8 @@ from vhdl_block import VHDLblock
 
 class Memory(VHDLblock):
 
-	def __init__(self, depth, tot_elements, bitwidth, mem_type = "bram"):
+	def __init__(self, depth, tot_elements, bitwidth, mem_type = "bram",
+			use_parity = True, max_n_bram = 140):
 
 		if mem_type == "bram":
 			self.bram = Bram()
@@ -85,3 +86,24 @@ class Memory(VHDLblock):
 			self.addr_width = final_addr_width
 			self.we_width = final_we_width
 			self.depth = final_depth
+
+			if use_parity:
+
+				self.el_per_word = int(self.word_width // 
+					bitwidth) 
+
+				self.spare_elements = tot_elements % \
+					self.el_per_word
+
+
+				self.n_bram = int(tot_elements //
+					self.el_per_word)
+
+				if self.spare_elements:
+					self.n_bram += 1
+
+			if self.n_bram > max_n_bram:
+				raise ValueError("Cannot fit the maximum "
+						"amount of BRAMs. Needed: %d. "
+						"Available: %d" %(self.n_bram,
+							max_n_bram))
