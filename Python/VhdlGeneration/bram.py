@@ -139,7 +139,7 @@ class Bram(VHDLblock):
 			value		= str(self.do_reg))
 		self.entity.generic.add(
 			name		= "init",
-			gen_type 	= "std_logic_vector(" +
+			gen_type 	= "bit_vector(" +
 			str(self.max_word_width[-1]-1) + " downto 0)",
 			value		= str("X\"" + self.init_value + "\""))
 		self.entity.generic.add(
@@ -156,7 +156,7 @@ class Bram(VHDLblock):
 			value		= str(self.read_width))
 		self.entity.generic.add(
 			name		= "srval",
-			gen_type 	= "std_logic_vector(" +
+			gen_type 	= "bit_vector(" +
 			str(self.max_word_width[-1]-1) + " downto 0)",
 			value		= str("X\"" + self.srval + "\""))
 		self.entity.generic.add(
@@ -180,12 +180,13 @@ class Bram(VHDLblock):
 				value		= str("X\"" +
 					self.init_width_hex*"0" + "\"")
 			)
+		
 
 		self.entity.port.add(
 			name		= "do",
 			direction	= "out",
 			port_type	= "std_logic_vector(" +
-					str(self.read_width-1) + " downto 0)")
+					" read_width-1 downto 0)")
 		self.entity.port.add(
 			name		= "rdclk",
 			direction	= "in",
@@ -194,7 +195,8 @@ class Bram(VHDLblock):
 			name		= "rdaddr",
 			direction	= "in",
 			port_type	= "std_logic_vector(" +
-					str(self.addr_width-1) + " downto 0)")
+					str(self.addr_width-1) + 
+					" downto 0)")
 		self.entity.port.add(
 			name		= "rden",
 			direction	= "in",
@@ -211,7 +213,8 @@ class Bram(VHDLblock):
 			name		= "we",
 			direction	= "in",
 			port_type	= "std_logic_vector(" +
-					str(self.we_width-1) + " downto 0)")
+					str(self.we_width-1) + 
+					" downto 0)")
 		self.entity.port.add(
 			name		= "wrclk",
 			direction	= "in",
@@ -220,7 +223,8 @@ class Bram(VHDLblock):
 			name		= "wraddr",
 			direction	= "in",
 			port_type	= "std_logic_vector(" +
-					str(self.addr_width-1) + " downto 0)")
+					str(self.addr_width-1) + 
+					" downto 0)")
 		self.entity.port.add(
 			name		= "wren",
 			direction	= "in",
@@ -229,7 +233,7 @@ class Bram(VHDLblock):
 			name		= "di",
 			direction	= "in",
 			port_type	= "std_logic_vector(" +
-					str(write_width-1) + " downto 0)")
+					"write_width-1 downto 0)")
 
 	def shape_table(self):
 
