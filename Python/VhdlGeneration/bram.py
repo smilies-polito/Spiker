@@ -244,13 +244,13 @@ class Bram(VHDLblock):
 			table[size]["addr_width"] = []
 			table[size]["we_width"] = []
 
-		for size, max_word_width in zip(self.bram_size_list,
-		self.max_word_width):
+		for size, max_word_width in sorted(zip(self.bram_size_list,
+		self.max_word_width), reverse = True):
 			
 			count = 0
 			size_count = 0
 
-			for word_width in range(1, max_word_width+1):
+			for word_width in range(max_word_width, 0, -1):
 
 
 				bram_depth = floor_pow2(self.bram_tot_bit[
@@ -268,12 +268,12 @@ class Bram(VHDLblock):
 				if not table[size]["bram_depth"] or \
 				bram_depth != table[size]["bram_depth"][-1]:
 
-					if table[size]["min_width"]:
-						table[size]["max_width"].append(
-						table[size][ "min_width"][-1] + 
+					if table[size]["max_width"]:
+						table[size]["min_width"].append(
+						table[size][ "max_width"][-1] - 
 						count)
 
-					table[size]["min_width"].append(
+					table[size]["max_width"].append(
 						word_width)
 					table[size]["bram_depth"].append(
 						bram_depth)
@@ -287,8 +287,8 @@ class Bram(VHDLblock):
 				else:
 					count += 1
 
-			if table[size]["min_width"]:
-				table[size]["max_width"].append(table[size]["min_width"][-1] + 
-					count)
+			if table[size]["max_width"]:
+				table[size]["min_width"].append(table[size]["max_width"][-1]
+						- count)
 
 		return table
