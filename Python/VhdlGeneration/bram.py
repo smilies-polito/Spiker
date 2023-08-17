@@ -109,7 +109,7 @@ class Bram(VHDLblock):
 		self.we_width = ceil_pow2(n_bytes(write_width - int(write_width
 			// 8)))
 
-		VHDLblock.__init__(self, "BRAM_SINGLE_MACRO")
+		VHDLblock.__init__(self, "bram_single_macro")
 
 		self.library.add("ieee")
 		self.library["ieee"].package.add("std_logic_1164")
@@ -230,9 +230,75 @@ class Bram(VHDLblock):
 		sp.run(command, shell = True)
 
 		print("\n")
+
+	
+def comp(component, output_dir = "output"):
+
+	print("\nCompiling component %s\n"
+			%(component.entity.name))
+
+	command = "cd " + output_dir + "; "
+	command = command + "xvhdl --2008 " + component.entity.name + ".vhd"
+
+	sp.run(command, shell = True)
+
+	print("\n")
+
+def elaborate(component, output_dir = "output"):
+
+	print("\nElaborating component %s\n"
+			%(component.entity.name))
+
+	command = "cd " + output_dir + "; "
+	command = command + "xelab " + component.entity.name
+
+	sp.run(command, shell = True)
+
+	print("\n")
 	
 
-a = Bram(
+
+from testbench import Testbench
+
+class prova(VHDLblock):
+
+
+	def __init__(self):
+		VHDLblock.__init__(self, "prova")
+
+	def compile(self, output_dir = "output"):
+
+		print("\nCompiling component %s\n"
+				%(self.entity.name))
+
+		command = "cd " + output_dir + "; "
+		command = command + "xvhdl --2008 " + self.entity.name + ".vhd"
+
+		sp.run(command, shell = True)
+
+		print("\n")
+
+	def elaborate(self, output_dir = "output"):
+
+		print("\nElaborating component %s\n"
+				%(self.entity.name))
+
+		command = "cd " + output_dir + "; "
+		command = command + "xelab " + self.entity.name
+
+		sp.run(command, shell = True)
+
+		print("\n")
+
+a = prova()
+a.library.add("unisim")
+a.library["unisim"].package.add("vcomponents")
+a.library.add("unimacro")
+a.library["unimacro"].package.add("vcomponents")
+a.library.add("ieee")
+a.library["ieee"].package.add("std_logic_1164")
+
+b = Bram(
 	bram_size	= "36Kb",
 	device		= "7series",
 	do_reg		= 0,
@@ -243,9 +309,77 @@ a = Bram(
 
 )
 
+for key in b.entity.port:
+	a.entity.port.add(
+		name = b.entity.port[key].name,
+		direction = b.entity.port[key].direction,
+		port_type = b.entity.port[key].port_type
+	)
 
-print(a.code())
+a.architecture.constant.add(
+	name 		= "bram_size",
+	const_type	= "string",
+	value		= "\"36Kb\"")
+a.architecture.constant.add(
+	name 		= "device",
+	const_type	= "string",
+	value		= "\"7series\"")
+a.architecture.constant.add(
+	name 		= "do_reg",
+	const_type	= "integer",
+	value		= "0")
+a.architecture.constant.add(
+	name 		= "init",
+	const_type	= "bit_vector(71 downto 0)",
+	value		= "X\"" + 18*"0" + "\"")
+a.architecture.constant.add(
+	name 		= "init_file",
+	const_type	= "string",
+	value		= "\"none\"")
+a.architecture.constant.add(
+	name 		= "write_width",
+	const_type	= "integer",
+	value		= "72")
+a.architecture.constant.add(
+	name 		= "read_width",
+	const_type	= "integer",
+	value		= "72")
+a.architecture.constant.add(
+	name 		= "write_mode",
+	const_type	= "string",
+	value		= "\"write_first\"")
+a.architecture.constant.add(
+	name 		= "srval",
+	const_type	= "bit_vector(71 downto 0)",
+	value		= "X\"" + 18*"0" + "\"")
 
-a.write_file()
-a.compile()
-a.elaborate()
+a.architecture.instances.add(b, "bram")
+a.architecture.instances["bram"].port_map()
+a.architecture.instances["bram"].generic_map()
+a.architecture.instances["bram"].g_map.add("init_00",
+	"X\"00000000000000000000000000000000000000000000000000000000000000ff\"")
+
+for i in range(1, 128):
+	a.architecture.instances["bram"].g_map.add("init_" + int_to_hex(i, width
+		= 2), "X\"" + 64*"0"  + "\"")
+
+
+tb = Testbench(a)
+
+
+tb.architecture.processes["en_gen"].for_list.add("address", 0, 511)
+tb.architecture.processes["en_gen"].for_list[0].body.add("en <= \'1\';")
+tb.architecture.processes["en_gen"].for_list[0].body.add("addr <= "
+		"std_logic_vector(to_unsigned(i, 9));")
+tb.architecture.processes["en_gen"].for_list[0].body.add("wait for 20 ns;")
+tb.architecture.processes["en_gen"].for_list[0].body.add("en <= \'0\';")
+tb.architecture.processes["en_gen"].for_list[0].body.add(
+		"addr <= (others => '0');")
+tb.architecture.processes["en_gen"].for_list[0].body.add("wait for 20 ns;")
+
+print(tb.code())
+
+
+tb.write_file_all()
+tb.compile_all()
+tb.elaborate()
