@@ -91,6 +91,24 @@ class Memory(VHDLblock):
 			self.we_width = final_we_width
 			self.depth = final_depth
 
+			self.max_word_width = max(self.bram.max_word_width_list)
+
+			max_addr_width = 0
+
+			for size in self.bram_table:
+				for key in self.bram_table[size]:
+					if key == "addr_width":
+						tmp_max_width = \
+						max(self.bram_table[size][key])
+
+						if tmp_max_width > \
+						max_addr_width:
+							max_addr_width = \
+							tmp_max_width
+						
+
+			self.max_addr_width = max_addr_width
+
 			if use_parity:
 
 				self.el_per_word = int(self.word_width // 
@@ -141,7 +159,7 @@ class Memory(VHDLblock):
 		self.entity.generic.add(
 			name		= "write_width",
 			gen_type	= "integer",
-			value 		= str(self.word_width)
+			value 		= str(self.max_word_width)
 		)
 		self.entity.generic.add(
 			name		= "read_width",
@@ -151,7 +169,7 @@ class Memory(VHDLblock):
 		self.entity.generic.add(
 			name		= "addr_width",
 			gen_type	= "integer",
-			value 		= str(self.addr_width)
+			value 		= str(self.max_addr_width)
 		)
 		self.entity.generic.add(
 			name		= "we_width",
@@ -195,7 +213,7 @@ class Memory(VHDLblock):
 		self.architecture.constant.add(
 			name		= "init",
 			const_type 	= "bit_vector(" +
-			str(self.bram.max_word_width[-1]-1) + " downto 0)",
+			str(self.max_word_width-1) + " downto 0)",
 			value		= str("X\"" + self.bram.init_value + 
 						"\""))
 		self.architecture.constant.add(
@@ -206,7 +224,7 @@ class Memory(VHDLblock):
 		self.architecture.constant.add(
 			name		= "srval",
 			const_type 	= "bit_vector(" +
-			str(self.bram.max_word_width[-1]-1) + " downto 0)",
+			str(self.max_word_width-1) + " downto 0)",
 			value		= str("X\"" + self.bram.srval + "\""))
 		self.architecture.constant.add(
 			name 		= "write_mode",
@@ -236,8 +254,6 @@ class Memory(VHDLblock):
 				str(i)].generic_map(mode = "no")
 
 			for g_map in self.bram.entity.generic:
-				if "init" in g_map:
-					print("Hello")
 				if "init" not in g_map:
 					self.architecture.instances["bram_" +
 						str(i)].g_map.add(g_map, g_map)
@@ -278,7 +294,7 @@ class Memory(VHDLblock):
 
 
 
-a = Memory(1, 400, 3)
+a = Memory(100, 1, 32)
 
 print(a.code())
 a.write_file()
