@@ -16,7 +16,7 @@ class Bram(VHDLblock):
 			write_mode = "read_first"):
 
 		self.bram_tot_bit 	= [18432, 36864]
-		self.max_word_width 	= [36, 72]
+		self.max_word_width_list 	= [36, 72]
 
 		self.bram_size_list = [str(int(size // 1000)) + "Kb" for size in
 				self.bram_tot_bit]
@@ -45,19 +45,19 @@ class Bram(VHDLblock):
 			raise ValueError("Allowed Data Output Register "
 					"values are 0 and 1")
 
-		if init_value < 0 or init_value > self.max_word_width[-1]:
+		if init_value < 0 or init_value > self.max_word_width_list[-1]:
 			raise ValueError("Allowed init values for output "
 					"register are between 0 and " +
-					str(self.max_word_width) + " bit")
+					str(self.max_word_width_list) + " bit")
 
 		if write_width < 0 or write_width > \
-		self.max_word_width[self.bram_size_list.index(bram_size)]:
+		self.max_word_width_list[self.bram_size_list.index(bram_size)]:
 			raise ValueError("Allowed Write Width between 1 "
 				"and 72. Values from 37 to 72 allowed only "
 				"if BRAM size is 36 Kb")
 
 		if read_width < 0 or read_width > \
-		self.max_word_width[self.bram_size_list.index(bram_size)]:
+		self.max_word_width_list[self.bram_size_list.index(bram_size)]:
 			raise ValueError("Allowed Read Width between 1 "
 				"and 72. Values from 37 to 72 allowed only "
 				"if BRAM size is 36 Kb")
@@ -67,10 +67,10 @@ class Bram(VHDLblock):
 				self.sim_collision_check_list)
 
 
-		if srval < 0 or srval > self.max_word_width[-1]:
+		if srval < 0 or srval > self.max_word_width_list[-1]:
 			raise ValueError("Allowed set/reset values for output "
 					"register are between 0 and " +
-					str(self.max_word_width) + " bit")
+					str(self.max_word_width_list) + " bit")
 
 		if write_mode not in self.write_mode_list:
 			raise ValueError("Valid values are ", 
@@ -89,7 +89,7 @@ class Bram(VHDLblock):
 		# Initial values on the output port
 		self.init_value	= int_to_hex(
 				init_value, 
-				width = int(self.max_word_width[-1] // 4))
+				width = int(self.max_word_width_list[-1] // 4))
 
 		self.init_file = init_file
 
@@ -99,7 +99,7 @@ class Bram(VHDLblock):
 
 		self.srval = int_to_hex(
 				srval, 
-				width = int(self.max_word_width[-1] // 4))
+				width = int(self.max_word_width_list[-1] // 4))
 
 		self.write_mode = write_mode
 
@@ -140,7 +140,7 @@ class Bram(VHDLblock):
 		self.entity.generic.add(
 			name		= "init",
 			gen_type 	= "bit_vector(" +
-			str(self.max_word_width[-1]-1) + " downto 0)",
+			str(self.max_word_width_list[-1]-1) + " downto 0)",
 			value		= str("X\"" + self.init_value + "\""))
 		self.entity.generic.add(
 			name		= "init_file",
@@ -157,7 +157,7 @@ class Bram(VHDLblock):
 		self.entity.generic.add(
 			name		= "srval",
 			gen_type 	= "bit_vector(" +
-			str(self.max_word_width[-1]-1) + " downto 0)",
+			str(self.max_word_width_list[-1]-1) + " downto 0)",
 			value		= str("X\"" + self.srval + "\""))
 		self.entity.generic.add(
 			name 		= "write_mode",
@@ -166,7 +166,8 @@ class Bram(VHDLblock):
 		self.entity.generic.add(
 			name 		= "sim_collision_check",
 			gen_type 	= "string",
-			value		= "\"" + self.sim_collision_check + "\"")
+			value		= "\"" + self.sim_collision_check + \
+					"\"")
 
 
 		for i in range(floor_pow2(self.bram_tot_bit[-1]) //
@@ -185,7 +186,7 @@ class Bram(VHDLblock):
 		self.entity.port.add(
 			name		= "do",
 			direction	= "out",
-			port_type	= "std_logic_vector(" +
+			port_type	= "std_logic_vector("
 					" read_width-1 downto 0)")
 		self.entity.port.add(
 			name		= "rdclk",
@@ -194,9 +195,8 @@ class Bram(VHDLblock):
 		self.entity.port.add(
 			name		= "rdaddr",
 			direction	= "in",
-			port_type	= "std_logic_vector(" +
-					str(self.addr_width-1) + 
-					" downto 0)")
+			port_type	= "std_logic_vector("
+					"addr_width-1 downto 0)")
 		self.entity.port.add(
 			name		= "rden",
 			direction	= "in",
@@ -212,8 +212,7 @@ class Bram(VHDLblock):
 		self.entity.port.add(
 			name		= "we",
 			direction	= "in",
-			port_type	= "std_logic_vector(" +
-					str(self.we_width-1) + 
+			port_type	= "std_logic_vector(we_width-1" 
 					" downto 0)")
 		self.entity.port.add(
 			name		= "wrclk",
@@ -223,8 +222,7 @@ class Bram(VHDLblock):
 			name		= "wraddr",
 			direction	= "in",
 			port_type	= "std_logic_vector(" +
-					str(self.addr_width-1) + 
-					" downto 0)")
+					"addr_width-1 downto 0)")
 		self.entity.port.add(
 			name		= "wren",
 			direction	= "in",
@@ -248,13 +246,13 @@ class Bram(VHDLblock):
 			table[size]["addr_width"] = []
 			table[size]["we_width"] = []
 
-		for size, max_word_width in sorted(zip(self.bram_size_list,
-		self.max_word_width), reverse = True):
+		for size, max_word_width_list in sorted(zip(self.bram_size_list,
+		self.max_word_width_list), reverse = True):
 			
 			count = 0
 			size_count = 0
 
-			for word_width in range(max_word_width, 0, -1):
+			for word_width in range(max_word_width_list, 0, -1):
 
 
 				bram_depth = floor_pow2(self.bram_tot_bit[
@@ -292,7 +290,7 @@ class Bram(VHDLblock):
 					count += 1
 
 			if table[size]["max_width"]:
-				table[size]["min_width"].append(table[size]["max_width"][-1]
-						- count)
+				table[size]["min_width"].append(table[size][
+					"max_width"][-1] - count)
 
 		return table
