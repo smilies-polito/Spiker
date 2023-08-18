@@ -21,6 +21,8 @@ class Bram(VHDLblock):
 		self.bram_size_list = [str(int(size // 1000)) + "Kb" for size in
 				self.bram_tot_bit]
 
+		self.n_parity = 1
+
 		self.device_list = ["7series", "virtex5", "virtex6", 
 					"spartan6"]
 
@@ -109,7 +111,7 @@ class Bram(VHDLblock):
 		self.bram_depth = floor_pow2(self.bram_tot_bit[
 			self.bram_size_list.index(
 				self.bram_size)]) // \
-			ceil_pow2(width - int(width // 8))
+			ceil_pow2(width - int(width // (8 + self.n_parity)))
 
 		self.addr_width = int(log2(self.bram_depth))
 
@@ -258,14 +260,14 @@ class Bram(VHDLblock):
 				bram_depth = floor_pow2(self.bram_tot_bit[
 					self.bram_size_list.index(size)]) \
 					// ceil_pow2(word_width - 
-					int(word_width // 8))
+					int(word_width // (8 + self.n_parity)))
 
 				addr_width = int(
 					log2(bram_depth))
 
 				we_width = ceil_pow2(n_bytes(
 					word_width - int(word_width
-					// 8)))
+					// (8 + self.n_parity))))
 				
 				if not table[size]["bram_depth"] or \
 				bram_depth != table[size]["bram_depth"][-1]:
