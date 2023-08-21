@@ -204,3 +204,34 @@ def debug_component(component, db_list = []):
 		debug.append(debug_port_name)
 
 	setattr(component, "debug", debug)
+
+
+def fixed_point_array(numpyArray, bitwidth, fixed_point_decimals = 0,
+	conv_type = "signed"):
+
+	'''
+	Convert a NumPy array into fixed point notation.
+
+	INPUT:
+
+		1) numpyArray: floating point array to convert.
+
+		2) fixed_point_decimals: number of decimal bits in the fixed
+		point representation.
+
+	'''
+
+	numpyArray = numpyArray * 2**fixed_point_decimals
+	fp_array = numpyArray.astype(int)
+
+	if conv_type == "signed":
+		fp_array[fp_array > 2**(bitwidth-1)-1] = 2**(bitwidth-1)-1
+		fp_array[fp_array < -2**(bitwidth-1)] = -2**(bitwidth-1)
+
+	elif conv_type == "unsigned":
+		fp_array[fp_array > 2**bitwidth-1] = 2**(bitwidth)-1
+
+	else:
+		raise ValueError("Invalid fixed-point convertion type")
+
+	return fp_array
