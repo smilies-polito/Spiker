@@ -6,3 +6,5 @@ clean:
 	rm -f *.str
 	rm -rf .Xil
 	rm -rf __pycache__
+	rm -rf *.coe
+	rm -rf output
