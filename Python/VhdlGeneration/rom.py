@@ -1,274 +1,120 @@
 import subprocess as sp
-from math import log2
+import numpy as np
+import torch
 
-from bram import Bram
-from utils import int_to_hex, ceil_pow2
+from typing import Union
+
+from utils import fixed_point_array
 
 import path_config
 from vhdl_block import VHDLblock
 
 
-class Memory(VHDLblock):
+class Rom(VHDLblock):
 
-	def __init__(self, depth, tot_elements, bitwidth, mem_type = "bram",
-			max_n_bram = 140):
+	def __init__(self, init_array : Union[np.ndarray, torch.Tensor],
+			bitwidth : int, fp_decimals : int = None,
+			max_word_size : int = 4608, max_depth : int = 1048576,
+			init_file : str = None, name_term : str = ""): 
 
-		if mem_type == "bram":
-			self.bram = Bram()
+		self.name_term = name_term
 
-			self.bram_table = self.bram.shape_table()
+		VHDLblock.__init__(self, "rom" + name_term)
 
-			too_big = True
-			too_small = False
-			size_index = 0
+		self.rom_columns	= init_array.shape[0]
+		self.rom_rows		= init_array.shape[1]
 
-			final_size = ""
-			
-			bram_tot_bit = sorted(self.bram.bram_tot_bit, 
-					reverse = True)
-				
-			while too_big and not too_small and size_index < \
-			len(bram_tot_bit):
+		if self.rom_columns*bitwidth > max_word_size:
+			raise ValueError("Cannot fit ROM. Data are too large")
 
-				size = bram_tot_bit[size_index]
+		if self.rom_rows > max_depth:
+			raise ValueError("Cannot fit ROM. Data are too deep")
 
-				key = str(int(size // 1000)) + "Kb"
+		self.init_array = init_array
+		self.bitwidth	= bitwidth
 
-				stop = False
-				depth_index = 0
+		if fp_decimals == None:
+			self.fp_decimals = bitwidth - 1
+		else:
+			self.fp_decimals = fp_decimals
 
-				while not stop and depth_index < len(
-				self.bram_table[key]["bram_depth"]):
-
-					if self.bram_table[key]\
-					["bram_depth"][depth_index] > depth:
-
-						if self.bram_table[key]\
-						["max_width"][depth_index] - \
-						self.bram_table[key]\
-						["max_width"][depth_index] // \
-						(8 + self.bram.n_parity) < \
-						bitwidth:
-							too_small = True
+		if not init_file:
+			self.init_file = self.entity.name + ".coe"
+		else:
+			self.init_file = init_file
 
 
-						else:
-							stop = True
+		self.vhdl()
+		self.initialize()
 
-							final_size = key
-							final_word_width = \
-							self.bram_table[key]\
-							["max_width"]\
-							[depth_index]
-							final_addr_width = \
-							self.bram_table[key]\
-							["addr_width"]\
-							[depth_index]
-							final_we_width = \
-							self.bram_table[key]\
-							["we_width"]\
-							[depth_index]
-							final_depth = \
-							self.bram_table[key]\
-							["bram_depth"][\
-							depth_index]
+	def initialize(self):
 
-						if self.bram_table[key]\
-						["max_width"][depth_index] - \
-						self.bram_table[key]\
-						["max_width"][depth_index] // \
-						(8 + self.bram.n_parity) < \
-						bitwidth*tot_elements:
-
-							too_big = False
-
-					depth_index += 1
-
-				size_index += 1
-
-			if not final_size:
-				raise ValueError("Cannot fit the BRAM. "
-					"Data are too big")
-
-
-			self.size = final_size
-			self.word_width = final_word_width
-			self.addr_width = final_addr_width
-			self.we_width = final_we_width
-			self.depth = final_depth
-
-			self.max_word_width = max(self.bram.max_word_width_list)
-
-
-			self.el_per_word = int(self.word_width -\
-				self.word_width //
-				(8 + self.bram.n_parity) // 
-				bitwidth) 
-
-			self.spare_elements = tot_elements % \
-				self.el_per_word
-
-
-			self.n_bram = int(tot_elements //
-				self.el_per_word)
-
-			if self.spare_elements:
-				self.n_bram += 1
-
-			if self.n_bram > max_n_bram:
-				raise ValueError("Cannot fit the maximum "
-						"amount of BRAMs. Needed: %d. "
-						"Available: %d" %(self.n_bram,
-							max_n_bram))
-
-
-		VHDLblock.__init__(self, "memory")
-
-		self.bram = Bram(
-			bram_size = self.size,
-			device = self.bram.device,
-			do_reg = self.bram.do_reg,
-			init_value = self.bram.init_val_int,
-			init_file = self.bram.init_file,
-			write_width = self.word_width,
-			read_width = self.word_width,
-			sim_collision_check = self.bram.sim_collision_check,
-			srval = self.bram.srval_int,
-			write_mode = self.bram.write_mode	
+		fp_array = fixed_point_array(
+			self.init_array, 
+			self.bitwidth,
+			self.fp_decimals,
+			"signed"
 		)
-						
+
+		rom_rows = []
+
+		for j in range(fp_array.shape[1]):
+
+			rom_row = ""
+
+			for i in range(fp_array.shape[0]):
+
+				if fp_array[i][j] < 0:
+					fill = 1
+				else:
+					fill = 0
+
+				bin_weight = "{0:{fill}{width}{base}}".\
+				format(fp_array[i][j], fill = fill, 
+				width = bitwidth, base = "b")
+
+				rom_row += bin_weight
+
+			rom_row += "\n"
+			rom_rows.append(rom_row)
+
+
+
+		with open(self.init_file, "w") as fp:
+			for row in rom_rows:
+				fp.write(row)
+
+		return rom_rows
+
+	def vhdl(self):
 
 		self.library.add("ieee")
 		self.library["ieee"].package.add("std_logic_1164")
-		self.library.add("unisim")
-		self.library["unisim"].package.add("vcomponents")
-		self.library.add("unimacro")
-		self.library["unimacro"].package.add("vcomponents")
 
-
-		for key in self.bram.entity.port:
-			if self.bram.entity.port[key].direction == "in":
-				self.entity.port.add(
-					name = self.bram.entity.port[key].name,
-					direction = self.bram.entity.port[key].\
-						direction,
-					port_type = self.bram.entity.port[key].\
-						port_type
-				)
-
-		for out_index in range(tot_elements):
-			self.entity.port.add(
-				name = "do_" + int_to_hex(out_index, width =
-					int(log2(ceil_pow2(tot_elements)))
-					// 4),
-				direction = "out",
-				port_type = "std_logic_vector(" +
-				str(bitwidth-1) + " downto 0)"
-			)
-
-
-		self.architecture.constant.add(
-			name 		= "bram_size",
-			const_type 	= "string",
-			value		= "\"" + self.size + "\"")
-		self.architecture.constant.add(
-			name		= "device",
-			const_type 	= "string",
-			value		= "\"" + self.bram.device + "\"")
-		self.architecture.constant.add(
-			name		= "do_reg",
-			const_type 	= "integer",
-			value		= str(self.bram.do_reg))
-		self.architecture.constant.add(
-			name		= "init",
-			const_type 	= "bit_vector(" +
-			str(self.max_word_width-1) + " downto 0)",
-			value		= str("X\"" + self.bram.init_value + 
-						"\""))
-		self.architecture.constant.add(
-			name		= "init_file",
-			const_type 	= "string",
-			value		= str("\"" + self.bram.init_file + 
-						"\""))
-		self.architecture.constant.add(
-			name		= "srval",
-			const_type 	= "bit_vector(" +
-			str(self.max_word_width-1) + " downto 0)",
-			value		= str("X\"" + self.bram.srval + "\""))
-		self.architecture.constant.add(
-			name 		= "write_mode",
-			const_type 	= "string",
-			value		= "\"" + self.bram.write_mode + "\"")
-		self.architecture.constant.add(
-			name 		= "sim_collision_check",
-			const_type 	= "string",
-			value		= "\"" + self.bram.sim_collision_check \
-						+ "\"")
-
-		self.architecture.constant.add(
-			name 		= "bit_width",
-			const_type	= "integer",
-			value		= str(bitwidth)
+		self.entity.port.add(
+			name 		= "clka",
+			direction	= "in",
+			port_type	= "std_logic"
 		)
-		self.architecture.constant.add(
-			name 		= "n_bram",
-			const_type	= "integer",
-			value		= str(self.n_bram)
+		self.entity.port.add(
+			name 		= "addra",
+			direction	= "in",
+			port_type	= "std_logic_vector(9 downto 0)"
 		)
-		self.architecture.constant.add(
-			name 		= "elements_per_word",
-			const_type	= "integer",
-			value		= str(self.el_per_word)
-		)
-		self.architecture.constant.add(
-			name		= "write_width",
-			const_type	= "integer",
-			value 		= str(self.word_width)
-		)
-		self.architecture.constant.add(
-			name		= "read_width",
-			const_type	= "integer",
-			value 		= str(self.word_width)
-		)
-		self.architecture.constant.add(
-			name		= "addr_width",
-			const_type	= "integer",
-			value 		= str(self.bram.max_addr_width)
-		)
-		self.architecture.constant.add(
-			name		= "we_width",
-			const_type	= "integer",
-			value 		= str(self.we_width)
+		self.entity.port.add(
+			name 		= "douta",
+			direction	= "out",
+			port_type	= "std_logic_vector(2399 downto 0)"
 		)
 
+		original = self.entity.name
 
+		self.entity.name = self.entity.name + "_ip"
+		self.architecture.component.add(self)
+		self.architecture.instances.add(self, self.entity.name +
+			"_ip_instance")
 
-		for i in range(self.n_bram):
-
-			self.architecture.signal.add(
-				name		= "do_bram_" + str(i),
-				signal_type	= "std_logic_vector("
-						"read_width-1 downto 0)"
-			)
-
-			self.architecture.instances.add(
-				self.bram, "bram_" + str(i))
-
-
-			self.architecture.instances["bram_" + 
-				str(i)].generic_map(mode = "no")
-
-			for g_map in self.bram.entity.generic:
-				if "init" not in g_map:
-					self.architecture.instances["bram_" +
-						str(i)].g_map.add(g_map, g_map)
-
-			self.architecture.instances["bram_" + 
-				str(i)].port_map()
-			self.architecture.instances["bram_" + 
-				str(i)].p_map.add("do", "do_bram_" + str(i))
-
-
+		self.entity.name = original
 
 
 	def compile(self, output_dir = "output"):
@@ -295,15 +141,3 @@ class Memory(VHDLblock):
 		sp.run(command, shell = True)
 
 		print("\n")
-
-
-
-
-
-
-a = Memory(100, 1, 32)
-
-print(a.code())
-a.write_file()
-a.compile()
-a.elaborate()
