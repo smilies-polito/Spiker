@@ -11,7 +11,7 @@ from vhdl_block import VHDLblock
 class Memory(VHDLblock):
 
 	def __init__(self, depth, tot_elements, bitwidth, mem_type = "bram",
-			use_parity = True, max_n_bram = 140):
+			max_n_bram = 140):
 
 		if mem_type == "bram":
 			self.bram = Bram()
@@ -44,7 +44,10 @@ class Memory(VHDLblock):
 					["bram_depth"][depth_index] > depth:
 
 						if self.bram_table[key]\
-						["max_width"][depth_index] < \
+						["max_width"][depth_index] - \
+						self.bram_table[key]\
+						["max_width"][depth_index] // \
+						(8 + self.bram.n_parity) < \
 						bitwidth:
 							too_small = True
 
@@ -71,7 +74,10 @@ class Memory(VHDLblock):
 							depth_index]
 
 						if self.bram_table[key]\
-						["max_width"][depth_index] < \
+						["max_width"][depth_index] - \
+						self.bram_table[key]\
+						["max_width"][depth_index] // \
+						(8 + self.bram.n_parity) < \
 						bitwidth*tot_elements:
 
 							too_big = False
@@ -93,36 +99,21 @@ class Memory(VHDLblock):
 
 			self.max_word_width = max(self.bram.max_word_width_list)
 
-			max_addr_width = 0
 
-			for size in self.bram_table:
-				for key in self.bram_table[size]:
-					if key == "addr_width":
-						tmp_max_width = \
-						max(self.bram_table[size][key])
+			self.el_per_word = int(self.word_width -\
+				self.word_width //
+				(8 + self.bram.n_parity) // 
+				bitwidth) 
 
-						if tmp_max_width > \
-						max_addr_width:
-							max_addr_width = \
-							tmp_max_width
-						
-
-			self.max_addr_width = max_addr_width
-
-			if use_parity:
-
-				self.el_per_word = int(self.word_width // 
-					bitwidth) 
-
-				self.spare_elements = tot_elements % \
-					self.el_per_word
+			self.spare_elements = tot_elements % \
+				self.el_per_word
 
 
-				self.n_bram = int(tot_elements //
-					self.el_per_word)
+			self.n_bram = int(tot_elements //
+				self.el_per_word)
 
-				if self.spare_elements:
-					self.n_bram += 1
+			if self.spare_elements:
+				self.n_bram += 1
 
 			if self.n_bram > max_n_bram:
 				raise ValueError("Cannot fit the maximum "
@@ -132,6 +123,19 @@ class Memory(VHDLblock):
 
 
 		VHDLblock.__init__(self, "memory")
+
+		self.bram = Bram(
+			bram_size = self.size,
+			device = self.bram.device,
+			do_reg = self.bram.do_reg,
+			init_value = self.bram.init_val_int,
+			init_file = self.bram.init_file,
+			write_width = self.word_width,
+			read_width = self.word_width,
+			sim_collision_check = self.bram.sim_collision_check,
+			srval = self.bram.srval_int,
+			write_mode = self.bram.write_mode	
+		)
 						
 
 		self.library.add("ieee")
@@ -141,41 +145,6 @@ class Memory(VHDLblock):
 		self.library.add("unimacro")
 		self.library["unimacro"].package.add("vcomponents")
 
-		self.entity.generic.add(
-			name 		= "bit_width",
-			gen_type	= "integer",
-			value		= str(bitwidth)
-		)
-		self.entity.generic.add(
-			name 		= "n_bram",
-			gen_type	= "integer",
-			value		= str(self.n_bram)
-		)
-		self.entity.generic.add(
-			name 		= "elements_per_word",
-			gen_type	= "integer",
-			value		= str(self.el_per_word)
-		)
-		self.entity.generic.add(
-			name		= "write_width",
-			gen_type	= "integer",
-			value 		= str(self.max_word_width)
-		)
-		self.entity.generic.add(
-			name		= "read_width",
-			gen_type	= "integer",
-			value 		= str(self.word_width)
-		)
-		self.entity.generic.add(
-			name		= "addr_width",
-			gen_type	= "integer",
-			value 		= str(self.max_addr_width)
-		)
-		self.entity.generic.add(
-			name		= "we_width",
-			gen_type	= "integer",
-			value 		= str(self.we_width)
-		)
 
 		for key in self.bram.entity.port:
 			if self.bram.entity.port[key].direction == "in":
@@ -193,8 +162,8 @@ class Memory(VHDLblock):
 					int(log2(ceil_pow2(tot_elements)))
 					// 4),
 				direction = "out",
-				port_type = "std_logic_vector(bit_width-1 "
-				"downto 0)"
+				port_type = "std_logic_vector(" +
+				str(bitwidth-1) + " downto 0)"
 			)
 
 
@@ -236,6 +205,42 @@ class Memory(VHDLblock):
 			value		= "\"" + self.bram.sim_collision_check \
 						+ "\"")
 
+		self.architecture.constant.add(
+			name 		= "bit_width",
+			const_type	= "integer",
+			value		= str(bitwidth)
+		)
+		self.architecture.constant.add(
+			name 		= "n_bram",
+			const_type	= "integer",
+			value		= str(self.n_bram)
+		)
+		self.architecture.constant.add(
+			name 		= "elements_per_word",
+			const_type	= "integer",
+			value		= str(self.el_per_word)
+		)
+		self.architecture.constant.add(
+			name		= "write_width",
+			const_type	= "integer",
+			value 		= str(self.word_width)
+		)
+		self.architecture.constant.add(
+			name		= "read_width",
+			const_type	= "integer",
+			value 		= str(self.word_width)
+		)
+		self.architecture.constant.add(
+			name		= "addr_width",
+			const_type	= "integer",
+			value 		= str(self.bram.max_addr_width)
+		)
+		self.architecture.constant.add(
+			name		= "we_width",
+			const_type	= "integer",
+			value 		= str(self.we_width)
+		)
+
 
 
 		for i in range(self.n_bram):
@@ -262,6 +267,8 @@ class Memory(VHDLblock):
 				str(i)].port_map()
 			self.architecture.instances["bram_" + 
 				str(i)].p_map.add("do", "do_bram_" + str(i))
+
+
 
 
 	def compile(self, output_dir = "output"):
