@@ -89,6 +89,7 @@ class Bram(VHDLblock):
 		self.do_reg	= do_reg
 
 		# Initial values on the output port
+		self.init_val_int	= init_value
 		self.init_value	= int_to_hex(
 				init_value, 
 				width = int(self.max_word_width_list[-1] // 4))
@@ -99,6 +100,7 @@ class Bram(VHDLblock):
 
 		self.read_width = read_width
 
+		self.srval_int = srval
 		self.srval = int_to_hex(
 				srval, 
 				width = int(self.max_word_width_list[-1] // 4))
@@ -119,6 +121,26 @@ class Bram(VHDLblock):
 			// 8)))
 
 		self.sim_collision_check = sim_collision_check
+
+
+		self.bram_table = self.shape_table()		
+		max_addr_width = 0
+
+		for size in self.bram_table:
+			for key in self.bram_table[size]:
+				if key == "addr_width":
+					tmp_max_width = \
+					max(self.bram_table[size][key])
+
+					if tmp_max_width > \
+					max_addr_width:
+						max_addr_width = \
+						tmp_max_width
+					
+
+		self.max_addr_width = max_addr_width
+
+
 
 		VHDLblock.__init__(self, "bram_sdp_macro")
 
@@ -188,8 +210,8 @@ class Bram(VHDLblock):
 		self.entity.port.add(
 			name		= "do",
 			direction	= "out",
-			port_type	= "std_logic_vector("
-					" read_width-1 downto 0)")
+			port_type	= "std_logic_vector(" + 
+					str(self.read_width-1) + " downto 0)")
 		self.entity.port.add(
 			name		= "rdclk",
 			direction	= "in",
@@ -197,8 +219,9 @@ class Bram(VHDLblock):
 		self.entity.port.add(
 			name		= "rdaddr",
 			direction	= "in",
-			port_type	= "std_logic_vector("
-					"addr_width-1 downto 0)")
+			port_type	= "std_logic_vector(" +
+					str(self.max_addr_width-1) + 
+					" downto 0)")
 		self.entity.port.add(
 			name		= "rden",
 			direction	= "in",
@@ -214,8 +237,8 @@ class Bram(VHDLblock):
 		self.entity.port.add(
 			name		= "we",
 			direction	= "in",
-			port_type	= "std_logic_vector(we_width-1" 
-					" downto 0)")
+			port_type	= "std_logic_vector(" +
+					str(self.we_width-1) + " downto 0)")
 		self.entity.port.add(
 			name		= "wrclk",
 			direction	= "in",
@@ -224,7 +247,8 @@ class Bram(VHDLblock):
 			name		= "wraddr",
 			direction	= "in",
 			port_type	= "std_logic_vector(" +
-					"addr_width-1 downto 0)")
+					str(self.max_addr_width-1) + 
+					" downto 0)")
 		self.entity.port.add(
 			name		= "wren",
 			direction	= "in",
@@ -233,7 +257,7 @@ class Bram(VHDLblock):
 			name		= "di",
 			direction	= "in",
 			port_type	= "std_logic_vector(" +
-					"write_width-1 downto 0)")
+					str(self.write_width-1) + " downto 0)")
 
 	def shape_table(self):
 
