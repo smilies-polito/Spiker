@@ -2,9 +2,10 @@ import subprocess as sp
 import numpy as np
 import torch
 
+from math import log
 from typing import Union
 
-from utils import fixed_point_array
+from utils import fixed_point_array, ceil_pow2, int_to_hex
 
 import path_config
 from vhdl_block import VHDLblock
@@ -42,7 +43,6 @@ class Rom(VHDLblock):
 			self.init_file = self.entity.name + ".coe"
 		else:
 			self.init_file = init_file
-
 
 		self.vhdl()
 		self.initialize()
@@ -88,6 +88,8 @@ class Rom(VHDLblock):
 
 	def vhdl(self):
 
+		self.ip()
+
 		self.library.add("ieee")
 		self.library["ieee"].package.add("std_logic_1164")
 
@@ -99,22 +101,84 @@ class Rom(VHDLblock):
 		self.entity.port.add(
 			name 		= "addra",
 			direction	= "in",
-			port_type	= "std_logic_vector(9 downto 0)"
+			port_type	= "std_logic_vector(" +
+			str(int(log(ceil_pow2(self.init_array.shape[0]), 2)))  + 
+			" downto 0)"
 		)
-		self.entity.port.add(
-			name 		= "douta",
+
+		for i in range(self.init_array.shape[1]):
+
+			hex_width = int(log(ceil_pow2(self.init_array.shape[0]),
+					16))
+
+			if hex_width == 0:
+				hex_width = 1
+
+			hex_index = str(int_to_hex(i, width = hex_width))
+
+			self.entity.port.add(
+				name 		= "dout_" + hex_index,
+				direction	= "out",
+				port_type	= "std_logic_vector(" +
+						str(self.bitwidth-1) + 
+						" downto 0)"
+			)
+
+		self.architecture.signal.add(
+			name	= "douta",
+			signal_type	= "std_logic_vector(" +
+			str(self.bitwidth*self.init_array.shape[1]-1)
+			+ " downto 0)"
+		)
+
+		for i in range(self.init_array.shape[1]):
+
+			hex_width = int(log(ceil_pow2(self.init_array.shape[0]),
+					16))
+
+			if hex_width == 0:
+				hex_width = 1
+
+			hex_index = str(int_to_hex(i, width = hex_width))
+
+			self.architecture.bodyCodeHeader.add(
+				"dout_" + hex_index + " <= douta("
+				+ str(self.bitwidth*(i+1)-1) + " downto " + 
+				str(self.bitwidth*i) + ");")
+
+
+		self.architecture.component.add(self.rom_ip)
+		self.architecture.instances.add(self.rom_ip, 
+			self.entity.name + "_ip_instance")
+		self.architecture.instances[self.entity.name + 
+			"_ip_instance"].port_map()
+
+
+	def ip(self):
+		self.rom_ip = VHDLblock(self.entity.name + "_ip")
+
+		self.rom_ip.entity.port.add(
+			name 		= "clka",
+			direction	= "in",
+			port_type	= "std_logic"
+		)
+		self.rom_ip.entity.port.add(
+			name 		= "addra",
+			direction	= "in",
+			port_type	= "std_logic_vector(" +
+			str(int(log(ceil_pow2(self.init_array.shape[0]), 2))) + 
+			" downto 0)"
+		)
+
+		self.rom_ip.entity.port.add(
+			name		= "douta",
 			direction	= "out",
-			port_type	= "std_logic_vector(2399 downto 0)"
+			port_type	= "std_logic_vector(" +
+			str(self.bitwidth*self.init_array.shape[1]-1)
+			+ " downto 0)"
 		)
 
-		original = self.entity.name
 
-		self.entity.name = self.entity.name + "_ip"
-		self.architecture.component.add(self)
-		self.architecture.instances.add(self, self.entity.name +
-			"_ip_instance")
-
-		self.entity.name = original
 
 
 	def compile(self, output_dir = "output"):
