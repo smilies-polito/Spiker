@@ -9,7 +9,13 @@ class AddSub(VHDLblock):
 
 		VHDLblock.__init__(self, entity_name = "add_sub")
 
+		self.bitwidth = bitwidth
 		self.components = sub_components(self)
+
+		self.vhdl()
+
+
+	def vhdl(self):
 
 		# Libraries and packages
 		self.library.add("ieee")
@@ -17,7 +23,7 @@ class AddSub(VHDLblock):
 		self.library["ieee"].package.add("numeric_std")
 
 		# Generics
-		self.entity.generic.add("N", "integer", str(bitwidth))
+		self.entity.generic.add("N", "integer", str(self.bitwidth))
 
 		# Input ports
 		self.entity.port.add("in0", "in", "signed(N-1 downto 0)")
