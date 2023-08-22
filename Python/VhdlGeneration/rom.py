@@ -16,7 +16,8 @@ class Rom(VHDLblock):
 	def __init__(self, init_array : Union[np.ndarray, torch.Tensor],
 			bitwidth : int, fp_decimals : int = None,
 			max_word_size : int = 4608, max_depth : int = 1048576,
-			init_file : str = None, name_term : str = ""): 
+			init_file : str = None, name_term : str = "", debug =
+			False, debug_list = []): 
 
 		self.name_term = name_term
 
@@ -24,6 +25,9 @@ class Rom(VHDLblock):
 
 		self.rom_columns	= init_array.shape[0]
 		self.rom_rows		= init_array.shape[1]
+
+		print(self.rom_columns)
+		print(self.rom_rows)
 
 		if self.rom_columns*bitwidth > max_word_size:
 			raise ValueError("Cannot fit ROM. Data are too large")
@@ -44,7 +48,7 @@ class Rom(VHDLblock):
 		else:
 			self.init_file = init_file
 
-		self.vhdl()
+		self.vhdl(debug = debug)
 		self.initialize()
 
 	def initialize(self):
@@ -56,13 +60,13 @@ class Rom(VHDLblock):
 			"signed"
 		)
 
-		rom_rows = []
+		rows = []
 
-		for j in range(fp_array.shape[1]):
+		for j in range(self.rom_rows):
 
 			rom_row = ""
 
-			for i in range(fp_array.shape[0]):
+			for i in range(self.rom_columns):
 
 				if fp_array[i][j] < 0:
 					fill = 1
@@ -71,22 +75,22 @@ class Rom(VHDLblock):
 
 				bin_weight = "{0:{fill}{width}{base}}".\
 				format(fp_array[i][j], fill = fill, 
-				width = bitwidth, base = "b")
+				width = self.bitwidth, base = "b")
 
 				rom_row += bin_weight
 
 			rom_row += "\n"
-			rom_rows.append(rom_row)
+			rows.append(rom_row)
 
 
 
 		with open(self.init_file, "w") as fp:
-			for row in rom_rows:
+			for row in rows:
 				fp.write(row)
 
-		return rom_rows
+		return rows
 
-	def vhdl(self):
+	def vhdl(self, debug = False):
 
 		self.ip()
 
@@ -102,13 +106,13 @@ class Rom(VHDLblock):
 			name 		= "addra",
 			direction	= "in",
 			port_type	= "std_logic_vector(" +
-			str(int(log(ceil_pow2(self.init_array.shape[0]), 2)))  + 
+			str(int(log(ceil_pow2(self.rom_rows), 2)))  + 
 			" downto 0)"
 		)
 
-		for i in range(self.init_array.shape[1]):
+		for i in range(self.rom_columns):
 
-			hex_width = int(log(ceil_pow2(self.init_array.shape[0]),
+			hex_width = int(log(ceil_pow2(self.rom_columns),
 					16))
 
 			if hex_width == 0:
@@ -127,13 +131,13 @@ class Rom(VHDLblock):
 		self.architecture.signal.add(
 			name	= "douta",
 			signal_type	= "std_logic_vector(" +
-			str(self.bitwidth*self.init_array.shape[1]-1)
+			str(self.bitwidth*self.rom_columns-1)
 			+ " downto 0)"
 		)
 
-		for i in range(self.init_array.shape[1]):
+		for i in range(self.rom_columns):
 
-			hex_width = int(log(ceil_pow2(self.init_array.shape[0]),
+			hex_width = int(log(ceil_pow2(self.rom_columns),
 					16))
 
 			if hex_width == 0:
@@ -153,6 +157,10 @@ class Rom(VHDLblock):
 		self.architecture.instances[self.entity.name + 
 			"_ip_instance"].port_map()
 
+		# Debug
+		if debug:
+			debug_component(self, debug_list)
+
 
 	def ip(self):
 		self.rom_ip = VHDLblock(self.entity.name + "_ip")
@@ -166,7 +174,7 @@ class Rom(VHDLblock):
 			name 		= "addra",
 			direction	= "in",
 			port_type	= "std_logic_vector(" +
-			str(int(log(ceil_pow2(self.init_array.shape[0]), 2))) + 
+			str(int(log(ceil_pow2(self.rom_rows), 2))) + 
 			" downto 0)"
 		)
 
@@ -174,7 +182,7 @@ class Rom(VHDLblock):
 			name		= "douta",
 			direction	= "out",
 			port_type	= "std_logic_vector(" +
-			str(self.bitwidth*self.init_array.shape[1]-1)
+			str(self.bitwidth*self.rom_columns-1)
 			+ " downto 0)"
 		)
 
