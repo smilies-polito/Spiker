@@ -1,21 +1,43 @@
 import subprocess as sp
-from os.path import isfile
+from os.path import isfile, isdir
 
-def vhdl_compile(component, output_dir = "output"):
+import path_config
+from package_vhdl import Package
+
+
+
+def write_file_all(component, output_dir = "output", rm = False)
+
+	write_file(
+		component	= component, 
+		output_dir	= output_dir, 
+		rm		= rm
+	)
 
 	attr_list = [ attr for attr in dir(component) if not
 			attr.startswith("__")]
 
-	if "entity" not in attr_list:
-		raise TypeError("Component has no entity to compile")
+	for attr_name in attr_list:
 
-	name		= component.entity.name
+		sub = getattr(component, attr_name)
+
+		if hasattr(sub, "write_file_all") and \
+			callable(sub.write_file_all):
+				sub.write_file_all(output_dir = output_dir)
+		elif hasattr(sub, "write_file") and \
+			callable(sub.write_file):
+				sub.write_file(output_dir = output_dir)
+	
+
+
+
+def vhdl_compile(name, output_dir = "output"):
+
 	file_name	= name + ".vhd"
 
 	if not isfile(output_dir + "/" + file_name):
-		raise FileNotFoundError("Component file doesn't exist, create "
+		raise FileNotFoundError(name + " file doesn't exist, create "
 				"it first")
-
 
 	print("\nCompiling component %s\n" %(name))
 
@@ -25,6 +47,29 @@ def vhdl_compile(component, output_dir = "output"):
 	sp.run(command, shell = True)
 
 	print("\n")
+
+
+def vhdl_obj_compile(component, output_dir = "output"):
+
+	attr_list = [ attr for attr in dir(component) if not
+			attr.startswith("__")]
+
+	if "entity" not in attr_list or not isinstance(component, Package):
+		raise TypeError("Component cannot be compile")
+
+	name		= component.entity.name
+
+	vhdl_compile(name, output_dir = output_dir)
+
+
+
+def compile_all(component, output_dir = "output"):
+
+	vhdl_obj_compile(component, output_dir = output_dir)
+
+	if hasattr(component, "components"):
+		for name in component.components:
+			vhdl_compile(name, output_dir = output_dir)
 
 
 
@@ -47,6 +92,30 @@ def elaborate(component, output_dir = "output"):
 
 	print("\n")
 
+
+def sub_components(component):
+
+	sub_comp = []
+
+	attr_list = [ attr for attr in dir(component) if not
+			attr.startswith("__")]
+
+	for attr_name in attr_list:
+
+		sub = getattr(component, attr_name)
+
+		if hasattr(sub, "entity"):
+			sub_comp.append(sub.entity.name)
+			
+		if isinstance(sub, Package):
+			sub_comp.append(sub.name)
+
+		if hasattr(sub, "components"):
+			sub_comp += sub.components
+
+		sub_comp = list(set(sub_comp))
+
+	return sub_comp
 
 
 def track_signals(signals_dict, name):
