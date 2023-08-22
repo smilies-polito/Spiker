@@ -15,6 +15,8 @@ class Cnt(VHDLblock):
 
 		VHDLblock.__init__(self, entity_name = "cnt")
 
+		self.components = []
+
 		# Libraries and packages
 		self.library.add("ieee")
 		self.library["ieee"].package.add("std_logic_1164")
@@ -64,29 +66,3 @@ class Cnt(VHDLblock):
 		self.architecture.processes["count"].bodyFooter.add(
 				"cnt_out <= std_logic_vector(to_unsigned("
 				"cnt_var, N));")
-
-
-	def compile(self, output_dir = "output"):
-
-		print("\nCompiling component %s\n"
-				%(self.entity.name))
-
-		command = "cd " + output_dir + "; "
-		command = command + "xvhdl " + self.entity.name + ".vhd" + "; "
-
-		sp.run(command, shell = True)
-
-		print("\n")
-	
-
-	def elaborate(self, output_dir = "output"):
-
-		print("\nElaborating component %s\n"
-				%(self.entity.name))
-
-		command = "cd " + output_dir + "; "
-		command = command + "xelab " + self.entity.name
-
-		sp.run(command, shell = True)
-
-		print("\n")

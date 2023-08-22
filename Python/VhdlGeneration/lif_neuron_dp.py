@@ -1,9 +1,3 @@
-import subprocess as sp
-
-import path_config
-from vhdl_block import VHDLblock
-from if_statement import If
-
 from shifter import Shifter
 from add_sub import AddSub
 from mux import Mux
@@ -13,6 +7,9 @@ from cmp import Cmp
 from testbench import Testbench
 from utils import track_signals, debug_component
 
+import path_config
+from vhdl_block import VHDLblock
+from if_statement import If
 
 class LIFneuronDP(VHDLblock):
 
@@ -359,19 +356,6 @@ class LIFneuronDP(VHDLblock):
 		if debug:
 			debug_component(self, debug_list)
 
-	def compile(self, output_dir = "output"):
-
-		print("\nCompiling component %s\n"
-				%(self.entity.name))
-
-		command = "cd " + output_dir + "; "
-		command = command + "xvhdl --2008 " + self.entity.name + ".vhd"
-
-		sp.run(command, shell = True)
-
-		print("\n")
-
-
 	def compile_all(self, output_dir = "output"):
 
 		self.shifter.compile()
@@ -404,20 +388,6 @@ class LIFneuronDP(VHDLblock):
 		self.reg_signed_sync_rst.write_file(output_dir = output_dir)
 		self.cmp_gt.write_file(output_dir = output_dir)
 		self.write_file(output_dir = output_dir)
-
-
-
-	def elaborate(self, output_dir = "output"):
-
-		print("\nElaborating component %s\n"
-				%(self.entity.name))
-
-		command = "cd " + output_dir + "; "
-		command = command + "xelab " + self.entity.name
-
-		sp.run(command, shell = True)
-
-		print("\n")
 
 
 	def testbench(self, clock_period = 20, file_output = False):

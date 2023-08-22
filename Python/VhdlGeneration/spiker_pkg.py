@@ -1,5 +1,4 @@
 import path_config
-import subprocess as sp
 
 from package_vhdl import Package
 
@@ -43,16 +42,3 @@ class SpikerPackage(Package):
 		self.pkg_dec.type_list["mc_states"].add("init")
 		self.pkg_dec.type_list["mc_states"].add("update_wait")
 		self.pkg_dec.type_list["mc_states"].add("network_update")
-
-
-	def compile(self, output_dir = "output"):
-
-		print("\nCompiling component %s\n"
-				%(self.name))
-
-		command = "cd " + output_dir + "; "
-		command = command + "xvhdl --2008 " + self.name + ".vhd"
-
-		sp.run(command, shell = True)
-
-		print("\n")

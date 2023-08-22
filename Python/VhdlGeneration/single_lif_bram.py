@@ -1,4 +1,3 @@
-import subprocess as sp
 import numpy as np
 
 from math import log2
@@ -12,7 +11,6 @@ from utils import track_signals, ceil_pow2, debug_component
 import path_config
 from vhdl_block import VHDLblock
 from if_statement import If
-
 
 
 class SingleLifBram(VHDLblock):
@@ -308,20 +306,6 @@ class SingleLifBram(VHDLblock):
 			debug_component(self, debug_list)
 	
 		
-
-	def compile(self, output_dir = "output"):
-
-		print("\nCompiling component %s\n"
-				%(self.entity.name))
-
-		command = "cd " + output_dir + "; "
-		command = command + "xvhdl --2008 " + self.entity.name + ".vhd"
-
-		sp.run(command, shell = True)
-
-		print("\n")
-
-
 	def compile_all(self, output_dir = "output"):
 
 		attr_list = [ attr for attr in dir(self) if not 
@@ -356,19 +340,6 @@ class SingleLifBram(VHDLblock):
 
 		self.write_file(output_dir = output_dir)
 
-
-
-	def elaborate(self, output_dir = "output"):
-
-		print("\nElaborating component %s\n"
-				%(self.entity.name))
-
-		command = "cd " + output_dir + "; "
-		command = command + "xelab " + self.entity.name
-
-		sp.run(command, shell = True)
-
-		print("\n")
 
 
 	def testbench(self, clock_period = 20, file_output = False,

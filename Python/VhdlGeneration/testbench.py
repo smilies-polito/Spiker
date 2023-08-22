@@ -1,4 +1,3 @@
-import subprocess as sp
 import path_config
 from vhdl_block import VHDLblock
 from if_statement import If
@@ -91,19 +90,6 @@ class Testbench(VHDLblock):
 
 
 
-	def compile(self, output_dir = "output"):
-
-		print("\nCompiling component %s\n"
-				%(self.entity.name))
-
-		command = "cd " + output_dir + "; "
-		command = command + "xvhdl --2008 " + self.entity.name + ".vhd"
-
-		sp.run(command, shell = True)
-
-		print("\n")
-
-
 	def compile_all(self, output_dir = "output"):
 
 		if hasattr(self.dut, "compile_all") and \
@@ -129,20 +115,6 @@ class Testbench(VHDLblock):
 			self.dut.write_file(output_dir = output_dir)
 
 		self.write_file(output_dir = output_dir)
-
-
-	def elaborate(self, output_dir = "output"):
-
-		print("\nElaborating component %s\n"
-				%(self.entity.name))
-
-		command = "cd " + output_dir + "; "
-		command = command + "xelab " + self.entity.name
-
-		sp.run(command, shell = True)
-
-		print("\n")
-
 
 
 	def save(self, signal_name, output_dir = "output", clock_period = 20):

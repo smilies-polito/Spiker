@@ -1,4 +1,3 @@
-import subprocess as sp
 import numpy as np
 import torch
 
@@ -185,31 +184,3 @@ class Rom(VHDLblock):
 			str(self.bitwidth*self.rom_columns-1)
 			+ " downto 0)"
 		)
-
-
-
-
-	def compile(self, output_dir = "output"):
-
-		print("\nCompiling component %s\n"
-				%(self.entity.name))
-
-		command = "cd " + output_dir + "; "
-		command = command + "xvhdl --2008 " + self.entity.name + ".vhd"
-
-		sp.run(command, shell = True)
-
-		print("\n")
-
-
-	def elaborate(self, output_dir = "output"):
-
-		print("\nElaborating component %s\n"
-				%(self.entity.name))
-
-		command = "cd " + output_dir + "; "
-		command = command + "xelab " + self.entity.name
-
-		sp.run(command, shell = True)
-
-		print("\n")

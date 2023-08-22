@@ -1,16 +1,14 @@
-import subprocess as sp
 from math import log2
 
-import path_config
-
-from vhdl_block import VHDLblock
-from if_statement import If
 from multi_cycle import MultiCycle
 from multi_input_lif import MultiInputLIF
 from testbench import Testbench
-
 from spiker_pkg import SpikerPackage
 from utils import track_signals, ceil_pow2, debug_component
+
+import path_config
+from vhdl_block import VHDLblock
+from if_statement import If
 
 
 class MultiCycleLIF(VHDLblock):
@@ -273,20 +271,6 @@ class MultiCycleLIF(VHDLblock):
 			debug_component(self, debug_list)
 	
 		
-
-	def compile(self, output_dir = "output"):
-
-		print("\nCompiling component %s\n"
-				%(self.entity.name))
-
-		command = "cd " + output_dir + "; "
-		command = command + "xvhdl --2008 " + self.entity.name + ".vhd"
-
-		sp.run(command, shell = True)
-
-		print("\n")
-
-
 	def compile_all(self, output_dir = "output"):
 
 		self.spiker_pkg.compile(output_dir = output_dir)
@@ -311,19 +295,6 @@ class MultiCycleLIF(VHDLblock):
 		self.multi_input_lif.write_file_all(output_dir = output_dir)
 		self.write_file(output_dir = output_dir)
 
-
-
-	def elaborate(self, output_dir = "output"):
-
-		print("\nElaborating component %s\n"
-				%(self.entity.name))
-
-		command = "cd " + output_dir + "; "
-		command = command + "xelab " + self.entity.name
-
-		sp.run(command, shell = True)
-
-		print("\n")
 
 
 	def testbench(self, clock_period = 20, file_output = False,

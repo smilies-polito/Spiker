@@ -1,7 +1,4 @@
-import subprocess as sp
-
 import path_config
-
 from vhdl_block import VHDLblock
 
 class Or(VHDLblock):
@@ -41,29 +38,3 @@ class Or(VHDLblock):
 				add("or_var := or_var or or_in(in_bit);")
 		self.architecture.processes["or_computation"].bodyFooter.\
 				add("or_out <= or_var;")
-
-
-	def compile(self, output_dir = "output"):
-
-		print("\nCompiling component %s\n"
-				%(self.entity.name))
-
-		command = "cd " + output_dir + "; "
-		command = command + "xvhdl " + self.entity.name + ".vhd" + "; "
-
-		sp.run(command, shell = True)
-
-		print("\n")
-	
-
-	def elaborate(self, output_dir = "output"):
-
-		print("\nElaborating component %s\n"
-				%(self.entity.name))
-
-		command = "cd " + output_dir + "; "
-		command = command + "xelab " + self.entity.name
-
-		sp.run(command, shell = True)
-
-		print("\n")

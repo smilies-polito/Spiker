@@ -1,19 +1,16 @@
-import subprocess as sp
 from math import log2
-
-import path_config
-from vhdl_block import VHDLblock
-from if_statement import If
 
 from vhdl_or import Or
 from mux import Mux
 from reg import Reg
 from cnt import Cnt
 from cmp import Cmp
-
 from testbench import Testbench
 from utils import track_signals, ceil_pow2, random_binary, debug_component\
 
+import path_config
+from vhdl_block import VHDLblock
+from if_statement import If
 
 class MultiInputDP(VHDLblock):
 

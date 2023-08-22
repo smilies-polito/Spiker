@@ -20,6 +20,8 @@ class Cmp(VHDLblock):
 
 		VHDLblock.__init__(self, entity_name = name)
 
+		self.components = []
+
 		# Libraries and packages
 		self.library.add("ieee")
 		self.library["ieee"].package.add("std_logic_1164")
@@ -67,29 +69,3 @@ class Cmp(VHDLblock):
 				"cmp_out <= '1';")
 		self.architecture.processes["compare"].if_list[0]._else_.body.\
 				add("cmp_out <= '0';")
-
-
-	def compile(self, output_dir = "output"):
-
-		print("\nCompiling component %s\n"
-				%(self.entity.name))
-
-		command = "cd " + output_dir + "; "
-		command = command + "xvhdl " + self.entity.name + ".vhd" + "; "
-
-		sp.run(command, shell = True)
-
-		print("\n")
-	
-
-	def elaborate(self, output_dir = "output"):
-
-		print("\nElaborating component %s\n"
-				%(self.entity.name))
-
-		command = "cd " + output_dir + "; "
-		command = command + "xelab " + self.entity.name
-
-		sp.run(command, shell = True)
-
-		print("\n")

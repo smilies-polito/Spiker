@@ -1,9 +1,4 @@
-import subprocess as sp
 from math import log2
-
-import path_config
-from vhdl_block import VHDLblock
-from if_statement import If
 
 from cnt import Cnt
 from cmp import Cmp
@@ -11,6 +6,9 @@ from cmp import Cmp
 from testbench import Testbench
 from utils import track_signals, ceil_pow2, random_binary, debug_component\
 
+import path_config
+from vhdl_block import VHDLblock
+from if_statement import If
 
 class MultiCycleDP(VHDLblock):
 
@@ -109,19 +107,6 @@ class MultiCycleDP(VHDLblock):
 			debug_component(self, debug_list)
 
 
-	def compile(self, output_dir = "output"):
-
-		print("\nCompiling component %s\n"
-				%(self.entity.name))
-
-		command = "cd " + output_dir + "; "
-		command = command + "xvhdl --2008 " + self.entity.name + ".vhd"
-
-		sp.run(command, shell = True)
-
-		print("\n")
-
-
 	def compile_all(self, output_dir = "output"):
 
 		self.counter.compile()
@@ -133,20 +118,6 @@ class MultiCycleDP(VHDLblock):
 		self.counter.write_file()
 		self.cmp.write_file()
 		self.write_file()
-
-
-	def elaborate(self, output_dir = "output"):
-
-		print("\nElaborating component %s\n"
-				%(self.entity.name))
-
-		command = "cd " + output_dir + "; "
-		command = command + "xelab " + self.entity.name
-
-		sp.run(command, shell = True)
-
-		print("\n")
-
 
 	def testbench(self, clock_period = 20, file_output = False):
 

@@ -1,4 +1,3 @@
-import subprocess as sp
 import path_config
 from vhdl_block import VHDLblock
 
@@ -7,6 +6,8 @@ class AndMask(VHDLblock):
 	def __init__(self, data_type = "std_logic_vector"):
 
 		VHDLblock.__init__(self, "and_mask")
+
+		self.components = []
 
 		# Libraries and packages
 		self.library.add("ieee")
@@ -50,29 +51,3 @@ class AndMask(VHDLblock):
 		)
 		self.architecture.processes["mask"].for_list[0].body.add(
 			"output_bits(i) <= input_bits(i) and mask_bit;")
-
-	def compile(self, output_dir = "output"):
-
-		print("\nCompiling component %s\n"
-				%(self.entity.name))
-
-		command = "cd " + output_dir + "; "
-		command = command + "xvhdl --2008 " + self.entity.name + ".vhd"
-
-		sp.run(command, shell = True)
-
-		print("\n")
-
-
-
-	def elaborate(self, output_dir = "output"):
-
-		print("\nElaborating component %s\n"
-				%(self.entity.name))
-
-		command = "cd " + output_dir + "; "
-		command = command + "xelab " + self.entity.name
-
-		sp.run(command, shell = True)
-
-		print("\n")

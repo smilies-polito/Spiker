@@ -1,7 +1,4 @@
-import subprocess as sp
-
 import path_config
-
 from vhdl_block import VHDLblock
 
 class Shifter(VHDLblock):
@@ -63,29 +60,3 @@ class Shifter(VHDLblock):
 		else:
 			print("Invalid shift value in shifter\n")
 			exit(-1)
-
-
-	def compile(self, output_dir = "output"):
-
-		print("\nCompiling component %s\n"
-				%(self.entity.name))
-
-		command = "cd " + output_dir + "; "
-		command = command + "xvhdl " + self.entity.name + ".vhd" + "; "
-
-		sp.run(command, shell = True)
-
-		print("\n")
-	
-
-	def elaborate(self, output_dir = "output"):
-
-		print("\nElaborating component %s\n"
-				%(self.entity.name))
-
-		command = "cd " + output_dir + "; "
-		command = command + "xelab " + self.entity.name
-
-		sp.run(command, shell = True)
-
-		print("\n")

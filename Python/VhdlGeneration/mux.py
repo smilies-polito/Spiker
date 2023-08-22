@@ -1,10 +1,8 @@
-import subprocess as sp
 from math import log2
 
 from utils import ceil_pow2
 
 import path_config
-
 from vhdl_block import VHDLblock
 
 class Mux(VHDLblock):
@@ -110,29 +108,3 @@ class Mux(VHDLblock):
 
 		self.architecture.processes["selection"].case_list["mux_sel"].\
 			others.body.add("mux_out <= " + port_name + ";")
-
-
-	def compile(self, output_dir = "output"):
-
-		print("\nCompiling component %s\n"
-				%(self.entity.name))
-
-		command = "cd " + output_dir + "; "
-		command = command + "xvhdl " + self.entity.name + ".vhd" + "; "
-
-		sp.run(command, shell = True)
-
-		print("\n")
-	
-
-	def elaborate(self, output_dir = "output"):
-
-		print("\nElaborating component %s\n"
-				%(self.entity.name))
-
-		command = "cd " + output_dir + "; "
-		command = command + "xelab " + self.entity.name
-
-		sp.run(command, shell = True)
-
-		print("\n")

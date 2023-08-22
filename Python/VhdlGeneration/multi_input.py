@@ -1,16 +1,13 @@
-import subprocess as sp
 from math import log2
 
-import path_config
-
-from vhdl_block import VHDLblock
 from multi_input_dp import MultiInputDP
 from multi_input_cu import MultiInputCU
 from testbench import Testbench
-
 from spiker_pkg import SpikerPackage
 from utils import track_signals, ceil_pow2, debug_component
 
+import path_config
+from vhdl_block import VHDLblock
 
 class MultiInput(VHDLblock):
 
@@ -209,20 +206,6 @@ class MultiInput(VHDLblock):
 			debug_component(self, debug_list)
 	
 		
-
-	def compile(self, output_dir = "output"):
-
-		print("\nCompiling component %s\n"
-				%(self.entity.name))
-
-		command = "cd " + output_dir + "; "
-		command = command + "xvhdl --2008 " + self.entity.name + ".vhd"
-
-		sp.run(command, shell = True)
-
-		print("\n")
-
-
 	def compile_all(self, output_dir = "output"):
 
 		self.spiker_pkg.compile(output_dir = output_dir)
@@ -246,17 +229,3 @@ class MultiInput(VHDLblock):
 		self.datapath.write_file_all(output_dir = output_dir)
 		self.control_unit.write_file(output_dir = output_dir)
 		self.write_file(output_dir = output_dir)
-
-
-
-	def elaborate(self, output_dir = "output"):
-
-		print("\nElaborating component %s\n"
-				%(self.entity.name))
-
-		command = "cd " + output_dir + "; "
-		command = command + "xelab " + self.entity.name
-
-		sp.run(command, shell = True)
-
-		print("\n")

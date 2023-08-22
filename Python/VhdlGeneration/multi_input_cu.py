@@ -1,13 +1,9 @@
-import subprocess as sp
-
-import path_config
-
-from vhdl_block import VHDLblock
-from if_statement import If
-
 from spiker_pkg import SpikerPackage
 from utils import track_signals, debug_component
 
+import path_config
+from vhdl_block import VHDLblock
+from if_statement import If
 
 class MultiInputCU(VHDLblock):
 
@@ -506,30 +502,6 @@ class MultiInputCU(VHDLblock):
 		self.write_file(output_dir = output_dir)
 		
 
-	def compile(self, output_dir = "output"):
-
-		print("\nCompiling component %s\n"
-				%(self.entity.name))
-
-		command = "cd " + output_dir + "; "
-		command = command + "xvhdl --2008 " + self.entity.name + ".vhd"
-
-		sp.run(command, shell = True)
-
-		print("\n")
-
 	def compile_all(self, output_dir = "output"):
 		self.spiker_pkg.compile(output_dir = output_dir)
 		self.compile(output_dir = output_dir)
-
-	def elaborate(self, output_dir = "output"):
-
-		print("\nElaborating component %s\n"
-				%(self.entity.name))
-
-		command = "cd " + output_dir + "; "
-		command = command + "xelab " + self.entity.name
-
-		sp.run(command, shell = True)
-
-		print("\n")

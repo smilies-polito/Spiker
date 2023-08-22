@@ -1,7 +1,4 @@
-import subprocess as sp
-
 import path_config
-
 from if_statement import If
 from vhdl_block import VHDLblock
 
@@ -115,29 +112,3 @@ class Reg(VHDLblock):
 			self.architecture.processes["sample"].\
 					if_list[0]._if_.body.add(
 					"reg_out <= reg_in;")
-
-
-	def compile(self, output_dir = "output"):
-
-		print("\nCompiling component %s\n"
-				%(self.entity.name))
-
-		command = "cd " + output_dir + "; "
-		command = command + "xvhdl " + self.entity.name + ".vhd" + "; "
-
-		sp.run(command, shell = True)
-
-		print("\n")
-	
-
-	def elaborate(self, output_dir = "output"):
-
-		print("\nElaborating component %s\n"
-				%(self.entity.name))
-
-		command = "cd " + output_dir + "; "
-		command = command + "xelab " + self.entity.name
-
-		sp.run(command, shell = True)
-
-	print("\n")

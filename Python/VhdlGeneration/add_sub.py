@@ -1,5 +1,3 @@
-import subprocess as sp
-
 import path_config
 
 from vhdl_block import VHDLblock
@@ -9,6 +7,8 @@ class AddSub(VHDLblock):
 	def __init__(self, bitwidth = 8):
 
 		VHDLblock.__init__(self, entity_name = "add_sub")
+
+		self.components = []
 
 		# Libraries and packages
 		self.library.add("ieee")
@@ -42,29 +42,3 @@ class AddSub(VHDLblock):
 				add("add_sub_out <= in0 + in1;")
 		self.architecture.processes["operation"].if_list[0]._else_.\
 				body.add("add_sub_out <= in0 - in1;")
-
-
-	def compile(self, output_dir = "output"):
-
-		print("\nCompiling component %s\n"
-				%(self.entity.name))
-
-		command = "cd " + output_dir + "; "
-		command = command + "xvhdl " + self.entity.name + ".vhd" + "; "
-
-		sp.run(command, shell = True)
-
-		print("\n")
-	
-
-	def elaborate(self, output_dir = "output"):
-
-		print("\nElaborating component %s\n"
-				%(self.entity.name))
-
-		command = "cd " + output_dir + "; "
-		command = command + "xelab " + self.entity.name
-
-		sp.run(command, shell = True)
-
-		print("\n")
