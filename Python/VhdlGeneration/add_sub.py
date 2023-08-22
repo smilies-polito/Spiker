@@ -1,21 +1,21 @@
-from vhdl import sub_components
+from vhdl import sub_components, debug_component
 
 import path_config
 from vhdl_block import VHDLblock
 
 class AddSub(VHDLblock):
 
-	def __init__(self, bitwidth = 8):
+	def __init__(self, bitwidth = 8, debug = False, debug_list = []):
 
 		VHDLblock.__init__(self, entity_name = "add_sub")
 
 		self.bitwidth = bitwidth
 		self.components = sub_components(self)
 
-		self.vhdl()
+		self.vhdl(debug = debug, debug_list = debug_list)
 
 
-	def vhdl(self):
+	def vhdl(self, debug = False, debug_list = []):
 
 		# Libraries and packages
 		self.library.add("ieee")
@@ -49,3 +49,7 @@ class AddSub(VHDLblock):
 				add("add_sub_out <= in0 + in1;")
 		self.architecture.processes["operation"].if_list[0]._else_.\
 				body.add("add_sub_out <= in0 - in1;")
+
+		# Debug
+		if debug:
+			debug_component(self, debug_list)
