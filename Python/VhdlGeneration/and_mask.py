@@ -1,13 +1,22 @@
+from vhdl import sub_components, debug_component
+
 import path_config
 from vhdl_block import VHDLblock
 
 class AndMask(VHDLblock):
 
-	def __init__(self, data_type = "std_logic_vector"):
+	def __init__(self, data_type = "std_logic_vector", debug = False,
+			debug_list = []):
 
 		VHDLblock.__init__(self, "and_mask")
 
-		self.components = []
+		self.data_type = data_type
+		self.components = sub_components(self)
+
+		self.vhdl(debug = debug, debug_list = debug_list)
+
+
+	def vhdl(self, debug = False, debug_list = []):
 
 		# Libraries and packages
 		self.library.add("ieee")
@@ -24,7 +33,7 @@ class AndMask(VHDLblock):
 		self.entity.port.add(
 			name 		= "input_bits",
 			direction 	= "in",
-			port_type	= data_type + "(N-1 downto 0)"
+			port_type	= self.data_type + "(N-1 downto 0)"
 		)
 
 		self.entity.port.add(
@@ -36,7 +45,7 @@ class AndMask(VHDLblock):
 		self.entity.port.add(
 			name 		= "output_bits",
 			direction 	= "out",
-			port_type	= data_type + "(N-1 downto 0)"
+			port_type	= self.data_type + "(N-1 downto 0)"
 		)
 
 		self.architecture.processes.add("mask")
@@ -51,3 +60,7 @@ class AndMask(VHDLblock):
 		)
 		self.architecture.processes["mask"].for_list[0].body.add(
 			"output_bits(i) <= input_bits(i) and mask_bit;")
+
+		# Debug
+		if debug:
+			debug_component(self, debug_list)
