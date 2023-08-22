@@ -1,5 +1,6 @@
-import path_config
+from vhdl import sub_components
 
+import path_config
 from vhdl_block import VHDLblock
 
 class AddSub(VHDLblock):
@@ -8,7 +9,7 @@ class AddSub(VHDLblock):
 
 		VHDLblock.__init__(self, entity_name = "add_sub")
 
-		self.components = []
+		self.components = sub_components(self)
 
 		# Libraries and packages
 		self.library.add("ieee")
