@@ -7,4 +7,5 @@ clean:
 	rm -rf .Xil
 	rm -rf __pycache__
 	rm -rf *.coe
+	rm -rf *.txt
 	rm -rf output
