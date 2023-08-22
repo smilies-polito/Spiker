@@ -444,31 +444,3 @@ class MultiCycleLIF(VHDLblock):
 		del self.tb.architecture.processes["inh_spikes_rd_en_gen"]
 		self.tb.architecture.bodyCodeHeader.add("inh_spikes_rd_en <= "
 				"start_all;")
-
-
-
-a = MultiCycleLIF(
-	n_exc_inputs = 4,
-	n_inh_inputs = 3,
-	n_cycles = 1,
-	bitwidth = 32,
-	w_inh_bw = 32,
-	w_exc_bw = 32,
-	shift = 10,
-	debug = True,
-	debug_list = [
-		"neuron_cu_present_state",
-		"multi_input_cu_present_state",
-		"multi_cycle_cu_present_state",
-		"multi_cycle_datapath_cycles_cnt",
-		"neuron_datapath_v",
-		"multi_cycle_stop"
-	]
-)
-
-a.testbench()
-
-a.tb.write_file_all()
-a.compile_all()
-a.tb.compile()
-a.tb.elaborate()
