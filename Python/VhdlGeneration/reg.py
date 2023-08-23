@@ -1,3 +1,5 @@
+from vhdl import sub_components, debug_component
+
 import path_config
 from if_statement import If
 from vhdl_block import VHDLblock
@@ -5,47 +7,56 @@ from vhdl_block import VHDLblock
 class Reg(VHDLblock):
 
 	def __init__(self, bitwidth = 8, reg_type = "std_logic", rst =
-			None, active = "low"):
+			None, active = "low", debug = False, debug_list = []):
 
-		if reg_type != "std_logic" and reg_type != "signed" and \
-			reg_type != "unsigned":
-
-			print("Invalid register type")
-			exit(-1)
-
-		name = "reg"
+		self.name = "reg"
 
 		if reg_type != "std_logic":
-			name = name + "_" + reg_type
+			self.name = self.name + "_" + reg_type
 
 		if rst:
-			name = name + "_" + rst + "_rst"
+			self.name = self.name + "_" + rst + "_rst"
 
-		VHDLblock.__init__(self, entity_name = name)
+		if reg_type != "std_logic" and reg_type != "signed" and \
+		reg_type != "unsigned":
+			raise ValueError("Invalid signal type in " + self.name)
+			
+
+		self.bitwidth = bitwidth
+		self.reg_type = reg_type
+		self.rst = rst
+		self.active = active
+		self.components = sub_components(self)
+
+		VHDLblock.__init__(self, entity_name = self.name)
+		self.vhdl(debug = debug, debug_list = debug_list)
+
+
+	def vhdl(self, debug = False, debug_list = []):
 
 		# Libraries and packages
 		self.library.add("ieee")
 		self.library["ieee"].package.add("std_logic_1164")
 
-		if reg_type != "std_logic":
+		if self.reg_type != "std_logic":
 			self.library["ieee"].package.add("numeric_std")
 
 		# Generics
-		self.entity.generic.add("N", "integer", str(bitwidth))
+		self.entity.generic.add("N", "integer", str(self.bitwidth))
 
 		# Input ports
 		self.entity.port.add("clk", "in", "std_logic")
 		self.entity.port.add("en", "in", "std_logic")
 		
-		if rst:
-			rst_name = "rst"
+		if self.rst:
+			self.rst_name = "rst"
 
-			if active == "low":
-				rst_name = rst_name + "_n"
+			if self.active == "low":
+				self.rst_name = self.rst_name + "_n"
 
-			self.entity.port.add(rst_name, "in", "std_logic")
+			self.entity.port.add(self.rst_name, "in", "std_logic")
 
-		if reg_type == "std_logic":
+		if self.reg_type == "std_logic":
 			self.entity.port.add("reg_in", "in", 
 				"std_logic_vector(N-1 downto 0)")
 			
@@ -55,11 +66,11 @@ class Reg(VHDLblock):
 
 		else:
 			self.entity.port.add("reg_in", "in", 
-				reg_type + "(N-1 downto 0)")
+				self.reg_type + "(N-1 downto 0)")
 			
 			# Output ports
 			self.entity.port.add("reg_out", "out", 
-				reg_type + "(N-1 downto 0)")
+				self.reg_type + "(N-1 downto 0)")
 
 		self.architecture.processes.add("sample")
 		self.architecture.processes["sample"].sensitivity_list.add(
@@ -73,24 +84,24 @@ class Reg(VHDLblock):
 				conditions.add("clk = '1'", "and")
 
 		# Add/sub process
-		if rst:
+		if self.rst:
 
 			self.architecture.processes["sample"].sensitivity_list.\
-					add(rst_name)
+					add(self.rst_name)
 
 
-			if rst == "sync":
+			if self.rst == "sync":
 
 				# Reset inner if statement
 				reset_if = If()
 
-				if active == "low":
-					rst_value = "\'0\'"
+				if self.active == "low":
+					self.rst_value = "\'0\'"
 				else:
-					rst_value = "\'1\'"
+					self.rst_value = "\'1\'"
 
-				reset_if._if_.conditions.add(rst_name + " = " +
-						rst_value)
+				reset_if._if_.conditions.add(self.rst_name + " = " +
+						self.rst_value)
 
 				reset_if._if_.body.add("reg_out <= "
 					"(others => '0');")
@@ -112,3 +123,7 @@ class Reg(VHDLblock):
 			self.architecture.processes["sample"].\
 					if_list[0]._if_.body.add(
 					"reg_out <= reg_in;")
+
+		# Debug
+		if debug:
+			debug_component(self, debug_list)

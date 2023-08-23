@@ -1,5 +1,7 @@
 import subprocess as sp
 
+from vhdl import debug_component, sub_components
+
 import path_config
 
 from vhdl_block import VHDLblock
@@ -7,33 +9,38 @@ from vhdl_block import VHDLblock
 class Cmp(VHDLblock):
 
 	def __init__(self, bitwidth = 8, cmp_type = "gt", signal_type =
-			"signed"):
+			"signed", debug = False, debug_list = []):
 
+		self.name = "cmp_" + cmp_type
 
 		if signal_type != "std_logic" and signal_type != "signed" and \
 			signal_type != "unsigned":
+				raise ValueError("Invalid signal type in "
+						+ self.name)
 
-			print("Invalid register type")
-			exit(-1)
+		self.bitwidth = bitwidth
+		self.cmp_type = cmp_type
+		self.signal_type = signal_type
+		self.components = sub_components(self)
 
-		name = "cmp_" + cmp_type
+		VHDLblock.__init__(self, entity_name = self.name)
+		self.vhdl(debug = debug, debug_list = debug_list)
 
-		VHDLblock.__init__(self, entity_name = name)
 
-		self.components = []
+	def vhdl(self, debug = False, debug_list = []):
 
 		# Libraries and packages
 		self.library.add("ieee")
 		self.library["ieee"].package.add("std_logic_1164")
 
-		if signal_type != "std_logic":
+		if self.signal_type != "std_logic":
 			self.library["ieee"].package.add("numeric_std")
 
 		# Generics
-		self.entity.generic.add("N", "integer", str(bitwidth))
+		self.entity.generic.add("N", "integer", str(self.bitwidth))
 
 		# Input ports
-		if signal_type == "std_logic":
+		if self.signal_type == "std_logic":
 			self.entity.port.add("in0", "in", 
 				"std_logic_vector(N-1 downto 0)")
 			self.entity.port.add("in1", "in", 
@@ -41,9 +48,9 @@ class Cmp(VHDLblock):
 
 		else:
 			self.entity.port.add("in0", "in", 
-				signal_type + "(N-1 downto 0)")
+				self.signal_type + "(N-1 downto 0)")
 			self.entity.port.add("in1", "in", 
-				signal_type + "(N-1 downto 0)")
+				self.signal_type + "(N-1 downto 0)")
 		
 		# Output ports
 		self.entity.port.add("cmp_out", "out", "std_logic")
@@ -57,7 +64,7 @@ class Cmp(VHDLblock):
 
 		self.architecture.processes["compare"].if_list.add()
 
-		if cmp_type == "gt":
+		if self.cmp_type == "gt":
 			self.architecture.processes["compare"].if_list[0]._if_.\
 					conditions.add("in0 > in1")
 		else:
@@ -69,3 +76,7 @@ class Cmp(VHDLblock):
 				"cmp_out <= '1';")
 		self.architecture.processes["compare"].if_list[0]._else_.body.\
 				add("cmp_out <= '0';")
+
+		# Debug
+		if debug:
+			debug_component(self, debug_list)

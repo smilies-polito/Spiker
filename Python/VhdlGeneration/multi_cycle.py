@@ -4,7 +4,8 @@ from multi_cycle_dp import MultiCycleDP
 from multi_cycle_cu import MultiCycleCU
 from testbench import Testbench
 from spiker_pkg import SpikerPackage
-from utils import track_signals, ceil_pow2, debug_component
+from vhdl import track_signals, debug_component, sub_components, write_file_all
+from utils import ceil_pow2, random_binary
 
 import path_config
 from vhdl_block import VHDLblock
@@ -13,11 +14,10 @@ class MultiCycle(VHDLblock):
 
 	def __init__(self, n_cycles = 2, debug = False, debug_list = []):
 
+		self.name = "multi_cycle"
+
 		self.n_cycles = n_cycles
-
-		cycles_cnt_bitwidth = int(log2(ceil_pow2(n_cycles+1))) + 1
-
-		VHDLblock.__init__(self, entity_name = "multi_cycle")
+		self.cycles_cnt_bitwidth = int(log2(ceil_pow2(n_cycles+1))) + 1
 
 		self.spiker_pkg = SpikerPackage()
 
@@ -32,6 +32,14 @@ class MultiCycle(VHDLblock):
 			debug_list = debug_list
 		)
 
+		self.components = sub_components(self)
+
+		super().__init__(entity_name = self.name)
+		self.vhdl(debug = debug, debug_list = debug_list)
+
+
+	def vhdl(self, debug = False, debug_list = []):
+
 		# Libraries and packages
 		self.library.add("ieee")
 		self.library["ieee"].package.add("std_logic_1164")
@@ -44,11 +52,11 @@ class MultiCycle(VHDLblock):
 		self.entity.generic.add(
 			name		= "cycles_cnt_bitwidth", 
 			gen_type	= "integer",
-			value		= str(cycles_cnt_bitwidth))
+			value		= str(self.cycles_cnt_bitwidth))
 		self.entity.generic.add(
 			name		= "n_cycles", 
 			gen_type	= "integer",
-			value		= str(n_cycles))
+			value		= str(self.n_cycles))
 
 		# Input controls
 		self.entity.port.add(
@@ -120,27 +128,5 @@ class MultiCycle(VHDLblock):
 		if debug:
 			debug_component(self, debug_list)
 	
-		
-	def compile_all(self, output_dir = "output"):
-
-		self.spiker_pkg.compile(output_dir = output_dir)
-		self.datapath.compile_all(output_dir = output_dir)
-		self.control_unit.compile(output_dir = output_dir)
-
-		print("\nCompiling component %s\n"
-				%(self.entity.name))
-
-		command = "cd " + output_dir + "; "
-		command = command + "xvhdl --2008 " + self.entity.name + ".vhd"
-
-		sp.run(command, shell = True)
-
-		print("\n")
-
-
-	def write_file_all(self, output_dir = "output"):
-
-		self.spiker_pkg.write_file(output_dir = output_dir)
-		self.datapath.write_file_all(output_dir = output_dir)
-		self.control_unit.write_file(output_dir = output_dir)
-		self.write_file(output_dir = output_dir)
+	def write_file_all(self, output_dir = "output", rm = False):
+		write_file_all(self, output_dir = output_dir, rm = rm)

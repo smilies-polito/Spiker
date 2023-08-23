@@ -5,7 +5,7 @@ from reg import Reg
 from cmp import Cmp
 
 from testbench import Testbench
-from utils import track_signals, debug_component
+from vhdl import track_signals, debug_component, sub_components, write_file_all
 
 import path_config
 from vhdl_block import VHDLblock
@@ -16,7 +16,7 @@ class LIFneuronDP(VHDLblock):
 	def __init__(self, bitwidth = 16, w_inh_bw = 5, w_exc_bw = 5,
 			shift = 10, debug = False, debug_list = []):
 
-		VHDLblock.__init__(self, entity_name = "neuron_datapath")
+		self.name = "neuron_datapath"
 
 		self.shifter			= Shifter(
 							bitwidth = bitwidth,
@@ -50,6 +50,18 @@ class LIFneuronDP(VHDLblock):
 		self.cmp_gt			= Cmp(
 							bitwidth = bitwidth)
 
+		self.bitwidth = bitwidth
+		self.w_exc_bw = w_exc_bw
+		self.w_inh_bw = w_inh_bw
+		self.shift = shift
+		self.components = sub_components(self)
+
+		super().__init__(entity_name = self.name)
+		self.vhdl(debug = debug, debug_list = debug_list)
+
+
+	def vhdl(self, debug = False, debug_list = []):
+
 		# Libraries and packages
 		self.library.add("ieee")
 		self.library["ieee"].package.add("std_logic_1164")
@@ -60,27 +72,27 @@ class LIFneuronDP(VHDLblock):
 		self.entity.generic.add(
 			name		= "neuron_bit_width", 
 			gen_type	= "integer",
-			value		= str(bitwidth))
+			value		= str(self.bitwidth))
 
 
-		if w_inh_bw < bitwidth:
+		if self.w_inh_bw < self.bitwidth:
 			self.entity.generic.add(
 				name		= "inh_weights_bit_width",
 				gen_type	= "integer",
 				value		= str(
-						w_inh_bw))
+						self.w_inh_bw))
 
-		if w_exc_bw < bitwidth:
+		if self.w_exc_bw < self.bitwidth:
 			self.entity.generic.add(
 				name		= "exc_weights_bit_width",
 				gen_type	= "integer",
 				value		= str(
-						w_exc_bw))
+						self.w_exc_bw))
 
 		self.entity.generic.add(
 			name		= "shift",
 			gen_type	= "integer",
-			value		= str(shift))
+			value		= str(self.shift))
 
 		# Input parameters
 		self.entity.port.add(
@@ -93,41 +105,39 @@ class LIFneuronDP(VHDLblock):
 			port_type	= "signed(neuron_bit_width-1 downto 0)")
 
 
-		if w_inh_bw < bitwidth:
+		if self.w_inh_bw < self.bitwidth:
 			self.entity.port.add(
 				name 		= "inh_weight",
 				direction	= "in",
 				port_type	= "signed("
 					"inh_weights_bit_width-1 downto 0)")
-		elif w_inh_bw == bitwidth:
+		elif self.w_inh_bw == self.bitwidth:
 			self.entity.port.add(
 				name 		= "inh_weight",
 				direction	= "in",
 				port_type	= "signed(neuron_bit_width-1 "
 							"downto 0)")
 		else:
-			print("Inhibitory weight bit-width cannot be larger "
-				"than the neuron's one")
-			exit(-1)
+			raise ValueError("Inhibitory weight bit-width cannot "
+					"be larger than the neuron's one")
 			
 
-		if w_exc_bw < bitwidth:
+		if self.w_exc_bw < self.bitwidth:
 			self.entity.port.add(
 				name 		= "exc_weight",
 				direction	= "in",
 				port_type	= "signed("
 					"exc_weights_bit_width-1 downto 0)")
 
-		elif w_exc_bw == bitwidth:
+		elif self.w_exc_bw == self.bitwidth:
 			self.entity.port.add(
 				name 		= "exc_weight",
 				direction	= "in",
 				port_type	= "signed(neuron_bit_width-1 "
 							"downto 0)")
 		else:
-			print("Excitatory weight bit-width cannot be larger "
-				"than the neuron's one")
-			exit(-1)
+			raise ValueError("Excitatory weight bit-width cannot "
+					"be larger than the neuron's one")
 
 		# Input controls
 		self.entity.port.add(
@@ -227,7 +237,7 @@ class LIFneuronDP(VHDLblock):
 		self.architecture.instances["update_mux"].p_map.add("in1",
 				"v_shifted")
 
-		if w_exc_bw < bitwidth:
+		if self.w_exc_bw < self.bitwidth:
 
 			self.architecture.instances["update_mux"].p_map.add(
 					"in2", "(others => "
@@ -239,17 +249,16 @@ class LIFneuronDP(VHDLblock):
 					conn_range = "(exc_weights_bit_width-1 "
 					"downto 0)")
 
-		elif w_exc_bw == bitwidth:
+		elif self.w_exc_bw == self.bitwidth:
 			self.architecture.instances["update_mux"].p_map.add(
 					"in2", "exc_weight")
 
 		else:
-			print("Excitatory weight bit-width cannot be larger "
-				"than the neuron's one")
-			exit(-1)
+			raise ValueError("Excitatory weight bit-width cannot "
+					"be larger than the neuron's one")
 
 
-		if w_inh_bw < bitwidth:
+		if self.w_inh_bw < self.bitwidth:
 
 			self.architecture.instances["update_mux"].p_map.add(
 					"in3", "(others => "
@@ -261,14 +270,13 @@ class LIFneuronDP(VHDLblock):
 					conn_range = "(inh_weights_bit_width-1 "
 					"downto 0)")
 
-		elif w_inh_bw == bitwidth:
+		elif self.w_inh_bw == self.bitwidth:
 			self.architecture.instances["update_mux"].p_map.add(
 					"in3", "inh_weight")
 
 		else:
-			print("Inhibitory weight bit-width cannot be larger "
-				"than the neuron's one")
-			exit(-1)
+			raise ValueError("Inhibitory weight bit-width cannot "
+					"be larger than the neuron's one")
 
 
 		
@@ -351,145 +359,144 @@ class LIFneuronDP(VHDLblock):
 		self.architecture.instances["fire_cmp"].p_map.add("cmp_out",
 				"exceed_v_th")
 
-
 		# Debug
 		if debug:
 			debug_component(self, debug_list)
 
-	def compile_all(self, output_dir = "output"):
 
-		self.shifter.compile()
-		self.add_sub.compile()
-		self.mux4to1_signed.compile()
-		self.mux2to1_signed.compile()
-		self.reg_signed.compile()
-		self.reg_signed_sync_rst.compile()
-		self.cmp_gt.compile()
-
-		print("\nCompiling component %s\n"
-				%(self.entity.name))
-
-		command = "cd " + output_dir + "; "
-		command = command + "xvhdl --2008 " + self.entity.name + ".vhd"
-
-		sp.run(command, shell = True)
-
-		print("\n")
+	def write_file_all(self, output_dir = "output", rm = False):
+		write_file_all(self, output_dir = output_dir, rm = rm)
 
 
-	def write_file_all(self, output_dir = "output"):
 
-		self.shifter.write_file(output_dir = output_dir)
-		self.add_sub.write_file(output_dir = output_dir)
-		self.mux4to1_signed.write_file(output_dir = output_dir)
-		self.add_sub.write_file(output_dir = output_dir)
-		self.mux2to1_signed.write_file(output_dir = output_dir)
-		self.reg_signed.write_file(output_dir = output_dir)
-		self.reg_signed_sync_rst.write_file(output_dir = output_dir)
-		self.cmp_gt.write_file(output_dir = output_dir)
-		self.write_file(output_dir = output_dir)
+class LIFneuronDP_tb(Testbench):
 
+	def __init__(self, clock_period = 20, file_output = False, output_dir =
+			"output", file_input = False, input_dir = "",
+			input_signal_list = [], bitwidth = 16, w_inh_bw = 5,
+			w_exc_bw = 5, shift = 10, debug = False, 
+			debug_list = []):
 
-	def testbench(self, clock_period = 20, file_output = False):
+		self.dut = LIFneuronDP(
+			bitwidth = bitwidth,
+			w_inh_bw = w_inh_bw,
+			w_exc_bw = w_exc_bw,
+			shift = shift,
+			debug = debug,
+			debug_list = debug_list
+		)
 
-		self.tb = Testbench(self, clock_period = clock_period,
-				file_output = file_output)
+		self.components = sub_components(self)
+
+		super().__init__(
+			dut = self.dut, 
+			clock_period = clock_period,
+			file_output = file_output,
+			output_dir = output_dir,
+			file_input = file_input,
+			input_dir = input_dir,
+			input_signal_list = input_signal_list
+		)
+		
+		self.vhdl(clock_period = clock_period, file_output = file_output)
+
+	def vhdl(self, clock_period = 20, file_output = False):
 
 		# exc_weight
-		self.tb.architecture.processes["exc_weight_gen"].bodyHeader.\
+		self.architecture.processes["exc_weight_gen"].bodyHeader.\
 				add("exc_weight <= to_signed(500, "
 				"exc_weight'length);")
 
 		# inh_weight
-		self.tb.architecture.processes["inh_weight_gen"].bodyHeader.\
+		self.architecture.processes["inh_weight_gen"].bodyHeader.\
 				add("inh_weight <= to_signed(300, "
 				"inh_weight'length);")
 
 		# v_reset
-		self.tb.architecture.processes["v_reset_gen"].bodyHeader.\
+		self.architecture.processes["v_reset_gen"].bodyHeader.\
 				add("v_reset <= to_signed(1000, "
 				"v_reset'length);")
 
 		# v_th_value
-		self.tb.architecture.processes["v_th_value_gen"].bodyHeader.\
+		self.architecture.processes["v_th_value_gen"].bodyHeader.\
 				add("v_th_value <= to_signed(3000, "
 				"v_th_value'length);")
 		# v_rst_n
-		self.tb.architecture.processes["v_rst_n_gen"].bodyHeader.\
+		self.architecture.processes["v_rst_n_gen"].bodyHeader.\
 				add("v_rst_n <= '1';")
-		self.tb.architecture.processes["v_rst_n_gen"].bodyHeader.\
+		self.architecture.processes["v_rst_n_gen"].bodyHeader.\
 				add("wait for " + str(clock_period) + " ns;")
-		self.tb.architecture.processes["v_rst_n_gen"].bodyHeader.\
+		self.architecture.processes["v_rst_n_gen"].bodyHeader.\
 				add("v_rst_n <= '0';")
-		self.tb.architecture.processes["v_rst_n_gen"].bodyHeader.\
+		self.architecture.processes["v_rst_n_gen"].bodyHeader.\
 				add("wait for " + str(clock_period)  + " ns;")
-		self.tb.architecture.processes["v_rst_n_gen"].bodyHeader.\
+		self.architecture.processes["v_rst_n_gen"].bodyHeader.\
 				add("v_rst_n <= '1';")
 
 		# update_sel
-		self.tb.architecture.processes["update_sel_gen"].bodyHeader.\
+		self.architecture.processes["update_sel_gen"].bodyHeader.\
 				add("update_sel <= \"00\";")
-		self.tb.architecture.processes["update_sel_gen"].bodyHeader.\
+		self.architecture.processes["update_sel_gen"].bodyHeader.\
 				add("wait for " + str(2*clock_period) + " ns;")
-		self.tb.architecture.processes["update_sel_gen"].bodyHeader.\
+		self.architecture.processes["update_sel_gen"].bodyHeader.\
 				add("update_sel <= \"10\";")
-		self.tb.architecture.processes["update_sel_gen"].bodyHeader.\
+		self.architecture.processes["update_sel_gen"].bodyHeader.\
 				add("wait for " + str(4*clock_period) + " ns;")
-		self.tb.architecture.processes["update_sel_gen"].bodyHeader.\
+		self.architecture.processes["update_sel_gen"].bodyHeader.\
 				add("update_sel <= \"11\";")
-		self.tb.architecture.processes["update_sel_gen"].bodyHeader.\
+		self.architecture.processes["update_sel_gen"].bodyHeader.\
 				add("wait for " + str(clock_period)  + " ns;")
-		self.tb.architecture.processes["update_sel_gen"].bodyHeader.\
+		self.architecture.processes["update_sel_gen"].bodyHeader.\
 				add("update_sel <= \"10\";")
-		self.tb.architecture.processes["update_sel_gen"].bodyHeader.\
+		self.architecture.processes["update_sel_gen"].bodyHeader.\
 				add("wait for " + str(3*clock_period)  + " ns;")
-		self.tb.architecture.processes["update_sel_gen"].bodyHeader.\
+		self.architecture.processes["update_sel_gen"].bodyHeader.\
 				add("update_sel <= \"00\";")
-		self.tb.architecture.processes["update_sel_gen"].bodyHeader.\
+		self.architecture.processes["update_sel_gen"].bodyHeader.\
 				add("wait for " + str(3*clock_period)  + " ns;")
-		self.tb.architecture.processes["update_sel_gen"].bodyHeader.\
+		self.architecture.processes["update_sel_gen"].bodyHeader.\
 				add("update_sel <= \"01\";")
 
 		# add_or_sub
-		self.tb.architecture.processes["add_or_sub_gen"].bodyHeader.\
+		self.architecture.processes["add_or_sub_gen"].bodyHeader.\
 				add("add_or_sub <= '0';")
-		self.tb.architecture.processes["add_or_sub_gen"].bodyHeader.\
+		self.architecture.processes["add_or_sub_gen"].bodyHeader.\
 				add("wait for " + str(6*clock_period) + " ns;")
-		self.tb.architecture.processes["add_or_sub_gen"].bodyHeader.\
+		self.architecture.processes["add_or_sub_gen"].bodyHeader.\
 				add("add_or_sub <= '1';")
-		self.tb.architecture.processes["add_or_sub_gen"].bodyHeader.\
+		self.architecture.processes["add_or_sub_gen"].bodyHeader.\
 				add("wait for " + str(clock_period)  + " ns;")
-		self.tb.architecture.processes["add_or_sub_gen"].bodyHeader.\
+		self.architecture.processes["add_or_sub_gen"].bodyHeader.\
 				add("add_or_sub <= '0';")
-		self.tb.architecture.processes["add_or_sub_gen"].bodyHeader.\
+		self.architecture.processes["add_or_sub_gen"].bodyHeader.\
 				add("wait for " + str(4*clock_period)  + " ns;")
-		self.tb.architecture.processes["add_or_sub_gen"].bodyHeader.\
+		self.architecture.processes["add_or_sub_gen"].bodyHeader.\
 				add("add_or_sub <= '1';")
 
 		# v_en
-		self.tb.architecture.processes["v_en_gen"].bodyHeader.\
+		self.architecture.processes["v_en_gen"].bodyHeader.\
 				add("v_en <= '0';")
-		self.tb.architecture.processes["v_en_gen"].bodyHeader.\
+		self.architecture.processes["v_en_gen"].bodyHeader.\
 				add("wait for " + str(2*clock_period) + " ns;")
-		self.tb.architecture.processes["v_en_gen"].bodyHeader.\
+		self.architecture.processes["v_en_gen"].bodyHeader.\
 				add("v_en <= '1';")
 
 		# v_th_en
-		self.tb.architecture.processes["v_th_en_gen"].bodyHeader.\
+		self.architecture.processes["v_th_en_gen"].bodyHeader.\
 				add("v_th_en <= '1';")
-		self.tb.architecture.processes["v_th_en_gen"].bodyHeader.\
+		self.architecture.processes["v_th_en_gen"].bodyHeader.\
 				add("wait for " + str(clock_period) + " ns;")
-		self.tb.architecture.processes["v_th_en_gen"].bodyHeader.\
+		self.architecture.processes["v_th_en_gen"].bodyHeader.\
 				add("v_th_en <= '0';")
 
 		# v_update
-		self.tb.architecture.processes["v_update_gen"].bodyHeader.\
+		self.architecture.processes["v_update_gen"].bodyHeader.\
 				add("v_update <= '1';")
-		self.tb.architecture.processes["v_update_gen"].bodyHeader.\
+		self.architecture.processes["v_update_gen"].bodyHeader.\
 				add("wait for " + str(11*clock_period) + " ns;")
-		self.tb.architecture.processes["v_update_gen"].bodyHeader.\
+		self.architecture.processes["v_update_gen"].bodyHeader.\
 				add("v_update <= '0';")
-		self.tb.architecture.processes["v_update_gen"].bodyHeader.\
+		self.architecture.processes["v_update_gen"].bodyHeader.\
 				add("wait for " + str(clock_period) + " ns;")
-		self.tb.architecture.processes["v_update_gen"].bodyHeader.\
+		self.architecture.processes["v_update_gen"].bodyHeader.\
 				add("v_update <= '1';")

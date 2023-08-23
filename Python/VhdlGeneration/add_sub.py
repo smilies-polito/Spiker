@@ -7,11 +7,11 @@ class AddSub(VHDLblock):
 
 	def __init__(self, bitwidth = 8, debug = False, debug_list = []):
 
-		VHDLblock.__init__(self, entity_name = "add_sub")
-
+		self.name = "add_sub"
 		self.bitwidth = bitwidth
 		self.components = sub_components(self)
 
+		VHDLblock.__init__(self, entity_name = self.name)
 		self.vhdl(debug = debug, debug_list = debug_list)
 
 

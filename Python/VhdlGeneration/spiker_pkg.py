@@ -7,7 +7,9 @@ class SpikerPackage(Package):
 	def __init__(self):
 
 		Package.__init__(self, "spiker_pkg")
+		self.vhdl()
 
+	def vhdl(self):
 
 		self.pkg_dec.type_list.add("neuron_states", "Enumeration")
 		self.pkg_dec.type_list["neuron_states"].add("reset")

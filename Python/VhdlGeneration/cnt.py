@@ -1,5 +1,7 @@
 import subprocess as sp
 
+from vhdl import sub_components, debug_component
+
 import path_config
 
 from if_statement import If
@@ -7,15 +9,23 @@ from vhdl_block import VHDLblock
 
 class Cnt(VHDLblock):
 
-	def __init__(self, bitwidth = 8, reset_value = 0):
+	def __init__(self, bitwidth = 8, reset_value = 0, debug = False,
+			debug_list = []):
+
+		self.name = "cnt"
 
 		if reset_value > 2**bitwidth - 1 or reset_value < 0:
-			print("Invalid reset value for counter\n")
-			exit(-1)
+			raise ValueError("Invalid reset value in " + self.name)
 
-		VHDLblock.__init__(self, entity_name = "cnt")
+		self.bitwidth = 8
+		self.reset_value = 0
+		self.components = sub_components(self)
 
-		self.components = []
+		VHDLblock.__init__(self, entity_name = self.name)
+		self.vhdl(debug = debug, debug_list = debug_list)
+
+
+	def vhdl(self, debug = False, debug_list = []):
 
 		# Libraries and packages
 		self.library.add("ieee")
@@ -23,8 +33,8 @@ class Cnt(VHDLblock):
 		self.library["ieee"].package.add("numeric_std")
 
 		# Generics
-		self.entity.generic.add("N", "integer", str(bitwidth))
-		self.entity.generic.add("rst_value", "integer", str(reset_value))
+		self.entity.generic.add("N", "integer", str(self.bitwidth))
+		self.entity.generic.add("rst_value", "integer", str(self.reset_value))
 
 		# Input ports
 		self.entity.port.add("clk", "in", "std_logic")
@@ -66,3 +76,7 @@ class Cnt(VHDLblock):
 		self.architecture.processes["count"].bodyFooter.add(
 				"cnt_out <= std_logic_vector(to_unsigned("
 				"cnt_var, N));")
+
+		# Debug
+		if debug:
+			debug_component(self, debug_list)

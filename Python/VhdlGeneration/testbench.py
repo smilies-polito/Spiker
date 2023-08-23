@@ -1,3 +1,4 @@
+from vhdl import sub_components, write_file_all
 import path_config
 from vhdl_block import VHDLblock
 from if_statement import If
@@ -5,15 +6,31 @@ from if_statement import If
 
 class Testbench(VHDLblock):
 
-	def __init__(self, component, clock_period = 20, file_output = False,
+	def __init__(self, dut, clock_period = 20, file_output = False,
 			output_dir = "output", file_input = False, 
 			input_dir = "", input_signal_list = []):
 
-		self.dut = component
+		self.dut = dut
 		self.name = self.dut.entity.name + "_tb"
+
 		self.clk_names = ["clk", "clock", "CLK", "CLOCK"]
+		self.clock_period = clock_period
 
 		VHDLblock.__init__(self, entity_name = self.name)
+		self.vhdl_template( 
+			file_output		= file_output, 
+			output_dir		= output_dir, 
+			file_input		= file_input, 
+			input_dir		= input_dir, 
+			input_signal_list	= input_signal_list
+		)
+
+		self.components = sub_components(self)
+
+
+	def vhdl_template(self, file_output = False, output_dir = "output",
+			file_input = False, input_dir = "",
+			input_signal_list = []):
 
 		# Libraries and packages
 		self.library.add("ieee")
@@ -61,13 +78,13 @@ class Testbench(VHDLblock):
 					" <= '0';")
 				self.architecture.processes[name +
 					"_gen"].bodyHeader.add("wait for " +
-					str(clock_period//2) + " ns;")
+					str(self.clock_period//2) + " ns;")
 				self.architecture.processes[name +
 					"_gen"].bodyHeader.add(name + 
 					" <= '1';")
 				self.architecture.processes[name +
 					"_gen"].bodyHeader.add("wait for " +
-					str(clock_period//2) + " ns;")
+					str(self.clock_period//2) + " ns;")
 
 			elif self.dut.entity.port[name].direction == "in":
 				self.architecture.processes.add(name = name +
@@ -86,38 +103,10 @@ class Testbench(VHDLblock):
 					" from file. Signal doesn't exist.")
 					exit(-1)
 
-				self.load(signal, input_dir, clock_period)
+				self.load(signal, input_dir)
 
 
-
-	def compile_all(self, output_dir = "output"):
-
-		if hasattr(self.dut, "compile_all") and \
-			callable(self.dut.compile_all):
-
-			self.dut.compile_all()
-
-		else:
-			self.dut.compile()
-
-		self.compile()
-
-
-	def write_file_all(self, output_dir = "output"):
-
-		if hasattr(self.dut, "write_file_all") and \
-			callable(self.dut.write_file_all):
-
-			self.dut.write_file_all(output_dir = output_dir)
-
-		else:
-
-			self.dut.write_file(output_dir = output_dir)
-
-		self.write_file(output_dir = output_dir)
-
-
-	def save(self, signal_name, output_dir = "output", clock_period = 20):
+	def save(self, signal_name, output_dir = "output"):
 
 		clk_present = False
 
@@ -137,12 +126,12 @@ class Testbench(VHDLblock):
 				bodyHeader.add(clk_name + " <= '0';")
 			self.architecture.processes[clk_name + "_gen"].\
 				bodyHeader.add("wait for " + 
-				str(clock_period//2) + " ns;")
+				str(self.clock_period//2) + " ns;")
 			self.architecture.processes[clk_name + "_gen"].\
 				bodyHeader.add(clk_name + " <= '1';")
 			self.architecture.processes[clk_name + "_gen"].\
 				bodyHeader.add("wait for " + 
-				str(clock_period//2) + " ns;")
+				str(self.clock_period//2) + " ns;")
 
 		self.library.add("std")
 
@@ -230,7 +219,7 @@ class Testbench(VHDLblock):
 			bodyHeader.add(clk_if)
 
 
-	def load(self, signal_name, input_dir, clock_period = 20):
+	def load(self, signal_name, input_dir):
 
 		clk_present = False
 
@@ -250,12 +239,12 @@ class Testbench(VHDLblock):
 				bodyHeader.add(clk_name + " <= '0';")
 			self.architecture.processes[clk_name + "_gen"].\
 				bodyHeader.add("wait for " + 
-				str(clock_period//2) + " ns;")
+				str(self.clock_period//2) + " ns;")
 			self.architecture.processes[clk_name + "_gen"].\
 				bodyHeader.add(clk_name + " <= '1';")
 			self.architecture.processes[clk_name + "_gen"].\
 				bodyHeader.add("wait for " + 
-				str(clock_period//2) + " ns;")
+				str(self.clock_period//2) + " ns;")
 
 		self.library.add("std")
 
@@ -341,3 +330,7 @@ class Testbench(VHDLblock):
 
 		self.architecture.processes[process_name].\
 			bodyHeader.add(clk_if)
+
+
+	def write_file_all(self, output_dir = "output", rm = False):
+		write_file_all(self, output_dir = output_dir, rm = rm)

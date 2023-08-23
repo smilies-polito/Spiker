@@ -8,11 +8,11 @@ class AndMask(VHDLblock):
 	def __init__(self, data_type = "std_logic_vector", debug = False,
 			debug_list = []):
 
-		VHDLblock.__init__(self, "and_mask")
-
+		self.name = "and_mask"
 		self.data_type = data_type
 		self.components = sub_components(self)
 
+		VHDLblock.__init__(self, self.name)
 		self.vhdl(debug = debug, debug_list = debug_list)
 
 

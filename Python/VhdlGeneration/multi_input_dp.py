@@ -6,7 +6,8 @@ from reg import Reg
 from cnt import Cnt
 from cmp import Cmp
 from testbench import Testbench
-from utils import track_signals, ceil_pow2, random_binary, debug_component\
+from vhdl import track_signals, debug_component, sub_components, write_file_all
+from utils import ceil_pow2, random_binary 
 
 import path_config
 from vhdl_block import VHDLblock
@@ -17,19 +18,21 @@ class MultiInputDP(VHDLblock):
 	def __init__(self, n_exc_inputs = 2, n_inh_inputs = 2, 
 			debug = False, debug_list = []):
 
+		self.name = "multi_input_datapath"
+
 		self.n_exc_inputs = n_exc_inputs
 		self.n_inh_inputs = n_inh_inputs
-
-		exc_cnt_bitwidth = int(log2(ceil_pow2(n_exc_inputs)))
-		inh_cnt_bitwidth = int(log2(ceil_pow2(n_inh_inputs)))
-
-		VHDLblock.__init__(self, entity_name = "multi_input_datapath")
+		self.exc_cnt_bitwidth = int(log2(ceil_pow2(n_exc_inputs)))
+		self.inh_cnt_bitwidth = int(log2(ceil_pow2(n_inh_inputs)))
 
 		self.spikes_or = Or(bitwidth = n_exc_inputs)
 
-		self.reg = Reg(bitwidth = n_exc_inputs, 
-				reg_type = "std_logic", rst = "sync", 
-				active = "low")
+		self.reg = Reg(
+			bitwidth = n_exc_inputs, 
+			reg_type = "std_logic",
+			rst = "sync", 
+			active = "low"
+		)
 
 		if ceil_pow2(n_exc_inputs) == ceil_pow2(n_inh_inputs):
 			self.mux = Mux(n_in = n_exc_inputs, 
@@ -40,10 +43,21 @@ class MultiInputDP(VHDLblock):
 			self.inh_mux = Mux(n_in = n_inh_inputs, 
 					in_type = "std_logic", bitwidth = 1)
 
-		self.counter = Cnt(bitwidth = exc_cnt_bitwidth) 
+		self.counter = Cnt(bitwidth = self.exc_cnt_bitwidth) 
 
-		self.cmp = Cmp(bitwidth = exc_cnt_bitwidth, cmp_type = "eq",
-				signal_type = "std_logic")
+		self.cmp = Cmp(
+			bitwidth = self.exc_cnt_bitwidth,
+			cmp_type = "eq",
+			signal_type = "std_logic"
+		)
+
+		self.components = sub_components(self)
+
+		super().__init__(entity_name = self.name)
+		self.vhdl(debug = debug, debug_list = debug_list)
+
+
+	def vhdl(self, debug = False, debug_list = []):
 
 		# Libraries and packages
 		self.library.add("ieee")
@@ -55,19 +69,19 @@ class MultiInputDP(VHDLblock):
 		self.entity.generic.add(
 			name		= "n_exc_inputs", 
 			gen_type	= "integer",
-			value		= str(n_exc_inputs))
+			value		= str(self.n_exc_inputs))
 		self.entity.generic.add(
 			name		= "n_inh_inputs", 
 			gen_type	= "integer",
-			value		= str(n_inh_inputs))
+			value		= str(self.n_inh_inputs))
 		self.entity.generic.add(
 			name		= "exc_cnt_bitwidth", 
 			gen_type	= "integer",
-			value		= str(exc_cnt_bitwidth))
+			value		= str(self.exc_cnt_bitwidth))
 		self.entity.generic.add(
 			name		= "inh_cnt_bitwidth", 
 			gen_type	= "integer",
-			value		= str(inh_cnt_bitwidth))
+			value		= str(self.inh_cnt_bitwidth))
 
 
 		self.entity.port.add(
@@ -184,7 +198,7 @@ class MultiInputDP(VHDLblock):
 		self.architecture.component.add(self.counter)
 		self.architecture.component.add(self.cmp)
 
-		if ceil_pow2(n_exc_inputs) == ceil_pow2(n_inh_inputs):
+		if ceil_pow2(self.n_exc_inputs) == ceil_pow2(self.n_inh_inputs):
 			self.architecture.component.add(self.mux)
 		else:
 			self.architecture.component.add(self.exc_mux)
@@ -250,7 +264,7 @@ class MultiInputDP(VHDLblock):
 
 
 
-		if ceil_pow2(n_exc_inputs) == ceil_pow2(n_inh_inputs):
+		if ceil_pow2(self.n_exc_inputs) == ceil_pow2(self.n_inh_inputs):
 
 			# Exc multiplexer
 			self.architecture.instances.add(self.mux, "exc_mux")
@@ -259,17 +273,19 @@ class MultiInputDP(VHDLblock):
 			if self.mux.entity.port["mux_sel"].port_type == \
 				"std_logic":
 
-				self.architecture.instances["exc_mux"].p_map.add(
-						"mux_sel", "exc_cnt_sig(0)")
+				self.architecture.instances["exc_mux"].p_map.\
+						add( "mux_sel", 
+						"exc_cnt_sig(0)")
 			else:
-				self.architecture.instances["exc_mux"].p_map.add(
-						"mux_sel", "exc_cnt_sig")
+				self.architecture.instances["exc_mux"].p_map.\
+						add( "mux_sel", "exc_cnt_sig")
 
-			for i in range(ceil_pow2(n_exc_inputs)):
-				if i < n_exc_inputs:
+			for i in range(ceil_pow2(self.n_exc_inputs)):
+				if i < self.n_exc_inputs:
 					self.architecture.instances["exc_mux"].\
 						p_map.add("in" + str(i), 
-						"exc_spikes_sampled(" + str(i) + ")")
+						"exc_spikes_sampled(" + str(i) \
+						+ ")")
 				else:
 					self.architecture.instances["exc_mux"].\
 						p_map.add("in" + str(i), 
@@ -285,17 +301,19 @@ class MultiInputDP(VHDLblock):
 			if self.mux.entity.port["mux_sel"].port_type == \
 				"std_logic":
 
-				self.architecture.instances["inh_mux"].p_map.add(
-						"mux_sel", "inh_cnt_sig(0)")
+				self.architecture.instances["inh_mux"].p_map.\
+						add("mux_sel", 
+						"inh_cnt_sig(0)")
 			else:
-				self.architecture.instances["inh_mux"].p_map.add(
-						"mux_sel", "inh_cnt_sig")
+				self.architecture.instances["inh_mux"].p_map.\
+						add("mux_sel", "inh_cnt_sig")
 
-			for i in range(ceil_pow2(n_inh_inputs)):
-				if i < n_inh_inputs:
+			for i in range(ceil_pow2(self.n_inh_inputs)):
+				if i < self.n_inh_inputs:
 					self.architecture.instances["inh_mux"].\
 						p_map.add("in" + str(i), 
-						"inh_spikes_sampled(" + str(i) + ")")
+						"inh_spikes_sampled(" + str(i) \
+						+ ")")
 				else:
 					self.architecture.instances["inh_mux"].\
 						p_map.add("in" + str(i), 
@@ -311,17 +329,18 @@ class MultiInputDP(VHDLblock):
 			if self.exc_mux.entity.port["mux_sel"].port_type == \
 				"std_logic":
 
-				self.architecture.instances["exc_mux"].p_map.add(
-						"mux_sel", "exc_cnt_sig(0)")
+				self.architecture.instances["exc_mux"].p_map.\
+						add("mux_sel", "exc_cnt_sig(0)")
 			else:
-				self.architecture.instances["exc_mux"].p_map.add(
-						"mux_sel", "exc_cnt_sig")
+				self.architecture.instances["exc_mux"].p_map.\
+						add("mux_sel", "exc_cnt_sig")
 
-			for i in range(ceil_pow2(n_exc_inputs)):
-				if i < n_exc_inputs:
+			for i in range(ceil_pow2(self.n_exc_inputs)):
+				if i < self.n_exc_inputs:
 					self.architecture.instances["exc_mux"].\
 						p_map.add("in" + str(i), 
-						"exc_spikes_sampled(" + str(i) + ")")
+						"exc_spikes_sampled(" + str(i) \
+						+ ")")
 				else:
 					self.architecture.instances["exc_mux"].\
 						p_map.add("in" + str(i), 
@@ -338,17 +357,18 @@ class MultiInputDP(VHDLblock):
 			if self.inh_mux.entity.port["mux_sel"].port_type == \
 				"std_logic":
 
-				self.architecture.instances["inh_mux"].p_map.add(
-						"mux_sel", "inh_cnt_sig(0)")
+				self.architecture.instances["inh_mux"].p_map.\
+						add("mux_sel", "inh_cnt_sig(0)")
 			else:
-				self.architecture.instances["inh_mux"].p_map.add(
-						"mux_sel", "inh_cnt_sig")
+				self.architecture.instances["inh_mux"].p_map.\
+						add("mux_sel", "inh_cnt_sig")
 
-			for i in range(ceil_pow2(n_inh_inputs)):
-				if i < n_inh_inputs:
+			for i in range(ceil_pow2(self.n_inh_inputs)):
+				if i < self.n_inh_inputs:
 					self.architecture.instances["inh_mux"].\
 						p_map.add("in" + str(i), 
-						"inh_spikes_sampled(" + str(i) + ")")
+						"inh_spikes_sampled(" + str(i) \
+						+ ")")
 				else:
 					self.architecture.instances["inh_mux"].\
 						p_map.add("in" + str(i), 
@@ -363,8 +383,8 @@ class MultiInputDP(VHDLblock):
 		self.architecture.instances["exc_counter"].generic_map()
 		self.architecture.instances["exc_counter"].g_map.add("N",
 				"exc_cnt_bitwidth")
-		self.architecture.instances["exc_counter"].g_map.add("rst_value",
-				str(2**exc_cnt_bitwidth-1))
+		self.architecture.instances["exc_counter"].g_map.add(
+				"rst_value", str(2**self.exc_cnt_bitwidth-1))
 		self.architecture.instances["exc_counter"].port_map()
 		self.architecture.instances["exc_counter"].p_map.add(
 				"cnt_en", "exc_cnt_en")
@@ -378,8 +398,8 @@ class MultiInputDP(VHDLblock):
 		self.architecture.instances["inh_counter"].generic_map()
 		self.architecture.instances["inh_counter"].g_map.add("N",
 				"inh_cnt_bitwidth")
-		self.architecture.instances["inh_counter"].g_map.add("rst_value",
-				str(2**inh_cnt_bitwidth-1))
+		self.architecture.instances["inh_counter"].g_map.add(
+				"rst_value", str(2**self.inh_cnt_bitwidth-1))
 		self.architecture.instances["inh_counter"].port_map()
 		self.architecture.instances["inh_counter"].p_map.add(
 				"cnt_en", "inh_cnt_en")
@@ -421,70 +441,45 @@ class MultiInputDP(VHDLblock):
 		if debug:
 			debug_component(self, debug_list)
 
-
-	def compile(self, output_dir = "output"):
-
-		print("\nCompiling component %s\n"
-				%(self.entity.name))
-
-		command = "cd " + output_dir + "; "
-		command = command + "xvhdl --2008 " + self.entity.name + ".vhd"
-
-		sp.run(command, shell = True)
-
-		print("\n")
+	
+	def write_file_all(self, output_dir = "output", rm = False):
+		write_file_all(self, output_dir = output_dir, rm = rm)
 
 
-	def compile_all(self, output_dir = "output"):
 
-		self.spikes_or.compile() 
-		self.reg.compile() 
+class MultiCycleDP_tb(Testbench):
 
-		if ceil_pow2(self.n_exc_inputs) == ceil_pow2(self.n_inh_inputs):
-			self.mux.compile()
-		else:
-			self.exc_mux.compile()
-			self.inh_mux.compile()
+	def __init__(self, clock_period = 20, file_output = False, output_dir =
+			"output", file_input = False, input_dir = "",
+			input_signal_list = [], n_exc_inputs = 2,
+			n_inh_inputs = 2, debug = False, debug_list = []):
 
-		self.counter.compile()
-		self.cmp.compile()
-		self.compile()
+		self.n_exc_inputs = n_exc_inputs
+		self.n_inh_inputs = n_inh_inputs
 
-	def write_file_all(self, output_dir = "output"):
+		self.dut = MultiCycleDP(
+			n_exc_inputs	= n_exc_inputs,
+			n_inh_inputs	= n_inh_inputs
+		)
 
-		self.spikes_or.write_file() 
-		self.reg.write_file() 
+		self.components = sub_components(self)
 
-		if ceil_pow2(self.n_exc_inputs) == ceil_pow2(self.n_inh_inputs):
-			self.mux.write_file()
-		else:
-			self.exc_mux.write_file()
-			self.inh_mux.write_file()
+		super().__init__(
+			dut = self.dut, 
+			clock_period = clock_period,
+			file_output = file_output,
+			output_dir = output_dir,
+			file_input = file_input,
+			input_dir = input_dir,
+			input_signal_list = input_signal_list
+		)
+		
+		self.vhdl(clock_period = clock_period, file_output = 
+			file_output)
 
-		self.counter.write_file()
-		self.cmp.write_file()
-		self.write_file()
+	def vhdl(self, clock_period = 20, file_output = False):
 
-
-	def elaborate(self, output_dir = "output"):
-
-		print("\nElaborating component %s\n"
-				%(self.entity.name))
-
-		command = "cd " + output_dir + "; "
-		command = command + "xelab " + self.entity.name
-
-		sp.run(command, shell = True)
-
-		print("\n")
-
-
-	def testbench(self, clock_period = 20, file_output = False):
-
-		self.tb = Testbench(self, clock_period = clock_period,
-				file_output = file_output)
-
-		self.tb.architecture.processes["exc_spikes_gen"].\
+		self.architecture.processes["exc_spikes_gen"].\
 				bodyHeader.add("wait for " +
 				str(clock_period) + " ns;")
 
@@ -495,17 +490,17 @@ class MultiInputDP(VHDLblock):
 					2**self.n_exc_inputs-1, 
 					self.n_exc_inputs) + "\""
 
-			self.tb.architecture.processes["exc_spikes_gen"].\
+			self.architecture.processes["exc_spikes_gen"].\
 					bodyHeader.add("exc_spikes <= "
 					+ exc_spikes + ";")
 
-			self.tb.architecture.processes["exc_spikes_gen"].\
+			self.architecture.processes["exc_spikes_gen"].\
 					bodyHeader.add("wait for " +
 					str(self.n_exc_inputs * 
 					clock_period * 2) + " ns;")
 
 
-		self.tb.architecture.processes["inh_spikes_gen"].\
+		self.architecture.processes["inh_spikes_gen"].\
 				bodyHeader.add("wait for " +
 				str(clock_period) + " ns;")
 
@@ -516,127 +511,127 @@ class MultiInputDP(VHDLblock):
 					2**self.n_inh_inputs-1, 
 					self.n_inh_inputs) + "\""
 
-			self.tb.architecture.processes["inh_spikes_gen"].\
+			self.architecture.processes["inh_spikes_gen"].\
 					bodyHeader.add("inh_spikes <= "
 					+ inh_spikes + ";")
 
-			self.tb.architecture.processes["inh_spikes_gen"].\
+			self.architecture.processes["inh_spikes_gen"].\
 					bodyHeader.add("wait for " +
 					str(self.n_inh_inputs * 
 					clock_period * 2) + " ns;")
 
 		# Exc register reset
-		self.tb.architecture.processes["exc_rst_n_gen"].bodyHeader.\
+		self.architecture.processes["exc_rst_n_gen"].bodyHeader.\
 				add("exc_rst_n <= '0';")
 
-		self.tb.architecture.processes["exc_rst_n_gen"].\
+		self.architecture.processes["exc_rst_n_gen"].\
 				bodyHeader.add("wait for " + 
 				str(clock_period)  + " ns;")
 
-		self.tb.architecture.processes["exc_rst_n_gen"].\
+		self.architecture.processes["exc_rst_n_gen"].\
 				bodyHeader.add("exc_rst_n <= '1';")
 
 		# Exc register sample
-		self.tb.architecture.processes["exc_sample_gen"].bodyHeader.\
+		self.architecture.processes["exc_sample_gen"].bodyHeader.\
 				add("exc_sample <= '0';")
 
 
-		self.tb.architecture.processes["exc_sample_gen"].\
+		self.architecture.processes["exc_sample_gen"].\
 				bodyHeader.add("wait for " + 
 				str(2*clock_period)  + " ns;")
 
 		for i in range(3):
-			self.tb.architecture.processes["exc_sample_gen"].\
+			self.architecture.processes["exc_sample_gen"].\
 					bodyHeader.add("exc_sample <= '1';")
-			self.tb.architecture.processes["exc_sample_gen"].\
+			self.architecture.processes["exc_sample_gen"].\
 					bodyHeader.add("wait for " + 
 					str(clock_period)  + " ns;")
-			self.tb.architecture.processes["exc_sample_gen"].\
+			self.architecture.processes["exc_sample_gen"].\
 					bodyHeader.add("exc_sample <= '0';")
-			self.tb.architecture.processes["exc_sample_gen"].\
+			self.architecture.processes["exc_sample_gen"].\
 					bodyHeader.add("wait for " + 
 					str(self.n_exc_inputs*clock_period*2) \
 					+ " ns;")
 
 		# Inh register reset
-		self.tb.architecture.processes["inh_rst_n_gen"].bodyHeader.\
+		self.architecture.processes["inh_rst_n_gen"].bodyHeader.\
 				add("inh_rst_n <= '0';")
 
-		self.tb.architecture.processes["inh_rst_n_gen"].\
+		self.architecture.processes["inh_rst_n_gen"].\
 				bodyHeader.add("wait for " + 
 				str(clock_period)  + " ns;")
 
-		self.tb.architecture.processes["inh_rst_n_gen"].\
+		self.architecture.processes["inh_rst_n_gen"].\
 				bodyHeader.add("inh_rst_n <= '1';")
 
 		# Inh register sample
-		self.tb.architecture.processes["inh_sample_gen"].bodyHeader.\
+		self.architecture.processes["inh_sample_gen"].bodyHeader.\
 				add("inh_sample <= '0';")
 
 
-		self.tb.architecture.processes["inh_sample_gen"].\
+		self.architecture.processes["inh_sample_gen"].\
 				bodyHeader.add("wait for " + 
 				str(2*clock_period)  + " ns;")
 
 		for i in range(3):
-			self.tb.architecture.processes["inh_sample_gen"].\
+			self.architecture.processes["inh_sample_gen"].\
 					bodyHeader.add("inh_sample <= '1';")
-			self.tb.architecture.processes["inh_sample_gen"].\
+			self.architecture.processes["inh_sample_gen"].\
 					bodyHeader.add("wait for " + 
 					str(clock_period)  + " ns;")
-			self.tb.architecture.processes["inh_sample_gen"].\
+			self.architecture.processes["inh_sample_gen"].\
 					bodyHeader.add("inh_sample <= '0';")
-			self.tb.architecture.processes["inh_sample_gen"].\
+			self.architecture.processes["inh_sample_gen"].\
 					bodyHeader.add("wait for " + 
 					str(self.n_inh_inputs*clock_period*2) \
 					+ " ns;")
 
 		# Exc counter enable
-		self.tb.architecture.processes["exc_cnt_en_gen"].bodyHeader.\
+		self.architecture.processes["exc_cnt_en_gen"].bodyHeader.\
 				add("exc_cnt_en <= '0';")
 
 
-		self.tb.architecture.processes["exc_cnt_en_gen"].\
+		self.architecture.processes["exc_cnt_en_gen"].\
 				bodyHeader.add("wait for " + 
 				str(3*clock_period)  + " ns;")
 
-		self.tb.architecture.processes["exc_cnt_en_gen"].\
+		self.architecture.processes["exc_cnt_en_gen"].\
 				bodyHeader.add("exc_cnt_en <= '1';")
 
-		self.tb.architecture.processes["exc_cnt_en_gen"].\
+		self.architecture.processes["exc_cnt_en_gen"].\
 				bodyHeader.add("wait for " + 
 				str(3*clock_period*self.n_exc_inputs*2) \
 				+ " ns;")
 
-		self.tb.architecture.processes["exc_cnt_en_gen"].bodyHeader.\
+		self.architecture.processes["exc_cnt_en_gen"].bodyHeader.\
 				add("exc_cnt_en <= '0';")
 
 		# Inh counter enable
-		self.tb.architecture.processes["inh_cnt_en_gen"].bodyHeader.\
+		self.architecture.processes["inh_cnt_en_gen"].bodyHeader.\
 				add("inh_cnt_en <= '0';")
 
 
-		self.tb.architecture.processes["inh_cnt_en_gen"].\
+		self.architecture.processes["inh_cnt_en_gen"].\
 				bodyHeader.add("wait for " + 
 				str(3*clock_period)  + " ns;")
 
-		self.tb.architecture.processes["inh_cnt_en_gen"].\
+		self.architecture.processes["inh_cnt_en_gen"].\
 				bodyHeader.add("inh_cnt_en <= '1';")
 
-		self.tb.architecture.processes["inh_cnt_en_gen"].\
+		self.architecture.processes["inh_cnt_en_gen"].\
 				bodyHeader.add("wait for " + 
 				str(3*clock_period*self.n_inh_inputs*2) \
 				+ " ns;")
 
-		self.tb.architecture.processes["inh_cnt_en_gen"].bodyHeader.\
+		self.architecture.processes["inh_cnt_en_gen"].bodyHeader.\
 				add("inh_cnt_en <= '0';")
 
 
 		# Exc counter reset
 
-		self.tb.architecture.processes["exc_cnt_rst_n_gen"].\
+		self.architecture.processes["exc_cnt_rst_n_gen"].\
 			sensitivity_list.add("clk")
-		self.tb.architecture.processes["exc_cnt_rst_n_gen"].\
+		self.architecture.processes["exc_cnt_rst_n_gen"].\
 			sensitivity_list.add("exc_stop")
 
 		exc_stop_if = If()
@@ -644,22 +639,22 @@ class MultiInputDP(VHDLblock):
 		exc_stop_if._if_.body.add("exc_cnt_rst_n <= '0';")
 		exc_stop_if._else_.body.add("exc_cnt_rst_n <= '1';")
 
-		self.tb.architecture.processes["exc_cnt_rst_n_gen"].if_list.add()
-		self.tb.architecture.processes["exc_cnt_rst_n_gen"].\
+		self.architecture.processes["exc_cnt_rst_n_gen"].if_list.add()
+		self.architecture.processes["exc_cnt_rst_n_gen"].\
 			if_list[0]._if_.conditions.add("clk'event")
-		self.tb.architecture.processes["exc_cnt_rst_n_gen"].\
+		self.architecture.processes["exc_cnt_rst_n_gen"].\
 			if_list[0]._if_.conditions.add("clk = '1'", "and")
-		self.tb.architecture.processes["exc_cnt_rst_n_gen"].\
+		self.architecture.processes["exc_cnt_rst_n_gen"].\
 			if_list[0]._if_.body.add(exc_stop_if)
 
-		self.tb.architecture.processes["exc_cnt_rst_n_gen"].\
+		self.architecture.processes["exc_cnt_rst_n_gen"].\
 			final_wait = False
 
 		# Inh counter reset
 
-		self.tb.architecture.processes["inh_cnt_rst_n_gen"].\
+		self.architecture.processes["inh_cnt_rst_n_gen"].\
 			sensitivity_list.add("clk")
-		self.tb.architecture.processes["inh_cnt_rst_n_gen"].\
+		self.architecture.processes["inh_cnt_rst_n_gen"].\
 			sensitivity_list.add("inh_stop")
 
 		inh_stop_if = If()
@@ -667,13 +662,13 @@ class MultiInputDP(VHDLblock):
 		inh_stop_if._if_.body.add("inh_cnt_rst_n <= '0';")
 		inh_stop_if._else_.body.add("inh_cnt_rst_n <= '1';")
 
-		self.tb.architecture.processes["inh_cnt_rst_n_gen"].if_list.add()
-		self.tb.architecture.processes["inh_cnt_rst_n_gen"].\
+		self.architecture.processes["inh_cnt_rst_n_gen"].if_list.add()
+		self.architecture.processes["inh_cnt_rst_n_gen"].\
 			if_list[0]._if_.conditions.add("clk'event")
-		self.tb.architecture.processes["inh_cnt_rst_n_gen"].\
+		self.architecture.processes["inh_cnt_rst_n_gen"].\
 			if_list[0]._if_.conditions.add("clk = '1'", "and")
-		self.tb.architecture.processes["inh_cnt_rst_n_gen"].\
+		self.architecture.processes["inh_cnt_rst_n_gen"].\
 			if_list[0]._if_.body.add(inh_stop_if)
 
-		self.tb.architecture.processes["inh_cnt_rst_n_gen"].\
+		self.architecture.processes["inh_cnt_rst_n_gen"].\
 			final_wait = False

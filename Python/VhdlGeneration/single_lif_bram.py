@@ -6,7 +6,8 @@ from multi_cycle_lif import MultiCycleLIF
 from rom import Rom
 from testbench import Testbench
 from spiker_pkg import SpikerPackage
-from utils import track_signals, ceil_pow2, debug_component
+from vhdl import track_signals, debug_component, sub_components, write_file_all
+from utils import ceil_pow2, random_binary
 
 import path_config
 from vhdl_block import VHDLblock
@@ -15,11 +16,13 @@ from if_statement import If
 
 class SingleLifBram(VHDLblock):
 
-	def __init__(self,  n_cycles = 10,
+	def __init__(self,  n_exc_inputs = 2, n_inh_inputs = 2, n_cycles = 10,
 			bitwidth = 16, w_inh_bw = 5, w_exc_bw = 5, shift = 10,
 			w_exc_array = np.array([[0.1, 0.2]]), w_inh_array =
 			np.array([[-0.1, -0.2]]), debug = False, 
 			debug_list = []):
+
+		self.name = "single_lif_bram"
 
 		self.n_exc_inputs 	= w_exc_array.shape[1]
 		self.n_inh_inputs 	= w_inh_array.shape[1]
@@ -34,8 +37,6 @@ class SingleLifBram(VHDLblock):
 		self.w_exc_bw		= w_exc_bw
 		self.w_inh_bw		= w_inh_bw
 		self.shift		= shift
-
-		VHDLblock.__init__(self, entity_name = "single_lif_bram")
 
 		self.spiker_pkg = SpikerPackage()
 
@@ -62,12 +63,14 @@ class SingleLifBram(VHDLblock):
 			name_term 	= "_inh"
 		) 
 
+		self.components = sub_components(self)
 
-		self.vhdl(debug = debug)
+		super().__init__(entity_name = self.name)
+		self.vhdl(debug = debug, debug_list = debug_list)
 
 
+	def vhdl(self, debug = False, debug_list = []):
 
-	def vhdl(self, debug = False):
 		# Libraries and packages
 		self.library.add("ieee")
 		self.library["ieee"].package.add("std_logic_1164")
@@ -299,85 +302,131 @@ class SingleLifBram(VHDLblock):
 				"addra", "inh_cnt")
 		self.architecture.instances["inh_mem"].p_map.add(
 				"clka", "clk")
+		
+		# FIRST DRAFT OF SOLUTION FOR THE SHIFT BETWEEN BRAM AND SPIKES
+		self.architecture.signal.add(
+			name 		= "exc_addr",
+			signal_type	= "std_logic_vector(exc_cnt_bitwidth-1"
+					" downto 0)"
+		)
+		self.architecture.signal.add(
+			name 		= "inh_addr",
+			signal_type	= "std_logic_vector(inh_cnt_bitwidth-1"
+					" downto 0)"
+		)
+
+		self.architecture.bodyCodeHeader.add(
+			"exc_addr <= std_logic_vector(unsigned(exc_cnt) + "
+			"to_unsigned(1, exc_cnt'length));"
+		)
+		self.architecture.bodyCodeHeader.add(
+			"inh_addr <= std_logic_vector(unsigned(inh_cnt) + "
+			"to_unsigned(1, inh_cnt'length));"
+		)
+
+		self.architecture.instances["exc_mem"].p_map.add("addra",
+				"exc_addr")
+		self.architecture.instances["inh_mem"].p_map.add("addra",
+				"inh_addr")
 
 
 		# Debug
 		if debug:
 			debug_component(self, debug_list)
+
+	def write_file_all(self, output_dir = "output", rm = False):
+		write_file_all(self, output_dir = output_dir, rm = rm)
 	
-		
-	def compile_all(self, output_dir = "output"):
-
-		attr_list = [ attr for attr in dir(self) if not 
-				attr.startswith("__")]
-
-		for attr_name in attr_list:
-
-			sub_component = getattr(self, attr_name)
-
-			if hasattr(sub_component, "compile") and \
-			callable(sub_component.compile):
-
-				sub_component.compile(output_dir = output_dir)
-
-		self.compile(output_dir = output_dir)
 
 
-	def write_file_all(self, output_dir = "output"):
+class SingleLifBram_tb(Testbench):
 
-		attr_list = [ attr for attr in dir(self) if not 
-				attr.startswith("__")]
-
-		for attr_name in attr_list:
-
-			sub_component = getattr(self, attr_name)
-
-			if hasattr(sub_component, "write_file") and \
-			callable(sub_component.write_file):
-
-				sub_component.write_file(
-					output_dir = output_dir)
-
-		self.write_file(output_dir = output_dir)
-
-
-
-	def testbench(self, clock_period = 20, file_output = False,
+	def __init__(self, clock_period = 20, file_output = False,
 			output_dir = "output", file_input = False, 
-			input_dir = "", input_signal_list = []):
+			input_dir = "", input_signal_list = [], 
+			n_cycles = 10, bitwidth = 16, w_inh_bw = 5, w_exc_bw =
+			5, shift = 10, w_exc_array = np.array([[0.1, 0.2]]),
+			w_inh_array = np.array([[-0.1, -0.2]]), debug = False, 
+			debug_list = []):
 
-		self.tb = Testbench(
-			self,
+		self.n_exc_inputs 	= w_exc_array.shape[1]
+		self.n_inh_inputs 	= w_inh_array.shape[1]
+		self.n_cycles		= n_cycles
+
+		self.exc_cnt_bitwidth = int(log2(ceil_pow2(self.n_exc_inputs)))
+		self.inh_cnt_bitwidth = int(log2(ceil_pow2(self.n_inh_inputs)))
+		self.cycles_cnt_bitwidth = int(log2(ceil_pow2(self.n_cycles+1))) + 1
+
+		self.bitwidth	= bitwidth
+		self.w_inh_bw	= w_inh_bw
+		self.w_exc_bw	= w_exc_bw
+		self.shift 	= shift
+
+		self.spiker_pkg = SpikerPackage()
+
+		self.dut = SingleLifBram(
+			bitwidth = bitwidth,
+			w_inh_bw = w_inh_bw,
+			w_exc_bw = w_exc_bw,
+			w_inh_array = w_inh_array,
+			w_exc_array = w_exc_array,
+			shift = shift,
+			n_exc_inputs = self.n_exc_inputs,
+			n_inh_inputs = self.n_inh_inputs,
+			n_cycles = self.n_cycles,
+			debug = debug,
+			debug_list = debug_list
+		)
+
+		self.components = sub_components(self)
+
+		super().__init__(
+			dut = self.dut, 
+			clock_period = clock_period,
+			file_output = file_output,
+			output_dir = output_dir,
+			file_input = file_input,
+			input_dir = input_dir,
+			input_signal_list = input_signal_list
+		)
+		
+		self.vhdl(
 			clock_period		= clock_period,
 			file_output		= file_output,
 			output_dir		= output_dir,
 			file_input		= file_input,
-			input_signal_list	= input_signal_list
-		)
+			input_dir		= input_dir,
+			input_signal_list 	= input_signal_list
+			)
 
-		self.tb.library.add("work")
-		self.tb.library["work"].package.add("spiker_pkg")
+
+	def vhdl(self, clock_period = 20, file_output = False, output_dir =
+			"output", file_input = False, input_dir = "",
+			input_signal_list = []):
+
+		self.library.add("work")
+		self.library["work"].package.add("spiker_pkg")
 
 		# v_reset
-		self.tb.architecture.processes["v_reset_gen"].bodyHeader.\
+		self.architecture.processes["v_reset_gen"].bodyHeader.\
 				add("v_reset <= to_signed(1000000, "
 				"v_reset'length);")
 
 		# v_th_value
-		self.tb.architecture.processes["v_th_value_gen"].bodyHeader.\
-				add("v_th_value <= to_signed(1500000000, "
+		self.architecture.processes["v_th_value_gen"].bodyHeader.\
+				add("v_th_value <= to_signed(8, "
 				"v_th_value'length);")
 
 		# rst_n
-		self.tb.architecture.processes["rst_n_gen"].bodyHeader.add(
+		self.architecture.processes["rst_n_gen"].bodyHeader.add(
 				"rst_n <= '1';")
-		self.tb.architecture.processes["rst_n_gen"].bodyHeader.add(
+		self.architecture.processes["rst_n_gen"].bodyHeader.add(
 				"wait for 15 ns;")
-		self.tb.architecture.processes["rst_n_gen"].bodyHeader.add(
+		self.architecture.processes["rst_n_gen"].bodyHeader.add(
 				"rst_n <= '0';")
-		self.tb.architecture.processes["rst_n_gen"].bodyHeader.add(
+		self.architecture.processes["rst_n_gen"].bodyHeader.add(
 				"wait for 10 ns;")
-		self.tb.architecture.processes["rst_n_gen"].bodyHeader.add(
+		self.architecture.processes["rst_n_gen"].bodyHeader.add(
 				"rst_n <= '1';")
 
 		# v_th_en
@@ -388,15 +437,15 @@ class SingleLifBram(VHDLblock):
 		neuron_load_ready_if._else_.body.add("v_th_en <= '0';")
 
 
-		self.tb.architecture.processes["v_th_en_gen"].final_wait = False
-		self.tb.architecture.processes["v_th_en_gen"].sensitivity_list.\
+		self.architecture.processes["v_th_en_gen"].final_wait = False
+		self.architecture.processes["v_th_en_gen"].sensitivity_list.\
 			add("clk")
-		self.tb.architecture.processes["v_th_en_gen"].if_list.add()
-		self.tb.architecture.processes["v_th_en_gen"].if_list[0]._if_.\
+		self.architecture.processes["v_th_en_gen"].if_list.add()
+		self.architecture.processes["v_th_en_gen"].if_list[0]._if_.\
 			conditions.add("clk'event")
-		self.tb.architecture.processes["v_th_en_gen"].if_list[0]._if_.\
+		self.architecture.processes["v_th_en_gen"].if_list[0]._if_.\
 			conditions.add("clk = '1'", "and")
-		self.tb.architecture.processes["v_th_en_gen"].if_list[0]._if_.\
+		self.architecture.processes["v_th_en_gen"].if_list[0]._if_.\
 			body.add(neuron_load_ready_if)
 
 		# neuron_load_end
@@ -407,17 +456,17 @@ class SingleLifBram(VHDLblock):
 		neuron_load_ready_if._else_.body.add("neuron_load_end <= '0';")
 
 
-		self.tb.architecture.processes["neuron_load_end_gen"].\
+		self.architecture.processes["neuron_load_end_gen"].\
 			final_wait = False
-		self.tb.architecture.processes["neuron_load_end_gen"].\
+		self.architecture.processes["neuron_load_end_gen"].\
 			sensitivity_list.add("clk")
-		self.tb.architecture.processes["neuron_load_end_gen"].if_list.\
+		self.architecture.processes["neuron_load_end_gen"].if_list.\
 			add()
-		self.tb.architecture.processes["neuron_load_end_gen"].\
+		self.architecture.processes["neuron_load_end_gen"].\
 			if_list[0]._if_.conditions.add("clk'event")
-		self.tb.architecture.processes["neuron_load_end_gen"].\
+		self.architecture.processes["neuron_load_end_gen"].\
 			if_list[0]._if_.conditions.add("clk = '1'", "and")
-		self.tb.architecture.processes["neuron_load_end_gen"].\
+		self.architecture.processes["neuron_load_end_gen"].\
 				if_list[0]._if_.body.add(neuron_load_ready_if)
 
 		# Start
@@ -427,56 +476,67 @@ class SingleLifBram(VHDLblock):
 		mc_ready_if._else_.body.add("start <= '0';")
 
 
-		self.tb.architecture.processes["start_gen"].final_wait = False
-		self.tb.architecture.processes["start_gen"].sensitivity_list.\
+		self.architecture.processes["start_gen"].final_wait = False
+		self.architecture.processes["start_gen"].sensitivity_list.\
 			add("clk")
-		self.tb.architecture.processes["start_gen"].if_list.add()
-		self.tb.architecture.processes["start_gen"].if_list[0]._if_.\
+		self.architecture.processes["start_gen"].if_list.add()
+		self.architecture.processes["start_gen"].if_list[0]._if_.\
 			conditions.add("clk'event")
-		self.tb.architecture.processes["start_gen"].if_list[0]._if_.\
+		self.architecture.processes["start_gen"].if_list[0]._if_.\
 			conditions.add("clk = '1'", "and")
-		self.tb.architecture.processes["start_gen"].if_list[0]._if_.\
+		self.architecture.processes["start_gen"].if_list[0]._if_.\
 			body.add(mc_ready_if)
 
-
-		del self.tb.architecture.processes["exc_spikes_gen"]
-		del self.tb.architecture.processes["inh_spikes_gen"]
-		self.tb.load(signal_name = "exc_spikes", input_dir = input_dir)
-		self.tb.load(signal_name = "inh_spikes", input_dir = input_dir)
-
-		del self.tb.architecture.processes["exc_spikes_rd_en_gen"]
-		self.tb.architecture.bodyCodeHeader.add("exc_spikes_rd_en <= "
+		del self.architecture.processes["exc_spikes_rd_en_gen"]
+		self.architecture.bodyCodeHeader.add("exc_spikes_rd_en <= "
 				"start_all;")
-		del self.tb.architecture.processes["inh_spikes_rd_en_gen"]
-		self.tb.architecture.bodyCodeHeader.add("inh_spikes_rd_en <= "
+		del self.architecture.processes["inh_spikes_rd_en_gen"]
+		self.architecture.bodyCodeHeader.add("inh_spikes_rd_en <= "
 				"start_all;")
 
+	def write_file_all(self, output_dir = "output", rm = False):
+		write_file_all(self, output_dir = output_dir, rm = rm)
 
 
-# a = SingleLifBram(
-# 	n_cycles = 1,
-# 	bitwidth = 32,
-# 	w_inh_bw = 32,
-# 	w_exc_bw = 32,
-# 	shift = 10,
-# 	w_exc_array = np.array([[0.1, 0.2, 0.3, 0.4]]),
-# 	w_inh_array = np.array([[-0.1, -0.2, -0.3, -0.4]]),
-# 	debug = False,
-# 	debug_list = [
-# 		"neuron_cu_present_state",
-# 		"multi_input_cu_present_state",
-# 		"multi_cycle_cu_present_state",
-# 		"multi_cycle_datapath_cycles_cnt",
-# 		"neuron_datapath_v",
-# 		"multi_cycle_stop"
-# 	]
-# )
 
+from vhdl import fast_compile, elaborate
 
-a = SingleLifBram()
+#a = SingleLifBram()
+#a.write_file_all()
+#
+#fast_compile(a)
+#elaborate(a)
 
-a.testbench()
+from utils import generate_spikes
 
-a.tb.write_file_all()
-a.tb.compile_all()
-a.tb.elaborate()
+generate_spikes("exc_spikes.txt", 10, 20)
+generate_spikes("inh_spikes.txt", 10, 20)
+
+tb = SingleLifBram_tb(
+	n_cycles	= 20,
+	bitwidth	= 16,
+	w_exc_bw	= 16,
+	w_inh_bw	= 16,
+	shift		= 5,
+	w_exc_array	= np.array([[0.1, 0.2, 0.8, 0.5, 0.3, 0.1, 0.4, 0.8,
+		0.1, 0.3]]),
+	w_inh_array	= np.array([[0.1, 0.2, 0.8, 0.5, 0.3, 0.1, 0.4, 0.8,
+		0.3, 0.2]]),
+	file_input = True,
+	input_signal_list = [
+		"exc_spikes",
+		"inh_spikes"
+	],
+	debug = True,
+	debug_list = [
+		"single_lif_bram_exc_cnt",
+		"single_lif_bram_exc_weight",
+		"multi_input_lif_exc_spike",
+		"neuron_cu_present_state",
+		"neuron_datapath_v"
+	]
+)
+
+tb.write_file_all()
+fast_compile(tb)
+elaborate(tb)

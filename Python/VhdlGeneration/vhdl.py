@@ -1,12 +1,14 @@
 import subprocess as sp
 from os.path import isfile, isdir
 
+from utils import obj_types
+from headers import coe_header
+
 import path_config
-from package_vhdl import Package
+from write_file import write_file
 
 
-
-def write_file_all(component, output_dir = "output", rm = False)
+def write_file_all(component, output_dir = "output", rm = False):
 
 	write_file(
 		component	= component, 
@@ -33,16 +35,8 @@ def write_file_all(component, output_dir = "output", rm = False)
 
 def vhdl_compile(name, output_dir = "output"):
 
-	file_name	= name + ".vhd"
-
-	if not isfile(output_dir + "/" + file_name):
-		raise FileNotFoundError(name + " file doesn't exist, create "
-				"it first")
-
-	print("\nCompiling component %s\n" %(name))
-
 	command = "cd " + output_dir + "; "
-	command = command + "xvhdl " + file_name + "; "
+	command = command + "xvhdl --2008 " + name
 
 	sp.run(command, shell = True)
 
@@ -54,23 +48,55 @@ def vhdl_obj_compile(component, output_dir = "output"):
 	attr_list = [ attr for attr in dir(component) if not
 			attr.startswith("__")]
 
-	if "entity" not in attr_list or not isinstance(component, Package):
-		raise TypeError("Component cannot be compile")
+	if "entity" in attr_list:
+		name = component.entity.name
 
-	name		= component.entity.name
+	elif "name" in attr_list:
+		name = component.name
 
+	else:
+		raise TypeError("Component cannot be compiled")
+
+	name = name + ".vhd"
+
+	print("\nCompiling " + name + "\n")
 	vhdl_compile(name, output_dir = output_dir)
 
 
 
-def compile_all(component, output_dir = "output"):
+def fast_compile(component, output_dir = "output"):
+
+	if hasattr(component, "components") and component.components:
+
+		filenames = ""
+
+		for name in component.components:
+			filenames = filenames + name + ".vhd" + " "
+
+		print("\nCompiling " + filenames + "\n")
+		vhdl_compile(filenames, output_dir = output_dir)
 
 	vhdl_obj_compile(component, output_dir = output_dir)
 
-	if hasattr(component, "components"):
-		for name in component.components:
-			vhdl_compile(name, output_dir = output_dir)
 
+def clear_compile(component, output_dir = "output"):
+
+	if hasattr(component, "components") and component.components:
+
+		filenames = ""
+
+		for name in component.components:
+			filename = name + ".vhd"
+
+			if not isfile(output_dir + "/" + filename):
+				raise ValueError("File " + filename + 
+					" doesn't exist. Create it "
+					"first")
+
+			print("\nCompiling " + filename + "\n")
+			vhdl_compile(filename, output_dir = output_dir)
+
+	vhdl_obj_compile(component, output_dir = output_dir)
 
 
 def elaborate(component, output_dir = "output"):
@@ -104,18 +130,16 @@ def sub_components(component):
 
 		sub = getattr(component, attr_name)
 
-		if hasattr(sub, "entity"):
+		if "VHDLblock" in obj_types(sub):
 			sub_comp.append(sub.entity.name)
 			
-		if isinstance(sub, Package):
-			sub_comp.append(sub.name)
+		elif "Package" in obj_types(sub):
+			sub_comp.insert(0, sub.name)
 
 		if hasattr(sub, "components"):
 			sub_comp += sub.components
 
-		sub_comp = list(set(sub_comp))
-
-	return sub_comp
+	return list(set(sub_comp))
 
 
 def track_signals(signals_dict, name):
@@ -127,7 +151,7 @@ def track_signals(signals_dict, name):
 	first = True
 	invalid_signal = False
 
-	while(exit_flag == 0):
+	while(exit_flag == 0 and signals_list):
 
 		while first == False and good_answ == False and \
 				invalid_signal == False:
@@ -187,6 +211,7 @@ def debug_component(component, db_list = []):
 
 			for debug_port in sub_component.debug:
 
+
 				component.entity.port.add(
 					name 		=
 						debug_port, 
@@ -236,3 +261,16 @@ def debug_component(component, db_list = []):
 		debug.append(debug_port_name)
 
 	setattr(component, "debug", debug)
+
+
+def coe_file(str_array, out_file):
+
+	with open(out_file, "w") as fp:
+
+		fp.write(coe_header)
+
+		for i in range(len(str_array)):
+			if i < len(str_array) - 1:
+				fp.write(str_array[i] + ",\n")
+			else:
+				fp.write(str_array[i] + ";\n")

@@ -69,21 +69,30 @@ def floor_pow2(x):
 def random_binary(min_value = 0, max_value = 255, bitwidth = 8):
 
 	if max_value > 2**bitwidth - 1 or min_value < 0:
-		print("Random number not representable on bitwidth\n")
-		exit(-1)
+		raise ValueError("Random number not representable on "
+				"bitwidth\n")
 
 	rand_int = randint(min_value, max_value)
 
 	return "{0:{fill}{width}{base}}".format(rand_int, fill = 0,
 		width = bitwidth, base = "b")
 
-def int_to_bin(value, fill = 0, width = 8):
+def int_to_bin(value, width = 8, fill = 0):
+
+	if value < 0:
+		value = 2**width + value
+
 	return "{0:{fill}{width}{base}}".format(value, fill = fill, width =
 			width, base = "b")
 
-def int_to_hex(value, fill = 0, width = 8):
+def int_to_hex(value, width = 8, fill = 0):
+
+	if value < 0:
+		value = 16**width + value
+
 	return "{0:{fill}{width}{base}}".format(value, fill = fill, width =
 			width, base = "x")
+
 
 def fixed_point_array(numpyArray, bitwidth, fixed_point_decimals = 0,
 	conv_type = "signed"):
@@ -114,3 +123,29 @@ def fixed_point_array(numpyArray, bitwidth, fixed_point_decimals = 0,
 		raise ValueError("Invalid fixed-point convertion type")
 
 	return fp_array
+
+def obj_types(obj):
+
+	types = [type(obj).__name__]
+
+	for t in type(obj).__bases__:
+		types.append(t.__name__)
+
+	types = set(types)
+
+	if "object" in types:
+		types.remove("object")
+
+	return list(types)
+
+
+def generate_spikes(filename, n_spikes, n_cycles):
+
+	with open(filename, "w") as fp:
+		for i in range(n_cycles):
+			if i > 2**n_spikes-1:
+				i = 2**n_spikes-1
+			fp.write(int_to_bin(i, n_spikes) + "\n")
+
+
+generate_spikes("prova.txt", 4, 100)

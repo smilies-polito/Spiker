@@ -4,7 +4,7 @@ from and_mask import AndMask
 from testbench import Testbench
 
 from spiker_pkg import SpikerPackage
-from utils import track_signals, debug_component
+from vhdl import track_signals, debug_component, sub_components, write_file_all
 
 import path_config
 from vhdl_block import VHDLblock
@@ -14,8 +14,7 @@ class LIFneuron(VHDLblock):
 	def __init__(self, bitwidth = 16, w_inh_bw = 5, w_exc_bw = 5,
 			shift = 10, debug = False, debug_list = []):
 
-		VHDLblock.__init__(self, entity_name = "neuron")
-
+		self.name = "neuron"
 		self.spiker_pkg = SpikerPackage()
 
 		self.datapath = LIFneuronDP(
@@ -33,7 +32,20 @@ class LIFneuron(VHDLblock):
 			debug = debug,
 			debug_list = debug_list
 		)
+		
 		self.and_mask = AndMask(data_type = "signed")
+
+		self.bitwidth = bitwidth
+		self.w_exc_bw = w_exc_bw
+		self.w_inh_bw = w_inh_bw
+		self.shift = shift
+		self.components = sub_components(self)
+
+		super().__init__(entity_name = self.name)
+		self.vhdl(debug = debug, debug_list = debug_list)
+
+
+	def vhdl(self, debug = False, debug_list = []):
 
 		# Libraries and packages
 		self.library.add("ieee")
@@ -48,27 +60,27 @@ class LIFneuron(VHDLblock):
 		self.entity.generic.add(
 			name		= "neuron_bit_width", 
 			gen_type	= "integer",
-			value		= str(bitwidth))
+			value		= str(self.bitwidth))
 
 
-		if w_inh_bw < bitwidth:
+		if self.w_inh_bw < self.bitwidth:
 			self.entity.generic.add(
 				name		= "inh_weights_bit_width",
 				gen_type	= "integer",
 				value		= str(
-					w_inh_bw))
+					self.w_inh_bw))
 
-		if w_exc_bw < bitwidth:
+		if self.w_exc_bw < self.bitwidth:
 			self.entity.generic.add(
 				name		= "exc_weights_bit_width",
 				gen_type	= "integer",
 				value		= str(
-					w_exc_bw))
+					self.w_exc_bw))
 
 		self.entity.generic.add(
 			name		= "shift",
 			gen_type	= "integer",
-			value		= str(shift))
+			value		= str(self.shift))
 
 		# Input parameters
 		self.entity.port.add(
@@ -81,42 +93,40 @@ class LIFneuron(VHDLblock):
 			port_type	= "signed(neuron_bit_width-1 downto 0)")
 
 
-		if w_inh_bw < bitwidth:
+		if self.w_inh_bw < self.bitwidth:
 			self.entity.port.add(
 				name 		= "inh_weight",
 				direction	= "in",
 				port_type	= "signed("
 						"inh_weights_bit_width-1 "
 						"downto 0)")
-		elif w_inh_bw == bitwidth:
+		elif self.w_inh_bw == self.bitwidth:
 			self.entity.port.add(
 				name 		= "inh_weight",
 				direction	= "in",
 				port_type	= "signed(neuron_bit_width-1 "
 							"downto 0)")
 		else:
-			print("Inhibitory weight bit-width cannot be larger "
-				"than the neuron's one")
-			exit(-1)
+			raise ValueError("Inhibitory weight bit-width cannot "
+					"be larger than the neuron's one")
 			
 
-		if w_exc_bw < bitwidth:
+		if self.w_exc_bw < self.bitwidth:
 			self.entity.port.add(
 				name 		= "exc_weight",
 				direction	= "in",
 				port_type	= "signed("
 					"exc_weights_bit_width-1 downto 0)")
 
-		elif w_exc_bw == bitwidth:
+		elif self.w_exc_bw == self.bitwidth:
 			self.entity.port.add(
 				name 		= "exc_weight",
 				direction	= "in",
 				port_type	= "signed(neuron_bit_width-1 "
 							"downto 0)")
 		else:
-			print("Excitatory weight bit-width cannot be larger "
-				"than the neuron's one")
-			exit(-1)
+			raise ValueError("Excitatory weight bit-width cannot "
+					"be larger than the neuron's one")
 
 		# Input controls
 		self.entity.port.add(
@@ -202,40 +212,36 @@ class LIFneuron(VHDLblock):
 			signal_type	= "std_logic")
 
 
-		if w_inh_bw < bitwidth:
+		if self.w_inh_bw < self.bitwidth:
 			self.architecture.signal.add(
 				name 		= "masked_inh_weight",
 				signal_type	= "signed("
 						"inh_weights_bit_width-1 "
 						"downto 0)")
-		elif w_inh_bw == bitwidth:
+		elif self.w_inh_bw == self.bitwidth:
 			self.architecture.signal.add(
 				name 		= "masked_inh_weight",
 				signal_type	= "signed(neuron_bit_width-1 "
 							"downto 0)")
 		else:
-			print("Inhibitory weight bit-width cannot be larger "
-				"than the neuron's one")
-			exit(-1)
+			raise ValueError("Inhibitory weight bit-width cannot "
+				"be larger than the neuron's one")
 			
 
-		if w_exc_bw < bitwidth:
+		if self.w_exc_bw < self.bitwidth:
 			self.architecture.signal.add(
 				name 		= "masked_exc_weight",
 				signal_type	= "signed("
 					"exc_weights_bit_width-1 downto 0)")
 
-		elif w_exc_bw == bitwidth:
+		elif self.w_exc_bw == self.bitwidth:
 			self.architecture.signal.add(
 				name 		= "masked_exc_weight",
 				signal_type	= "signed(neuron_bit_width-1 "
 							"downto 0)")
 		else:
-			print("Excitatory weight bit-width cannot be larger "
-				"than the neuron's one")
-			exit(-1)
-
-
+			raise ValueError("Excitatory weight bit-width cannot "
+					"be larger than the neuron's one")
 
 
 		# Components
@@ -276,17 +282,16 @@ class LIFneuron(VHDLblock):
 		self.architecture.instances["exc_mask"].generic_map()
 		self.architecture.instances["exc_mask"].port_map()
 
-		if w_inh_bw < bitwidth:
+		if self.w_inh_bw < self.bitwidth:
 			self.architecture.instances["exc_mask"].g_map.add("N",
 				"exc_weights_bit_width")
 
-		elif w_inh_bw == bitwidth:
+		elif self.w_inh_bw == self.bitwidth:
 			self.architecture.instances["exc_mask"].g_map.add("N",
 				"neuron_bit_width")
 		else:
-			print("Excitatory weight bit-width cannot be larger "
-				"than the neuron's one")
-			exit(-1)
+			raise ValueError("Excitatory weight bit-width cannot "
+					"be larger than the neuron's one")
 
 		self.architecture.instances["exc_mask"].p_map.add("input_bits",
 				"exc_weight")
@@ -301,17 +306,16 @@ class LIFneuron(VHDLblock):
 		self.architecture.instances["inh_mask"].generic_map()
 		self.architecture.instances["inh_mask"].port_map()
 
-		if w_inh_bw < bitwidth:
+		if self.w_inh_bw < self.bitwidth:
 			self.architecture.instances["inh_mask"].g_map.add("N",
 				"inh_weights_bit_width")
 
-		elif w_inh_bw == bitwidth:
+		elif self.w_inh_bw == self.bitwidth:
 			self.architecture.instances["inh_mask"].g_map.add("N",
 				"neuron_bit_width")
 		else:
-			print("Inhibitory weight bit-width cannot be larger "
-				"than the neuron's one")
-			exit(-1)
+			raise ValueError("Inhibitory weight bit-width cannot "
+				"be larger than the neuron's one")
 
 		self.architecture.instances["inh_mask"].p_map.add("input_bits",
 				"inh_weight")
@@ -324,172 +328,180 @@ class LIFneuron(VHDLblock):
 		# Debug
 		if debug:
 			debug_component(self, debug_list)
+
+	def write_file_all(self, output_dir = "output", rm = False):
+		write_file_all(self, output_dir = output_dir, rm = rm)
 	
+
+
+class LIFneuron_tb(Testbench):
+
+	def __init__(self, clock_period = 20, file_output = False, output_dir =
+			"output", file_input = False, input_dir = "",
+			input_signal_list = [], bitwidth = 16, w_inh_bw = 5,
+			w_exc_bw = 5, shift = 10, debug = False, 
+			debug_list = []):
+
+		self.dut = LIFneuron(
+			bitwidth = bitwidth,
+			w_inh_bw = w_inh_bw,
+			w_exc_bw = w_exc_bw,
+			shift = shift,
+			debug = debug,
+			debug_list = debug_list
+		)
+
+		self.components = sub_components(self)
+
+		super().__init__(
+			dut = self.dut, 
+			clock_period = clock_period,
+			file_output = file_output,
+			output_dir = output_dir,
+			file_input = file_input,
+			input_dir = input_dir,
+			input_signal_list = input_signal_list
+		)
 		
-
-	def compile_all(self, output_dir = "output"):
-
-		self.spiker_pkg.compile(output_dir = output_dir)
-		self.datapath.compile_all(output_dir = output_dir)
-		self.control_unit.compile(output_dir = output_dir)
-		self.and_mask.compile(output_dir = output_dir)
-
-		print("\nCompiling component %s\n"
-				%(self.entity.name))
-
-		command = "cd " + output_dir + "; "
-		command = command + "xvhdl --2008 " + self.entity.name + ".vhd"
-
-		sp.run(command, shell = True)
-
-		print("\n")
+		self.vhdl(clock_period = clock_period, file_output = file_output)
 
 
-	def write_file_all(self, output_dir = "output"):
+	def vhdl(self, clock_period = 20, file_output = False):
 
-		self.spiker_pkg.write_file(output_dir = output_dir)
-		self.datapath.write_file_all(output_dir = output_dir)
-		self.control_unit.write_file(output_dir = output_dir)
-		self.and_mask.write_file(output_dir = output_dir)
-		self.write_file(output_dir = output_dir)
-
-
-	def testbench(self, clock_period = 20, file_output = False):
-
-		self.tb = Testbench(self, clock_period = clock_period,
-			file_output = file_output)
-
-		self.tb.library.add("work")
-		self.tb.library["work"].package.add("spiker_pkg")
+		self.library.add("work")
+		self.library["work"].package.add("spiker_pkg")
 
 		# exc_weight
-		self.tb.architecture.processes["exc_weight_gen"].bodyHeader.\
+		self.architecture.processes["exc_weight_gen"].bodyHeader.\
 				add("exc_weight <= to_signed(500, "
 				"exc_weight'length);")
 
 		# inh_weight
-		self.tb.architecture.processes["inh_weight_gen"].bodyHeader.\
+		self.architecture.processes["inh_weight_gen"].bodyHeader.\
 				add("inh_weight <= to_signed(-300, "
 				"inh_weight'length);")
 
 		# v_reset
-		self.tb.architecture.processes["v_reset_gen"].bodyHeader.\
+		self.architecture.processes["v_reset_gen"].bodyHeader.\
 				add("v_reset <= to_signed(1000, "
 				"v_reset'length);")
 
 		# v_th_value
-		self.tb.architecture.processes["v_th_value_gen"].bodyHeader.\
+		self.architecture.processes["v_th_value_gen"].bodyHeader.\
 				add("v_th_value <= to_signed(3000, "
 				"v_th_value'length);")
 
 		# rst_n
-		self.tb.architecture.processes["rst_n_gen"].bodyHeader.add(
+		self.architecture.processes["rst_n_gen"].bodyHeader.add(
 				"rst_n <= '1';")
-		self.tb.architecture.processes["rst_n_gen"].bodyHeader.add(
+		self.architecture.processes["rst_n_gen"].bodyHeader.add(
 				"wait for 15 ns;")
-		self.tb.architecture.processes["rst_n_gen"].bodyHeader.add(
+		self.architecture.processes["rst_n_gen"].bodyHeader.add(
 				"rst_n <= '0';")
-		self.tb.architecture.processes["rst_n_gen"].bodyHeader.add(
+		self.architecture.processes["rst_n_gen"].bodyHeader.add(
 				"wait for 10 ns;")
-		self.tb.architecture.processes["rst_n_gen"].bodyHeader.add(
+		self.architecture.processes["rst_n_gen"].bodyHeader.add(
 				"rst_n <= '1';")
 
 		# v_th_en
-		self.tb.architecture.processes["v_th_en_gen"].bodyHeader.add(
+		self.architecture.processes["v_th_en_gen"].bodyHeader.add(
 				"v_th_en <= '0';")
-		self.tb.architecture.processes["v_th_en_gen"].bodyHeader.add(
+		self.architecture.processes["v_th_en_gen"].bodyHeader.add(
 				"wait for 50 ns;")
-		self.tb.architecture.processes["v_th_en_gen"].bodyHeader.add(
+		self.architecture.processes["v_th_en_gen"].bodyHeader.add(
 				"v_th_en <= '1';")
-		self.tb.architecture.processes["v_th_en_gen"].bodyHeader.add(
+		self.architecture.processes["v_th_en_gen"].bodyHeader.add(
 				"wait for 20 ns;")
-		self.tb.architecture.processes["v_th_en_gen"].bodyHeader.add(
+		self.architecture.processes["v_th_en_gen"].bodyHeader.add(
 				"v_th_en <= '0';")
 
 		# load_end
-		self.tb.architecture.processes["load_end_gen"].bodyHeader.add(
+		self.architecture.processes["load_end_gen"].bodyHeader.add(
 				"load_end <= '0';")
-		self.tb.architecture.processes["load_end_gen"].bodyHeader.add(
+		self.architecture.processes["load_end_gen"].bodyHeader.add(
 				"wait for 50 ns;")
-		self.tb.architecture.processes["load_end_gen"].bodyHeader.add(
+		self.architecture.processes["load_end_gen"].bodyHeader.add(
 				"load_end <= '1';")
-		self.tb.architecture.processes["load_end_gen"].bodyHeader.add(
+		self.architecture.processes["load_end_gen"].bodyHeader.add(
 				"wait for 20 ns;")
-		self.tb.architecture.processes["load_end_gen"].bodyHeader.add(
+		self.architecture.processes["load_end_gen"].bodyHeader.add(
 				"load_end <= '0';")
 
 		# restart
-		self.tb.architecture.processes["restart_gen"].bodyHeader.add(
+		self.architecture.processes["restart_gen"].bodyHeader.add(
 				"restart <= '0';")
-		self.tb.architecture.processes["restart_gen"].bodyHeader.add(
+		self.architecture.processes["restart_gen"].bodyHeader.add(
 				"wait for 70 ns;")
-		self.tb.architecture.processes["restart_gen"].bodyHeader.add(
+		self.architecture.processes["restart_gen"].bodyHeader.add(
 				"restart <= '1';")
-		self.tb.architecture.processes["restart_gen"].bodyHeader.add(
+		self.architecture.processes["restart_gen"].bodyHeader.add(
 				"wait for 20 ns;")
-		self.tb.architecture.processes["restart_gen"].bodyHeader.add(
+		self.architecture.processes["restart_gen"].bodyHeader.add(
 				"restart <= '0';")
 
 		# exc
-		self.tb.architecture.processes["exc_gen"].bodyHeader.add(
+		self.architecture.processes["exc_gen"].bodyHeader.add(
 				"exc <= '0';")
-		self.tb.architecture.processes["exc_gen"].bodyHeader.add(
+		self.architecture.processes["exc_gen"].bodyHeader.add(
 				"wait for 130 ns;")
-		self.tb.architecture.processes["exc_gen"].bodyHeader.add(
+		self.architecture.processes["exc_gen"].bodyHeader.add(
 				"exc <= '1';")
-		self.tb.architecture.processes["exc_gen"].bodyHeader.add(
+		self.architecture.processes["exc_gen"].bodyHeader.add(
 				"wait for 600 ns;")
-		self.tb.architecture.processes["exc_gen"].bodyHeader.add(
+		self.architecture.processes["exc_gen"].bodyHeader.add(
 				"exc <= '0';")
-		self.tb.architecture.processes["exc_gen"].bodyHeader.add(
+		self.architecture.processes["exc_gen"].bodyHeader.add(
 				"wait for 100 ns;")
-		self.tb.architecture.processes["exc_gen"].bodyHeader.add(
+		self.architecture.processes["exc_gen"].bodyHeader.add(
 				"exc <= '1';")
-		self.tb.architecture.processes["exc_gen"].bodyHeader.add(
+		self.architecture.processes["exc_gen"].bodyHeader.add(
 				"wait for 60 ns;")
-		self.tb.architecture.processes["exc_gen"].bodyHeader.add(
+		self.architecture.processes["exc_gen"].bodyHeader.add(
 				"exc <= '0';")
 
 		# exc spike
-		self.tb.architecture.processes["exc_spike_gen"].bodyHeader.add(
+		self.architecture.processes["exc_spike_gen"].bodyHeader.add(
 				"exc_spike <= '0';")
-		self.tb.architecture.processes["exc_spike_gen"].bodyHeader.add(
+		self.architecture.processes["exc_spike_gen"].bodyHeader.add(
 				"wait for 130 ns;")
-		self.tb.architecture.processes["exc_spike_gen"].bodyHeader.add(
+		self.architecture.processes["exc_spike_gen"].bodyHeader.add(
 				"exc_spike <= '1';")
-		self.tb.architecture.processes["exc_spike_gen"].bodyHeader.add(
+		self.architecture.processes["exc_spike_gen"].bodyHeader.add(
 				"wait for 600 ns;")
-		self.tb.architecture.processes["exc_spike_gen"].bodyHeader.add(
+		self.architecture.processes["exc_spike_gen"].bodyHeader.add(
 				"exc_spike <= '0';")
 
 		# inh
-		self.tb.architecture.processes["inh_gen"].bodyHeader.add(
+		self.architecture.processes["inh_gen"].bodyHeader.add(
 				"inh <= '0';")
-		self.tb.architecture.processes["inh_gen"].bodyHeader.add(
+		self.architecture.processes["inh_gen"].bodyHeader.add(
 				"wait for 750 ns;")
-		self.tb.architecture.processes["inh_gen"].bodyHeader.add(
+		self.architecture.processes["inh_gen"].bodyHeader.add(
 				"inh <= '1';")
-		self.tb.architecture.processes["inh_gen"].bodyHeader.add(
+		self.architecture.processes["inh_gen"].bodyHeader.add(
 				"wait for 60 ns;")
-		self.tb.architecture.processes["inh_gen"].bodyHeader.add(
+		self.architecture.processes["inh_gen"].bodyHeader.add(
 				"inh <= '0';")
-		self.tb.architecture.processes["inh_gen"].bodyHeader.add(
+		self.architecture.processes["inh_gen"].bodyHeader.add(
 				"wait for 20 ns;")
-		self.tb.architecture.processes["inh_gen"].bodyHeader.add(
+		self.architecture.processes["inh_gen"].bodyHeader.add(
 				"inh <= '1';")
-		self.tb.architecture.processes["inh_gen"].bodyHeader.add(
+		self.architecture.processes["inh_gen"].bodyHeader.add(
 				"wait for 60 ns;")
-		self.tb.architecture.processes["inh_gen"].bodyHeader.add(
+		self.architecture.processes["inh_gen"].bodyHeader.add(
 				"inh <= '0';")
 
 		# inh spike
-		self.tb.architecture.processes["inh_spike_gen"].bodyHeader.add(
+		self.architecture.processes["inh_spike_gen"].bodyHeader.add(
 				"inh_spike <= '0';")
-		self.tb.architecture.processes["inh_spike_gen"].bodyHeader.add(
+		self.architecture.processes["inh_spike_gen"].bodyHeader.add(
 				"wait for 750 ns;")
-		self.tb.architecture.processes["inh_spike_gen"].bodyHeader.add(
+		self.architecture.processes["inh_spike_gen"].bodyHeader.add(
 				"inh_spike <= '1';")
-		self.tb.architecture.processes["inh_spike_gen"].bodyHeader.add(
+		self.architecture.processes["inh_spike_gen"].bodyHeader.add(
 				"wait for 60 ns;")
-		self.tb.architecture.processes["inh_spike_gen"].bodyHeader.add(
+		self.architecture.processes["inh_spike_gen"].bodyHeader.add(
 				"inh_spike <= '0';")
+
+	def write_file_all(self, output_dir = "output", rm = False):
+		write_file_all(self, output_dir = output_dir, rm = rm)

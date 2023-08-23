@@ -4,7 +4,8 @@ from multi_cycle import MultiCycle
 from multi_input_lif import MultiInputLIF
 from testbench import Testbench
 from spiker_pkg import SpikerPackage
-from utils import track_signals, ceil_pow2, debug_component
+from vhdl import track_signals, debug_component, sub_components, write_file_all
+from utils import ceil_pow2, random_binary
 
 import path_config
 from vhdl_block import VHDLblock
@@ -17,15 +18,20 @@ class MultiCycleLIF(VHDLblock):
 			bitwidth = 16, w_inh_bw = 5, w_exc_bw = 5, shift = 10,
 			debug = False, debug_list = []):
 
+		self.name = "multi_cycle_lif"
+
 		self.n_exc_inputs 	= n_exc_inputs
 		self.n_inh_inputs 	= n_inh_inputs
 		self.n_cycles		= n_cycles
 
-		exc_cnt_bitwidth = int(log2(ceil_pow2(n_exc_inputs)))
-		inh_cnt_bitwidth = int(log2(ceil_pow2(n_inh_inputs)))
-		cycles_cnt_bitwidth = int(log2(ceil_pow2(n_cycles+1))) + 1
+		self.exc_cnt_bitwidth = int(log2(ceil_pow2(n_exc_inputs)))
+		self.inh_cnt_bitwidth = int(log2(ceil_pow2(n_inh_inputs)))
+		self.cycles_cnt_bitwidth = int(log2(ceil_pow2(n_cycles+1))) + 1
 
-		VHDLblock.__init__(self, entity_name = "multi_cycle_lif")
+		self.bitwidth	= bitwidth
+		self.w_inh_bw	= w_inh_bw
+		self.w_exc_bw	= w_exc_bw
+		self.shift 	= shift
 
 		self.spiker_pkg = SpikerPackage()
 
@@ -46,6 +52,14 @@ class MultiCycleLIF(VHDLblock):
 			debug_list = debug_list
 		)
 
+		self.components = sub_components(self)
+
+		super().__init__(entity_name = self.name)
+		self.vhdl(debug = debug, debug_list = debug_list)
+
+
+	def vhdl(self, debug = False, debug_list = []):
+
 		# Libraries and packages
 		self.library.add("ieee")
 		self.library["ieee"].package.add("std_logic_1164")
@@ -59,51 +73,51 @@ class MultiCycleLIF(VHDLblock):
 		self.entity.generic.add(
 			name		= "n_exc_inputs", 
 			gen_type	= "integer",
-			value		= str(n_exc_inputs))
+			value		= str(self.n_exc_inputs))
 		self.entity.generic.add(
 			name		= "n_inh_inputs", 
 			gen_type	= "integer",
-			value		= str(n_inh_inputs))
+			value		= str(self.n_inh_inputs))
 		self.entity.generic.add(
 			name		= "n_cycles", 
 			gen_type	= "integer",
-			value		= str(n_cycles))
+			value		= str(self.n_cycles))
 		self.entity.generic.add(
 			name		= "exc_cnt_bitwidth", 
 			gen_type	= "integer",
-			value		= str(exc_cnt_bitwidth))
+			value		= str(self.exc_cnt_bitwidth))
 		self.entity.generic.add(
 			name		= "inh_cnt_bitwidth", 
 			gen_type	= "integer",
-			value		= str(inh_cnt_bitwidth))
+			value		= str(self.inh_cnt_bitwidth))
 		self.entity.generic.add(
 			name		= "cycles_cnt_bitwidth", 
 			gen_type	= "integer",
-			value		= str(cycles_cnt_bitwidth))
+			value		= str(self.cycles_cnt_bitwidth))
 		self.entity.generic.add(
 			name		= "neuron_bit_width", 
 			gen_type	= "integer",
-			value		= str(bitwidth))
+			value		= str(self.bitwidth))
 
 
-		if w_inh_bw < bitwidth:
+		if self.w_inh_bw < self.bitwidth:
 			self.entity.generic.add(
 				name		= "inh_weights_bit_width",
 				gen_type	= "integer",
 				value		= str(
-					w_inh_bw))
+					self.w_inh_bw))
 
-		if w_exc_bw < bitwidth:
+		if self.w_exc_bw < self.bitwidth:
 			self.entity.generic.add(
 				name		= "exc_weights_bit_width",
 				gen_type	= "integer",
 				value		= str(
-					w_exc_bw))
+					self.w_exc_bw))
 
 		self.entity.generic.add(
 			name		= "shift",
 			gen_type	= "integer",
-			value		= str(shift))
+			value		= str(self.shift))
 
 		# Input parameters
 		self.entity.port.add(
@@ -116,42 +130,40 @@ class MultiCycleLIF(VHDLblock):
 			port_type	= "signed(neuron_bit_width-1 downto 0)")
 
 
-		if w_inh_bw < bitwidth:
+		if self.w_inh_bw < self.bitwidth:
 			self.entity.port.add(
 				name 		= "inh_weight",
 				direction	= "in",
 				port_type	= "signed("
 						"inh_weights_bit_width-1 "
 						"downto 0)")
-		elif w_inh_bw == bitwidth:
+		elif self.w_inh_bw == self.bitwidth:
 			self.entity.port.add(
 				name 		= "inh_weight",
 				direction	= "in",
 				port_type	= "signed(neuron_bit_width-1 "
 							"downto 0)")
 		else:
-			print("Inhibitory weight bit-width cannot be larger "
-				"than the neuron's one")
-			exit(-1)
+			raise ValueError("Inhibitory weight bit-width cannot "
+				"be larger than the neuron's one")
 			
 
-		if w_exc_bw < bitwidth:
+		if self.w_exc_bw < self.bitwidth:
 			self.entity.port.add(
 				name 		= "exc_weight",
 				direction	= "in",
 				port_type	= "signed("
 					"exc_weights_bit_width-1 downto 0)")
 
-		elif w_exc_bw == bitwidth:
+		elif self.w_exc_bw == self.bitwidth:
 			self.entity.port.add(
 				name 		= "exc_weight",
 				direction	= "in",
 				port_type	= "signed(neuron_bit_width-1 "
 							"downto 0)")
 		else:
-			print("Excitatory weight bit-width cannot be larger "
-				"than the neuron's one")
-			exit(-1)
+			raise ValueError("Excitatory weight bit-width cannot "
+				"be larger than the neuron's one")
 
 		# Input controls
 		self.entity.port.add(
@@ -269,80 +281,99 @@ class MultiCycleLIF(VHDLblock):
 		# Debug
 		if debug:
 			debug_component(self, debug_list)
-	
-		
-	def compile_all(self, output_dir = "output"):
 
-		self.spiker_pkg.compile(output_dir = output_dir)
-		self.multi_cycle.compile_all(output_dir = output_dir)
-		self.multi_input_lif.compile_all(output_dir = output_dir)
-
-		print("\nCompiling component %s\n"
-				%(self.entity.name))
-
-		command = "cd " + output_dir + "; "
-		command = command + "xvhdl --2008 " + self.entity.name + ".vhd"
-
-		sp.run(command, shell = True)
-
-		print("\n")
+	def write_file_all(self, output_dir = "output", rm = False):
+		write_file_all(self, output_dir = output_dir, rm = rm)
 
 
-	def write_file_all(self, output_dir = "output"):
+class MultiCycleLIF_tb(Testbench):
 
-		self.spiker_pkg.write_file(output_dir = output_dir)
-		self.multi_cycle.write_file_all(output_dir = output_dir)
-		self.multi_input_lif.write_file_all(output_dir = output_dir)
-		self.write_file(output_dir = output_dir)
-
-
-
-	def testbench(self, clock_period = 20, file_output = False,
+	def __init__(self, clock_period = 20, file_output = False,
 			output_dir = "output", file_input = False, 
-			input_dir = "", input_signal_list = []):
+			input_dir = "", input_signal_list = [], bitwidth = 16,
+			w_inh_bw = 5, w_exc_bw = 5, shift = 10, n_exc_inputs =
+			2, n_inh_inputs = 2, n_cycles = 10, debug = False, 
+			debug_list = []):
 
-		self.tb = Testbench(
-			self,
-			clock_period		= clock_period,
-			file_output		= file_output,
-			output_dir		= output_dir,
-			file_input		= file_input,
-			input_signal_list	= input_signal_list
+		self.n_exc_inputs 	= n_exc_inputs
+		self.n_inh_inputs 	= n_inh_inputs
+		self.n_cycles		= n_cycles
+
+		self.exc_cnt_bitwidth = int(log2(ceil_pow2(n_exc_inputs)))
+		self.inh_cnt_bitwidth = int(log2(ceil_pow2(n_inh_inputs)))
+		self.cycles_cnt_bitwidth = int(log2(ceil_pow2(n_cycles+1))) + 1
+
+		self.bitwidth	= bitwidth
+		self.w_inh_bw	= w_inh_bw
+		self.w_exc_bw	= w_exc_bw
+		self.shift 	= shift
+
+		self.spiker_pkg = SpikerPackage()
+
+		self.dut = MultiCycleLIF(
+			bitwidth = bitwidth,
+			w_inh_bw = w_inh_bw,
+			w_exc_bw = w_exc_bw,
+			shift = shift,
+			n_exc_inputs = n_exc_inputs,
+			n_inh_inputs = n_inh_inputs,
+			n_cycles = n_cycles,
+			debug = debug,
+			debug_list = debug_list
 		)
 
-		self.tb.library.add("work")
-		self.tb.library["work"].package.add("spiker_pkg")
+		self.components = sub_components(self)
+
+		super().__init__(
+			dut = self.dut, 
+			clock_period = clock_period,
+			file_output = file_output,
+			output_dir = output_dir,
+			file_input = file_input,
+			input_dir = input_dir,
+			input_signal_list = input_signal_list
+		)
+		
+		self.vhdl(clock_period = clock_period, file_output = file_output)
+
+
+	def vhdl(self, clock_period = 20, file_output = False, output_dir =
+			"output", file_input = False, input_dir = "",
+			input_signal_list = []):
+
+		self.library.add("work")
+		self.library["work"].package.add("spiker_pkg")
 
 		# exc_weight
-		self.tb.architecture.processes["exc_weight_gen"].bodyHeader.\
+		self.architecture.processes["exc_weight_gen"].bodyHeader.\
 				add("exc_weight <= to_signed(550000000, "
 				"exc_weight'length);")
 
 		# inh_weight
-		self.tb.architecture.processes["inh_weight_gen"].bodyHeader.\
+		self.architecture.processes["inh_weight_gen"].bodyHeader.\
 				add("inh_weight <= to_signed(-400000000, "
 				"inh_weight'length);")
 
 		# v_reset
-		self.tb.architecture.processes["v_reset_gen"].bodyHeader.\
+		self.architecture.processes["v_reset_gen"].bodyHeader.\
 				add("v_reset <= to_signed(1000000, "
 				"v_reset'length);")
 
 		# v_th_value
-		self.tb.architecture.processes["v_th_value_gen"].bodyHeader.\
+		self.architecture.processes["v_th_value_gen"].bodyHeader.\
 				add("v_th_value <= to_signed(1500000000, "
 				"v_th_value'length);")
 
 		# rst_n
-		self.tb.architecture.processes["rst_n_gen"].bodyHeader.add(
+		self.architecture.processes["rst_n_gen"].bodyHeader.add(
 				"rst_n <= '1';")
-		self.tb.architecture.processes["rst_n_gen"].bodyHeader.add(
+		self.architecture.processes["rst_n_gen"].bodyHeader.add(
 				"wait for 15 ns;")
-		self.tb.architecture.processes["rst_n_gen"].bodyHeader.add(
+		self.architecture.processes["rst_n_gen"].bodyHeader.add(
 				"rst_n <= '0';")
-		self.tb.architecture.processes["rst_n_gen"].bodyHeader.add(
+		self.architecture.processes["rst_n_gen"].bodyHeader.add(
 				"wait for 10 ns;")
-		self.tb.architecture.processes["rst_n_gen"].bodyHeader.add(
+		self.architecture.processes["rst_n_gen"].bodyHeader.add(
 				"rst_n <= '1';")
 
 		# v_th_en
@@ -353,15 +384,15 @@ class MultiCycleLIF(VHDLblock):
 		neuron_load_ready_if._else_.body.add("v_th_en <= '0';")
 
 
-		self.tb.architecture.processes["v_th_en_gen"].final_wait = False
-		self.tb.architecture.processes["v_th_en_gen"].sensitivity_list.\
+		self.architecture.processes["v_th_en_gen"].final_wait = False
+		self.architecture.processes["v_th_en_gen"].sensitivity_list.\
 			add("clk")
-		self.tb.architecture.processes["v_th_en_gen"].if_list.add()
-		self.tb.architecture.processes["v_th_en_gen"].if_list[0]._if_.\
+		self.architecture.processes["v_th_en_gen"].if_list.add()
+		self.architecture.processes["v_th_en_gen"].if_list[0]._if_.\
 			conditions.add("clk'event")
-		self.tb.architecture.processes["v_th_en_gen"].if_list[0]._if_.\
+		self.architecture.processes["v_th_en_gen"].if_list[0]._if_.\
 			conditions.add("clk = '1'", "and")
-		self.tb.architecture.processes["v_th_en_gen"].if_list[0]._if_.\
+		self.architecture.processes["v_th_en_gen"].if_list[0]._if_.\
 			body.add(neuron_load_ready_if)
 
 		# neuron_load_end
@@ -372,17 +403,17 @@ class MultiCycleLIF(VHDLblock):
 		neuron_load_ready_if._else_.body.add("neuron_load_end <= '0';")
 
 
-		self.tb.architecture.processes["neuron_load_end_gen"].\
+		self.architecture.processes["neuron_load_end_gen"].\
 			final_wait = False
-		self.tb.architecture.processes["neuron_load_end_gen"].\
+		self.architecture.processes["neuron_load_end_gen"].\
 			sensitivity_list.add("clk")
-		self.tb.architecture.processes["neuron_load_end_gen"].if_list.\
+		self.architecture.processes["neuron_load_end_gen"].if_list.\
 			add()
-		self.tb.architecture.processes["neuron_load_end_gen"].\
+		self.architecture.processes["neuron_load_end_gen"].\
 			if_list[0]._if_.conditions.add("clk'event")
-		self.tb.architecture.processes["neuron_load_end_gen"].\
+		self.architecture.processes["neuron_load_end_gen"].\
 			if_list[0]._if_.conditions.add("clk = '1'", "and")
-		self.tb.architecture.processes["neuron_load_end_gen"].\
+		self.architecture.processes["neuron_load_end_gen"].\
 				if_list[0]._if_.body.add(neuron_load_ready_if)
 
 		# Start
@@ -392,26 +423,29 @@ class MultiCycleLIF(VHDLblock):
 		mc_ready_if._else_.body.add("start <= '0';")
 
 
-		self.tb.architecture.processes["start_gen"].final_wait = False
-		self.tb.architecture.processes["start_gen"].sensitivity_list.\
+		self.architecture.processes["start_gen"].final_wait = False
+		self.architecture.processes["start_gen"].sensitivity_list.\
 			add("clk")
-		self.tb.architecture.processes["start_gen"].if_list.add()
-		self.tb.architecture.processes["start_gen"].if_list[0]._if_.\
+		self.architecture.processes["start_gen"].if_list.add()
+		self.architecture.processes["start_gen"].if_list[0]._if_.\
 			conditions.add("clk'event")
-		self.tb.architecture.processes["start_gen"].if_list[0]._if_.\
+		self.architecture.processes["start_gen"].if_list[0]._if_.\
 			conditions.add("clk = '1'", "and")
-		self.tb.architecture.processes["start_gen"].if_list[0]._if_.\
+		self.architecture.processes["start_gen"].if_list[0]._if_.\
 			body.add(mc_ready_if)
 
 
-		del self.tb.architecture.processes["exc_spikes_gen"]
-		del self.tb.architecture.processes["inh_spikes_gen"]
-		self.tb.load(signal_name = "exc_spikes", input_dir = input_dir)
-		self.tb.load(signal_name = "inh_spikes", input_dir = input_dir)
+		del self.architecture.processes["exc_spikes_gen"]
+		del self.architecture.processes["inh_spikes_gen"]
+		self.load(signal_name = "exc_spikes", input_dir = input_dir)
+		self.load(signal_name = "inh_spikes", input_dir = input_dir)
 
-		del self.tb.architecture.processes["exc_spikes_rd_en_gen"]
-		self.tb.architecture.bodyCodeHeader.add("exc_spikes_rd_en <= "
+		del self.architecture.processes["exc_spikes_rd_en_gen"]
+		self.architecture.bodyCodeHeader.add("exc_spikes_rd_en <= "
 				"start_all;")
-		del self.tb.architecture.processes["inh_spikes_rd_en_gen"]
-		self.tb.architecture.bodyCodeHeader.add("inh_spikes_rd_en <= "
+		del self.architecture.processes["inh_spikes_rd_en_gen"]
+		self.architecture.bodyCodeHeader.add("inh_spikes_rd_en <= "
 				"start_all;")
+
+	def write_file_all(self, output_dir = "output", rm = False):
+		write_file_all(self, output_dir = output_dir, rm = rm)

@@ -1,10 +1,11 @@
 import numpy as np
 import torch
 
-from math import log
+from math import log2
 from typing import Union
 
-from utils import fixed_point_array, ceil_pow2, int_to_hex
+from utils import fixed_point_array, ceil_pow2, int_to_hex, int_to_bin
+from vhdl import sub_components, debug_component, coe_file
 
 import path_config
 from vhdl_block import VHDLblock
@@ -19,14 +20,11 @@ class Rom(VHDLblock):
 			False, debug_list = []): 
 
 		self.name_term = name_term
-
-		VHDLblock.__init__(self, "rom" + name_term)
+		self.name = "rom" + self.name_term
 
 		self.rom_columns	= init_array.shape[0]
 		self.rom_rows		= init_array.shape[1]
-
-		print(self.rom_columns)
-		print(self.rom_rows)
+		self.addr_width		= int(log2(ceil_pow2(self.rom_rows)))
 
 		if self.rom_columns*bitwidth > max_word_size:
 			raise ValueError("Cannot fit ROM. Data are too large")
@@ -43,11 +41,15 @@ class Rom(VHDLblock):
 			self.fp_decimals = fp_decimals
 
 		if not init_file:
-			self.init_file = self.entity.name + ".coe"
+			self.init_file = self.name + ".coe"
 		else:
 			self.init_file = init_file
 
-		self.vhdl(debug = debug)
+		self.components = sub_components(self)
+
+		VHDLblock.__init__(self, "rom" + name_term)
+		self.vhdl(debug = debug, debug_list = debug_list)
+
 		self.initialize()
 
 	def initialize(self):
@@ -67,29 +69,18 @@ class Rom(VHDLblock):
 
 			for i in range(self.rom_columns):
 
-				if fp_array[i][j] < 0:
-					fill = 1
-				else:
-					fill = 0
-
-				bin_weight = "{0:{fill}{width}{base}}".\
-				format(fp_array[i][j], fill = fill, 
-				width = self.bitwidth, base = "b")
+				bin_weight = int_to_bin(fp_array[i][j], width =
+						self.bitwidth)
 
 				rom_row += bin_weight
 
-			rom_row += "\n"
 			rows.append(rom_row)
 
-
-
-		with open(self.init_file, "w") as fp:
-			for row in rows:
-				fp.write(row)
+		coe_file(rows, self.init_file)
 
 		return rows
 
-	def vhdl(self, debug = False):
+	def vhdl(self, debug = False, debug_list = []):
 
 		self.ip()
 
@@ -105,14 +96,12 @@ class Rom(VHDLblock):
 			name 		= "addra",
 			direction	= "in",
 			port_type	= "std_logic_vector(" +
-			str(int(log(ceil_pow2(self.rom_rows), 2)))  + 
-			" downto 0)"
+					str(self.addr_width-1)  + " downto 0)"
 		)
 
 		for i in range(self.rom_columns):
 
-			hex_width = int(log(ceil_pow2(self.rom_columns),
-					16))
+			hex_width = int(log2(ceil_pow2(self.rom_columns)) // 4)
 
 			if hex_width == 0:
 				hex_width = 1
@@ -136,8 +125,7 @@ class Rom(VHDLblock):
 
 		for i in range(self.rom_columns):
 
-			hex_width = int(log(ceil_pow2(self.rom_columns),
-					16))
+			hex_width = int(log2(ceil_pow2(self.rom_columns)) // 4)
 
 			if hex_width == 0:
 				hex_width = 1
@@ -173,8 +161,7 @@ class Rom(VHDLblock):
 			name 		= "addra",
 			direction	= "in",
 			port_type	= "std_logic_vector(" +
-			str(int(log(ceil_pow2(self.rom_rows), 2))) + 
-			" downto 0)"
+					str(self.addr_width - 1) + " downto 0)"
 		)
 
 		self.rom_ip.entity.port.add(

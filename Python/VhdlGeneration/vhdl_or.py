@@ -1,11 +1,22 @@
+from vhdl import sub_components, debug_component
+
 import path_config
 from vhdl_block import VHDLblock
 
 class Or(VHDLblock):
 
-	def __init__(self, bitwidth = 8):
+	def __init__(self, bitwidth = 8, debug = False, debug_list = []):
 
-		VHDLblock.__init__(self, entity_name = "generic_or")
+		self.name = "generic_or"
+
+		self.bitwidth = bitwidth
+		self.components = sub_components(self)
+
+		VHDLblock.__init__(self, entity_name = self.name)
+		self.vhdl(debug = debug, debug_list = debug_list)
+
+
+	def vhdl(self, debug = False, debug_list = []):
 
 		# Libraries and packages
 		self.library.add("ieee")
@@ -13,7 +24,7 @@ class Or(VHDLblock):
 
 		# Generics
 		self.entity.generic.add("N", "integer", 
-			str(bitwidth))
+			str(self.bitwidth))
 
 		# Input ports
 		self.entity.port.add("or_in", "in", 
@@ -38,3 +49,7 @@ class Or(VHDLblock):
 				add("or_var := or_var or or_in(in_bit);")
 		self.architecture.processes["or_computation"].bodyFooter.\
 				add("or_out <= or_var;")
+
+		# Debug
+		if debug:
+			debug_component(self, debug_list)

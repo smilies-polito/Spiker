@@ -1,5 +1,5 @@
 from spiker_pkg import SpikerPackage
-from utils import track_signals, debug_component
+from vhdl import track_signals, debug_component, sub_components, write_file_all
 
 import path_config
 
@@ -11,9 +11,16 @@ class MultiCycleCU(VHDLblock):
 
 	def __init__(self, debug = False, debug_list = []):
 
-		VHDLblock.__init__(self, entity_name = "multi_cycle_cu")
+		self.name = "multi_cycle_cu"
 
 		self.spiker_pkg = SpikerPackage()
+		self.components = sub_components(self)
+
+		super().__init__(entity_name = self.name)
+		self.vhdl(debug = debug, debug_list = debug_list)
+
+
+	def vhdl(self, debug = False, debug_list = []):
 
 		# Libraries and packages
 		self.library.add("ieee")
@@ -268,11 +275,5 @@ class MultiCycleCU(VHDLblock):
 			debug_component(self, debug_list)
 
 
-
-	def write_file_all(self, output_dir = "output"):
-		self.spiker_pkg.write_file(output_dir = output_dir)
-		self.write_file(output_dir = output_dir)
-		
-	def compile_all(self, output_dir = "output"):
-		self.spiker_pkg.compile(output_dir = output_dir)
-		self.compile(output_dir = output_dir)
+	def write_file_all(self, output_dir = "output", rm = False):
+		write_file_all(self, output_dir = output_dir, rm = rm)

@@ -1,11 +1,24 @@
+from vhdl import sub_components, debug_component
+
 import path_config
 from vhdl_block import VHDLblock
 
 class Shifter(VHDLblock):
 
-	def __init__(self, bitwidth = 16, shift = 10):
+	def __init__(self, bitwidth = 16, shift = 10, debug = True, 
+			debug_list = []):
 
-		VHDLblock.__init__(self, entity_name = "shifter")
+		self.name = "shifter"
+
+		self.bitwidth = bitwidth
+		self.shift = shift
+		self.components = sub_components(self)
+
+		VHDLblock.__init__(self, entity_name = self.name)
+		self.vhdl(debug = debug, debug_list = debug_list)
+
+
+	def vhdl(self, debug = False, debug_list = []):
 
 		# Libraries and packages
 		self.library.add("ieee")
@@ -20,17 +33,16 @@ class Shifter(VHDLblock):
 				"signed(N-1 downto 0)")
 
 		# Generics
-		self.entity.generic.add("N", "integer", str(bitwidth))
+		self.entity.generic.add("N", "integer", str(self.bitwidth))
 
-		if bitwidth <= 0:
-			print("Invalid bit-width in shifter\n")
-			exit(-1)
+		if self.bitwidth <= 0:
+			raise ValueError("Invalid bit-width in " + self.name)
 
-		elif shift < bitwidth and shift > 0:
+		elif self.shift < self.bitwidth and self.shift > 0:
 
 			# Generics
 			self.entity.generic.add("shift", "integer", 
-					str(shift))
+					str(self.shift))
 
 
 			# Add/sub process
@@ -42,21 +54,22 @@ class Shifter(VHDLblock):
 					"downto 0) <= "
 					"shifter_in(N-1 downto shift);")
 
-		elif shift == bitwidth:
+		elif self.shift == self.bitwidth:
 
 			# Add/sub process
 			self.architecture.bodyCodeHeader.add("shifted_out <= "
 					"(others =>"
 					"shifter_in(shifter_in'length-1));")
 
-		elif shift == 0:
-
-			print("Zero")
+		elif self.shift == 0:
 
 			# Add/sub process
 			self.architecture.bodyCodeHeader.add("shifted_out <= "
 					"shifter_in;")
 
 		else:
-			print("Invalid shift value in shifter\n")
-			exit(-1)
+			raise ValueError("Invalid shift value in " + self.name)
+
+		# Debug
+		if debug:
+			debug_component(self, debug_list)
