@@ -38,10 +38,6 @@ class LIFneuronDP(VHDLblock):
 							bitwidth
 						)
 
-		self.reg_signed			= Reg(
-							bitwidth = bitwidth,
-							reg_type = "signed")
-
 		self.reg_signed_sync_rst	= Reg(
 							bitwidth = bitwidth,
 							reg_type = "signed",
@@ -96,7 +92,7 @@ class LIFneuronDP(VHDLblock):
 
 		# Input parameters
 		self.entity.port.add(
-			name 		= "v_th_value", 
+			name 		= "v_th", 
 			direction	= "in",
 			port_type	= "signed(neuron_bit_width-1 downto 0)")
 		self.entity.port.add(
@@ -157,10 +153,6 @@ class LIFneuronDP(VHDLblock):
 			direction	= "in",
 			port_type	= "std_logic")
 		self.entity.port.add(
-			name 		= "v_th_en", 
-			direction	= "in",
-			port_type	= "std_logic")
-		self.entity.port.add(
 			name 		= "v_en",
 			direction	= "in",
 			port_type	= "std_logic")
@@ -187,10 +179,6 @@ class LIFneuronDP(VHDLblock):
 			signal_type	= "signed(neuron_bit_width-1 downto 0)")
 
 		self.architecture.signal.add(
-			name		= "v_th",
-			signal_type	= "signed(neuron_bit_width-1 downto 0)")
-
-		self.architecture.signal.add(
 			name		= "v_value",
 			signal_type	= "signed(neuron_bit_width-1 downto 0)")
 
@@ -209,7 +197,6 @@ class LIFneuronDP(VHDLblock):
 		self.architecture.component.add(self.mux4to1_signed)
 		self.architecture.component.add(self.add_sub)
 		self.architecture.component.add(self.mux2to1_signed)
-		self.architecture.component.add(self.reg_signed)
 		self.architecture.component.add(self.reg_signed_sync_rst)
 		self.architecture.component.add(self.cmp_gt)
 
@@ -314,20 +301,6 @@ class LIFneuronDP(VHDLblock):
 				"v_value")
 
 
-		# Signed register
-		self.architecture.instances.add(self.reg_signed, "v_th_reg")
-		self.architecture.instances["v_th_reg"].generic_map()
-		self.architecture.instances["v_th_reg"].g_map.add("N",
-				"neuron_bit_width")
-		self.architecture.instances["v_th_reg"].port_map()
-		self.architecture.instances["v_th_reg"].p_map.add("en",
-				"v_th_en")
-		self.architecture.instances["v_th_reg"].p_map.add("reg_in",
-				"v_th_value")
-		self.architecture.instances["v_th_reg"].p_map.add("reg_out",
-				"v_th")
-
-
 		# Signed register with synchronous reset
 		self.architecture.instances.add(self.reg_signed_sync_rst,
 				"v_reg")
@@ -418,9 +391,9 @@ class LIFneuronDP_tb(Testbench):
 				"v_reset'length);")
 
 		# v_th_value
-		self.architecture.processes["v_th_value_gen"].bodyHeader.\
-				add("v_th_value <= to_signed(3000, "
-				"v_th_value'length);")
+		self.architecture.processes["v_th_gen"].bodyHeader.\
+				add("v_th <= to_signed(3000, "
+				"v_th'length);")
 		# v_rst_n
 		self.architecture.processes["v_rst_n_gen"].bodyHeader.\
 				add("v_rst_n <= '1';")
@@ -481,14 +454,6 @@ class LIFneuronDP_tb(Testbench):
 		self.architecture.processes["v_en_gen"].bodyHeader.\
 				add("v_en <= '1';")
 
-		# v_th_en
-		self.architecture.processes["v_th_en_gen"].bodyHeader.\
-				add("v_th_en <= '1';")
-		self.architecture.processes["v_th_en_gen"].bodyHeader.\
-				add("wait for " + str(clock_period) + " ns;")
-		self.architecture.processes["v_th_en_gen"].bodyHeader.\
-				add("v_th_en <= '0';")
-
 		# v_update
 		self.architecture.processes["v_update_gen"].bodyHeader.\
 				add("v_update <= '1';")
@@ -500,3 +465,13 @@ class LIFneuronDP_tb(Testbench):
 				add("wait for " + str(clock_period) + " ns;")
 		self.architecture.processes["v_update_gen"].bodyHeader.\
 				add("v_update <= '1';")
+
+
+
+a = LIFneuronDP_tb()
+
+a.write_file_all(rm = True)
+
+from vhdl import fast_compile
+
+fast_compile(a)
