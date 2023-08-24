@@ -138,6 +138,11 @@ class MultiInput(VHDLblock):
 			name 		= "inh", 
 			direction	= "out",
 			port_type	= "std_logic")
+
+		self.entity.port.add(
+			name 		= "out_sample", 
+			direction	= "out",
+			port_type	= "std_logic")
 		
 		self.entity.port.add(
 			name 		= "exc_spike", 
@@ -185,6 +190,9 @@ class MultiInput(VHDLblock):
 		# Components
 		self.architecture.component.add(self.datapath)
 		self.architecture.component.add(self.control_unit)
+
+		self.architecture.bodyCodeHeader.add("out_sample <= "
+				"spike_sample;")
 		
 		# Datapath
 		self.architecture.instances.add(self.datapath,

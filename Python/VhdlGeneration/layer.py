@@ -6,6 +6,7 @@ from multi_input import MultiInput
 from lif_neuron import LIFneuron
 from rom import Rom
 from addr_converter import AddrConverter
+from barrier import Barrier
 from testbench import Testbench
 from spiker_pkg import SpikerPackage
 from vhdl import track_signals, debug_component, sub_components, write_file_all
@@ -85,6 +86,10 @@ class LIFlayer(VHDLblock):
 
 		self.addr_converter = AddrConverter(
 			bitwidth	= self.exc_cnt_bitwidth
+		)
+
+		self.barrier = Barrier(
+			bitwidth	= self.n_neurons
 		)
 
 		self.components = sub_components(self)
@@ -293,6 +298,23 @@ class LIFlayer(VHDLblock):
 		)
 
 
+		self.architecture.signal.add(
+			name		= "barrier_ready",
+			signal_type	= "std_logic"
+		)
+
+		self.architecture.signal.add(
+			name 		= "out_spikes_inst",
+			signal_type	= "std_logic_vector(" +
+					str(self.n_neurons-1) + " downto 0)")
+
+		self.architecture.signal.add(
+			name 		= "out_sample",
+			signal_type	= "std_logic")
+
+
+
+
 		for i in range(self.n_neurons):
 
 			hex_index = int_to_hex(i, hex_width)
@@ -352,6 +374,7 @@ class LIFlayer(VHDLblock):
 		self.architecture.component.add(self.exc_mem)
 		self.architecture.component.add(self.inh_mem)
 		self.architecture.component.add(self.addr_converter)
+		self.architecture.component.add(self.barrier)
 
 		neurons_ready = "neurons_ready <= "
 
@@ -359,15 +382,12 @@ class LIFlayer(VHDLblock):
 
 			hex_index = int_to_hex(i, hex_width)
 
-			if i < self.n_neurons-1:
-				neurons_ready += "neuron_ready_" + hex_index + \
+			neurons_ready += "neuron_ready_" + hex_index + \
 				" and "
-			else:
-				neurons_ready += "neuron_ready_" + hex_index + \
-				";\n"
+
+		neurons_ready += "barrier_ready;"
 
 		self.architecture.bodyCodeHeader.add(neurons_ready)
-		
 
 		# Multi-input control
 		self.architecture.instances.add(self.multi_input,
@@ -405,7 +425,7 @@ class LIFlayer(VHDLblock):
 			self.architecture.instances[neuron_name].p_map.add(
 				"neuron_ready", neuron_ready_name)
 			self.architecture.instances[neuron_name].p_map.add(
-				"out_spike", "out_spikes(" + str(i) + ")")
+				"out_spike", "out_spikes_inst(" + str(i) + ")")
 			
 
 		# Excitatory memory
@@ -467,6 +487,22 @@ class LIFlayer(VHDLblock):
 		self.architecture.instances["inh_addr_conv"].p_map.add(
 				"addr_out", "inh_addr")
 
+		# Barrier
+		self.architecture.instances.add(self.barrier,
+				"spikes_barrier")
+		self.architecture.instances["spikes_barrier"].generic_map()
+		self.architecture.instances["spikes_barrier"].g_map.add(
+				"N", str(self.n_neurons))
+		self.architecture.instances["spikes_barrier"].port_map()
+		self.architecture.instances["spikes_barrier"].p_map.add(
+				"reg_in", "out_spikes_inst")
+		self.architecture.instances["spikes_barrier"].p_map.add(
+				"reg_out", "out_spikes")
+		self.architecture.instances["spikes_barrier"].p_map.add(
+				"ready", "barrier_ready")
+
+	
+		
 		# Debug
 		if debug:
 			debug_component(self, debug_list)
