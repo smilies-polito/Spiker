@@ -110,7 +110,7 @@ class MultiInputLIF(VHDLblock):
 
 		# Input parameters
 		self.entity.port.add(
-			name 		= "v_th_value", 
+			name 		= "v_th", 
 			direction	= "in",
 			port_type	= "signed(neuron_bit_width-1 downto 0)")
 		self.entity.port.add(
@@ -168,16 +168,6 @@ class MultiInputLIF(VHDLblock):
 			port_type	= "std_logic")
 
 		self.entity.port.add(
-			name 		= "v_th_en", 
-			direction	= "in", 
-			port_type	= "std_logic")
-
-		self.entity.port.add(
-			name 		= "neuron_load_end", 
-			direction	= "in", 
-			port_type	= "std_logic")
-
-		self.entity.port.add(
 			name 		= "restart", 
 			direction	= "in",
 			port_type	= "std_logic")
@@ -214,11 +204,6 @@ class MultiInputLIF(VHDLblock):
 						"downto 0)")
 		self.entity.port.add(
 			name 		= "mi_ready", 
-			direction	= "out",
-			port_type	= "std_logic")
-
-		self.entity.port.add(
-			name 		= "neuron_load_ready",
 			direction	= "out",
 			port_type	= "std_logic")
 
@@ -292,10 +277,6 @@ class MultiInputLIF(VHDLblock):
 				"lif_neuron")
 		self.architecture.instances["lif_neuron"].generic_map()
 		self.architecture.instances["lif_neuron"].port_map()
-		self.architecture.instances["lif_neuron"].p_map.add("load_end",
-				"neuron_load_end")
-		self.architecture.instances["lif_neuron"].p_map.add("load_ready",
-				"neuron_load_ready")
 		self.architecture.instances["lif_neuron"].p_map.add("restart",
 				"neuron_restart")
 
@@ -376,10 +357,10 @@ class MultiInputLIF_tb(Testbench):
 				add("v_reset <= to_signed(1000, "
 				"v_reset'length);")
 
-		# v_th_value
-		self.architecture.processes["v_th_value_gen"].bodyHeader.\
-				add("v_th_value <= to_signed(3000, "
-				"v_th_value'length);")
+		# v_th
+		self.architecture.processes["v_th_gen"].bodyHeader.\
+				add("v_th <= to_signed(3000, "
+				"v_th'length);")
 
 		# rst_n
 		self.architecture.processes["rst_n_gen"].bodyHeader.add(
@@ -392,46 +373,6 @@ class MultiInputLIF_tb(Testbench):
 				"wait for 10 ns;")
 		self.architecture.processes["rst_n_gen"].bodyHeader.add(
 				"rst_n <= '1';")
-
-		# v_th_en
-		neuron_load_ready_if = If()
-		neuron_load_ready_if._if_.conditions.add(
-			"neuron_load_ready = '1'")
-		neuron_load_ready_if._if_.body.add("v_th_en <= '1';")
-		neuron_load_ready_if._else_.body.add("v_th_en <= '0';")
-
-
-		self.architecture.processes["v_th_en_gen"].final_wait = False
-		self.architecture.processes["v_th_en_gen"].sensitivity_list.\
-			add("clk")
-		self.architecture.processes["v_th_en_gen"].if_list.add()
-		self.architecture.processes["v_th_en_gen"].if_list[0]._if_.\
-			conditions.add("clk'event")
-		self.architecture.processes["v_th_en_gen"].if_list[0]._if_.\
-			conditions.add("clk = '1'", "and")
-		self.architecture.processes["v_th_en_gen"].if_list[0]._if_.\
-			body.add(neuron_load_ready_if)
-
-		# neuron_load_end
-		neuron_load_ready_if = If()
-		neuron_load_ready_if._if_.conditions.add(
-			"neuron_load_ready = '1'")
-		neuron_load_ready_if._if_.body.add("neuron_load_end <= '1';")
-		neuron_load_ready_if._else_.body.add("neuron_load_end <= '0';")
-
-
-		self.architecture.processes["neuron_load_end_gen"].\
-			final_wait = False
-		self.architecture.processes["neuron_load_end_gen"].\
-			sensitivity_list.add("clk")
-		self.architecture.processes["neuron_load_end_gen"].if_list.\
-			add()
-		self.architecture.processes["neuron_load_end_gen"].\
-			if_list[0]._if_.conditions.add("clk'event")
-		self.architecture.processes["neuron_load_end_gen"].\
-			if_list[0]._if_.conditions.add("clk = '1'", "and")
-		self.architecture.processes["neuron_load_end_gen"].\
-				if_list[0]._if_.body.add(neuron_load_ready_if)
 
 		# Start
 		mi_ready_if = If()
@@ -532,6 +473,3 @@ class MultiInputLIF_tb(Testbench):
 				"wait for 20 ns;")
 		self.architecture.processes["restart_gen"].bodyHeader.add(
 				"restart <= '0';")
-
-	def write_file_all(self, output_dir = "output", rm = False):
-		write_file_all(self, output_dir = output_dir, rm = rm)

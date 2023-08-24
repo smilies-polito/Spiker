@@ -449,12 +449,3 @@ class LIFneuron_tb(Testbench):
 				"wait for 60 ns;")
 		self.architecture.processes["inh_spike_gen"].bodyHeader.add(
 				"inh_spike <= '0';")
-
-a = LIFneuron_tb(debug=True)
-
-a.write_file_all()
-
-from vhdl import fast_compile, elaborate
-
-fast_compile(a)
-elaborate(a)
