@@ -465,13 +465,3 @@ class LIFneuronDP_tb(Testbench):
 				add("wait for " + str(clock_period) + " ns;")
 		self.architecture.processes["v_update_gen"].bodyHeader.\
 				add("v_update <= '1';")
-
-
-
-a = LIFneuronDP_tb()
-
-a.write_file_all(rm = True)
-
-from vhdl import fast_compile
-
-fast_compile(a)
