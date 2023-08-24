@@ -102,7 +102,7 @@ class MultiInput(VHDLblock):
 			port_type	= "std_logic_vector(n_inh_inputs-1 " 
 						"downto 0)")
 		self.entity.port.add(
-			name 		= "all_ready", 
+			name 		= "neurons_ready", 
 			direction	= "in",
 			port_type	= "std_logic")
 

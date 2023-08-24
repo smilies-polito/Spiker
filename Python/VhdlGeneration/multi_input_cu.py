@@ -50,7 +50,7 @@ class MultiInputCU(VHDLblock):
 				port_type       = "std_logic")
 
 		self.entity.port.add(
-				name            = "all_ready", 
+				name            = "neurons_ready", 
 				direction       = "in",
 				port_type       = "std_logic")
 
@@ -191,14 +191,14 @@ class MultiInputCU(VHDLblock):
 			       body.add("next_state <= idle_wait;")
 
 		# Idle wait
-		all_ready_check = If()
-		all_ready_check._if_.conditions.add("all_ready = '1'")
-		all_ready_check._if_.body.add("next_state <= idle;")
-		all_ready_check._else_.body.add("next_state <= idle_wait;")
+		neurons_ready_check = If()
+		neurons_ready_check._if_.conditions.add("neurons_ready = '1'")
+		neurons_ready_check._if_.body.add("next_state <= idle;")
+		neurons_ready_check._else_.body.add("next_state <= idle_wait;")
 
 		self.architecture.processes["state_evaluation"].\
-			       case_list["present_state"].when_list["idle_wait"].\
-			       body.add(all_ready_check)
+			       case_list["present_state"].when_list[
+				"idle_wait"].body.add(neurons_ready_check)
 
 		# Idle
 		start_check = If()
@@ -216,14 +216,14 @@ class MultiInputCU(VHDLblock):
 			       body.add(restart_check)
 
 		# Init wait
-		all_ready_check = If()
-		all_ready_check._if_.conditions.add("all_ready = '1'")
-		all_ready_check._if_.body.add("next_state <= init;")
-		all_ready_check._else_.body.add("next_state <= init_wait;")
+		neurons_ready_check = If()
+		neurons_ready_check._if_.conditions.add("neurons_ready = '1'")
+		neurons_ready_check._if_.body.add("next_state <= init;")
+		neurons_ready_check._else_.body.add("next_state <= init_wait;")
 
 		self.architecture.processes["state_evaluation"].\
 			       case_list["present_state"].when_list[
-			       "init_wait"].body.add(all_ready_check)
+			       "init_wait"].body.add(neurons_ready_check)
 
 		# Init
 		self.architecture.processes["state_evaluation"].\
@@ -251,14 +251,16 @@ class MultiInputCU(VHDLblock):
 			       body.add(exc_check)
 
 		# Exc inh wait
-		all_ready_check = If()
-		all_ready_check._if_.conditions.add("all_ready = '1'")
-		all_ready_check._if_.body.add("next_state <= exc_update_full;")
-		all_ready_check._else_.body.add("next_state <= exc_inh_wait;")
+		neurons_ready_check = If()
+		neurons_ready_check._if_.conditions.add("neurons_ready = '1'")
+		neurons_ready_check._if_.body.add("next_state <= "
+			"exc_update_full;")
+		neurons_ready_check._else_.body.add("next_state <= "
+			"exc_inh_wait;")
 
 		self.architecture.processes["state_evaluation"].\
 			       case_list["present_state"].when_list[
-			       "exc_inh_wait"].body.add(all_ready_check)
+			       "exc_inh_wait"].body.add(neurons_ready_check)
 
 		# Exc update full
 		exc_stop_check = If()
@@ -271,14 +273,16 @@ class MultiInputCU(VHDLblock):
 			       "exc_update_full"].body.add(exc_stop_check)
 
 		# Inh wait full
-		all_ready_check = If()
-		all_ready_check._if_.conditions.add("all_ready = '1'")
-		all_ready_check._if_.body.add("next_state <= inh_update_full;")
-		all_ready_check._else_.body.add("next_state <= inh_wait_full;")
+		neurons_ready_check = If()
+		neurons_ready_check._if_.conditions.add("neurons_ready = '1'")
+		neurons_ready_check._if_.body.add("next_state <= "
+			"inh_update_full;")
+		neurons_ready_check._else_.body.add("next_state <= "
+			"inh_wait_full;")
 
 		self.architecture.processes["state_evaluation"].\
 			       case_list["present_state"].when_list[
-			       "inh_wait_full"].body.add(all_ready_check)
+			       "inh_wait_full"].body.add(neurons_ready_check)
 
 		# Inh update full
 		inh_stop_check = If()
@@ -291,14 +295,14 @@ class MultiInputCU(VHDLblock):
 			       "inh_update_full"].body.add(inh_stop_check)
 
 		# Exc wait
-		all_ready_check = If()
-		all_ready_check._if_.conditions.add("all_ready = '1'")
-		all_ready_check._if_.body.add("next_state <= exc_update;")
-		all_ready_check._else_.body.add("next_state <= exc_wait;")
+		neurons_ready_check = If()
+		neurons_ready_check._if_.conditions.add("neurons_ready = '1'")
+		neurons_ready_check._if_.body.add("next_state <= exc_update;")
+		neurons_ready_check._else_.body.add("next_state <= exc_wait;")
 
 		self.architecture.processes["state_evaluation"].\
 			       case_list["present_state"].when_list[
-			       "exc_wait"].body.add(all_ready_check)
+			       "exc_wait"].body.add(neurons_ready_check)
 
 		# Exc update 
 		exc_stop_check = If()
@@ -311,14 +315,14 @@ class MultiInputCU(VHDLblock):
 			       "exc_update"].body.add(exc_stop_check)
 
 		# Inh wait
-		all_ready_check = If()
-		all_ready_check._if_.conditions.add("all_ready = '1'")
-		all_ready_check._if_.body.add("next_state <= inh_update;")
-		all_ready_check._else_.body.add("next_state <= inh_wait;")
+		neurons_ready_check = If()
+		neurons_ready_check._if_.conditions.add("neurons_ready = '1'")
+		neurons_ready_check._if_.body.add("next_state <= inh_update;")
+		neurons_ready_check._else_.body.add("next_state <= inh_wait;")
 
 		self.architecture.processes["state_evaluation"].\
 			       case_list["present_state"].when_list[
-			       "inh_wait"].body.add(all_ready_check)
+			       "inh_wait"].body.add(neurons_ready_check)
 
 		# Inh update 
 		inh_stop_check = If()
