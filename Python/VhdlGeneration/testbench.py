@@ -99,9 +99,9 @@ class Testbench(VHDLblock):
 			for signal in input_signal_list:
 				if signal not in self.architecture.signal:
 
-					print("Error, cannot read " + signal +
-					" from file. Signal doesn't exist.")
-					exit(-1)
+					raise ValueError("Error, cannot read " +
+							signal + " from file. "
+							"Signal doesn't exist.")
 
 				self.load(signal, input_dir)
 
@@ -257,6 +257,9 @@ class Testbench(VHDLblock):
 		in_file = signal_name + "_file"
 		in_filename = signal_name + "_filename"
 		en_gen = en_name + "_gen"
+
+		if self.architecture.processes[signal_name + "_gen"]:
+			del self.architecture.processes[signal_name + "_gen"]
 
 		if input_dir:
 			self.architecture.constant.add(
