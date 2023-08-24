@@ -611,24 +611,3 @@ class LIFlayer_tb(Testbench):
 			del self.architecture.processes["inh_spikes_rd_en_gen"]
 			self.architecture.bodyCodeHeader.add(
 				"inh_spikes_rd_en <= ready;")
-
-from utils import generate_spikes
-
-generate_spikes("exc_spikes.txt", 2, 10)
-generate_spikes("inh_spikes.txt", 2, 10)
-
-a = LIFlayer_tb(
-	file_input		= True,
-	input_signal_list	= [
-		"exc_spikes",
-		"inh_spikes"
-	],
-	debug=True
-)
-
-a.write_file_all(rm = True)
-
-from vhdl import fast_compile, elaborate
-
-fast_compile(a)
-elaborate(a)
