@@ -4,6 +4,7 @@ from math import log2
 
 from multi_cycle_lif import MultiCycleLIF
 from rom import Rom
+from addr_converter import AddrConverter
 from testbench import Testbench
 from spiker_pkg import SpikerPackage
 from vhdl import track_signals, debug_component, sub_components, write_file_all
@@ -62,6 +63,10 @@ class SingleLifBram(VHDLblock):
 			bitwidth 	= w_inh_bw,
 			name_term 	= "_inh"
 		) 
+
+		self.addr_converter = AddrConverter(
+			bitwidth	= self.exc_cnt_bitwidth
+		)
 
 		self.components = sub_components(self)
 
@@ -261,12 +266,26 @@ class SingleLifBram(VHDLblock):
 			signal_type	= "std_logic_vector("
 						"inh_cnt_bitwidth - 1 "
 						"downto 0)")
-		
+
+		self.architecture.signal.add(
+			name		= "exc_addr",
+			signal_type	= "std_logic_vector("
+						"exc_cnt_bitwidth - 1 "
+						"downto 0)"
+		)
+
+		self.architecture.signal.add(
+			name		= "inh_addr",
+			signal_type	= "std_logic_vector("
+						"inh_cnt_bitwidth - 1 "
+						"downto 0)"
+		)
 
 		# Components
 		self.architecture.component.add(self.lif_neuron)
 		self.architecture.component.add(self.exc_mem)
 		self.architecture.component.add(self.inh_mem)
+		self.architecture.component.add(self.addr_converter)
 
 		# Multi-cycle
 		self.architecture.instances.add(self.lif_neuron,
@@ -286,9 +305,21 @@ class SingleLifBram(VHDLblock):
 		self.architecture.instances["exc_mem"].p_map.add(
 				"dout_0", "exc_weight")
 		self.architecture.instances["exc_mem"].p_map.add(
-				"addra", "exc_cnt")
+				"addra", "exc_addr")
 		self.architecture.instances["exc_mem"].p_map.add(
 				"clka", "clk")
+
+		# Excitatory address converter
+		self.architecture.instances.add(self.addr_converter,
+				"exc_addr_conv")
+		self.architecture.instances["exc_addr_conv"].generic_map()
+		self.architecture.instances["exc_addr_conv"].g_map.add(
+				"N", "exc_cnt_bitwidth")
+		self.architecture.instances["exc_addr_conv"].port_map()
+		self.architecture.instances["exc_addr_conv"].p_map.add(
+				"addr_in", "exc_cnt")
+		self.architecture.instances["exc_addr_conv"].p_map.add(
+				"addr_out", "exc_addr")
 	
 
 		# Inhibitory memory
@@ -299,36 +330,21 @@ class SingleLifBram(VHDLblock):
 		self.architecture.instances["inh_mem"].p_map.add(
 				"dout_0", "inh_weight")
 		self.architecture.instances["inh_mem"].p_map.add(
-				"addra", "inh_cnt")
+				"addra", "inh_addr")
 		self.architecture.instances["inh_mem"].p_map.add(
 				"clka", "clk")
-		
-		# FIRST DRAFT OF SOLUTION FOR THE SHIFT BETWEEN BRAM AND SPIKES
-		self.architecture.signal.add(
-			name 		= "exc_addr",
-			signal_type	= "std_logic_vector(exc_cnt_bitwidth-1"
-					" downto 0)"
-		)
-		self.architecture.signal.add(
-			name 		= "inh_addr",
-			signal_type	= "std_logic_vector(inh_cnt_bitwidth-1"
-					" downto 0)"
-		)
 
-		self.architecture.bodyCodeHeader.add(
-			"exc_addr <= std_logic_vector(unsigned(exc_cnt) + "
-			"to_unsigned(1, exc_cnt'length));"
-		)
-		self.architecture.bodyCodeHeader.add(
-			"inh_addr <= std_logic_vector(unsigned(inh_cnt) + "
-			"to_unsigned(1, inh_cnt'length));"
-		)
-
-		self.architecture.instances["exc_mem"].p_map.add("addra",
-				"exc_addr")
-		self.architecture.instances["inh_mem"].p_map.add("addra",
-				"inh_addr")
-
+		# Inhibitory address converter
+		self.architecture.instances.add(self.addr_converter,
+				"inh_addr_conv")
+		self.architecture.instances["inh_addr_conv"].generic_map()
+		self.architecture.instances["inh_addr_conv"].g_map.add(
+				"N", "inh_cnt_bitwidth")
+		self.architecture.instances["inh_addr_conv"].port_map()
+		self.architecture.instances["inh_addr_conv"].p_map.add(
+				"addr_in", "inh_cnt")
+		self.architecture.instances["inh_addr_conv"].p_map.add(
+				"addr_out", "inh_addr")
 
 		# Debug
 		if debug:
@@ -501,12 +517,6 @@ class SingleLifBram_tb(Testbench):
 
 from vhdl import fast_compile, elaborate
 
-#a = SingleLifBram()
-#a.write_file_all()
-#
-#fast_compile(a)
-#elaborate(a)
-
 from utils import generate_spikes
 
 generate_spikes("exc_spikes.txt", 10, 20)
@@ -537,6 +547,8 @@ tb = SingleLifBram_tb(
 	]
 )
 
-tb.write_file_all()
+print(tb.components)
+
+tb.write_file_all(rm = True)
 fast_compile(tb)
 elaborate(tb)
