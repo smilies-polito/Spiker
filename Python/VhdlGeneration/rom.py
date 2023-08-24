@@ -14,7 +14,7 @@ from vhdl_block import VHDLblock
 class Rom(VHDLblock):
 
 	def __init__(self, init_array : Union[np.ndarray, torch.Tensor],
-			bitwidth : int, fp_decimals : int = None,
+			bitwidth : int, fp_decimals : int = 0,
 			max_word_size : int = 4608, max_depth : int = 1048576,
 			init_file : str = None, name_term : str = "", debug =
 			False, debug_list = []): 
