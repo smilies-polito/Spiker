@@ -139,7 +139,7 @@ def sub_components(component):
 		if hasattr(sub, "components"):
 			sub_comp += sub.components
 
-	return list(set(sub_comp))
+	return list(dict.fromkeys(sub_comp))
 
 
 def track_signals(signals_dict, name):
