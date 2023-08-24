@@ -46,11 +46,6 @@ class LIFneuronCU(VHDLblock):
 				port_type	= "std_logic")
 
 		self.entity.port.add(
-				name 		= "load_end", 
-				direction	= "in",
-				port_type	= "std_logic")
-
-		self.entity.port.add(
 				name 		= "exc", 
 				direction	= "in",
 				port_type	= "std_logic")
@@ -99,11 +94,6 @@ class LIFneuronCU(VHDLblock):
 				port_type	= "std_logic")
 
 		self.entity.port.add(
-				name 		= "load_ready", 
-				direction	= "out",
-				port_type	= "std_logic")
-
-		self.entity.port.add(
 				name 		= "out_spike", 
 				direction	= "out",
 				port_type	= "std_logic")
@@ -146,8 +136,6 @@ class LIFneuronCU(VHDLblock):
 		self.architecture.processes["state_evaluation"].\
 				sensitivity_list.add("present_state")
 		self.architecture.processes["state_evaluation"].\
-				sensitivity_list.add("load_end")
-		self.architecture.processes["state_evaluation"].\
 				sensitivity_list.add("restart")
 		self.architecture.processes["state_evaluation"].\
 				sensitivity_list.add("exc")
@@ -164,20 +152,7 @@ class LIFneuronCU(VHDLblock):
 				add("reset")
 		self.architecture.processes["state_evaluation"].\
 				case_list["present_state"].when_list["reset"].\
-				body.add("next_state <= load;")
-
-		self.architecture.processes["state_evaluation"].\
-				case_list["present_state"].when_list.\
-				add("load")
-
-		load_end_check = If()
-		load_end_check._if_.conditions.add("load_end = '1'")
-		load_end_check._if_.body.add("next_state <= idle;")
-		load_end_check._else_.body.add("next_state <= load;")
-
-		self.architecture.processes["state_evaluation"].\
-				case_list["present_state"].when_list["load"].\
-				body.add(load_end_check)
+				body.add("next_state <= idle;")
 
 		self.architecture.processes["state_evaluation"].\
 				case_list["present_state"].when_list.\
@@ -296,9 +271,6 @@ class LIFneuronCU(VHDLblock):
 				bodyHeader.add("out_spike <= '0';")
 		self.architecture.processes["output_evaluation"].\
 				bodyHeader.add("neuron_ready <= '0';")
-		self.architecture.processes["output_evaluation"].\
-				bodyHeader.add("load_ready <= '0';")
-
 
 
 		self.architecture.processes["output_evaluation"].\
@@ -310,13 +282,6 @@ class LIFneuronCU(VHDLblock):
 		self.architecture.processes["output_evaluation"].\
 				case_list["present_state"].when_list["reset"].\
 				body.add("v_rst_n <= '0';")
-
-		self.architecture.processes["output_evaluation"].\
-				case_list["present_state"].when_list.\
-				add("load")
-		self.architecture.processes["output_evaluation"].\
-				case_list["present_state"].when_list["load"].\
-				body.add("load_ready <= '1';")
 
 		self.architecture.processes["output_evaluation"].\
 				case_list["present_state"].when_list.\

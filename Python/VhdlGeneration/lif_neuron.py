@@ -84,7 +84,7 @@ class LIFneuron(VHDLblock):
 
 		# Input parameters
 		self.entity.port.add(
-			name 		= "v_th_value", 
+			name 		= "v_th", 
 			direction	= "in",
 			port_type	= "signed(neuron_bit_width-1 downto 0)")
 		self.entity.port.add(
@@ -138,15 +138,7 @@ class LIFneuron(VHDLblock):
 			direction	= "in", 
 			port_type	= "std_logic")
 		self.entity.port.add(
-			name 		= "v_th_en", 
-			direction	= "in", 
-			port_type	= "std_logic")
-		self.entity.port.add(
 			name 		= "restart", 
-			direction	= "in", 
-			port_type	= "std_logic")
-		self.entity.port.add(
-			name 		= "load_end", 
 			direction	= "in", 
 			port_type	= "std_logic")
 		self.entity.port.add(
@@ -175,11 +167,6 @@ class LIFneuron(VHDLblock):
 			port_type	= "std_logic")
 		
 		self.entity.port.add(
-			name 		= "load_ready",
-			direction	= "out",
-			port_type	= "std_logic")
-
-		self.entity.port.add(
 			name 		= "out_spike",
 			direction	= "out",
 			port_type	= "std_logic")
@@ -196,9 +183,6 @@ class LIFneuron(VHDLblock):
 			name 		= "v_update",
 			signal_type	= "std_logic")
 		self.architecture.signal.add(
-			name 		= "masked_v_th_en",
-			signal_type	= "std_logic")
-		self.architecture.signal.add(
 			name 		= "v_en",
 			signal_type	= "std_logic")
 		self.architecture.signal.add(
@@ -207,10 +191,6 @@ class LIFneuron(VHDLblock):
 		self.architecture.signal.add(
 			name 		= "exceed_v_th",
 			signal_type	= "std_logic")
-		self.architecture.signal.add(
-			name 		= "load_ready_fb",
-			signal_type	= "std_logic")
-
 
 		if self.w_inh_bw < self.bitwidth:
 			self.architecture.signal.add(
@@ -249,20 +229,11 @@ class LIFneuron(VHDLblock):
 		self.architecture.component.add(self.control_unit)
 		self.architecture.component.add(self.and_mask)
 
-		# Mask threshold enable
-		self.architecture.bodyCodeHeader.add("masked_v_th_en <= "
-				"v_th_en and load_ready_fb;")
-		self.architecture.bodyCodeHeader.add("load_ready <= "
-				"load_ready_fb;")
-
-		
 		# Datapath
 		self.architecture.instances.add(self.datapath,
 				"datapath")
 		self.architecture.instances["datapath"].generic_map()
 		self.architecture.instances["datapath"].port_map()
-		self.architecture.instances["datapath"].p_map.add("v_th_en",
-				"masked_v_th_en")
 		self.architecture.instances["datapath"].p_map.add("exc_weight",
 				"masked_exc_weight")
 		self.architecture.instances["datapath"].p_map.add("inh_weight",
@@ -273,8 +244,6 @@ class LIFneuron(VHDLblock):
 				"control_unit")
 		self.architecture.instances["control_unit"].generic_map()
 		self.architecture.instances["control_unit"].port_map()
-		self.architecture.instances["control_unit"].p_map.add(
-				"load_ready", "load_ready_fb")
 
 		# Excitatory weights mask
 		self.architecture.instances.add(self.and_mask,
@@ -342,6 +311,8 @@ class LIFneuron_tb(Testbench):
 			w_exc_bw = 5, shift = 10, debug = False, 
 			debug_list = []):
 
+		self.spiker_pkg = SpikerPackage()
+
 		self.dut = LIFneuron(
 			bitwidth = bitwidth,
 			w_inh_bw = w_inh_bw,
@@ -386,10 +357,10 @@ class LIFneuron_tb(Testbench):
 				add("v_reset <= to_signed(1000, "
 				"v_reset'length);")
 
-		# v_th_value
-		self.architecture.processes["v_th_value_gen"].bodyHeader.\
-				add("v_th_value <= to_signed(3000, "
-				"v_th_value'length);")
+		# v_th
+		self.architecture.processes["v_th_gen"].bodyHeader.\
+				add("v_th <= to_signed(3000, "
+				"v_th'length);")
 
 		# rst_n
 		self.architecture.processes["rst_n_gen"].bodyHeader.add(
@@ -402,30 +373,6 @@ class LIFneuron_tb(Testbench):
 				"wait for 10 ns;")
 		self.architecture.processes["rst_n_gen"].bodyHeader.add(
 				"rst_n <= '1';")
-
-		# v_th_en
-		self.architecture.processes["v_th_en_gen"].bodyHeader.add(
-				"v_th_en <= '0';")
-		self.architecture.processes["v_th_en_gen"].bodyHeader.add(
-				"wait for 50 ns;")
-		self.architecture.processes["v_th_en_gen"].bodyHeader.add(
-				"v_th_en <= '1';")
-		self.architecture.processes["v_th_en_gen"].bodyHeader.add(
-				"wait for 20 ns;")
-		self.architecture.processes["v_th_en_gen"].bodyHeader.add(
-				"v_th_en <= '0';")
-
-		# load_end
-		self.architecture.processes["load_end_gen"].bodyHeader.add(
-				"load_end <= '0';")
-		self.architecture.processes["load_end_gen"].bodyHeader.add(
-				"wait for 50 ns;")
-		self.architecture.processes["load_end_gen"].bodyHeader.add(
-				"load_end <= '1';")
-		self.architecture.processes["load_end_gen"].bodyHeader.add(
-				"wait for 20 ns;")
-		self.architecture.processes["load_end_gen"].bodyHeader.add(
-				"load_end <= '0';")
 
 		# restart
 		self.architecture.processes["restart_gen"].bodyHeader.add(
@@ -503,5 +450,11 @@ class LIFneuron_tb(Testbench):
 		self.architecture.processes["inh_spike_gen"].bodyHeader.add(
 				"inh_spike <= '0';")
 
-	def write_file_all(self, output_dir = "output", rm = False):
-		write_file_all(self, output_dir = output_dir, rm = rm)
+a = LIFneuron_tb(debug=True)
+
+a.write_file_all()
+
+from vhdl import fast_compile, elaborate
+
+fast_compile(a)
+elaborate(a)

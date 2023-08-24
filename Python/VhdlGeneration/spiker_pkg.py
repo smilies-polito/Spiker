@@ -13,7 +13,6 @@ class SpikerPackage(Package):
 
 		self.pkg_dec.type_list.add("neuron_states", "Enumeration")
 		self.pkg_dec.type_list["neuron_states"].add("reset")
-		self.pkg_dec.type_list["neuron_states"].add("load")
 		self.pkg_dec.type_list["neuron_states"].add("idle")
 		self.pkg_dec.type_list["neuron_states"].add("init")
 		self.pkg_dec.type_list["neuron_states"].add("excite")
