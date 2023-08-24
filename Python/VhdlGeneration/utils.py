@@ -95,7 +95,7 @@ def int_to_hex(value, width = 8, fill = 0):
 
 
 def fixed_point_array(numpyArray, bitwidth, fixed_point_decimals = 0,
-	conv_type = "signed"):
+	conv_type = "unsigned"):
 
 	'''
 	Convert a NumPy array into fixed point notation.
