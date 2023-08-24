@@ -137,7 +137,7 @@ class SingleLifBram(VHDLblock):
 
 		# Input parameters
 		self.entity.port.add(
-			name 		= "v_th_value", 
+			name 		= "v_th", 
 			direction	= "in",
 			port_type	= "signed(neuron_bit_width-1 downto 0)")
 		self.entity.port.add(
@@ -155,16 +155,6 @@ class SingleLifBram(VHDLblock):
 
 		self.entity.port.add(
 			name 		= "rst_n", 
-			direction	= "in", 
-			port_type	= "std_logic")
-
-		self.entity.port.add(
-			name 		= "v_th_en", 
-			direction	= "in", 
-			port_type	= "std_logic")
-
-		self.entity.port.add(
-			name 		= "neuron_load_end", 
 			direction	= "in", 
 			port_type	= "std_logic")
 
@@ -188,11 +178,6 @@ class SingleLifBram(VHDLblock):
 		# Output
 		self.entity.port.add(
 			name 		= "mc_ready", 
-			direction	= "out",
-			port_type	= "std_logic")
-
-		self.entity.port.add(
-			name 		= "neuron_load_ready",
 			direction	= "out",
 			port_type	= "std_logic")
 
@@ -428,10 +413,10 @@ class SingleLifBram_tb(Testbench):
 				add("v_reset <= to_signed(1000000, "
 				"v_reset'length);")
 
-		# v_th_value
-		self.architecture.processes["v_th_value_gen"].bodyHeader.\
-				add("v_th_value <= to_signed(8, "
-				"v_th_value'length);")
+		# v_th
+		self.architecture.processes["v_th_gen"].bodyHeader.\
+				add("v_th <= to_signed(8, "
+				"v_th'length);")
 
 		# rst_n
 		self.architecture.processes["rst_n_gen"].bodyHeader.add(
@@ -444,46 +429,6 @@ class SingleLifBram_tb(Testbench):
 				"wait for 10 ns;")
 		self.architecture.processes["rst_n_gen"].bodyHeader.add(
 				"rst_n <= '1';")
-
-		# v_th_en
-		neuron_load_ready_if = If()
-		neuron_load_ready_if._if_.conditions.add(
-			"neuron_load_ready = '1'")
-		neuron_load_ready_if._if_.body.add("v_th_en <= '1';")
-		neuron_load_ready_if._else_.body.add("v_th_en <= '0';")
-
-
-		self.architecture.processes["v_th_en_gen"].final_wait = False
-		self.architecture.processes["v_th_en_gen"].sensitivity_list.\
-			add("clk")
-		self.architecture.processes["v_th_en_gen"].if_list.add()
-		self.architecture.processes["v_th_en_gen"].if_list[0]._if_.\
-			conditions.add("clk'event")
-		self.architecture.processes["v_th_en_gen"].if_list[0]._if_.\
-			conditions.add("clk = '1'", "and")
-		self.architecture.processes["v_th_en_gen"].if_list[0]._if_.\
-			body.add(neuron_load_ready_if)
-
-		# neuron_load_end
-		neuron_load_ready_if = If()
-		neuron_load_ready_if._if_.conditions.add(
-			"neuron_load_ready = '1'")
-		neuron_load_ready_if._if_.body.add("neuron_load_end <= '1';")
-		neuron_load_ready_if._else_.body.add("neuron_load_end <= '0';")
-
-
-		self.architecture.processes["neuron_load_end_gen"].\
-			final_wait = False
-		self.architecture.processes["neuron_load_end_gen"].\
-			sensitivity_list.add("clk")
-		self.architecture.processes["neuron_load_end_gen"].if_list.\
-			add()
-		self.architecture.processes["neuron_load_end_gen"].\
-			if_list[0]._if_.conditions.add("clk'event")
-		self.architecture.processes["neuron_load_end_gen"].\
-			if_list[0]._if_.conditions.add("clk = '1'", "and")
-		self.architecture.processes["neuron_load_end_gen"].\
-				if_list[0]._if_.body.add(neuron_load_ready_if)
 
 		# Start
 		mc_ready_if = If()
