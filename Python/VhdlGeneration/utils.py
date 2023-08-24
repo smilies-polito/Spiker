@@ -146,6 +146,3 @@ def generate_spikes(filename, n_spikes, n_cycles):
 			if i > 2**n_spikes-1:
 				i = 2**n_spikes-1
 			fp.write(int_to_bin(i, n_spikes) + "\n")
-
-
-generate_spikes("prova.txt", 4, 100)
