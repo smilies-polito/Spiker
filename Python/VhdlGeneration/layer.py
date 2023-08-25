@@ -18,20 +18,20 @@ from vhdl_block import VHDLblock
 from if_statement import If
 
 
-class LIFlayer(VHDLblock):
+class Layer(VHDLblock):
 
-	def __init__(self, n_cycles = 10, w_exc = np.array([[0.2, 0.3]]), w_inh
-			= np.array([[-0.1, -0.2]]), v_th = np.array([8]),
-			v_reset = np.array([2]), bitwidth = 16, fp_decimals =
-			0, w_inh_bw = 5, w_exc_bw = 5, shift = 10, debug =
-			False, debug_list = []):
+	def __init__(self, label = "", n_cycles = 10, w_exc = np.array([[0.2,
+		0.3]]), w_inh = np.array([[-0.1, -0.2]]), v_th = np.array([8]),
+		v_reset = np.array([2]), bitwidth = 16, fp_decimals = 0,
+		w_inh_bw = 5, w_exc_bw = 5, shift = 10, debug = False,
+		debug_list = []):
 
 		self.n_neurons		= w_exc.shape[0]
 		self.n_exc_inputs 	= w_exc.shape[1]
 		self.n_inh_inputs 	= w_inh.shape[1]
 		self.n_cycles		= n_cycles
 
-		self.name = "layer_" + str(self.n_neurons)
+		self.name = "layer_" + str(self.n_neurons) + "_neurons"
 
 		self.exc_cnt_bitwidth = int(log2(ceil_pow2(self.n_exc_inputs)))
 		self.inh_cnt_bitwidth = int(log2(ceil_pow2(self.n_inh_inputs)))
@@ -74,14 +74,14 @@ class LIFlayer(VHDLblock):
 			init_array 	= w_exc,
 			bitwidth 	= w_exc_bw,
 			fp_decimals	= fp_decimals,
-			name_term 	= "_exc"
+			name_term 	= "_exc" + label
 		) 
 
 		self.inh_mem = Rom(
 			init_array 	= w_inh,
 			bitwidth 	= w_inh_bw,
 			fp_decimals	= fp_decimals,
-			name_term 	= "_inh"
+			name_term 	= "_inh" + label
 		) 
 
 		self.addr_converter = AddrConverter(
@@ -511,7 +511,7 @@ class LIFlayer(VHDLblock):
 		write_file_all(self, output_dir = output_dir, rm = rm)
 
 
-class LIFlayer_tb(Testbench):
+class Layer_tb(Testbench):
 
 	def __init__(self, clock_period = 20, file_output = False,
 			output_dir = "output", file_input = False, 
