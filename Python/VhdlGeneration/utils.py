@@ -139,6 +139,14 @@ def obj_types(obj):
 	return list(types)
 
 
+def is_iterable(obj):
+	try:
+		iter(obj)
+		return True
+	except TypeError:
+		return False
+
+
 def generate_spikes(filename, n_spikes, n_cycles):
 
 	with open(filename, "w") as fp:
