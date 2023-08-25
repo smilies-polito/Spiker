@@ -1,7 +1,7 @@
 import subprocess as sp
 from os.path import isfile, isdir
 
-from utils import obj_types
+from utils import obj_types, is_iterable
 from headers import coe_header
 
 import path_config
@@ -29,6 +29,18 @@ def write_file_all(component, output_dir = "output", rm = False):
 		elif hasattr(sub, "write_file") and \
 			callable(sub.write_file):
 				sub.write_file(output_dir = output_dir)
+
+	if is_iterable(component) and component.keys():
+
+		for key in component:
+
+			if hasattr(component[key], "write_file_all") and \
+			callable(component[key].write_file_all):
+				component[key].write_file_all(output_dir
+				= output_dir)
+			elif hasattr(component[key], "write_file") and \
+			callable(component[key].write_file):
+				component[key].write_file(output_dir = output_dir)
 	
 
 
@@ -139,7 +151,21 @@ def sub_components(component):
 		if hasattr(sub, "components"):
 			sub_comp += sub.components
 
+	if is_iterable(component) and component.keys():
+
+		for key in component:
+
+			if "VHDLblock" in obj_types(component[key]):
+				sub_comp.append(component[key].entity.name)
+				
+			elif "Package" in obj_types(component[key]):
+				sub_comp.insert(0, component[key].name)
+
+			if hasattr(component[key], "components"):
+				sub_comp += component[key].components
+
 	return list(dict.fromkeys(sub_comp))
+
 
 
 def track_signals(signals_dict, name):
