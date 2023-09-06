@@ -13,8 +13,20 @@ from if_statement import If
 
 class LIFneuronDP(VHDLblock):
 
-	def __init__(self, bitwidth = 16, w_inh_bw = 5, w_exc_bw = 5,
-			shift = 10, debug = False, debug_list = []):
+	def __init__(self, bitwidth = 16, w_inh_bw = 16, w_exc_bw = 16,
+			shift = 10, reset = "fixed", debug = False, 
+			debug_list = []):
+
+		self.reset_types = [
+			"fixed",
+			"subtractive"
+		]
+		
+		if reset not in self.reset_types:
+			raise ValueError(str(reset) + " reset type not "
+					"allowed")
+
+		self.reset = reset
 
 		self.name = "neuron_datapath"
 
@@ -31,7 +43,8 @@ class LIFneuronDP(VHDLblock):
 		self.add_sub			= AddSub(
 							bitwidth = bitwidth)
 
-		self.mux2to1_signed		= Mux(
+		if self.reset == "fixed":
+			self.mux2to1_signed	= Mux(
 							n_in = 2,
 							in_type = "signed",
 							bitwidth =
@@ -95,11 +108,13 @@ class LIFneuronDP(VHDLblock):
 			name 		= "v_th", 
 			direction	= "in",
 			port_type	= "signed(neuron_bit_width-1 downto 0)")
-		self.entity.port.add(
-			name 		= "v_reset", 
-			direction	= "in",
-			port_type	= "signed(neuron_bit_width-1 downto 0)")
 
+		if self.reset == "fixed":
+			self.entity.port.add(
+				name 		= "v_reset", 
+				direction	= "in",
+				port_type	= "signed(neuron_bit_width-1 "
+						"downto 0)")
 
 		if self.w_inh_bw < self.bitwidth:
 			self.entity.port.add(
@@ -148,10 +163,13 @@ class LIFneuronDP(VHDLblock):
 			name 		= "add_or_sub", 
 			direction	= "in", 
 			port_type	= "std_logic")
-		self.entity.port.add(
-			name 		= "v_update",
-			direction	= "in",
-			port_type	= "std_logic")
+
+		if self.reset == "fixed":
+			self.entity.port.add(
+				name 		= "v_update",
+				direction	= "in",
+				port_type	= "std_logic")
+
 		self.entity.port.add(
 			name 		= "v_en",
 			direction	= "in",
@@ -174,9 +192,11 @@ class LIFneuronDP(VHDLblock):
 			name		= "update",
 			signal_type	= "signed(neuron_bit_width-1 downto 0)")
 
-		self.architecture.signal.add(
-			name		= "update_value",
-			signal_type	= "signed(neuron_bit_width-1 downto 0)")
+		if self.reset == "fixed":
+			self.architecture.signal.add(
+				name		= "update_value",
+				signal_type	= "signed(neuron_bit_width-1 "
+						"downto 0)")
 
 		self.architecture.signal.add(
 			name		= "v_value",
@@ -196,7 +216,10 @@ class LIFneuronDP(VHDLblock):
 		self.architecture.component.add(self.add_sub)
 		self.architecture.component.add(self.mux4to1_signed)
 		self.architecture.component.add(self.add_sub)
-		self.architecture.component.add(self.mux2to1_signed)
+
+		if self.reset == "fixed":
+			self.architecture.component.add(self.mux2to1_signed)
+
 		self.architecture.component.add(self.reg_signed_sync_rst)
 		self.architecture.component.add(self.cmp_gt)
 
@@ -219,8 +242,16 @@ class LIFneuronDP(VHDLblock):
 		self.architecture.instances["update_mux"].port_map(mode = "no")
 		self.architecture.instances["update_mux"].p_map.add("mux_sel",
 				"update_sel")
-		self.architecture.instances["update_mux"].p_map.add("in0",
-				"(others => '0')")
+
+		if self.reset == "fixed":
+			self.architecture.instances["update_mux"].p_map.add(
+					"in0", "(others => '0')")
+
+		elif self.reset == "subtractive":
+			self.architecture.instances["update_mux"].p_map.add(
+					"in0", "v_th")
+
+
 		self.architecture.instances["update_mux"].p_map.add("in1",
 				"v_shifted")
 
@@ -281,24 +312,33 @@ class LIFneuronDP(VHDLblock):
 				"v")
 		self.architecture.instances["update_add_sub"].p_map.add("in1",
 				"update")
-		self.architecture.instances["update_add_sub"].p_map.add(
-				"add_sub_out", "update_value")
+
+		if self.reset == "fixed":
+			self.architecture.instances["update_add_sub"].p_map.add(
+					"add_sub_out", "update_value")
+
+		elif self.reset == "subtractive":
+			self.architecture.instances["update_add_sub"].p_map.add(
+					"add_sub_out", "v_value")
+
 
 
 		# Multiplexer 2 to 1 signed
-		self.architecture.instances.add(self.mux2to1_signed, "v_mux")
-		self.architecture.instances["v_mux"].generic_map()
-		self.architecture.instances["v_mux"].g_map.add("bitwidth",
-				"neuron_bit_width")
-		self.architecture.instances["v_mux"].port_map()
-		self.architecture.instances["v_mux"].p_map.add("mux_sel",
-				"v_update")
-		self.architecture.instances["v_mux"].p_map.add("in0",
-				"v_reset")
-		self.architecture.instances["v_mux"].p_map.add("in1",
-				"update_value")
-		self.architecture.instances["v_mux"].p_map.add("mux_out",
-				"v_value")
+		if self.reset == "fixed":
+			self.architecture.instances.add(self.mux2to1_signed, 
+					"v_mux")
+			self.architecture.instances["v_mux"].generic_map()
+			self.architecture.instances["v_mux"].g_map.add(
+					"bitwidth", "neuron_bit_width")
+			self.architecture.instances["v_mux"].port_map()
+			self.architecture.instances["v_mux"].p_map.add(
+					"mux_sel", "v_update")
+			self.architecture.instances["v_mux"].p_map.add("in0",
+					"v_reset")
+			self.architecture.instances["v_mux"].p_map.add("in1",
+					"update_value")
+			self.architecture.instances["v_mux"].p_map.add(
+					"mux_out", "v_value")
 
 
 		# Signed register with synchronous reset
@@ -346,15 +386,16 @@ class LIFneuronDP_tb(Testbench):
 
 	def __init__(self, clock_period = 20, file_output = False, output_dir =
 			"output", file_input = False, input_dir = "",
-			input_signal_list = [], bitwidth = 16, w_inh_bw = 5,
-			w_exc_bw = 5, shift = 10, debug = False, 
-			debug_list = []):
+			input_signal_list = [], bitwidth = 16, w_inh_bw = 16,
+			w_exc_bw = 16, shift = 4, reset = "fixed", 
+			debug = False, debug_list = []):
 
 		self.dut = LIFneuronDP(
 			bitwidth = bitwidth,
 			w_inh_bw = w_inh_bw,
 			w_exc_bw = w_exc_bw,
 			shift = shift,
+			reset = reset,
 			debug = debug,
 			debug_list = debug_list
 		)
@@ -386,9 +427,10 @@ class LIFneuronDP_tb(Testbench):
 				"inh_weight'length);")
 
 		# v_reset
-		self.architecture.processes["v_reset_gen"].bodyHeader.\
-				add("v_reset <= to_signed(1000, "
-				"v_reset'length);")
+		if self.dut.reset == "fixed":
+			self.architecture.processes["v_reset_gen"].bodyHeader.\
+					add("v_reset <= to_signed(1000, "
+					"v_reset'length);")
 
 		# v_th_value
 		self.architecture.processes["v_th_gen"].bodyHeader.\
@@ -455,13 +497,16 @@ class LIFneuronDP_tb(Testbench):
 				add("v_en <= '1';")
 
 		# v_update
-		self.architecture.processes["v_update_gen"].bodyHeader.\
-				add("v_update <= '1';")
-		self.architecture.processes["v_update_gen"].bodyHeader.\
-				add("wait for " + str(11*clock_period) + " ns;")
-		self.architecture.processes["v_update_gen"].bodyHeader.\
-				add("v_update <= '0';")
-		self.architecture.processes["v_update_gen"].bodyHeader.\
-				add("wait for " + str(clock_period) + " ns;")
-		self.architecture.processes["v_update_gen"].bodyHeader.\
-				add("v_update <= '1';")
+		if self.dut.reset == "fixed":
+			self.architecture.processes["v_update_gen"].bodyHeader.\
+					add("v_update <= '1';")
+			self.architecture.processes["v_update_gen"].bodyHeader.\
+					add("wait for " + str(11*clock_period) 
+					+ " ns;")
+			self.architecture.processes["v_update_gen"].bodyHeader.\
+					add("v_update <= '0';")
+			self.architecture.processes["v_update_gen"].bodyHeader.\
+					add("wait for " + str(clock_period)
+					+ " ns;")
+			self.architecture.processes["v_update_gen"].bodyHeader.\
+					add("v_update <= '1';")
