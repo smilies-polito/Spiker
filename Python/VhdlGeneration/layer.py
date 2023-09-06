@@ -23,8 +23,8 @@ class Layer(VHDLblock):
 	def __init__(self, label = "", n_cycles = 10, w_exc = np.array([[0.2,
 		0.3]]), w_inh = np.array([[-0.1, -0.2]]), v_th = np.array([8]),
 		v_reset = np.array([2]), bitwidth = 16, fp_decimals = 0,
-		w_inh_bw = 5, w_exc_bw = 5, shift = 10, debug = False,
-		debug_list = []):
+		w_inh_bw = 5, w_exc_bw = 5, shift = 10, reset = "fixed",
+		debug = False, debug_list = []):
 
 		self.n_neurons		= w_exc.shape[0]
 		self.n_exc_inputs 	= w_exc.shape[1]
@@ -48,26 +48,24 @@ class Layer(VHDLblock):
 		self.w_inh		= w_inh
 		self.v_th		= fixed_point_array(v_th, bitwidth,
 					fp_decimals)
-		self.v_reset		= fixed_point_array(v_reset, bitwidth,
-					fp_decimals)
-
 
 		self.spiker_pkg = SpikerPackage()
 
 		self.multi_input = MultiInput(
-			n_exc_inputs = self.n_exc_inputs,
-			n_inh_inputs = self.n_inh_inputs,
-			debug = debug,
-			debug_list = debug_list
+			n_exc_inputs 	= self.n_exc_inputs,
+			n_inh_inputs 	= self.n_inh_inputs,
+			debug 		= debug,
+			debug_list 	= debug_list
 		)
 
 		self.lif_neuron = LIFneuron(
-			bitwidth = bitwidth,
-			w_inh_bw = w_inh_bw,
-			w_exc_bw = w_exc_bw,
-			shift = shift,
-			debug = debug,
-			debug_list = debug_list
+			bitwidth	= bitwidth,
+			w_inh_bw	= w_inh_bw,
+			w_exc_bw	= w_exc_bw,
+			shift 		= shift,
+			reset		= reset,
+			debug 		= debug,
+			debug_list 	= debug_list
 		)
 
 		self.exc_mem = Rom(
@@ -91,6 +89,11 @@ class Layer(VHDLblock):
 		self.barrier = Barrier(
 			bitwidth	= self.n_neurons
 		)
+
+		if self.lif_neuron.reset == "fixed":
+			self.v_reset		= fixed_point_array(v_reset, 
+						bitwidth, fp_decimals)
+
 
 		self.components = sub_components(self)
 
@@ -221,15 +224,18 @@ class Layer(VHDLblock):
 						"\""
 			)
 
-			self.architecture.constant.add(
-				name 		= "v_reset_" + int_to_hex(i,
-						hex_width),
-				const_type	= "signed(neuron_bit_width-1 "
-						"downto 0)",
-				value		= "\"" + int_to_bin(
-						self.v_reset[i],self.bitwidth) +
-						"\""
-			)
+			if self.lif_neuron.reset == "fixed":
+				self.architecture.constant.add(
+					name 		= "v_reset_" + 
+							int_to_hex(i,
+							hex_width),
+					const_type	= "signed("
+							"neuron_bit_width-1 "
+							"downto 0)",
+					value		= "\"" + int_to_bin(
+							self.v_reset[i],
+							self.bitwidth) + "\""
+				)
 
 		# Signals
 		self.architecture.signal.add(
@@ -404,9 +410,12 @@ class Layer(VHDLblock):
 			inh_weight_name = "inh_weight_" + int_to_hex(i, 
 						hex_width)
 			v_th_name = "v_th_" + int_to_hex(i, hex_width)
-			v_reset_name = "v_reset_" + int_to_hex(i, hex_width)
-			neuron_ready_name = "neuron_ready_" + int_to_hex(i,
+
+			if self.lif_neuron.reset == "fixed":
+				v_reset_name = "v_reset_" + int_to_hex(i, 
 						hex_width)
+				neuron_ready_name = "neuron_ready_" + \
+						int_to_hex(i, hex_width)
 
 			self.architecture.instances.add(self.lif_neuron,
 					neuron_name)
@@ -418,8 +427,11 @@ class Layer(VHDLblock):
 				"inh_weight", "signed(" + inh_weight_name + ")")
 			self.architecture.instances[neuron_name].p_map.add(
 				"v_th", v_th_name)
-			self.architecture.instances[neuron_name].p_map.add(
-				"v_reset", v_reset_name)
+
+			if self.lif_neuron.reset == "fixed":
+				self.architecture.instances[neuron_name].p_map.\
+					add("v_reset", v_reset_name)
+
 			self.architecture.instances[neuron_name].p_map.add(
 				"restart", "neuron_restart")
 			self.architecture.instances[neuron_name].p_map.add(
@@ -519,8 +531,8 @@ class Layer_tb(Testbench):
 			n_cycles = 10, w_exc = np.array([[3, 4]]), w_inh =
 			np.array([[-0.5, -0.1]]), v_th = np.array([8]), v_reset
 			= np.array([2]), bitwidth = 16, fp_decimals = 0,
-			w_inh_bw = 5, w_exc_bw = 5, shift = 10, debug = False,
-			debug_list = []):
+			w_inh_bw = 5, w_exc_bw = 5, shift = 10, reset = "fixed", 
+			debug = False, debug_list = []):
 
 
 		self.n_neurons		= w_exc.shape[0]
@@ -545,14 +557,12 @@ class Layer_tb(Testbench):
 		self.w_inh		= w_inh
 		self.v_th		= fixed_point_array(v_th, bitwidth,
 					fp_decimals)
-		self.v_reset		= fixed_point_array(v_reset, bitwidth,
-					fp_decimals)
 
 
 		self.spiker_pkg = SpikerPackage()
 
 
-		self.dut = LIFlayer(n_cycles = 10,
+		self.dut = Layer(n_cycles = 10,
 			w_exc 		= w_exc,
 			w_inh 		= w_inh,
 			v_th 		= v_th,
@@ -562,9 +572,14 @@ class Layer_tb(Testbench):
 			w_inh_bw 	= w_inh_bw,
 			w_exc_bw 	= w_exc_bw,
 			shift 		= shift,
+			reset		= reset,
 			debug 		= debug,
 			debug_list 	= debug_list
 		)
+
+		if self.dut.lif_neuron.reset == "fixed":
+			self.v_reset		= fixed_point_array(v_reset,
+						bitwidth, fp_decimals)
 
 		self.components = sub_components(self)
 
@@ -647,3 +662,13 @@ class Layer_tb(Testbench):
 			del self.architecture.processes["inh_spikes_rd_en_gen"]
 			self.architecture.bodyCodeHeader.add(
 				"inh_spikes_rd_en <= ready;")
+
+from vhdl import fast_compile, elaborate
+
+a = Layer_tb(
+	reset = "fixed"
+)
+
+a.write_file_all()
+fast_compile(a)
+elaborate(a)
