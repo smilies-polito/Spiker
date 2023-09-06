@@ -8,9 +8,20 @@ from if_statement import If
 
 class LIFneuronCU(VHDLblock):
 
-	def __init__(self, debug = False, debug_list = []):
+	def __init__(self, reset = "fixed", debug = False, debug_list = []):
 
 		self.name = "neuron_cu"
+
+		self.reset_types = [
+			"fixed",
+			"subtractive"
+		]
+		
+		if reset not in self.reset_types:
+			raise ValueError(str(reset) + " reset type not "
+					"allowed")
+
+		self.reset = reset
 
 		self.spiker_pkg = SpikerPackage()
 		self.components = sub_components(self)
@@ -72,10 +83,11 @@ class LIFneuronCU(VHDLblock):
 				direction	= "out",
 				port_type	= "std_logic")
 
-		self.entity.port.add(
-				name 		= "v_update", 
-				direction	= "out",
-				port_type	= "std_logic")
+		if self.reset == "fixed":
+			self.entity.port.add(
+					name 		= "v_update", 
+					direction	= "out",
+					port_type	= "std_logic")
 
 		self.entity.port.add(
 				name 		= "v_en", 
@@ -258,13 +270,16 @@ class LIFneuronCU(VHDLblock):
 		self.architecture.processes["output_evaluation"].\
 				sensitivity_list.add("present_state")
 		self.architecture.processes["output_evaluation"].\
-				bodyHeader.add("update_sel <= \"00\";")
+				bodyHeader.add("update_sel <= \"01\";")
 		self.architecture.processes["output_evaluation"].\
 				bodyHeader.add("add_or_sub <= '0';")
+
+		if self.reset == "fixed":
+			self.architecture.processes["output_evaluation"].\
+					bodyHeader.add("v_update <= '1';")
+
 		self.architecture.processes["output_evaluation"].\
-				bodyHeader.add("v_update <= '1';")
-		self.architecture.processes["output_evaluation"].\
-				bodyHeader.add("v_en <= '1';")
+				bodyHeader.add("v_en <= '0';")
 		self.architecture.processes["output_evaluation"].\
 				bodyHeader.add("v_rst_n <= '1';")
 		self.architecture.processes["output_evaluation"].\
@@ -335,9 +350,22 @@ class LIFneuronCU(VHDLblock):
 		self.architecture.processes["output_evaluation"].\
 				case_list["present_state"].when_list.\
 				add("fire")
-		self.architecture.processes["output_evaluation"].\
-				case_list["present_state"].when_list["fire"].\
-				body.add("v_update <= '0';")
+
+
+		if self.reset == "fixed":
+			self.architecture.processes["output_evaluation"].\
+					case_list["present_state"].when_list[
+					"fire"].body.add("v_update <= '0';")
+
+		elif self.reset == "subtractive":
+			self.architecture.processes["output_evaluation"].\
+					case_list["present_state"].when_list[
+					"fire"].body.add(
+					"update_sel <= \"00\";")
+			self.architecture.processes["output_evaluation"].\
+					case_list["present_state"].when_list[
+					"fire"].body.add("add_or_sub <= '1';")
+
 		self.architecture.processes["output_evaluation"].\
 				case_list["present_state"].when_list["fire"].\
 				body.add("v_en <= '1';")
