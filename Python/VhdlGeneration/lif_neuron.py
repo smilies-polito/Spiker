@@ -11,26 +11,38 @@ from vhdl_block import VHDLblock
 
 class LIFneuron(VHDLblock):
 
-	def __init__(self, bitwidth = 16, w_inh_bw = 5, w_exc_bw = 5,
-			shift = 10, debug = False, debug_list = []):
+	def __init__(self, bitwidth = 16, w_inh_bw = 16, w_exc_bw = 16,
+			shift = 10, reset = "fixed", debug = False, 
+			debug_list = []):
+
+		self.reset_types = [
+			"fixed",
+			"subtractive"
+		]
+		
+		if reset not in self.reset_types:
+			raise ValueError(str(reset) + " reset type not "
+					"allowed")
+
+		self.reset = reset
 
 		self.name = "neuron"
 		self.spiker_pkg = SpikerPackage()
 
 		self.datapath = LIFneuronDP(
-			bitwidth = bitwidth,
-			w_inh_bw = 
-			w_inh_bw,
-			w_exc_bw = 
-			w_exc_bw, 
-			shift = shift,
-			debug = debug,
-			debug_list = debug_list
+			bitwidth 	= bitwidth,
+			w_inh_bw 	= w_inh_bw,
+			w_exc_bw 	= w_exc_bw, 
+			shift 		= shift,
+			reset		= reset,
+			debug		= debug,
+			debug_list 	= debug_list
 		)
 
 		self.control_unit = LIFneuronCU(
-			debug = debug,
-			debug_list = debug_list
+			reset		= reset,
+			debug 		= debug,
+			debug_list 	= debug_list
 		)
 		
 		self.and_mask = AndMask(data_type = "signed")
@@ -87,11 +99,13 @@ class LIFneuron(VHDLblock):
 			name 		= "v_th", 
 			direction	= "in",
 			port_type	= "signed(neuron_bit_width-1 downto 0)")
-		self.entity.port.add(
-			name 		= "v_reset", 
-			direction	= "in",
-			port_type	= "signed(neuron_bit_width-1 downto 0)")
 
+		if self.reset == "fixed":
+			self.entity.port.add(
+				name 		= "v_reset", 
+				direction	= "in",
+				port_type	= "signed(neuron_bit_width-1"
+						"downto 0)")
 
 		if self.w_inh_bw < self.bitwidth:
 			self.entity.port.add(
@@ -171,7 +185,6 @@ class LIFneuron(VHDLblock):
 			direction	= "out",
 			port_type	= "std_logic")
 
-
 		# Signals
 		self.architecture.signal.add(
 			name 		= "update_sel",
@@ -179,9 +192,12 @@ class LIFneuron(VHDLblock):
 		self.architecture.signal.add(
 			name 		= "add_or_sub", 
 			signal_type	= "std_logic")
-		self.architecture.signal.add(
-			name 		= "v_update",
-			signal_type	= "std_logic")
+
+		if self.reset == "fixed":
+			self.architecture.signal.add(
+				name 		= "v_update",
+				signal_type	= "std_logic")
+
 		self.architecture.signal.add(
 			name 		= "v_en",
 			signal_type	= "std_logic")
@@ -307,9 +323,9 @@ class LIFneuron_tb(Testbench):
 
 	def __init__(self, clock_period = 20, file_output = False, output_dir =
 			"output", file_input = False, input_dir = "",
-			input_signal_list = [], bitwidth = 16, w_inh_bw = 5,
-			w_exc_bw = 5, shift = 10, debug = False, 
-			debug_list = []):
+			input_signal_list = [], bitwidth = 16, w_inh_bw = 16,
+			w_exc_bw = 16, shift = 10, reset = "fixed", 
+			debug = False, debug_list = []):
 
 		self.spiker_pkg = SpikerPackage()
 
@@ -318,6 +334,7 @@ class LIFneuron_tb(Testbench):
 			w_inh_bw = w_inh_bw,
 			w_exc_bw = w_exc_bw,
 			shift = shift,
+			reset = reset,
 			debug = debug,
 			debug_list = debug_list
 		)
@@ -353,9 +370,10 @@ class LIFneuron_tb(Testbench):
 				"inh_weight'length);")
 
 		# v_reset
-		self.architecture.processes["v_reset_gen"].bodyHeader.\
-				add("v_reset <= to_signed(1000, "
-				"v_reset'length);")
+		if self.dut.reset == "fixed":
+			self.architecture.processes["v_reset_gen"].bodyHeader.\
+					add("v_reset <= to_signed(1000, "
+					"v_reset'length);")
 
 		# v_th
 		self.architecture.processes["v_th_gen"].bodyHeader.\
