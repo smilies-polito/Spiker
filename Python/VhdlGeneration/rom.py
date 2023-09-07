@@ -20,7 +20,8 @@ class Rom(VHDLblock):
 			False, debug_list = []): 
 
 		self.name_term = name_term
-		self.name = "rom" + self.name_term
+		self.name = "rom_" + str(init_array.shape[1]) + "x" + \
+			str(init_array.shape[0]) + self.name_term
 
 		self.rom_columns	= init_array.shape[0]
 		self.rom_rows		= init_array.shape[1]
@@ -47,12 +48,11 @@ class Rom(VHDLblock):
 
 		self.components = sub_components(self)
 
-		VHDLblock.__init__(self, "rom" + name_term)
+		super().__init__(self.name)
 		self.vhdl(debug = debug, debug_list = debug_list)
 
-		self.initialize()
 
-	def initialize(self):
+	def initialize(self, output_dir = "output"):
 
 		fp_array = fixed_point_array(
 			self.init_array, 
@@ -76,9 +76,8 @@ class Rom(VHDLblock):
 
 			rows.append(rom_row)
 
-		coe_file(rows, self.init_file)
+		coe_file(rows, self.init_file, output_dir = output_dir)
 
-		return rows
 
 	def vhdl(self, debug = False, debug_list = []):
 
@@ -171,3 +170,7 @@ class Rom(VHDLblock):
 			str(self.bitwidth*self.rom_columns-1)
 			+ " downto 0)"
 		)
+
+	def write_file(self, output_dir = "output"):
+		super().write_file(output_dir = output_dir)
+		self.initialize(output_dir = output_dir)
