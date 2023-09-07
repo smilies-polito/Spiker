@@ -122,16 +122,18 @@ class Network(VHDLblock, dict):
 		current_layer 	= "layer_" + str(self.layer_index)
 		layer_ready	= current_layer + "_ready"
 
+		self[current_layer] = layer
+
 		# Check if component is already declared in the architecture
 		declared = False
 		for component_name in self.architecture.component:
 			if layer.name == component_name:
 				declared = True
 
-		# If not declared, declare it
 		if not declared:
 			self.architecture.component.add(layer)
 
+		self.components = sub_components(self)
 
 		# Add the ready signal for the layer
 		self.architecture.signal.add(
@@ -149,8 +151,6 @@ class Network(VHDLblock, dict):
 		self.architecture.instances.add(layer, current_layer)
 		self.architecture.instances[current_layer].generic_map\
 			(mode = "self")
-		self.architecture.instances[current_layer].g_map.\
-			add("n_cycles", "n_cycles")
 		self.architecture.instances[current_layer].port_map()
 		self.architecture.instances[current_layer].p_map.add(
 			"start", "start_all")
@@ -232,16 +232,8 @@ class Network(VHDLblock, dict):
 
 
 
-		layer.exc_mem.name_term = layer.exc_mem.name_term + "_" + \
-			current_layer
-		self[current_layer] = layer
 		self.layer_index += 1
 
-		print(self.components)
-		self.components.append(layer.entity.name)
-		self.components = list(dict.fromkeys(self.components +
-			sub_components(layer)))
-		print(self.components)
 
 	
 	def first_layer(self):
