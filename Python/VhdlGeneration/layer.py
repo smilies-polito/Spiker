@@ -20,7 +20,7 @@ from if_statement import If
 
 class Layer(VHDLblock):
 
-	def __init__(self, label = "", n_cycles = 10, w_exc = np.array([[0.2,
+	def __init__(self, label = "", w_exc = np.array([[0.2,
 		0.3]]), w_inh = np.array([[-0.1, -0.2]]), v_th = np.array([8]),
 		v_reset = np.array([2]), bitwidth = 16, fp_decimals = 0,
 		w_inh_bw = 5, w_exc_bw = 5, shift = 10, reset = "fixed",
@@ -29,14 +29,11 @@ class Layer(VHDLblock):
 		self.n_neurons		= w_exc.shape[0]
 		self.n_exc_inputs 	= w_exc.shape[1]
 		self.n_inh_inputs 	= w_inh.shape[1]
-		self.n_cycles		= n_cycles
 
 		self.name = "layer_" + str(self.n_neurons) + "_neurons"
 
 		self.exc_cnt_bitwidth = int(log2(ceil_pow2(self.n_exc_inputs)))
 		self.inh_cnt_bitwidth = int(log2(ceil_pow2(self.n_inh_inputs)))
-		self.cycles_cnt_bitwidth = int(log2(ceil_pow2(
-			self.n_cycles+1))) + 1
 
 		self.bitwidth 		= bitwidth
 		self.fp_decimals	= fp_decimals
@@ -122,10 +119,6 @@ class Layer(VHDLblock):
 			gen_type	= "integer",
 			value		= str(self.n_inh_inputs))
 		self.entity.generic.add(
-			name		= "n_cycles", 
-			gen_type	= "integer",
-			value		= str(self.n_cycles))
-		self.entity.generic.add(
 			name		= "exc_cnt_bitwidth", 
 			gen_type	= "integer",
 			value		= str(self.exc_cnt_bitwidth))
@@ -133,10 +126,6 @@ class Layer(VHDLblock):
 			name		= "inh_cnt_bitwidth", 
 			gen_type	= "integer",
 			value		= str(self.inh_cnt_bitwidth))
-		self.entity.generic.add(
-			name		= "cycles_cnt_bitwidth", 
-			gen_type	= "integer",
-			value		= str(self.cycles_cnt_bitwidth))
 		self.entity.generic.add(
 			name		= "neuron_bit_width", 
 			gen_type	= "integer",
@@ -528,7 +517,7 @@ class Layer_tb(Testbench):
 	def __init__(self, clock_period = 20, file_output = False,
 			output_dir = "output", file_input = False, 
 			input_dir = "", input_signal_list = [], 
-			n_cycles = 10, w_exc = np.array([[3, 4]]), w_inh =
+			w_exc = np.array([[3, 4]]), w_inh =
 			np.array([[-0.5, -0.1]]), v_th = np.array([8]), v_reset
 			= np.array([2]), bitwidth = 16, fp_decimals = 0,
 			w_inh_bw = 5, w_exc_bw = 5, shift = 10, reset = "fixed", 
@@ -538,14 +527,11 @@ class Layer_tb(Testbench):
 		self.n_neurons		= w_exc.shape[0]
 		self.n_exc_inputs 	= w_exc.shape[1]
 		self.n_inh_inputs 	= w_inh.shape[1]
-		self.n_cycles		= n_cycles
 
 		self.name = "layer_" + str(self.n_neurons)
 
 		self.exc_cnt_bitwidth = int(log2(ceil_pow2(self.n_exc_inputs)))
 		self.inh_cnt_bitwidth = int(log2(ceil_pow2(self.n_inh_inputs)))
-		self.cycles_cnt_bitwidth = int(log2(ceil_pow2(
-			self.n_cycles+1))) + 1
 
 		self.bitwidth 		= bitwidth
 		self.fp_decimals	= fp_decimals
@@ -562,7 +548,7 @@ class Layer_tb(Testbench):
 		self.spiker_pkg = SpikerPackage()
 
 
-		self.dut = Layer(n_cycles = 10,
+		self.dut = Layer(
 			w_exc 		= w_exc,
 			w_inh 		= w_inh,
 			v_th 		= v_th,
@@ -662,13 +648,3 @@ class Layer_tb(Testbench):
 			del self.architecture.processes["inh_spikes_rd_en_gen"]
 			self.architecture.bodyCodeHeader.add(
 				"inh_spikes_rd_en <= ready;")
-
-from vhdl import fast_compile, elaborate
-
-a = Layer_tb(
-	reset = "fixed"
-)
-
-a.write_file_all()
-fast_compile(a)
-elaborate(a)
