@@ -403,8 +403,9 @@ class Layer(VHDLblock):
 			if self.lif_neuron.reset == "fixed":
 				v_reset_name = "v_reset_" + int_to_hex(i, 
 						hex_width)
-				neuron_ready_name = "neuron_ready_" + \
-						int_to_hex(i, hex_width)
+
+			neuron_ready_name = "neuron_ready_" + \
+					int_to_hex(i, hex_width)
 
 			self.architecture.instances.add(self.lif_neuron,
 					neuron_name)
