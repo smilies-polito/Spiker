@@ -18,7 +18,8 @@ class MultiInputDP(VHDLblock):
 	def __init__(self, n_exc_inputs = 2, n_inh_inputs = 2, 
 			debug = False, debug_list = []):
 
-		self.name = "multi_input_datapath"
+		self.name = "multi_input_dp_" + str(n_exc_inputs) + "_exc_" + \
+			str(n_inh_inputs) + "_inh"
 
 		self.n_exc_inputs = n_exc_inputs
 		self.n_inh_inputs = n_inh_inputs
