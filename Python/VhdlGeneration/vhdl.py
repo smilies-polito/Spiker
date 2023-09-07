@@ -24,11 +24,11 @@ def write_file_all(component, output_dir = "output", rm = False):
 		sub = getattr(component, attr_name)
 
 		if hasattr(sub, "write_file_all") and \
-			callable(sub.write_file_all):
-				sub.write_file_all(output_dir = output_dir)
+		callable(sub.write_file_all):
+			sub.write_file_all(output_dir = output_dir)
 		elif hasattr(sub, "write_file") and \
-			callable(sub.write_file):
-				sub.write_file(output_dir = output_dir)
+		callable(sub.write_file):
+			sub.write_file(output_dir = output_dir)
 
 	if is_iterable(component) and component.keys():
 
@@ -41,7 +41,7 @@ def write_file_all(component, output_dir = "output", rm = False):
 			elif hasattr(component[key], "write_file") and \
 			callable(component[key].write_file):
 				component[key].write_file(output_dir = output_dir)
-	
+
 
 
 
@@ -289,9 +289,9 @@ def debug_component(component, db_list = []):
 	setattr(component, "debug", debug)
 
 
-def coe_file(str_array, out_file):
+def coe_file(str_array, out_file, output_dir = "output"):
 
-	with open(out_file, "w") as fp:
+	with open(output_dir + "/" + out_file, "w") as fp:
 
 		fp.write(coe_header)
 
