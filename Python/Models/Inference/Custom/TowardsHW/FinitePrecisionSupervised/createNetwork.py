@@ -6,7 +6,8 @@ from storeParameters import storeArray
 
 def createNetwork(networkList, weightFilename, thresholdFilename, mode,
 			excDictList, scaleFactors, inh2excWeights,
-			fixed_point_decimals, trainPrecision, rng):
+			fixed_point_decimals, neuron_bitwidth, weights_bitwidth,
+			trainPrecision, rng):
 
 	"""
 	Create the complete network dictionary.
@@ -64,12 +65,14 @@ def createNetwork(networkList, weightFilename, thresholdFilename, mode,
 		# Create the excitatory layer
 		createLayer(network, "exc", excDictList[layer-1], networkList,
 				layer, mode, thresholdFile,
-				fixed_point_decimals, trainPrecision)
+				fixed_point_decimals, neuron_bitwidth,
+				trainPrecision)
 
 		# Create the excitatory to excitatory connection
 		intraLayersSynapses(network, "exc2exc", mode, networkList,
 				weightFile, layer, scaleFactors[layer-1],
-				fixed_point_decimals, trainPrecision, rng)
+				fixed_point_decimals, weights_bitwidth,
+				trainPrecision, rng)
 
 	return network
 
@@ -79,7 +82,8 @@ def createNetwork(networkList, weightFilename, thresholdFilename, mode,
 
 
 def createLayer(network, layerType, initDict, networkList, layer, mode,
-		thresholdFile, fixed_point_decimals, trainPrecision):
+		thresholdFile, fixed_point_decimals, neuron_bitwidth,
+		trainPrecision):
 
 	"""
 	Create the layer dictionary and add it to the network dictionary.
@@ -135,6 +139,7 @@ def createLayer(network, layerType, initDict, networkList, layer, mode,
 		"vThresh" 	: initializeThreshold(mode, thresholdFile,
 						initDict, networkList[layer],
 						fixed_point_decimals,
+						neuron_bitwidth,
 						trainPrecision),
 
 		# Initialize the output spikes
@@ -152,7 +157,7 @@ def createLayer(network, layerType, initDict, networkList, layer, mode,
 
 
 def initializeThreshold(mode, thresholdFile, initDict, numberOfNeurons,
-		fixed_point_decimals, trainPrecision):
+		fixed_point_decimals, bitwidth, trainPrecision):
 
 	"""
 	Initialize the thresholds.
@@ -197,7 +202,8 @@ def initializeThreshold(mode, thresholdFile, initDict, numberOfNeurons,
 			return thresholds
 
 		elif trainPrecision == "float":
-			return fixedPointArray(thresholds, fixed_point_decimals)
+			return fixedPointArray(thresholds, fixed_point_decimals,
+					bitwidth)
 
 		else:
 			# Invalid mode, print error and exit
@@ -218,7 +224,7 @@ def initializeThreshold(mode, thresholdFile, initDict, numberOfNeurons,
 
 def intraLayersSynapses(network, synapseName, mode, networkList, weightFile,
 			layer, scaleFactor, fixed_point_decimals,
-			trainPrecision, rng):
+			weights_bitwidth, trainPrecision, rng):
 
 	"""	
 	Initialize the intra layer synapses and add it to the network dictionary.
@@ -265,8 +271,8 @@ def intraLayersSynapses(network, synapseName, mode, networkList, weightFile,
 		# Initialize the synapses weights
 		"weights"	: initializeWeights(mode, networkList,
 					weightFile, layer, scaleFactor,
-					fixed_point_decimals, trainPrecision,
-					rng),
+					fixed_point_decimals, weights_bitwidth,
+					trainPrecision, rng),
 
 		# Initialize the pre-synaptic trace
 		"pre"		: np.zeros((1, networkList[layer - 1])),
@@ -283,7 +289,7 @@ def intraLayersSynapses(network, synapseName, mode, networkList, weightFile,
 
 
 def initializeWeights(mode, networkList, weightFile, layer, scaleFactor,
-		fixed_point_decimals, trainPrecision, rng):
+		fixed_point_decimals, bitwidth, trainPrecision, rng):
 
 	"""
 	Initialize the weights of the connections between two layers.
@@ -325,7 +331,7 @@ def initializeWeights(mode, networkList, weightFile, layer, scaleFactor,
 		weights = (rng.uniform(networkList[layer],
 				networkList[layer - 1]) + 0.01)*scaleFactor
 
-		return fixedPointArray(weights, fixed_point_decimals)
+		return fixedPointArray(weights, fixed_point_decimals, bitwidth)
 
 
 	elif mode == "test":
@@ -334,12 +340,17 @@ def initializeWeights(mode, networkList, weightFile, layer, scaleFactor,
 		with open(weightFile, "rb") as fp:
 			weights = np.load(fp)
 
+		print("Layer %d: max = %f, min = %f, average = %f"
+				%(layer, np.max(weights), np.min(weights),
+					np.average(weights)))
+
 		# Check if the weights are already in fixed point or not
 		if trainPrecision == "fixedPoint":
 			return weights
 
 		elif trainPrecision == "float":
-			return fixedPointArray(weights, fixed_point_decimals)
+			return fixedPointArray(weights, fixed_point_decimals,
+					bitwidth)
 
 		else:
 			# Invalid mode, print error and exit

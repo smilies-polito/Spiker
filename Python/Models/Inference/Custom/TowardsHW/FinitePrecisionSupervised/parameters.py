@@ -14,11 +14,14 @@ excDict = {			# Shifted values to minimize the interval
 
 
 # Finite precision
-excDict["vRest"] = fixedPoint(excDict["vRest"], fixed_point_decimals)
-excDict["vReset"] = fixedPoint(excDict["vReset"], fixed_point_decimals)
-excDict["vThresh0"] = fixedPoint(excDict["vThresh0"], fixed_point_decimals)
+excDict["vRest"] = fixedPoint(excDict["vRest"], fixed_point_decimals,
+		neuron_bitWidth)
+excDict["vReset"] = fixedPoint(excDict["vReset"], fixed_point_decimals,
+		neuron_bitWidth)
+excDict["vThresh0"] = fixedPoint(excDict["vThresh0"], fixed_point_decimals,
+		neuron_bitWidth)
 excDict["vThreshPlus"] = fixedPoint(excDict["vThreshPlus"],
-				fixed_point_decimals)
+				fixed_point_decimals, neuron_bitWidth)
 
 # Membrane potential time constant
 tauExc = 100				# ms

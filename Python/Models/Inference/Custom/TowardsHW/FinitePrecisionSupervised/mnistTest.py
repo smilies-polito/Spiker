@@ -24,7 +24,8 @@ test_batch = iter(test_loader)
 # Create the network data structure
 net = createNetwork(networkList, weightFilename, thresholdFilename, mode, 
 			excDictList, scaleFactors, None,
-			fixed_point_decimals, trainPrecision, rng)
+			fixed_point_decimals, neuron_bitWidth, weights_bitWidth,
+			trainPrecision, rng)
 
 
 checkBitWidth(net["exc2exc1"]["weights"], weights_bitWidth)
