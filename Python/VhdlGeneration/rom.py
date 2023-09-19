@@ -171,6 +171,6 @@ class Rom(VHDLblock):
 			+ " downto 0)"
 		)
 
-	def write_file(self, output_dir = "output"):
-		super().write_file(output_dir = output_dir)
+	def write_file(self, output_dir = "output", rm = False):
+		super().write_file(output_dir = output_dir, rm = rm)
 		self.initialize(output_dir = output_dir)
