@@ -110,7 +110,7 @@ def expDecay(dictionary, key, exp_shift, variable):
 
 
 
-def fixedPoint(value, fixed_point_decimals):
+def fixedPoint(value, fixed_point_decimals, bitwidth):
 
 	"""
 	Convert a value into fixed point notation.
@@ -123,12 +123,26 @@ def fixedPoint(value, fixed_point_decimals):
 		point representation.
 
 	"""
-	return int(value * 2**fixed_point_decimals)
+
+	quant = int(value * 2**fixed_point_decimals)
+
+	return saturate(quant, bitwidth)
 
 
 
 
-def fixedPointArray(numpyArray, fixed_point_decimals):
+def saturate(value, bitwidth):
+	if value > 2**(bitwidth-1)-1:
+		value = 2**(bitwidth-1)-1
+
+	elif value < -2**(bitwidth-1):
+		value = -2**(bitwidth-1)
+
+	return value
+
+
+
+def fixedPointArray(numpyArray, fixed_point_decimals, bitwidth):
 
 	"""
 	Convert a NumPy array into fixed point notation.
@@ -143,8 +157,29 @@ def fixedPointArray(numpyArray, fixed_point_decimals):
 	"""
 
 	numpyArray = numpyArray * 2**fixed_point_decimals
-	return numpyArray.astype(int)
+	numpyArray = numpyArray.astype(int)
 
+	return saturateArray(numpyArray, bitwidth)
+
+def saturateArray(numpyArray, bitwidth):
+
+	"""
+	Convert a NumPy array into fixed point notation.
+
+	INPUT:
+
+		1) numpyArray: floating point array to convert.
+
+		2) fixed_point_decimals: number of decimal bits in the fixed
+		point representation.
+
+	"""
+
+	numpyArray[numpyArray > 2**(bitwidth-1)-1] = 2**(bitwidth-1)-1
+	numpyArray[numpyArray < -2**(bitwidth-1)] = -2**(bitwidth-1)
+	numpyArray = numpyArray.astype(int)
+
+	return numpyArray
 
 
 def checkBitWidth(numpyArray, bitWidth):
@@ -162,8 +197,11 @@ def checkBitWidth(numpyArray, bitWidth):
 
 	if (numpyArray > 2**(bitWidth-1)-1).any():
 		print("Value too high")
+
+		print(numpyArray[numpyArray > 2**(bitWidth-1)-1])
 		sys.exit()
 
 	elif (numpyArray < -2**(bitWidth-1)).any():
 		print("Value too low")
+		print(numpyArray[numpyArray < -2**(bitWidth-1)])
 		sys.exit()
