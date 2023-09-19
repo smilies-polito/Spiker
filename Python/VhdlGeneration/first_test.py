@@ -1,6 +1,6 @@
 import numpy as np
 
-from network import Network
+from network import Network, Network_tb
 from layer import Layer
 
 from vhdl import fast_compile, elaborate
@@ -60,7 +60,15 @@ l2 = Layer(
 net.add(l1)
 net.add(l2)
 
-net.write_file_all(rm=True)
+tb = Network_tb(net,
+	file_input		= True,
+	input_signal_list	= [
+		"in_spikes"
+	],
+	file_output		= True
+)
+
+tb.write_file_all(rm=True)
 
 fast_compile(net)
 elaborate(net)
