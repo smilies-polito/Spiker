@@ -331,3 +331,5 @@ class Network_tb(Testbench):
 			del self.architecture.processes["in_spikes_rd_en_gen"]
 			self.architecture.bodyCodeHeader.add(
 				"in_spikes_rd_en <= ready;")
+			self.architecture.bodyCodeHeader.add(
+				"out_spikes_w_en <= ready;")
