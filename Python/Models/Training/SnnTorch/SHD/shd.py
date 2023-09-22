@@ -46,9 +46,6 @@ y_train = train_file['labels']
 x_test = test_file['spikes']
 y_test = test_file['labels']
 
-print("Data ", type(x_train))
-print("Labels ", type(y_train))
-
 def sparse_data_generator_from_hdf5_spikes(X, y, batch_size, nb_steps, nb_units, max_time, shuffle=True):
     """ This generator takes a spike dataset and generates spiking network input as sparse tensors. 
 
@@ -57,7 +54,7 @@ def sparse_data_generator_from_hdf5_spikes(X, y, batch_size, nb_steps, nb_units,
         y: The labels
     """
 
-    labels_ = np.array(y,dtype=np.int)
+    labels_ = np.array(y,dtype=int)
     number_of_batches = len(labels_)//batch_size
     sample_index = np.arange(len(labels_))
 
