@@ -36,3 +36,6 @@ tmp.*
 
 # Vim back-up files
 *.swp
+
+# Singularity images
+*.sif
