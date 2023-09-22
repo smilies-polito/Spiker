@@ -18,74 +18,74 @@ from mnist import loadDataset
 # Load the MNIST dataset
 _, test_loader = loadDataset(data_path, batch_size)
 
-test_batch = iter(test_loader)
-
-print(type(test_batch))
-
 acc_vs_shift = []
 
 weights_bitWidth	= 64
 neuron_bitWidth		= 64
 exp_shift		= 10
 
-for fixed_point_decimals in range(2):
+for fixed_point_decimals in range(64):
 
-	# Create the network data structure
-	net = createNetwork(
-		networkList,
-		weightFilename,
-		thresholdFilename,
-		mode, 
-		excDictList,
-		scaleFactors,
-		None,
-		fixed_point_decimals,
-		neuron_bitWidth,
-		weights_bitWidth,
-		trainPrecision, 
-		rng
-	)
+    test_batch = iter(test_loader)
 
-	count = 0
-	acc_average = 0
+    # Create the network data structure
+    net = createNetwork(
+        networkList,
+        weightFilename,
+        thresholdFilename,
+        mode, 
+        excDictList,
+        scaleFactors,
+        None,
+        fixed_point_decimals,
+        neuron_bitWidth,
+        weights_bitWidth,
+        trainPrecision, 
+        rng
+    )
 
-	# Minibatch training loop
-	for test_data, test_targets in test_batch:
+    count = 0
+    acc_average = 0
 
-		acc = 0
-		test_data = test_data.view(batch_size, -1)
-		
-		for i in range(test_data.size()[0]):
+    # Minibatch training loop
+    for test_data, test_targets in test_batch:
 
-			image = test_data[i]
-			label = int(test_targets[i].int())
+        acc = 0
+        test_data = test_data.view(batch_size, -1)
+        
+        for i in range(test_data.size()[0]):
 
-			#input_spikes = imgToSpikeTrain(image.numpy(), num_steps, rng)
-			input_spikes = spikegen.rate(image, num_steps = num_steps,
-					gain = 1)
+            image = test_data[i]
+            label = int(test_targets[i].int())
 
-			input_spikes = input_spikes.numpy().astype(bool)
+            #input_spikes = imgToSpikeTrain(image.numpy(), num_steps, rng)
+            input_spikes = spikegen.rate(image, num_steps = num_steps,
+                    gain = 1)
 
-			outputCounters, _, _ = run(net, networkList, input_spikes,
-					dt_tauDict, exp_shift, None, mode, None,
-					neuron_bitWidth)
+            input_spikes = input_spikes.numpy().astype(bool)
+
+            outputCounters, _, _ = run(net, networkList, input_spikes,
+                    dt_tauDict, exp_shift, None, mode, None,
+                    neuron_bitWidth)
 
 
-			rest(net, networkList)
+            rest(net, networkList)
 
-			outputLabel = np.where(outputCounters[0] ==
-					np.max(outputCounters[0]))[0][0]
+            outputLabel = np.where(outputCounters[0] ==
+                    np.max(outputCounters[0]))[0][0]
 
-			if outputLabel == label:
-				acc += 1
+            if outputLabel == label:
+                acc += 1
 
-		
-		acc_average += acc / test_data.size()[0]
+        
+        acc_average += acc / test_data.size()[0]
 
-		count += 1
+        print("Batch ", count)
+        count += 1
 
-	acc_average /= count
-	acc_vs_shift.append(acc_average)
+    if count > 0:
+        acc_average /= count
+        acc_vs_shift.append(acc_average)
 
 
 with open("acc_vs_shift.npy", "wb") as fp:
