@@ -172,58 +172,6 @@ class SNN(nn.Module):
 			torch.stack(hidden_mem_rec, dim = 1), \
 			torch.stack(ro_mem_rec, dim=1) \
 
-def train(snn, dataset, learning_rate = 1e-3, n_epochs = 10):
-
-	params = snn.parameters()
-
-	optimizer = torch.optim.Adamax(
-		params,
-		lr = learning_rate,
-		betas = (0.99, 0.999)
-	)
-
-	log_softmax_fn = nn.LogSoftmax(dim=0)
-
-	# Negative Log Likelihood Loss
-	loss_fn = nn.NLLLoss()
-
-	loss_history = []
-
-	for epoch in range(n_epochs):
-
-		epoch_loss = []
-
-		for data in dataset:
-
-			sparse_events = transform(data[0])
-			input_stimuli = sparse_events.to_dense().float()
-
-			label = torch.tensor(data[1])
-
-			hidden_spikes, _, out_mem = snn(input_stimuli)
-
-			max_mem, _ = torch.max(out_mem, dim=1)
-			out_softmax = log_softmax_fn(max_mem)
-
-			# L1 loss on total number of spikes
-			reg_loss = 2e-6*torch.sum(hidden_spikes) 
-
-			# L2 loss on spikes per neuron
-			reg_loss += 2e-6*torch.mean(torch.sum(
-				torch.sum(hidden_spikes, dim=0),dim=0)**2)
-
-			loss_val = loss_fn(out_softmax, label) + reg_loss
-			optimizer.zero_grad()
-			loss_val.backward()
-			optimizer.step()
-			epoch_loss.append(loss_val.item())
-
-
-		mean_loss = np.mean(epoch_loss)
-		loss_hist.append(mean_loss)
-		print("Epoch %i: loss=%.5f"%(e+1,mean_loss))
-
-
 
 # Check whether a GPU is available
 if torch.cuda.is_available():
@@ -250,7 +198,6 @@ beta    = float(np.exp(-time_step/tau_mem))
 
 
 dataset = tonic.datasets.hsd.SHD(save_to='./data', train=True)
-print(len(dataset))
 
 transform = TonicTransform(
 	min_time	= min_time,
@@ -268,9 +215,4 @@ snn = SNN(
 	alpha = alpha,
 	beta = beta,
 
-)
-train(snn,
-	dataset,
-	learning_rate = 1e-3,
-	n_epochs = 10
 )
