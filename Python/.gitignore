@@ -16,5 +16,8 @@ train-labels-idx1-ubyte.gz
 *.npy
 *.pt
 
+# Datasets
+*.h5*
+
 # Function tags used in vim to jump to function def
 tags
