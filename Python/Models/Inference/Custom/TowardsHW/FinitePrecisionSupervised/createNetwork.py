@@ -340,10 +340,6 @@ def initializeWeights(mode, networkList, weightFile, layer, scaleFactor,
 		with open(weightFile, "rb") as fp:
 			weights = np.load(fp)
 
-		print("Layer %d: max = %f, min = %f, average = %f"
-				%(layer, np.max(weights), np.min(weights),
-					np.average(weights)))
-
 		# Check if the weights are already in fixed point or not
 		if trainPrecision == "fixedPoint":
 			return weights
