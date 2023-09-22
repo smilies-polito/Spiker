@@ -13,20 +13,20 @@ dtype = torch.float
 
 # Network Architecture
 num_inputs = 28*28
-num_hidden = 400
+num_hidden = 128
 num_outputs = 10
 
 # Temporal Dynamics
-num_steps = 25
+num_steps = 100
 beta = 0.9375
 
-num_epochs = 100
+num_epochs = 30
 loss_hist = []
 test_loss_hist = []
 counter = 0
 
 # List of layer sizes
-networkList = [784, 400, 10]
+networkList = [784, 128, 10]
 
 mode = "test"
 trainPrecision = "float"
@@ -53,7 +53,7 @@ dt_tauDict = {
 
 # Update and print intervals expressed in number of images
 updateInterval = 10
-printInterval = 10
+printInterval = 250
 
 
 # Initial intensity of the input pixels
