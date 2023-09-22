@@ -15,6 +15,7 @@ train-labels-idx1-ubyte.gz
 # Trained parameters
 *.npy
 *.pt
+*.pkl
 
 # Datasets
 *.h5*
