@@ -1,7 +1,8 @@
 #!/Users/alessio/anaconda3/bin/python3
 
 import numpy as np
-from utils import expDecay, checkBitWidth
+from utils import expDecay, checkBitWidth, saturateArray
+from bitWidths import fixed_point_decimals, neuron_bitWidth
 
 
 def updateExcLayer(network, layer, exp_shift, inputSpikes, neuron_bitWidth):
@@ -38,7 +39,9 @@ def updateExcLayer(network, layer, exp_shift, inputSpikes, neuron_bitWidth):
 	if np.sum(inputSpikes) != 0:
 
 		# Update membrane potential with the spikes from the previous layer
-		all2allUpdate(network, layerName, "exc2exc" + str(layer), inputSpikes)
+		all2allUpdate(network, layerName, "exc2exc" + str(layer),
+				inputSpikes, neuron_bitWidth)
+
 
 	checkBitWidth(network["excLayer" + str(layer)]["v"],
 			neuron_bitWidth)
@@ -85,7 +88,7 @@ def resetPotentials(network, layerName):
 
 
 
-def all2allUpdate(network, layerName, synapseName, inputSpikes):
+def all2allUpdate(network, layerName, synapseName, inputSpikes, bitwidth):
 
 	""" 
 	Update the membrane potential of a fully connected layer.
@@ -107,3 +110,6 @@ def all2allUpdate(network, layerName, synapseName, inputSpikes):
 	network[layerName]["v"][0] = network[layerName]["v"][0] + np.sum(
 				network[synapseName]["weights"][:, inputSpikes],
 				axis=1)
+
+	network[layerName]["v"][0] = saturateArray(network[layerName]["v"][0],
+			bitwidth)

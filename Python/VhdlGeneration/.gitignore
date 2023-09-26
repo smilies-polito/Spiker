@@ -1,1 +1,8 @@
-output
+# Generated VHDL
+*.vhd
+
+# Memory initialization files
+*.coe
+*.mem
+*.mif
+*.tmp

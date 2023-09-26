@@ -142,46 +142,46 @@ begin
 
 
 	-- read data from the bram
-	read_process : process(clk)
+	-- read_process : process(clk)
 
-		file out_file		: text open write_mode is
-						out_filename;
+	-- 	file out_file		: text open write_mode is
+	-- 					out_filename;
 
-		variable write_line	: line;
-		variable do_var		: std_logic_vector(35 downto 0);
-		variable addr_var	: integer := 0;
+	-- 	variable write_line	: line;
+	-- 	variable do_var		: std_logic_vector(35 downto 0);
+	-- 	variable addr_var	: integer := 0;
 
-	begin
+	-- begin
 
-		if clk'event and clk = '1'
-		then
+	-- 	if clk'event and clk = '1'
+	-- 	then
 
-			if rd_ok = '1'
-			then
+	-- 		if rd_ok = '1'
+	-- 		then
 
-				rdaddr	<= std_logic_vector(
-						to_unsigned(addr_var,
-							wraddr'length));
-				rden	<= '1';
+	-- 			rdaddr	<= std_logic_vector(
+	-- 					to_unsigned(addr_var,
+	-- 						wraddr'length));
+	-- 			rden	<= '1';
 
-				do_var := '0' & do(34 downto 0);
+	-- 			do_var := '0' & do(34 downto 0);
 
-				write(write_line, do_var);
-				writeline(out_file, write_line);
+	-- 			write(write_line, do_var);
+	-- 			writeline(out_file, write_line);
 
-				addr_var := addr_var + 1;
-				
+	-- 			addr_var := addr_var + 1;
+	-- 			
 
-			else
+	-- 		else
 
-				rden	<= '0';
+	-- 			rden	<= '0';
 
-			end if;
+	-- 		end if;
 
 
-		end if;
+	-- 	end if;
 
-	end process read_process;
+	-- end process read_process;
 
 
 	-- enable read process
@@ -199,27 +199,27 @@ begin
 
 
 	-- read data from the bram
-	-- read_process	: process(clk, rd_ok)
+	read_process	: process(clk, rd_ok)
 
-	-- 	variable addr_var	: integer := 0;
+		variable addr_var	: integer := 0;
 
-	-- begin
+	begin
 
-	-- 	if clk'event and clk = '1'
-	-- 	then
-	-- 		if rd_ok = '1'
-	-- 		then
-	-- 			rden 	<= '1';
-	-- 			rdaddr	<= std_logic_vector(
-	-- 					to_unsigned(addr_var, 10));
-	-- 		addr_var := addr_var + 1;
-	-- 		else
-	-- 			rden	<= '0';
-	-- 		end if;
+		if clk'event and clk = '1'
+		then
+			if rd_ok = '1'
+			then
+				rden 	<= '1';
+				rdaddr	<= std_logic_vector(
+						to_unsigned(addr_var, 10));
+			addr_var := addr_var + 1;
+			else
+				rden	<= '0';
+			end if;
 
-	-- 	end if;
+		end if;
 
-	-- end process read_process;
+	end process read_process;
 
 
 	dut	: weights_bram

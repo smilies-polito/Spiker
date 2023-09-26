@@ -1,14 +1,24 @@
-import subprocess as sp
+from vhdl import sub_components, debug_component
 
 import path_config
-
 from vhdl_block import VHDLblock
 
 class Shifter(VHDLblock):
 
-	def __init__(self, bit_width = 16, shift = 10, output_dir = "output"):
+	def __init__(self, bitwidth = 16, shift = 10, debug = True, 
+			debug_list = []):
 
-		VHDLblock.__init__(self, entity_name = "shifter")
+		self.name = "shifter"
+
+		self.bitwidth = bitwidth
+		self.shift = shift
+		self.components = sub_components(self)
+
+		VHDLblock.__init__(self, entity_name = self.name)
+		self.vhdl(debug = debug, debug_list = debug_list)
+
+
+	def vhdl(self, debug = False, debug_list = []):
 
 		# Libraries and packages
 		self.library.add("ieee")
@@ -23,16 +33,16 @@ class Shifter(VHDLblock):
 				"signed(N-1 downto 0)")
 
 		# Generics
-		self.entity.generic.add("N", "integer", str(bit_width))
+		self.entity.generic.add("N", "integer", str(self.bitwidth))
 
-		if bit_width <= 0:
-			print("Invalid bit-width in shifter\n")
-			exit(-1)
+		if self.bitwidth <= 0:
+			raise ValueError("Invalid bit-width in " + self.name)
 
-		elif shift < bit_width and shift > 0:
+		elif self.shift < self.bitwidth and self.shift > 0:
 
 			# Generics
-			self.entity.generic.add("shift", "integer", str(shift))
+			self.entity.generic.add("shift", "integer", 
+					str(self.shift))
 
 
 			# Add/sub process
@@ -44,49 +54,22 @@ class Shifter(VHDLblock):
 					"downto 0) <= "
 					"shifter_in(N-1 downto shift);")
 
-		elif shift == bit_width:
+		elif self.shift == self.bitwidth:
 
 			# Add/sub process
 			self.architecture.bodyCodeHeader.add("shifted_out <= "
 					"(others =>"
 					"shifter_in(shifter_in'length-1));")
 
-		elif shift == 0:
-
-			print("Zero")
+		elif self.shift == 0:
 
 			# Add/sub process
 			self.architecture.bodyCodeHeader.add("shifted_out <= "
 					"shifter_in;")
 
 		else:
-			print("Invalid shift value in shifter\n")
-			exit(-1)
+			raise ValueError("Invalid shift value in " + self.name)
 
-		self.write_file(output_dir)
-
-
-	def compile(self, output_dir = "output"):
-
-		print("\nCompiling component %s\n"
-				%(self.entity.name))
-
-		command = "cd " + output_dir + "; "
-		command = command + "xvhdl " + self.entity.name + ".vhd" + "; "
-
-		sp.run(command, shell = True)
-
-		print("\n")
-	
-
-	def elaborate(self, output_dir = "output"):
-
-		print("\nElaborating component %s\n"
-				%(self.entity.name))
-
-		command = "cd " + output_dir + "; "
-		command = command + "xelab " + self.entity.name
-
-		sp.run(command, shell = True)
-
-		print("\n")
+		# Debug
+		if debug:
+			debug_component(self, debug_list)

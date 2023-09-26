@@ -26,6 +26,7 @@ __pycache__
 *.zip
 *.srcs
 *.gen
+.Xil
 
 # Files on iCloud
 *.icloud
