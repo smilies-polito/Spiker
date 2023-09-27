@@ -251,7 +251,7 @@ exp_shift		= 10
 
 acc_vs_bw = []
 
-for neuron_bitWidth in range(64):
+for neuron_bitWidth in range(1, 64):
 
 	test_batch = iter(test_loader)
 
@@ -295,7 +295,6 @@ for neuron_bitWidth in range(64):
 					dt_tauDict, exp_shift, None, mode, None,
 					neuron_bitWidth)
 
-
 			rest(net, networkList)
 
 			outputLabel = np.where(outputCounters[0] ==
@@ -313,4 +312,4 @@ for neuron_bitWidth in range(64):
 		acc_vs_bw.append(acc_average)
 
 with open("acc_vs_bw.npy", "wb") as fp:
-	np.save(fp, np.array(acc_vs_bw)
+	np.save(fp, np.array(acc_vs_bw))
