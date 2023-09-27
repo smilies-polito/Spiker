@@ -42,24 +42,6 @@ class TonicTransform:
 
 		return np.digitize(np_array, sampling_index)
 
-class SpikeFunction(torch.autograd.Function):
-
-	scale = 100
-
-	@staticmethod
-	def forward(ctx, input):
-		ctx.save_for_backward(input)
-		out = torch.zeros_like(input)
-		out[input>0] = 1.0
-		return out
-
-
-	@staticmethod
-	def backward(ctx, grad_output):
-		input, = ctx.saved_tensors
-		return grad_output * 1/(1 +SpikeFunction.scale*
-			torch.abs(input))**2
-
 
 class LIF:
 
@@ -72,11 +54,7 @@ class LIF:
 		self.beta	= beta
 		self.th		= threshold
 		self.out	= torch.zeros(n_neurons)
-
 		self.readout	= readout
-
-		# Spike function with surrogate gradient
-		self.spike_fn = SpikeFunction.apply
 
 	def init_neurons(self):
 		self.mem = torch.zeros(self.n_neurons)
@@ -90,6 +68,11 @@ class LIF:
 		rst = self.out.detach()
 		value[rst == 1] = 0
 
+	def spike_fn(self, mthr):
+		self.out = torch.zeros_like(mthr)
+		self.out[mthr > 0] = 1.0
+
+
 	def __call__(self, input_current):
 
 		if not self.readout:
@@ -97,7 +80,7 @@ class LIF:
 
 		mthr = self.mem - self.th
 
-		self.out = self.spike_fn(mthr)
+		self.spike_fn(mthr)
 
 		self.mem = self.exp_decay(self.mem, self.beta) + self.syn
 		self.syn = self.exp_decay(self.syn, self.alpha) + input_current
@@ -160,15 +143,7 @@ class SNN(nn.Module):
 			fb_syn_curr = self.fc_fb(hidden_spikes)
 			syn_curr = in_syn_curr + fb_syn_curr
 
-			#print("----------------%d----------------\n"%(i))
-			#print(syn_curr)
-			#print("\n\n")
-
 			hidden_spikes, _ = self.lif1(syn_curr)
-
-			#print(hidden_spikes)
-			#print("\n\n")
-			#time.sleep(20)
 
 			ro_syn_curr = self.fc_ro(hidden_spikes)
 			_, ro_mem = self.readout(ro_syn_curr)
