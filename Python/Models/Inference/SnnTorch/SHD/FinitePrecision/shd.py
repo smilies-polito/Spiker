@@ -4,6 +4,46 @@ import numpy as np
 import torch
 from torch import nn
 
+class Quantize:
+
+	def fixedPoint(self, value, fp_dec, bitwidth):
+
+		quant = value * 2**fixed_point_decimals
+
+		if type(value).__module__ == np.__name__:
+			quant = quant.astype(int)
+
+		elif type(value).__module__ == torch.__name__:
+			quant = quant.int()
+
+		else:
+			quant = int(quant)
+
+
+		return saturate(quant, bitwidth)
+
+	def saturate(value, bitwidth):
+
+
+		if type(value).__module__ == np.__name__ or \
+		type(value).__module__ == torch.__name__:
+
+			value[value > 2**(bitwidth-1)-1] = \
+				int(2**(bitwidth-1)-1)
+			value[value < -2**(bitwidth-1)] = \
+				int(-2**(bitwidth-1))
+
+		else:
+
+			if value > 2**(bitwidth-1)-1:
+				value = 2**(bitwidth-1)-1
+
+			elif value < -2**(bitwidth-1):
+				value = -2**(bitwidth-1)
+
+		return value
+
+
 class TonicTransform:
 
 	def __init__(self, min_time : float, max_time : float, n_samples :
@@ -56,13 +96,15 @@ class LIF:
 		self.out	= torch.zeros(n_neurons)
 		self.readout	= readout
 
+		self.quant	= Quantize()
+
 	def init_neurons(self):
 		self.mem = torch.zeros(self.n_neurons)
 		self.syn = torch.zeros(self.n_neurons)
 		self.out = torch.zeros(self.n_neurons)
 
 	def exp_decay(self, value, decay_rate):
-		return value*decay_rate
+		return value - value*decay_shift
 
 	def reset(self, value):
 		rst = self.out.detach()
@@ -152,7 +194,6 @@ class SNN(nn.Module):
 
 		return 	torch.stack(ro_mem_rec, dim=1) \
 
-
 def compute_classification_accuracy(dataset):
 
 	""" 
@@ -177,6 +218,8 @@ def compute_classification_accuracy(dataset):
 		accs.append(label == am)
 
 	return np.mean(accs)
+
+
 
 
 
