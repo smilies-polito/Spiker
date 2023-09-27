@@ -36,3 +36,10 @@ tmp.*
 
 # Vim back-up files
 *.swp
+
+# Singularity images
+*.sif
+*.def
+
+# Screen log files
+screenlog.*

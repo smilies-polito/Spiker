@@ -13,7 +13,7 @@ dtype = torch.float
 
 # Network Architecture
 num_inputs = 28*28
-num_hidden = 400
+num_hidden = 128
 num_outputs = 10
 
 # Temporal Dynamics
@@ -26,7 +26,7 @@ test_loss_hist = []
 counter = 0
 
 # List of layer sizes
-networkList = [784, 400, 10]
+networkList = [784, 128, 10]
 
 # List of dictionaries of parameters for the layers
 excDictList = [excDict.copy()] * (len(networkList) - 1)
