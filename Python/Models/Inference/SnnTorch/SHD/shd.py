@@ -1,14 +1,8 @@
 import tonic
 
-import sys
-import time
 import numpy as np
 import torch
 from torch import nn
-from utils import get_shd_dataset
-np.set_printoptions(threshold=sys.maxsize)
-
-from time import sleep
 
 class TonicTransform:
 
@@ -192,8 +186,6 @@ def compute_classification_accuracy(dataset):
 
 	accs = []
 
-	count = 0
-
 	for data in dataset:
 
 		dense_data = transform(data[0]).to_dense()
@@ -208,12 +200,6 @@ def compute_classification_accuracy(dataset):
 		_, am=torch.max(m, 0)
 
 		accs.append(label == am)
-
-		count = (count + 1) % 256
-
-		if count == 255:
-			print("256 data done\n")
-
 
 	return np.mean(accs)
 
@@ -241,7 +227,6 @@ tau_syn = 5e-3
 
 alpha   = float(np.exp(-time_step/tau_syn))
 beta    = float(np.exp(-time_step/tau_mem))
-
 
 dataset = tonic.datasets.hsd.SHD(save_to='./data', train=False)
 
