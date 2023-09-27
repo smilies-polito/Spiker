@@ -167,79 +167,150 @@ _, test_loader = loadDataset(data_path, batch_size)
 
 
 
-acc_vs_shift = {}
+# acc_vs_shift = {}
+# 
+# neuron_bitWidth		= 64
+# exp_shift		= 10
+# 
+# for fixed_point_decimals in range(4, 9):
+# 
+# 	fp_decimals = "fp_decimals_" + str(fixed_point_decimals)
+# 
+# 	acc_vs_weights = []
+# 
+# 	for weights_bitWidth in range(63, -1, -1):
+# 
+# 		test_batch = iter(test_loader)
+# 
+# 		# Create the network data structure
+# 		net = createNetwork(
+# 			networkList,
+# 			weightFilename,
+# 			thresholdFilename,
+# 			mode, 
+# 			excDictList,
+# 			scaleFactors,
+# 			None,
+# 			fixed_point_decimals,
+# 			neuron_bitWidth,
+# 			weights_bitWidth,
+# 			trainPrecision, 
+# 			rng
+# 		)
+# 
+# 		count = 0
+# 		acc_average = 0
+# 
+# 		# Minibatch training loop
+# 		for test_data, test_targets in test_batch:
+# 
+# 			acc = 0
+# 			test_data = test_data.view(batch_size, -1)
+# 			
+# 			for i in range(test_data.size()[0]):
+# 
+# 				image = test_data[i]
+# 				label = int(test_targets[i].int())
+# 
+# 				#input_spikes = imgToSpikeTrain(image.numpy(), num_steps, rng)
+# 				input_spikes = spikegen.rate(image, num_steps = num_steps,
+# 						gain = 1)
+# 
+# 				input_spikes = input_spikes.numpy().astype(bool)
+# 
+# 				outputCounters, _, _ = run(net, networkList, input_spikes,
+# 						dt_tauDict, exp_shift, None, mode, None,
+# 						neuron_bitWidth)
+# 
+# 
+# 				rest(net, networkList)
+# 
+# 				outputLabel = np.where(outputCounters[0] ==
+# 						np.max(outputCounters[0]))[0][0]
+# 
+# 				if outputLabel == label:
+# 					acc += 1
+# 
+# 			
+# 			acc_average += acc / test_data.size()[0]
+# 
+# 			count += 1
+# 
+# 		acc_average /= count
+# 		acc_vs_weights.append(acc_average)
+# 
+# 	acc_vs_shift[fp_decimals] = acc_vs_weights
+# 
+# with open("acc_vs_weights.pkl", "wb") as fp:
+# 	pickle.dump(acc_vs_shift, fp)
 
-neuron_bitWidth		= 64
+
+fixed_point_decimals	= 4
+weights_bitWidth	= 4
 exp_shift		= 10
 
-for fixed_point_decimals in range(4, 9):
+acc_vs_bw = []
 
-	fp_decimals = "fp_decimals_" + str(fixed_point_decimals)
+for neuron_bitWidth in range(64):
 
-	acc_vs_weights = []
+	test_batch = iter(test_loader)
 
-	for weights_bitWidth in range(63, -1, -1):
+	# Create the network data structure
+	net = createNetwork(
+		networkList,
+		weightFilename,
+		thresholdFilename,
+		mode, 
+		excDictList,
+		scaleFactors,
+		None,
+		fixed_point_decimals,
+		neuron_bitWidth,
+		weights_bitWidth,
+		trainPrecision, 
+		rng
+	)
 
-		test_batch = iter(test_loader)
+	count = 0
+	acc_average = 0
 
-		# Create the network data structure
-		net = createNetwork(
-			networkList,
-			weightFilename,
-			thresholdFilename,
-			mode, 
-			excDictList,
-			scaleFactors,
-			None,
-			fixed_point_decimals,
-			neuron_bitWidth,
-			weights_bitWidth,
-			trainPrecision, 
-			rng
-		)
+	# Minibatch training loop
+	for test_data, test_targets in test_batch:
 
-		count = 0
-		acc_average = 0
+		acc = 0
+		test_data = test_data.view(batch_size, -1)
+		
+		for i in range(test_data.size()[0]):
 
-		# Minibatch training loop
-		for test_data, test_targets in test_batch:
+			image = test_data[i]
+			label = int(test_targets[i].int())
 
-			acc = 0
-			test_data = test_data.view(batch_size, -1)
-			
-			for i in range(test_data.size()[0]):
+			#input_spikes = imgToSpikeTrain(image.numpy(), num_steps, rng)
+			input_spikes = spikegen.rate(image, num_steps = num_steps,
+					gain = 1)
 
-				image = test_data[i]
-				label = int(test_targets[i].int())
+			input_spikes = input_spikes.numpy().astype(bool)
 
-				#input_spikes = imgToSpikeTrain(image.numpy(), num_steps, rng)
-				input_spikes = spikegen.rate(image, num_steps = num_steps,
-						gain = 1)
-
-				input_spikes = input_spikes.numpy().astype(bool)
-
-				outputCounters, _, _ = run(net, networkList, input_spikes,
-						dt_tauDict, exp_shift, None, mode, None,
-						neuron_bitWidth)
+			outputCounters, _, _ = run(net, networkList, input_spikes,
+					dt_tauDict, exp_shift, None, mode, None,
+					neuron_bitWidth)
 
 
-				rest(net, networkList)
+			rest(net, networkList)
 
-				outputLabel = np.where(outputCounters[0] ==
-						np.max(outputCounters[0]))[0][0]
+			outputLabel = np.where(outputCounters[0] ==
+					np.max(outputCounters[0]))[0][0]
 
-				if outputLabel == label:
-					acc += 1
+			if outputLabel == label:
+				acc += 1
 
-			
-			acc_average += acc / test_data.size()[0]
+		
+		acc_average += acc / test_data.size()[0]
 
-			count += 1
+		count += 1
 
 		acc_average /= count
-		acc_vs_weights.append(acc_average)
+		acc_vs_bw.append(acc_average)
 
-	acc_vs_shift[fp_decimals] = acc_vs_weights
-
-with open("acc_vs_weights.pkl", "wb") as fp:
-	pickle.dump(acc_vs_shift, fp)
+with open("acc_vs_bw.npy", "wb") as fp:
+	np.save(fp, np.array(acc_vs_bw)
