@@ -197,11 +197,8 @@ def checkBitWidth(numpyArray, bitWidth):
 
 	if (numpyArray > 2**(bitWidth-1)-1).any():
 		print("Value too high")
-
-		print(numpyArray[numpyArray > 2**(bitWidth-1)-1])
 		sys.exit()
 
 	elif (numpyArray < -2**(bitWidth-1)).any():
 		print("Value too low")
-		print(numpyArray[numpyArray < -2**(bitWidth-1)])
 		sys.exit()
