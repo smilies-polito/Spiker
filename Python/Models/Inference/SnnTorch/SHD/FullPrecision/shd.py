@@ -4,6 +4,9 @@ import numpy as np
 import torch
 from torch import nn
 
+import time
+torch.set_printoptions(threshold = torch.inf)
+
 class TonicTransform:
 
 	def __init__(self, min_time : float, max_time : float, n_samples :
@@ -66,7 +69,7 @@ class LIF:
 
 	def reset(self, value):
 		rst = self.out.detach()
-		value[rst == 1] = 0
+		value[rst == 1] = value[rst == 1] - self.th
 
 	def spike_fn(self, mthr):
 		self.out = torch.zeros_like(mthr)
@@ -202,6 +205,9 @@ tau_syn = 5e-3
 
 alpha   = float(np.exp(-time_step/tau_syn))
 beta    = float(np.exp(-time_step/tau_mem))
+
+alpha = 1 - 2**-4
+beta = 1 - 2**-3
 
 dataset = tonic.datasets.hsd.SHD(save_to='./data', train=False)
 
