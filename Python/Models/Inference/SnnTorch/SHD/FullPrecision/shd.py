@@ -4,9 +4,6 @@ import numpy as np
 import torch
 from torch import nn
 
-import time
-torch.set_printoptions(threshold = torch.inf)
-
 class TonicTransform:
 
 	def __init__(self, min_time : float, max_time : float, n_samples :
@@ -68,6 +65,8 @@ class LIF:
 		return value*decay_rate
 
 	def reset(self, value):
+
+		# Subtractive reset
 		rst = self.out.detach()
 		value[rst == 1] = value[rst == 1] - self.th
 
@@ -181,30 +180,13 @@ def compute_classification_accuracy(dataset):
 
 	return np.mean(accs)
 
-
-
-# Check whether a GPU is available
-if torch.cuda.is_available():
-    device = torch.device("cuda")     
-else:
-    device = torch.device("cpu")
-
-dtype = torch.float
-
-batch_size = 1
 n_samples = 100
 n_inputs = tonic.datasets.hsd.SHD.sensor_size[0]
 n_hidden = 200
 n_output = 20
+
 min_time = 0
 max_time = 1.4 * 10**6
-
-time_step = 1e-3
-tau_mem = 10e-3
-tau_syn = 5e-3
-
-alpha   = float(np.exp(-time_step/tau_syn))
-beta    = float(np.exp(-time_step/tau_mem))
 
 alpha = 1 - 2**-4
 beta = 1 - 2**-3
@@ -226,6 +208,7 @@ snn = SNN(
 	beta = beta,
 )
 
+# Initialize weights
 snn.fc_in.weight.data = torch.load("w1.pt",
 		map_location=torch.device('cpu')).transpose(0, 1)
 snn.fc_fb.weight.data = torch.load("v1.pt",
