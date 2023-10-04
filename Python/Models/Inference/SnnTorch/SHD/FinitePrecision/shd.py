@@ -237,7 +237,7 @@ class SNN(nn.Module):
 def compute_classification_accuracy(dataset):
 
 	""" 
-	Computes classification accuracy on supplied data in batches.
+	Computes classification accuracy on supplied data.
 	"""
 
 	accs = []
@@ -271,31 +271,25 @@ else:
 
 dtype = torch.float
 
-batch_size = 1
+# Network architecture
 n_samples = 100
 n_inputs = tonic.datasets.hsd.SHD.sensor_size[0]
 n_hidden = 200
 n_output = 20
+
+# Conversion parameters
 min_time = 0
 max_time = 1.4 * 10**6
 
-time_step = 1e-3
-tau_mem = 10e-3
-tau_syn = 5e-3
-
+# Exponential shifts
 alpha_shift = 4
 beta_shift = 3
 
-fp_dec = 10
-bitwidth1 = 16
-bitwidth2 = 16
-w_bitwidth1 = 6
-w_bitwidth_fb1 = 6
-w_bitwidth2 = 6
+# Membrane threshold
 threshold = quantize.fixed_point(1, fp_dec, bitwidth1)
 
+# Import and transform data
 dataset = tonic.datasets.hsd.SHD(save_to='./data', train=False)
-
 transform = TonicTransform(
 	min_time	= min_time,
 	max_time	= max_time,
@@ -303,7 +297,15 @@ transform = TonicTransform(
 	n_inputs	= n_inputs
 )
 
+# Bit-widths
+fp_dec = 10
+bitwidth1 = 64
+bitwidth2 = 64
+w_bitwidth1 = 64
+w_bitwidth_fb1 = 64
+w_bitwidth2 = 64
 
+# Import trained weights
 w1 = quantize.fixed_point(torch.load("w1.pt",
 		map_location=torch.device('cpu')).transpose(0, 1), fp_dec,
 		w_bitwidth1)
@@ -313,6 +315,7 @@ v1 = quantize.fixed_point(torch.load("v1.pt",
 w2 = quantize.fixed_point(torch.load("w2.pt",
 		map_location=torch.device('cpu')).transpose(0, 1), fp_dec,
 		w_bitwidth2)
+
 
 snn = SNN(
 	num_inputs	= n_inputs,
