@@ -98,6 +98,8 @@ tau_syn = 5e-3
 alpha   = float(np.exp(-time_step/tau_syn))
 beta    = float(np.exp(-time_step/tau_mem))
 
+alpha = 1 - 2**-4
+beta = 1 - 2**-3
 
 weight_scale = 0.2
 
@@ -247,11 +249,11 @@ def train(x_data, y_data, lr=1e-3, nb_epochs=10):
             # Here we set up our regularizer loss
             # The strength paramters here are merely a guess and there should be ample room for improvement by
             # tuning these paramters.
-            reg_loss = 2e-6*torch.sum(spks) # L1 loss on total number of spikes
-            reg_loss += 2e-6*torch.mean(torch.sum(torch.sum(spks,dim=0),dim=0)**2) # L2 loss on spikes per neuron
+            # reg_loss = 2e-6*torch.sum(spks) # L1 loss on total number of spikes
+            # reg_loss += 2e-6*torch.mean(torch.sum(torch.sum(spks,dim=0),dim=0)**2) # L2 loss on spikes per neuron
             
             # Here we combine supervised loss and the regularizer
-            loss_val = loss_fn(log_p_y, y_local) + reg_loss
+            loss_val = loss_fn(log_p_y, y_local) # + reg_loss
 
             optimizer.zero_grad()
             loss_val.backward()
@@ -276,11 +278,20 @@ def compute_classification_accuracy(x_data, y_data):
         accs.append(tmp)
     return np.mean(accs)
 
-nb_epochs = 200
+nb_epochs = 300
 
 loss_hist = train(x_train, y_train, lr=2e-4, nb_epochs=nb_epochs)
 print("Training accuracy: %.3f"%(compute_classification_accuracy(x_train,y_train)))
 print("Test accuracy: %.3f"%(compute_classification_accuracy(x_test,y_test)))
+
+with open("w1.pt", "wb") as fp:
+    torch.save(w1, fp)
+
+with open("v1.pt", "wb") as fp:
+    torch.save(v1, fp)
+
+with open("w2.pt", "wb") as fp:
+    torch.save(w2, fp)
 
 def get_mini_batch(x_data, y_data, shuffle=False):
     for ret in sparse_data_generator_from_hdf5_spikes(x_data, y_data, batch_size, nb_steps, nb_inputs, max_time, shuffle=shuffle):
