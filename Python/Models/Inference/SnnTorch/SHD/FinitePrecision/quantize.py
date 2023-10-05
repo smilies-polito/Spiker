@@ -40,12 +40,25 @@ class Quantize:
 
 		return quant
 
+	def to_float(self, value):
+
+		if type(value).__module__ == np.__name__:
+			quant = value.astype(float)
+
+		elif type(value).__module__ == torch.__name__:
+			quant = value.type(torch.float)
+
+		else:
+			quant = float(value)
+
+		return quant
+
 	def saturated_int(self, value, bitwidth):
-		return self.saturate(self.to_int(value), bitwidth)
+		return self.to_int(self.saturate(value, bitwidth))
 
 	def fixed_point(self, value, fp_dec, bitwidth):
 
-		quant = value * 2**fp_dec
+		quant = self.to_float(value) * float(2**fp_dec)
 
 		return self.to_int(self.saturate(quant, bitwidth))
 
