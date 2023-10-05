@@ -333,7 +333,7 @@ w2 = torch.load("w2.pt", map_location=torch.device('cpu')).transpose(0, 1)
 
 accuracy = []
 
-for fp_dec in range(63, -1, -1): 
+for fp_dec in range(32, 31, -1): 
 
 	# Quantize weights
 	w1 = quantize.fixed_point(w1, fp_dec, w_bitwidth1)
