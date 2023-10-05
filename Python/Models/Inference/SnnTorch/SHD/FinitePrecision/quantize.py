@@ -230,8 +230,6 @@ class SNN(nn.Module):
 
 			ro_mem_rec.append(ro_mem)
 
-			break
-
 		return 	torch.stack(ro_mem_rec, dim=1) \
 
 def compute_classification_accuracy(snn, dataset):
@@ -322,7 +320,7 @@ w2 = torch.load("w2.pt", map_location=torch.device('cpu')).transpose(0, 1)
 
 accuracy = []
 
-for fp_dec in range(62, 61, -1): 
+for fp_dec in range(63, -1, -1): 
 
 	# Quantize weights
 	w1 = quantize.fixed_point(w1, fp_dec, w_bitwidth1)
@@ -353,8 +351,7 @@ with open(filename, "wb") as fp:
 	np.save(fp, np.array(accuracy))
 
 
-
-# # WEIGHTS BIT-WIDTH ------------------------------------------------------------
+# # WEIGHTS BIT-WIDTH FF1 --------------------------------------------------------
 # 
 # filename = "w1_bw.pkl"
 # filename = result_dir + "/" + filename
@@ -409,3 +406,219 @@ with open(filename, "wb") as fp:
 # 
 # with open(filename, "wb") as fp:
 # 	pickle.dump(acc_dict, fp)
+
+
+
+# # WEIGHTS BIT-WIDTH R1 ---------------------------------------------------------
+# 
+# filename = "v1_bw.pkl"
+# filename = result_dir + "/" + filename
+# 
+# # Fixed bit-widths
+# bitwidth1 = 64
+# bitwidth2 = 64
+# w_bitwidth1 = 64
+# w_bitwidth2 = 64
+# 
+# # Import trained weights
+# w1 = torch.load("w1.pt", map_location=torch.device('cpu')).transpose(0, 1)
+# v1 = torch.load("v1.pt", map_location=torch.device('cpu')).transpose(0, 1)
+# w2 = torch.load("w2.pt", map_location=torch.device('cpu')).transpose(0, 1)
+# 
+# acc_dict = {}
+# 
+# for fp_dec in range(3): 
+# 
+# 	fp_key = "fp " + str(fp_dec)
+# 
+# 	accuracy = []
+# 
+# 	for w_bitwidth_fb1 in range(1, 2):
+# 
+# 		# Quantize weights
+# 		w1 = quantize.fixed_point(w1, fp_dec, w_bitwidth1)
+# 		v1 = quantize.fixed_point(v1, fp_dec, w_bitwidth_fb1)
+# 		w2 = quantize.fixed_point(w2, fp_dec, w_bitwidth2)
+# 
+# 		# Quantize threshold
+# 		threshold = quantize.fixed_point(threshold, fp_dec, bitwidth1)
+# 
+# 		# Generate the network
+# 		snn = SNN(
+# 			num_inputs	= n_inputs,
+# 			num_hidden	= n_hidden,
+# 			num_output	= n_output,
+# 			threshold	= threshold,
+# 			alpha_shift	= alpha_shift,
+# 			beta_shift	= beta_shift,
+# 			w1		= w1,
+# 			v1		= v1,
+# 			w2		= w2,
+# 			bitwidth1	= bitwidth1,
+# 			bitwidth2	= bitwidth2
+# 		)
+# 
+# 		accuracy.append(compute_classification_accuracy(snn, dataset))
+# 
+# 	acc_dict[fp_key] = accuracy
+# 
+# with open(filename, "wb") as fp:
+# 	pickle.dump(acc_dict, fp)
+
+
+
+# # WEIGHTS BIT-WIDTH FF2 --------------------------------------------------------
+# 
+# filename = "w2_bw.pkl"
+# filename = result_dir + "/" + filename
+# 
+# # Fixed bit-widths
+# bitwidth1 = 64
+# bitwidth2 = 64
+# w_bitwidth1 = 64
+# w_bitwidth_fb1 = 64
+# 
+# # Import trained weights
+# w1 = torch.load("w1.pt", map_location=torch.device('cpu')).transpose(0, 1)
+# v1 = torch.load("v1.pt", map_location=torch.device('cpu')).transpose(0, 1)
+# w2 = torch.load("w2.pt", map_location=torch.device('cpu')).transpose(0, 1)
+# 
+# acc_dict = {}
+# 
+# for fp_dec in range(3): 
+# 
+# 	fp_key = "fp " + str(fp_dec)
+# 
+# 	accuracy = []
+# 
+# 	for w_bitwidth2 in range(1, 2):
+# 
+# 		# Quantize weights
+# 		w1 = quantize.fixed_point(w1, fp_dec, w_bitwidth1)
+# 		v1 = quantize.fixed_point(v1, fp_dec, w_bitwidth_fb1)
+# 		w2 = quantize.fixed_point(w2, fp_dec, w_bitwidth2)
+# 
+# 		# Quantize threshold
+# 		threshold = quantize.fixed_point(threshold, fp_dec, bitwidth1)
+# 
+# 		# Generate the network
+# 		snn = SNN(
+# 			num_inputs	= n_inputs,
+# 			num_hidden	= n_hidden,
+# 			num_output	= n_output,
+# 			threshold	= threshold,
+# 			alpha_shift	= alpha_shift,
+# 			beta_shift	= beta_shift,
+# 			w1		= w1,
+# 			v1		= v1,
+# 			w2		= w2,
+# 			bitwidth1	= bitwidth1,
+# 			bitwidth2	= bitwidth2
+# 		)
+# 
+# 		accuracy.append(compute_classification_accuracy(snn, dataset))
+# 
+# 	acc_dict[fp_key] = accuracy
+# 
+# with open(filename, "wb") as fp:
+# 	pickle.dump(acc_dict, fp)
+
+
+# # NEURON BITWIDTH L1 -----------------------------------------------------------
+# 
+# filename = "bw1.npy"
+# filename = result_dir + "/" + filename
+# 
+# # Fixed bit-widths
+# fp_dec = 32
+# bitwidth2 = 64
+# w_bitwidth1 = 64
+# w_bitwidth_fb1 = 64
+# w_bitwidth2 = 64
+# 
+# # Import trained weights
+# w1 = torch.load("w1.pt", map_location=torch.device('cpu')).transpose(0, 1)
+# v1 = torch.load("v1.pt", map_location=torch.device('cpu')).transpose(0, 1)
+# w2 = torch.load("w2.pt", map_location=torch.device('cpu')).transpose(0, 1)
+# 
+# # Quantize weights
+# w1 = quantize.fixed_point(w1, fp_dec, w_bitwidth1)
+# v1 = quantize.fixed_point(v1, fp_dec, w_bitwidth_fb1)
+# w2 = quantize.fixed_point(w2, fp_dec, w_bitwidth2)
+# 
+# accuracy = []
+# 
+# for bitwidth1 in range(62, 61, -1): 
+# 
+# 	# Quantize threshold
+# 	threshold = quantize.fixed_point(threshold, fp_dec, bitwidth1)
+# 
+# 	# Generate the network
+# 	snn = SNN(
+# 		num_inputs	= n_inputs,
+# 		num_hidden	= n_hidden,
+# 		num_output	= n_output,
+# 		threshold	= threshold,
+# 		alpha_shift	= alpha_shift,
+# 		beta_shift	= beta_shift,
+# 		w1		= w1,
+# 		v1		= v1,
+# 		w2		= w2,
+# 		bitwidth1	= bitwidth1,
+# 		bitwidth2	= bitwidth2
+# 	)
+# 
+# 	accuracy.append(compute_classification_accuracy(snn, dataset))
+# 
+# with open(filename, "wb") as fp:
+# 	np.save(fp, np.array(accuracy))
+ 
+
+# # NEURON BITWIDTH L2 -----------------------------------------------------------
+# 
+# filename = "bw2.npy"
+# filename = result_dir + "/" + filename
+# 
+# # Fixed bit-widths
+# fp_dec = 32
+# bitwidth1 = 64
+# w_bitwidth1 = 64
+# w_bitwidth_fb1 = 64
+# w_bitwidth2 = 64
+# 
+# # Import trained weights
+# w1 = torch.load("w1.pt", map_location=torch.device('cpu')).transpose(0, 1)
+# v1 = torch.load("v1.pt", map_location=torch.device('cpu')).transpose(0, 1)
+# w2 = torch.load("w2.pt", map_location=torch.device('cpu')).transpose(0, 1)
+# 
+# # Quantize weights
+# w1 = quantize.fixed_point(w1, fp_dec, w_bitwidth1)
+# v1 = quantize.fixed_point(v1, fp_dec, w_bitwidth_fb1)
+# w2 = quantize.fixed_point(w2, fp_dec, w_bitwidth2)
+# 
+# accuracy = []
+# 
+# for bitwidth2 in range(62, 61, -1): 
+# 
+# 	# Quantize threshold
+# 	threshold = quantize.fixed_point(threshold, fp_dec, bitwidth1)
+# 
+# 	# Generate the network
+# 	snn = SNN(
+# 		num_inputs	= n_inputs,
+# 		num_hidden	= n_hidden,
+# 		num_output	= n_output,
+# 		threshold	= threshold,
+# 		alpha_shift	= alpha_shift,
+# 		beta_shift	= beta_shift,
+# 		w1		= w1,
+# 		v1		= v1,
+# 		w2		= w2,
+# 		bitwidth1	= bitwidth1,
+# 		bitwidth2	= bitwidth2
+# 	)
+# 
+# 	accuracy.append(compute_classification_accuracy(snn, dataset))
+# 
+# with open(filename, "wb") as fp:
+# 	np.save(fp, np.array(accuracy))
