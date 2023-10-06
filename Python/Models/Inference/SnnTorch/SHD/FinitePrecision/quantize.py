@@ -245,7 +245,7 @@ class SNN(nn.Module):
 
 		return 	torch.stack(ro_mem_rec, dim=1) \
 
-def compute_classification_accuracy(snn, dataset):
+def compute_classification_accuracy(snn, dataset, transform):
 
 	""" 
 	Computes classification accuracy on supplied data.
@@ -333,32 +333,32 @@ w2 = torch.load("w2.pt", map_location=torch.device('cpu')).transpose(0, 1)
 
 accuracy = []
 
-for fp_dec in range(32, 31, -1): 
+for fp_dec in range(63, -1, -1): 
 
 	# Quantize weights
-	w1 = quantize.fixed_point(w1, fp_dec, w_bitwidth1)
-	v1 = quantize.fixed_point(v1, fp_dec, w_bitwidth_fb1)
-	w2 = quantize.fixed_point(w2, fp_dec, w_bitwidth2)
+	w1_quant = quantize.fixed_point(w1, fp_dec, w_bitwidth1)
+	v1_quant = quantize.fixed_point(v1, fp_dec, w_bitwidth_fb1)
+	w2_quant = quantize.fixed_point(w2, fp_dec, w_bitwidth2)
 
 	# Quantize threshold
-	threshold = quantize.fixed_point(threshold, fp_dec, bitwidth1)
+	threshold_quant = quantize.fixed_point(threshold, fp_dec, bitwidth1)
 
 	# Generate the network
 	snn = SNN(
 		num_inputs	= n_inputs,
 		num_hidden	= n_hidden,
 		num_output	= n_output,
-		threshold	= threshold,
+		threshold	= threshold_quant,
 		alpha_shift	= alpha_shift,
 		beta_shift	= beta_shift,
-		w1		= w1,
-		v1		= v1,
-		w2		= w2,
+		w1          = w1_quant,
+		v1          = v1_quant,
+		w2          = w2_quant,
 		bitwidth1	= bitwidth1,
 		bitwidth2	= bitwidth2
 	)
 
-	accuracy.append(compute_classification_accuracy(snn, dataset))
+	accuracy.append(compute_classification_accuracy(snn, dataset, transform))
 
 with open(filename, "wb") as fp:
 	np.save(fp, np.array(accuracy))
