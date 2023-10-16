@@ -53,6 +53,7 @@ def createNetwork(networkList, weightFilename, thresholdFilename, mode,
 
 	network = {}
 
+	i = 0
 	for layer in range(1, len(networkList)):
 
 		if mode == "test":
@@ -65,14 +66,16 @@ def createNetwork(networkList, weightFilename, thresholdFilename, mode,
 		# Create the excitatory layer
 		createLayer(network, "exc", excDictList[layer-1], networkList,
 				layer, mode, thresholdFile,
-				fixed_point_decimals, neuron_bitwidth,
+				fixed_point_decimals, neuron_bitwidth[i],
 				trainPrecision)
 
 		# Create the excitatory to excitatory connection
 		intraLayersSynapses(network, "exc2exc", mode, networkList,
 				weightFile, layer, scaleFactors[layer-1],
-				fixed_point_decimals, weights_bitwidth,
+				fixed_point_decimals, weights_bitwidth[i],
 				trainPrecision, rng)
+
+		i += 1
 
 	return network
 
