@@ -119,7 +119,7 @@ def updateNetwork(networkList, network, inputSpikes, dt_tauDict, exp_shift,
 	layerName = "excLayer1"
 
 	# Update the first excitatory layer
-	updateExcLayer(network, 1, exp_shift, inputSpikes, neuron_bitWidth)
+	updateExcLayer(network, 1, exp_shift, inputSpikes, neuron_bitWidth[0])
 
 	for layer in range(2, len(networkList)):
 
@@ -128,7 +128,7 @@ def updateNetwork(networkList, network, inputSpikes, dt_tauDict, exp_shift,
 		# Update the excitatory layer
 		updateExcLayer(network, layer, exp_shift,
 			network["excLayer" + str(layer - 1)]["outSpikes"][0],
-			neuron_bitWidth)
+			neuron_bitWidth[layer-1])
 
 
 def rest(network, networkList):
