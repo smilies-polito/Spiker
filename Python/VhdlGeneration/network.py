@@ -6,6 +6,9 @@ from multi_cycle import MultiCycle
 from layer import Layer
 from testbench import Testbench
 from spiker_pkg import SpikerPackage
+from decoder import Decoder
+from mux import Mux
+from reg import Reg
 from vhdl import track_signals, debug_component, sub_components, write_file_all
 from utils import ceil_pow2, obj_types, is_iterable
 
@@ -333,3 +336,97 @@ class Network_tb(Testbench):
 				"in_spikes_rd_en <= ready;")
 			self.architecture.bodyCodeHeader.add(
 				"out_spikes_w_en <= ready;")
+
+class DummyAccelerator(VHDLblock):
+
+	def __init__(self, config, debug = False, debug_list = []):
+
+		self.net = Network(
+				n_cycles	= config["n_cycles"],
+				debug		= debug,
+				debug_list	= debug_list
+		)
+
+		self.layer_sizes = []
+
+		for key in config:
+			if "layer" in key:
+
+				new_layer = Layer(
+					label		= config[key]["label"],
+					w_exc		= config[key]["w_exc"],
+					w_inh		= config[key]["w_inh"],
+					v_th		= config[key]["v_th"],
+					v_reset		= config[key][
+								"v_reset"],
+					bitwidth	= config[key][
+								"bitwidth"],
+					fp_decimals	= config[key][
+								"fp_decimals"],
+					w_inh_bw	= config[key][
+								"w_inh_bw"],
+					w_exc_bw	= config[key][
+								"w_exc_bw"],
+					shift		= config[key]["shift"],
+					reset		= config[key]["reset"],
+					debug		= config[key]["debug"],
+					debug_list 	= config[key][
+								"debug_list"]
+				)
+
+				self.layer_sizes.append(
+					config[key]["w_exc"].shape[0]
+				)
+
+			print(self.layer_sizes)
+
+		self.input_decoder = Decoder(
+			bitwidth = int(log2(ceil_pow2(self.layer_sizes[0])))
+		)
+
+		print(int(log2(ceil_pow2(self.layer_sizes[-1]))))
+
+		self.output_mux = Mux(
+			n_in		= int(log2(ceil_pow2(
+					self.layer_sizes[-1]))),
+			in_type		= "std_logic",
+			bitwidth	= 1,
+		)
+
+		self.ff	= Reg(
+			bitwidth	= 1,
+			reg_type	= "std_logic",
+		)
+
+config = {}
+
+config["n_cycles"] = 10
+
+config["layer_0"] = {
+	"label"	: "",
+	"w_exc"		: np.array(
+			[[1, 1, 1, 1],
+			[2, 2, 2, 2],
+			[3, 3, 3, 3]]
+	),
+	"w_inh"		: np.array(
+			[[1, 1, 1],
+			[2, 2, 2],
+			[3, 3, 3]]
+	),
+	"v_th"		: np.array([1, 1, 1]),
+	"v_reset"	: np.array([1, 1, 1]),
+	"bitwidth"	: 10,
+	"fp_decimals"	: 5,
+	"w_inh_bw"	: 6,
+	"w_exc_bw"	: 6,
+	"shift"		: 3,
+	"reset"		: "subtractive",
+	"debug"		: False,
+	"debug_list"	: []
+
+}
+
+a = DummyAccelerator(config)
+
+print(a.code())
