@@ -25,6 +25,7 @@ class Quantize:
 			elif value < -2**(bitwidth-1):
 				value = -2**(bitwidth-1)
 
+
 		return value
 
 	def to_int(self, value):
@@ -253,7 +254,13 @@ def compute_classification_accuracy(snn, dataset, transform):
 
 	accs = []
 
+	count = 0
+	max_count = 100
+
 	for data in dataset:
+
+		if count == max_count:
+			break
 
 		dense_data = transform(data[0]).to_dense()
 		label = data[1]
@@ -267,6 +274,8 @@ def compute_classification_accuracy(snn, dataset, transform):
 		_, am=torch.max(m, 0)
 
 		accs.append(label == am)
+
+		count += 1
 
 	return np.mean(accs)
 
@@ -313,6 +322,11 @@ result_dir = "./Results"
 mkdir = "mkdir -p " + result_dir
 sp.run(mkdir, shell=True, executable="/bin/bash")
 
+# Import trained weights
+w1 = torch.load("w1.pt", map_location=torch.device('cpu')).transpose(0, 1)
+v1 = torch.load("v1.pt", map_location=torch.device('cpu')).transpose(0, 1)
+w2 = torch.load("w2.pt", map_location=torch.device('cpu')).transpose(0, 1)
+
 
 # # FIXED-POINT SHIFT ------------------------------------------------------------ 
 # 
@@ -325,11 +339,6 @@ sp.run(mkdir, shell=True, executable="/bin/bash")
 # w_bitwidth1 = 64
 # w_bitwidth_fb1 = 64
 # w_bitwidth2 = 64
-# 
-# # Import trained weights
-# w1 = torch.load("w1.pt", map_location=torch.device('cpu')).transpose(0, 1)
-# v1 = torch.load("v1.pt", map_location=torch.device('cpu')).transpose(0, 1)
-# w2 = torch.load("w2.pt", map_location=torch.device('cpu')).transpose(0, 1)
 # 
 # accuracy = []
 # 
@@ -364,67 +373,56 @@ sp.run(mkdir, shell=True, executable="/bin/bash")
 # 	np.save(fp, np.array(accuracy))
 
 
-# WEIGHTS BIT-WIDTH FF1 --------------------------------------------------------
-
-# Import trained weights
-w1 = torch.load("w1.pt", map_location=torch.device('cpu')).transpose(0, 1)
-v1 = torch.load("v1.pt", map_location=torch.device('cpu')).transpose(0, 1)
-w2 = torch.load("w2.pt", map_location=torch.device('cpu')).transpose(0, 1)
-
-filename = "w1_bw.pkl"
-filename = result_dir + "/" + filename
-
-# Fixed bit-widths
-bitwidth1 = 64
-bitwidth2 = 64
-w_bitwidth_fb1 = 64
-w_bitwidth2 = 64
-
-# Import trained weights
-w1 = torch.load("w1.pt", map_location=torch.device('cpu')).transpose(0, 1)
-v1 = torch.load("v1.pt", map_location=torch.device('cpu')).transpose(0, 1)
-w2 = torch.load("w2.pt", map_location=torch.device('cpu')).transpose(0, 1)
-
-acc_dict = {}
-
-for fp_dec in range(9, 15): 
-
-	fp_key = "fp " + str(fp_dec)
-
-	accuracy = []
-
-	for w_bitwidth1 in range(64):
-
-		# Quantize weights
-		w1_quant = quantize.fixed_point(w1, fp_dec, w_bitwidth1)
-		v1_quant = quantize.fixed_point(v1, fp_dec, w_bitwidth_fb1)
-		w2_quant = quantize.fixed_point(w2, fp_dec, w_bitwidth2)
-
-		# Quantize threshold
-		threshold_quant = quantize.fixed_point(threshold, fp_dec, bitwidth1)
-
-		# Generate the network
-		snn = SNN(
-			num_inputs	= n_inputs,
-			num_hidden	= n_hidden,
-			num_output	= n_output,
-			threshold	= threshold_quant,
-			alpha_shift	= alpha_shift,
-			beta_shift	= beta_shift,
-			w1          = w1_quant,
-			v1          = v1_quant,
-			w2          = w2_quant,
-			bitwidth1	= bitwidth1,
-			bitwidth2	= bitwidth2
-		)
-
-		accuracy.append(compute_classification_accuracy(snn, dataset, transform))
-
-	acc_dict[fp_key] = accuracy
-
-with open(filename, "wb") as fp:
-	pickle.dump(acc_dict, fp)
-
+# # WEIGHTS BIT-WIDTH FF1 --------------------------------------------------------
+# 
+# filename = "w1_bw.pkl"
+# filename = result_dir + "/" + filename
+# 
+# # Fixed bit-widths
+# bitwidth1 = 64
+# bitwidth2 = 64
+# w_bitwidth_fb1 = 64
+# w_bitwidth2 = 64
+# 
+# acc_dict = {}
+# 
+# for fp_dec in range(9, 15): 
+# 
+# 	fp_key = "fp " + str(fp_dec)
+# 
+# 	accuracy = []
+# 
+# 	for w_bitwidth1 in range(32):
+# 
+# 		# Quantize weights
+# 		w1_quant = quantize.fixed_point(w1, fp_dec, w_bitwidth1)
+# 		v1_quant = quantize.fixed_point(v1, fp_dec, w_bitwidth_fb1)
+# 		w2_quant = quantize.fixed_point(w2, fp_dec, w_bitwidth2)
+# 
+# 		# Quantize threshold
+# 		threshold_quant = quantize.fixed_point(threshold, fp_dec, bitwidth1)
+# 
+# 		# Generate the network
+# 		snn = SNN(
+# 			num_inputs	= n_inputs,
+# 			num_hidden	= n_hidden,
+# 			num_output	= n_output,
+# 			threshold	= threshold_quant,
+# 			alpha_shift	= alpha_shift,
+# 			beta_shift	= beta_shift,
+# 			w1		= w1_quant,
+# 			v1		= v1_quant,
+# 			w2		= w2_quant,
+# 			bitwidth1	= bitwidth1,
+# 			bitwidth2	= bitwidth2
+# 		)
+# 
+# 		accuracy.append(compute_classification_accuracy(snn, dataset, transform))
+# 
+# 	acc_dict[fp_key] = accuracy
+# 
+# with open(filename, "wb") as fp:
+# 	pickle.dump(acc_dict, fp)
 
 
 # WEIGHTS BIT-WIDTH R1 ---------------------------------------------------------
@@ -446,7 +444,7 @@ for fp_dec in range(9, 15):
 
 	accuracy = []
 
-	for w_bitwidth_fb1 in range(64):
+	for w_bitwidth_fb1 in range(32):
 
 		# Quantize weights
 		w1_quant = quantize.fixed_point(w1, fp_dec, w_bitwidth1)
@@ -499,7 +497,7 @@ for fp_dec in range(9, 15):
 
 	accuracy = []
 
-	for w_bitwidth2 in range(64):
+	for w_bitwidth2 in range(32):
 
 		# Quantize weights
 		w1_quant = quantize.fixed_point(w1, fp_dec, w_bitwidth1)
@@ -543,11 +541,6 @@ with open(filename, "wb") as fp:
 # w_bitwidth1 = 64
 # w_bitwidth_fb1 = 64
 # w_bitwidth2 = 64
-# 
-# # Import trained weights
-# w1 = torch.load("w1.pt", map_location=torch.device('cpu')).transpose(0, 1)
-# v1 = torch.load("v1.pt", map_location=torch.device('cpu')).transpose(0, 1)
-# w2 = torch.load("w2.pt", map_location=torch.device('cpu')).transpose(0, 1)
 # 
 # # Quantize weights
 # w1 = quantize.fixed_point(w1, fp_dec, w_bitwidth1)
@@ -593,11 +586,6 @@ with open(filename, "wb") as fp:
 # w_bitwidth1 = 64
 # w_bitwidth_fb1 = 64
 # w_bitwidth2 = 64
-# 
-# # Import trained weights
-# w1 = torch.load("w1.pt", map_location=torch.device('cpu')).transpose(0, 1)
-# v1 = torch.load("v1.pt", map_location=torch.device('cpu')).transpose(0, 1)
-# w2 = torch.load("w2.pt", map_location=torch.device('cpu')).transpose(0, 1)
 # 
 # # Quantize weights
 # w1 = quantize.fixed_point(w1, fp_dec, w_bitwidth1)
