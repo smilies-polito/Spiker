@@ -23,7 +23,7 @@ class Barrier(VHDLblock):
 
 		self.reg	= Reg(
 			bitwidth	= bitwidth,
-			reg_type	= "std_logic",
+			reg_type	= "std_logic_vector",
 			rst		= "sync",
 			active		= "low",
 			debug 		= debug,

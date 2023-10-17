@@ -30,7 +30,7 @@ class MultiInputDP(VHDLblock):
 
 		self.reg = Reg(
 			bitwidth = n_exc_inputs, 
-			reg_type = "std_logic",
+			reg_type = "std_logic_vector",
 			rst = "sync", 
 			active = "low"
 		)
