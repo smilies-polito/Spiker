@@ -622,14 +622,13 @@ w2 = torch.load("w2.pt", map_location=torch.device('cpu')).transpose(0, 1)
 # with open(filename, "wb") as fp:
 # 	np.save(fp, np.array(accuracy))
 
-
 # Fixed bit-widths
 fp_dec = 9
 bitwidth1 = 11
-bitwidth2 = 9
+bitwidth2 = 8
 w_bitwidth1 = 6
 w_bitwidth_fb1 = 5
-w_bitwidth2 = 8
+w_bitwidth2 = 6
 
 # Quantize weights
 w1_quant = quantize.fixed_point(w1, fp_dec, w_bitwidth1)
