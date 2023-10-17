@@ -14,7 +14,7 @@ num_outputs = 10
 num_steps = 100
 beta = 0.9375
 
-num_epochs = 30
+num_epochs = 100
 loss_hist = []
 test_loss_hist = []
 counter = 0
