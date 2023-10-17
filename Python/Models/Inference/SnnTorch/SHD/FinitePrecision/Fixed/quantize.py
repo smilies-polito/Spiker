@@ -261,8 +261,8 @@ def compute_classification_accuracy(snn, dataset, transform):
 
 	for data in dataset:
 
-		if count == max_count:
-			break
+		# if count == max_count:
+		# 	break
 
 		dense_data = transform(data[0]).to_dense()
 		label = data[1]
@@ -375,161 +375,161 @@ w2 = torch.load("w2.pt", map_location=torch.device('cpu')).transpose(0, 1)
 # 	np.save(fp, np.array(accuracy))
 
 
-# WEIGHTS BIT-WIDTH FF1 --------------------------------------------------------
-
-filename = "w1_bw.pkl"
-filename = result_dir + "/" + filename
-
-# Fixed bit-widths
-bitwidth1 = 64
-bitwidth2 = 64
-w_bitwidth_fb1 = 64
-w_bitwidth2 = 64
-
-acc_dict = {}
-
-for fp_dec in range(9, 13): 
-
-	fp_key = "fp " + str(fp_dec)
-
-	accuracy = []
-
-	for w_bitwidth1 in range(32):
-
-		# Quantize weights
-		w1_quant = quantize.fixed_point(w1, fp_dec, w_bitwidth1)
-		v1_quant = quantize.fixed_point(v1, fp_dec, w_bitwidth_fb1)
-		w2_quant = quantize.fixed_point(w2, fp_dec, w_bitwidth2)
-
-		# Quantize threshold
-		threshold_quant = quantize.fixed_point(threshold, fp_dec, bitwidth1)
-
-		# Generate the network
-		snn = SNN(
-			num_inputs	= n_inputs,
-			num_hidden	= n_hidden,
-			num_output	= n_output,
-			threshold	= threshold_quant,
-			alpha_shift	= alpha_shift,
-			beta_shift	= beta_shift,
-			w1		= w1_quant,
-			v1		= v1_quant,
-			w2		= w2_quant,
-			bitwidth1	= bitwidth1,
-			bitwidth2	= bitwidth2
-		)
-
-		accuracy.append(compute_classification_accuracy(snn, dataset, transform))
-
-	acc_dict[fp_key] = accuracy
-
-with open(filename, "wb") as fp:
-	pickle.dump(acc_dict, fp)
-
-
-# WEIGHTS BIT-WIDTH R1 ---------------------------------------------------------
-
-filename = "v1_bw.pkl"
-filename = result_dir + "/" + filename
-
-# Fixed bit-widths
-bitwidth1 = 64
-bitwidth2 = 64
-w_bitwidth1 = 64
-w_bitwidth2 = 64
-
-acc_dict = {}
-
-for fp_dec in range(9, 13): 
-
-	fp_key = "fp " + str(fp_dec)
-
-	accuracy = []
-
-	for w_bitwidth_fb1 in range(32):
-
-		# Quantize weights
-		w1_quant = quantize.fixed_point(w1, fp_dec, w_bitwidth1)
-		v1_quant = quantize.fixed_point(v1, fp_dec, w_bitwidth_fb1)
-		w2_quant = quantize.fixed_point(w2, fp_dec, w_bitwidth2)
-
-		# Quantize threshold
-		threshold_quant = quantize.fixed_point(threshold, fp_dec, bitwidth1)
-
-		# Generate the network
-		snn = SNN(
-			num_inputs	= n_inputs,
-			num_hidden	= n_hidden,
-			num_output	= n_output,
-			threshold	= threshold_quant,
-			alpha_shift	= alpha_shift,
-			beta_shift	= beta_shift,
-			w1          = w1_quant,
-			v1          = v1_quant,
-			w2          = w2_quant,
-			bitwidth1	= bitwidth1,
-			bitwidth2	= bitwidth2
-		)
-
-		accuracy.append(compute_classification_accuracy(snn, dataset, transform))
-
-	acc_dict[fp_key] = accuracy
-
-with open(filename, "wb") as fp:
-	pickle.dump(acc_dict, fp)
-
-
-
-# WEIGHTS BIT-WIDTH FF2 --------------------------------------------------------
-
-filename = "w2_bw.pkl"
-filename = result_dir + "/" + filename
-
-# Fixed bit-widths
-bitwidth1 = 64
-bitwidth2 = 64
-w_bitwidth1 = 64
-w_bitwidth_fb1 = 64
-
-acc_dict = {}
-
-for fp_dec in range(9, 13): 
-
-	fp_key = "fp " + str(fp_dec)
-
-	accuracy = []
-
-	for w_bitwidth2 in range(32):
-
-		# Quantize weights
-		w1_quant = quantize.fixed_point(w1, fp_dec, w_bitwidth1)
-		v1_quant = quantize.fixed_point(v1, fp_dec, w_bitwidth_fb1)
-		w2_quant = quantize.fixed_point(w2, fp_dec, w_bitwidth2)
-
-		# Quantize threshold
-		threshold_quant = quantize.fixed_point(threshold, fp_dec, bitwidth1)
-
-		# Generate the network
-		snn = SNN(
-			num_inputs	= n_inputs,
-			num_hidden	= n_hidden,
-			num_output	= n_output,
-			threshold	= threshold_quant,
-			alpha_shift	= alpha_shift,
-			beta_shift	= beta_shift,
-			w1          = w1_quant,
-			v1          = v1_quant,
-			w2          = w2_quant,
-			bitwidth1	= bitwidth1,
-			bitwidth2	= bitwidth2
-		)
-
-		accuracy.append(compute_classification_accuracy(snn, dataset, transform))
-
-	acc_dict[fp_key] = accuracy
-
-with open(filename, "wb") as fp:
-	pickle.dump(acc_dict, fp)
+# # WEIGHTS BIT-WIDTH FF1 --------------------------------------------------------
+# 
+# filename = "w1_bw.pkl"
+# filename = result_dir + "/" + filename
+# 
+# # Fixed bit-widths
+# bitwidth1 = 64
+# bitwidth2 = 64
+# w_bitwidth_fb1 = 64
+# w_bitwidth2 = 64
+# 
+# acc_dict = {}
+# 
+# for fp_dec in range(9, 13): 
+# 
+# 	fp_key = "fp " + str(fp_dec)
+# 
+# 	accuracy = []
+# 
+# 	for w_bitwidth1 in range(32):
+# 
+# 		# Quantize weights
+# 		w1_quant = quantize.fixed_point(w1, fp_dec, w_bitwidth1)
+# 		v1_quant = quantize.fixed_point(v1, fp_dec, w_bitwidth_fb1)
+# 		w2_quant = quantize.fixed_point(w2, fp_dec, w_bitwidth2)
+# 
+# 		# Quantize threshold
+# 		threshold_quant = quantize.fixed_point(threshold, fp_dec, bitwidth1)
+# 
+# 		# Generate the network
+# 		snn = SNN(
+# 			num_inputs	= n_inputs,
+# 			num_hidden	= n_hidden,
+# 			num_output	= n_output,
+# 			threshold	= threshold_quant,
+# 			alpha_shift	= alpha_shift,
+# 			beta_shift	= beta_shift,
+# 			w1		= w1_quant,
+# 			v1		= v1_quant,
+# 			w2		= w2_quant,
+# 			bitwidth1	= bitwidth1,
+# 			bitwidth2	= bitwidth2
+# 		)
+# 
+# 		accuracy.append(compute_classification_accuracy(snn, dataset, transform))
+# 
+# 	acc_dict[fp_key] = accuracy
+# 
+# with open(filename, "wb") as fp:
+# 	pickle.dump(acc_dict, fp)
+# 
+# 
+# # WEIGHTS BIT-WIDTH R1 ---------------------------------------------------------
+# 
+# filename = "v1_bw.pkl"
+# filename = result_dir + "/" + filename
+# 
+# # Fixed bit-widths
+# bitwidth1 = 64
+# bitwidth2 = 64
+# w_bitwidth1 = 64
+# w_bitwidth2 = 64
+# 
+# acc_dict = {}
+# 
+# for fp_dec in range(9, 13): 
+# 
+# 	fp_key = "fp " + str(fp_dec)
+# 
+# 	accuracy = []
+# 
+# 	for w_bitwidth_fb1 in range(32):
+# 
+# 		# Quantize weights
+# 		w1_quant = quantize.fixed_point(w1, fp_dec, w_bitwidth1)
+# 		v1_quant = quantize.fixed_point(v1, fp_dec, w_bitwidth_fb1)
+# 		w2_quant = quantize.fixed_point(w2, fp_dec, w_bitwidth2)
+# 
+# 		# Quantize threshold
+# 		threshold_quant = quantize.fixed_point(threshold, fp_dec, bitwidth1)
+# 
+# 		# Generate the network
+# 		snn = SNN(
+# 			num_inputs	= n_inputs,
+# 			num_hidden	= n_hidden,
+# 			num_output	= n_output,
+# 			threshold	= threshold_quant,
+# 			alpha_shift	= alpha_shift,
+# 			beta_shift	= beta_shift,
+# 			w1          = w1_quant,
+# 			v1          = v1_quant,
+# 			w2          = w2_quant,
+# 			bitwidth1	= bitwidth1,
+# 			bitwidth2	= bitwidth2
+# 		)
+# 
+# 		accuracy.append(compute_classification_accuracy(snn, dataset, transform))
+# 
+# 	acc_dict[fp_key] = accuracy
+# 
+# with open(filename, "wb") as fp:
+# 	pickle.dump(acc_dict, fp)
+# 
+# 
+# 
+# # WEIGHTS BIT-WIDTH FF2 --------------------------------------------------------
+# 
+# filename = "w2_bw.pkl"
+# filename = result_dir + "/" + filename
+# 
+# # Fixed bit-widths
+# bitwidth1 = 64
+# bitwidth2 = 64
+# w_bitwidth1 = 64
+# w_bitwidth_fb1 = 64
+# 
+# acc_dict = {}
+# 
+# for fp_dec in range(9, 13): 
+# 
+# 	fp_key = "fp " + str(fp_dec)
+# 
+# 	accuracy = []
+# 
+# 	for w_bitwidth2 in range(32):
+# 
+# 		# Quantize weights
+# 		w1_quant = quantize.fixed_point(w1, fp_dec, w_bitwidth1)
+# 		v1_quant = quantize.fixed_point(v1, fp_dec, w_bitwidth_fb1)
+# 		w2_quant = quantize.fixed_point(w2, fp_dec, w_bitwidth2)
+# 
+# 		# Quantize threshold
+# 		threshold_quant = quantize.fixed_point(threshold, fp_dec, bitwidth1)
+# 
+# 		# Generate the network
+# 		snn = SNN(
+# 			num_inputs	= n_inputs,
+# 			num_hidden	= n_hidden,
+# 			num_output	= n_output,
+# 			threshold	= threshold_quant,
+# 			alpha_shift	= alpha_shift,
+# 			beta_shift	= beta_shift,
+# 			w1          = w1_quant,
+# 			v1          = v1_quant,
+# 			w2          = w2_quant,
+# 			bitwidth1	= bitwidth1,
+# 			bitwidth2	= bitwidth2
+# 		)
+# 
+# 		accuracy.append(compute_classification_accuracy(snn, dataset, transform))
+# 
+# 	acc_dict[fp_key] = accuracy
+# 
+# with open(filename, "wb") as fp:
+# 	pickle.dump(acc_dict, fp)
 
 
 
@@ -543,7 +543,7 @@ with open(filename, "wb") as fp:
 # bitwidth2 = 64
 # w_bitwidth1 = 6
 # w_bitwidth_fb1 = 5
-# w_bitwidth2 = 6
+# w_bitwidth2 = 8
 # 
 # # Quantize weights
 # w1_quant = quantize.fixed_point(w1, fp_dec, w_bitwidth1)
@@ -588,7 +588,7 @@ with open(filename, "wb") as fp:
 # bitwidth1 = 64
 # w_bitwidth1 = 6
 # w_bitwidth_fb1 = 5
-# w_bitwidth2 = 6
+# w_bitwidth2 = 8
 # 
 # # Quantize weights
 # w1_quant = quantize.fixed_point(w1, fp_dec, w_bitwidth1)
@@ -622,6 +622,43 @@ with open(filename, "wb") as fp:
 # with open(filename, "wb") as fp:
 # 	np.save(fp, np.array(accuracy))
 
+
+# Fixed bit-widths
+fp_dec = 9
+bitwidth1 = 11
+bitwidth2 = 9
+w_bitwidth1 = 6
+w_bitwidth_fb1 = 5
+w_bitwidth2 = 8
+
+# Quantize weights
+w1_quant = quantize.fixed_point(w1, fp_dec, w_bitwidth1)
+v1_quant = quantize.fixed_point(v1, fp_dec, w_bitwidth_fb1)
+w2_quant = quantize.fixed_point(w2, fp_dec, w_bitwidth2)
+
+accuracy = []
+
+# Quantize threshold
+threshold_quant = quantize.fixed_point(threshold, fp_dec, bitwidth1)
+
+# Generate the network
+snn = SNN(
+	num_inputs	= n_inputs,
+	num_hidden	= n_hidden,
+	num_output	= n_output,
+	threshold	= threshold_quant,
+	alpha_shift	= alpha_shift,
+	beta_shift	= beta_shift,
+	w1		= w1_quant,
+	v1		= v1_quant,
+	w2		= w2_quant,
+	bitwidth1	= bitwidth1,
+	bitwidth2	= bitwidth2
+)
+
+print(compute_classification_accuracy(snn, dataset, transform))
+
+
 # # Exponential shifts
 # alpha_shift_0 = alpha_shift
 # beta_shift_0 = beta_shift
@@ -642,36 +679,36 @@ with open(filename, "wb") as fp:
 # # Quantize threshold
 # threshold_quant = quantize.fixed_point(threshold, fp_dec, bitwidth1)
 # 
-# # # ALPHA1 SHIFT -----------------------------------------------------------------
-# # 
-# # filename = "alpha1.npy"
-# # filename = result_dir + "/" + filename
-# # 
-# # accuracy = []
-# # 
-# # for alpha_shift in range(10): 
-# # 
-# # 	# Generate the network
-# # 	snn = SNN(
-# # 		num_inputs	= n_inputs,
-# # 		num_hidden	= n_hidden,
-# # 		num_output	= n_output,
-# # 		threshold	= threshold_quant,
-# # 		alpha_shift	= alpha_shift,
-# # 		beta_shift	= beta_shift_0,
-# # 		alpha_shift2	= alpha_shift_0,
-# # 		beta_shift2	= beta_shift_0,
-# # 		w1		= w1_quant,
-# # 		v1		= v1_quant,
-# # 		w2		= w2_quant,
-# # 		bitwidth1	= bitwidth1,
-# # 		bitwidth2	= bitwidth2
-# # 	)
-# # 
-# # 	accuracy.append(compute_classification_accuracy(snn, dataset, transform))
-# # 
-# # with open(filename, "wb") as fp:
-# # 	np.save(fp, np.array(accuracy))
+# # ALPHA1 SHIFT -----------------------------------------------------------------
+# 
+# filename = "alpha1.npy"
+# filename = result_dir + "/" + filename
+# 
+# accuracy = []
+# 
+# for alpha_shift in range(10): 
+# 
+# 	# Generate the network
+# 	snn = SNN(
+# 		num_inputs	= n_inputs,
+# 		num_hidden	= n_hidden,
+# 		num_output	= n_output,
+# 		threshold	= threshold_quant,
+# 		alpha_shift	= alpha_shift,
+# 		beta_shift	= beta_shift_0,
+# 		alpha_shift2	= alpha_shift_0,
+# 		beta_shift2	= beta_shift_0,
+# 		w1		= w1_quant,
+# 		v1		= v1_quant,
+# 		w2		= w2_quant,
+# 		bitwidth1	= bitwidth1,
+# 		bitwidth2	= bitwidth2
+# 	)
+# 
+# 	accuracy.append(compute_classification_accuracy(snn, dataset, transform))
+# 
+# with open(filename, "wb") as fp:
+# 	np.save(fp, np.array(accuracy))
 # 
 # 
 # # ALPHA2 SHIFT -----------------------------------------------------------------
@@ -705,35 +742,35 @@ with open(filename, "wb") as fp:
 # 	np.save(fp, np.array(accuracy))
 # 
 # 
-# # # BETA1 SHIFT -----------------------------------------------------------------
-# # filename = "beta1.npy"
-# # filename = result_dir + "/" + filename
-# # 
-# # accuracy = []
-# # 
-# # for beta_shift in range(10): 
-# # 
-# # 	# Generate the network
-# # 	snn = SNN(
-# # 		num_inputs	= n_inputs,
-# # 		num_hidden	= n_hidden,
-# # 		num_output	= n_output,
-# # 		threshold	= threshold_quant,
-# # 		alpha_shift	= alpha_shift_0,
-# # 		beta_shift	= beta_shift,
-# # 		alpha_shift2	= alpha_shift_0,
-# # 		beta_shift2	= beta_shift_0,
-# # 		w1		= w1_quant,
-# # 		v1		= v1_quant,
-# # 		w2		= w2_quant,
-# # 		bitwidth1	= bitwidth1,
-# # 		bitwidth2	= bitwidth2
-# # 	)
-# # 
-# # 	accuracy.append(compute_classification_accuracy(snn, dataset, transform))
-# # 
-# # with open(filename, "wb") as fp:
-# # 	np.save(fp, np.array(accuracy))
+# # BETA1 SHIFT -----------------------------------------------------------------
+# filename = "beta1.npy"
+# filename = result_dir + "/" + filename
+# 
+# accuracy = []
+# 
+# for beta_shift in range(10): 
+# 
+# 	# Generate the network
+# 	snn = SNN(
+# 		num_inputs	= n_inputs,
+# 		num_hidden	= n_hidden,
+# 		num_output	= n_output,
+# 		threshold	= threshold_quant,
+# 		alpha_shift	= alpha_shift_0,
+# 		beta_shift	= beta_shift,
+# 		alpha_shift2	= alpha_shift_0,
+# 		beta_shift2	= beta_shift_0,
+# 		w1		= w1_quant,
+# 		v1		= v1_quant,
+# 		w2		= w2_quant,
+# 		bitwidth1	= bitwidth1,
+# 		bitwidth2	= bitwidth2
+# 	)
+# 
+# 	accuracy.append(compute_classification_accuracy(snn, dataset, transform))
+# 
+# with open(filename, "wb") as fp:
+# 	np.save(fp, np.array(accuracy))
 # 
 # # BETA2 SHIFT -----------------------------------------------------------------
 # filename = "beta2.npy"
