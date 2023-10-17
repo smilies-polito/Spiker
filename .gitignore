@@ -43,3 +43,4 @@ tmp.*
 
 # Screen log files
 screenlog.*
+*log*
