@@ -11,10 +11,10 @@ spiker = DummyAccelerator(
 	config	= config_dict
 )
 
-spiker.write_file_all(
+write_file_all(spiker,
 	output_dir	= "DummyAccelerator",
 	rm		= True
 )
 
-fast_compile(spiker)
-elaborate(spiker)
+fast_compile(spiker, output_dir = "DummyAccelerator")
+elaborate(spiker, output_dir = "DummyAccelerator")

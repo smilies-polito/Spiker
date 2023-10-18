@@ -60,8 +60,8 @@ layer_1 = {
 	"reset"		: "subtractive",
 	"debug"		: False,
 	"debug_list"	: []
-
 }
+
 
 config_dict = {
 	"n_cycles"	: n_cycles,
