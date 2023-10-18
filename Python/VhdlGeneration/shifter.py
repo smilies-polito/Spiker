@@ -54,7 +54,7 @@ class Shifter(VHDLblock):
 					"downto 0) <= "
 					"shifter_in(N-1 downto shift);")
 
-		elif self.shift == self.bitwidth:
+		elif self.shift >= self.bitwidth:
 
 			# Add/sub process
 			self.architecture.bodyCodeHeader.add("shifted_out <= "
