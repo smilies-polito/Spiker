@@ -30,7 +30,8 @@ class Layer(VHDLblock):
 		self.n_exc_inputs 	= w_exc.shape[1]
 		self.n_inh_inputs 	= w_inh.shape[1]
 
-		self.name = "layer_" + str(self.n_neurons) + "_neurons"
+		self.name = "layer_" + str(self.n_neurons) + "_neurons_" + \
+			str(self.n_exc_inputs) + "_inputs"
 
 		self.exc_cnt_bitwidth = int(log2(ceil_pow2(self.n_exc_inputs)))
 		self.inh_cnt_bitwidth = int(log2(ceil_pow2(self.n_inh_inputs)))
