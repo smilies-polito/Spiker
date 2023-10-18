@@ -22,3 +22,12 @@ train-labels-idx1-ubyte.gz
 
 # Function tags used in vim to jump to function def
 tags
+
+# Generated VHDL
+*.vhd
+
+# Memory initialization files
+*.coe
+*.mem
+*.mif
+*.tmp
