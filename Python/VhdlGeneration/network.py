@@ -25,7 +25,6 @@ class Network(VHDLblock, dict):
 	def __init__(self, n_cycles = 10, debug = False, debug_list = []):
 
 		self.layer_index 	= 0
-		self.line_pointer	= 0
 		self.all_ready 		= ConditionsList()
 		self.n_cycles		= n_cycles
 
@@ -124,7 +123,6 @@ class Network(VHDLblock, dict):
 		self.architecture.bodyCodeHeader.add(
 			"sample <= start_all;"
 		)
-		self.line_pointer += 1
 
 		# Multi-input control
 		self.architecture.instances.add(self.multi_cycle,
@@ -135,7 +133,6 @@ class Network(VHDLblock, dict):
 		self.all_ready.add("sample_ready")
 		self.architecture.bodyCodeHeader.add("all_ready <= " +
 				self.all_ready.code() + ";\n")
-		self.line_pointer += 1
 
 		
 		# Debug
@@ -240,20 +237,19 @@ class Network(VHDLblock, dict):
 			self.architecture.instances[current_layer].p_map.add(
 				"exc_spikes", exc_spikes_internal)
 
+			self.architecture.bodyCodeHeader[2] = SingleCodeLine(
+				"out_spikes <= ", current_layer + 
+				"_feedback;\n")
 
-			self.architecture.bodyCodeHeader[self.layer_index] = \
-				SingleCodeLine(exc_spikes_internal + "<= ",
-					previous_layer + "_feedback;\n")
+			self.architecture.bodyCodeHeader.add(
+				exc_spikes_internal + "<= ", previous_layer + 
+				"_feedback;\n")
 
-			self.architecture.bodyCodeHeader.add("out_spikes <= ",
-					current_layer + "_feedback;\n")
 
 		self.all_ready.add(layer_ready, "and")
-		self.architecture.bodyCodeHeader[self.line_pointer-1] = SingleCodeLine(
+		self.architecture.bodyCodeHeader[1] = SingleCodeLine(
 				"all_ready <= " + self.all_ready.code()
 				+ ";\n")
-
-
 
 		self.layer_index += 1
 
@@ -363,6 +359,8 @@ class DummyAccelerator(VHDLblock):
 
 		self.name = "dummy_spiker"
 
+		self.spiker_pkg = SpikerPackage()
+
 		self.net = Network(
 				n_cycles	= config["n_cycles"],
 				debug		= debug,
@@ -409,7 +407,7 @@ class DummyAccelerator(VHDLblock):
 					config[key]["w_exc"].shape[0]
 				)
 
-		self.in_addr_bw	= int(log2(ceil_pow2(self.layer_sizes[0])))
+		self.in_addr_bw	= int(log2(ceil_pow2(self.input_size)))
 		self.out_addr_bw = int(log2(ceil_pow2(self.layer_sizes[-1])))
 
 		self.input_decoder = Decoder(
@@ -570,6 +568,12 @@ class DummyAccelerator(VHDLblock):
 				"snn")
 		self.architecture.instances["snn"].generic_map()
 		self.architecture.instances["snn"].port_map()
+
+		if self.input_size < 2**self.in_addr_bw:
+			self.architecture.instances["snn"].p_map.add(
+				"in_spikes", "in_spikes(" +
+				str(self.input_size-1)  + " downto 0)"
+			)
 
 
 class DummyAccelerator_tb(Testbench):
