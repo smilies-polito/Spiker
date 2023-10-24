@@ -39,7 +39,7 @@ architecture behavior of input_interface is
 
 begin
 	addr		<= cnt;
-	spikes_end 	<= std_logic_vector(to_unsigned(N, addr_len));
+	spikes_end 	<= std_logic_vector(to_unsigned(N-2, addr_len));
 	spike		<= spikes(to_integer(unsigned(cnt)));
 
 	terminal_counter : process(spikes_end, cnt)
@@ -122,6 +122,12 @@ begin
 
 	output_evaluation	: process(present_state)
 	begin
+
+
+		cnt_rst_n	<= '1';
+		sample_ready 	<= '0';
+		read_en		<= '0';
+		cnt_en		<= '0';
 
 		case present_state is
 			when reset =>
