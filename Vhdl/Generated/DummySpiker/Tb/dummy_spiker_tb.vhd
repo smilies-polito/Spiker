@@ -42,15 +42,15 @@ end entity dummy_spiker_tb;
 architecture behavior of dummy_spiker_tb is
 
 
-    constant n_cycles : integer := 10;
-    constant cycles_cnt_bitwidth : integer := 5;
+    --constant n_cycles : integer := 10;
+    --constant cycles_cnt_bitwidth : integer := 5;
     constant in_spike_filename : string := "in_spike.txt";
 
     component dummy_spiker is
-        generic (
-            n_cycles : integer := 10;
-            cycles_cnt_bitwidth : integer := 5
-        );
+        --generic (
+        --    n_cycles : integer := 10;
+        --    cycles_cnt_bitwidth : integer := 5
+        --);
         port (
             clk : in std_logic;
             rst_n : in std_logic;
@@ -59,9 +59,9 @@ architecture behavior of dummy_spiker_tb is
             ready : out std_logic;
             sample : out std_logic;
             in_spike : in std_logic;
-            in_spike_addr : in std_logic_vector(1 downto 0);
+            in_spike_addr : in std_logic_vector(9 downto 0);
             out_spike : out std_logic;
-            out_spike_addr : in std_logic_vector(1 downto 0)
+            out_spike_addr : in std_logic_vector(3 downto 0)
         );
     end component;
 
@@ -83,9 +83,9 @@ architecture behavior of dummy_spiker_tb is
 		);
 	end component input_interface;
 
-	constant input_size	: integer := 100;
+	constant input_size	: integer := 784;
 	constant output_size	: integer := 10;
-	constant in_addr_len	: integer := 7;
+	constant in_addr_len	: integer := 10;
 	constant out_addr_len	: integer := 4;
 
 
@@ -105,8 +105,6 @@ architecture behavior of dummy_spiker_tb is
 	signal spikes	: std_logic_vector(input_size-1 downto 0);
 
 begin
-
-    sample_ready <= sample;
 
 
     clk_gen : process
@@ -165,41 +163,29 @@ begin
 
     end process start_gen;
 
-    out_spike_addr_gen : process
+    out_spike_addr_gen : process(clk)
 
 	    variable addr_var	: integer := 0;
 
     begin
 
-	if ready = '1' and go = '0'
-	then
+        if clk'event and clk = '1' 
+        then
+		if ready = '1' and go = '0'
+		then
 
-		addr_var := 0;
-
-		for i in 0 to 10
-		loop
 			addr_var := addr_var + 1;
 			out_spike_addr <= std_logic_vector(to_unsigned(addr_var,
 					  out_spike_addr'length));
-			wait for 20 ns;
-		end loop;
 
+		end if;
 	end if;
 
     end process out_spike_addr_gen;
 
-    in_spike_rd_en_gen : process
-    begin
-
-        in_spike_rd_en<= '1';
-
-        wait;
-
-    end process in_spike_rd_en_gen;
-
     in_spike_load : process(clk, in_spike_rd_en )
         variable row : line;
-        variable read_var : std_logic;
+        variable read_var : std_logic_vector(input_size-1 downto 0);
         file in_spike_file : text open read_mode is in_spike_filename;
     begin
 
@@ -214,7 +200,7 @@ begin
 
                     readline(in_spike_file, row);
                     read(row, read_var);
-                    in_spike <= read_var;
+                    spikes <= read_var;
 
                 end if;
 
@@ -226,10 +212,10 @@ begin
 
 
     dut : dummy_spiker
-        generic map(
-            n_cycles => n_cycles,
-            cycles_cnt_bitwidth => cycles_cnt_bitwidth
-        )
+        --generic map(
+        --    n_cycles => n_cycles,
+        --    cycles_cnt_bitwidth => cycles_cnt_bitwidth
+        --)
         port map(
             clk => clk,
             rst_n => rst_n,
