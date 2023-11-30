@@ -104,16 +104,21 @@ architecture behavior of dummy_spiker_tb is
 	signal go	: std_logic;
 	signal spikes	: std_logic_vector(input_size-1 downto 0);
 
+	signal masked_ready	: std_logic;
+
+
 begin
+
+	masked_ready <= ready and go;
 
 
     clk_gen : process
     begin
 
         clk <= '0';
-        wait for 10 ns;
+        wait for 5 ns;
         clk <= '1';
-        wait for 10 ns;
+        wait for 5 ns;
 
     end process clk_gen;
 
@@ -136,32 +141,32 @@ begin
         go <= '0';
         wait for 100 ns;
         go <= '1';
-        wait for 1000 ns;
+        wait for 900000 ns;
         go <= '0';
 
         wait;
 
     end process go_gen;
 
-    start_gen : process(clk )
-    begin
-
-        if clk'event and clk = '1' 
-        then
-
-            if ready = '1' and go = '1'
-            then
-
-                start <= '1';
-
-            else
-                start <= '0';
-
-            end if;
-
-        end if;
-
-    end process start_gen;
+--    start_gen : process(clk )
+--    begin
+--
+--        if clk'event and clk = '1' 
+--        then
+--
+--            if ready = '1' and go = '1'
+--            then
+--
+--                start <= '1';
+--
+--            else
+--                start <= '0';
+--
+--            end if;
+--
+--        end if;
+--
+--    end process start_gen;
 
     out_spike_addr_gen : process(clk)
 
@@ -177,6 +182,8 @@ begin
 			addr_var := addr_var + 1;
 			out_spike_addr <= std_logic_vector(to_unsigned(addr_var,
 					  out_spike_addr'length));
+		else
+			out_spike_addr <= (others => '0');
 
 		end if;
 	end if;
@@ -220,7 +227,7 @@ begin
             clk => clk,
             rst_n => rst_n,
             start => start,
-            sample_ready => sample_ready,
+            sample_ready => '1',
             ready => ready,
             sample => sample,
             in_spike => in_spike,
@@ -239,10 +246,10 @@ begin
 			clk		=> clk,
 			rst_n		=> rst_n,
 			spikes		=> spikes,
-			sample		=> sample,
+			sample		=> masked_ready,
 
 			read_en		=> in_spike_rd_en,
-			sample_ready	=> sample_ready,
+			sample_ready	=> start,
 			spike		=> in_spike,
 			addr		=> in_spike_addr
 		);
