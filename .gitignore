@@ -27,6 +27,7 @@ __pycache__
 *.srcs
 *.gen
 .Xil
+*.rpx
 
 # Files on iCloud
 *.icloud
