@@ -9,7 +9,7 @@ testImages = mnistDir + "/t10k-images-idx3-ubyte"
 testLabels = mnistDir + "/t10k-labels-idx1-ubyte"
 
 # Directory in which parameters and performance of the network are stored
-paramDir = "./Parameters"
+paramDir = "./Parameters128"
 
 # Name of the parameters files
 weightFilename = paramDir + "/weights"
