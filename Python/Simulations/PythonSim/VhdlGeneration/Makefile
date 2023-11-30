@@ -5,4 +5,5 @@ clean:
 	rm -rf *.dir
 	rm -f *.str
 	rm -f *.debug
+	rm -rf *.tmp
 	rm -rf __pycache__
