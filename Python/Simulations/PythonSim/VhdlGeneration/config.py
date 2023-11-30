@@ -17,6 +17,7 @@ parameters_dir = "./Parameters"
 # with open(parameters_dir + "/thresholds2.npy", "rb") as fp:
 # 	th2 = np.load(fp)[0]
 # 
+# 
 # inh_w1 = np.zeros([exc_w1.shape[0], exc_w1.shape[0]])
 # inh_w2 = np.zeros([exc_w2.shape[0], exc_w2.shape[0]])
 # 
@@ -45,7 +46,7 @@ parameters_dir = "./Parameters"
 # 	"w_exc_bw"	: w_bitwidth1,
 # 	"shift"		: exp_shift,
 # 	"reset"		: "subtractive",
-# 	"debug"		: False,
+# 	"debug"		: True,
 # 	"debug_list"	: []
 # }
 # 
@@ -79,13 +80,14 @@ parameters_dir = "./Parameters"
 # SHD
 # ------------------------------------------------------------------------------
 with open(parameters_dir + "/w1.npy", "rb") as fp:
-	exc_w1 = np.load(fp)
+	exc_w1 = np.transpose(np.load(fp))
 
 with open(parameters_dir + "/v1.npy", "rb") as fp:
-	exc_w1 = np.load(fp)
+	inh_w1 = np.transpose(np.load(fp))
 
 with open(parameters_dir + "/w2.npy", "rb") as fp:
-	exc_w2 = np.load(fp)
+	exc_w2 = np.transpose(np.load(fp))
+
 
 
 th1 = np.ones((exc_w1.shape[0])).astype(int)
