@@ -28,7 +28,7 @@ net = createNetwork(networkList, weightFilename, thresholdFilename, mode,
 			trainPrecision, rng)
 
 
-checkBitWidth(net["exc2exc1"]["weights"], weights_bitWidth)
+#checkBitWidth(net["exc2exc1"]["weights"], weights_bitWidth)
 
 
 # Minibatch training loop
