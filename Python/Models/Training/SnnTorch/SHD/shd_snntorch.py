@@ -84,56 +84,6 @@ class TonicTransform:
 
 		return np.digitize(np_array, sampling_index)
 
-def train(x_data, y_data, lr=1e-3, nb_epochs=10):
-    
-    optimizer = torch.optim.Adamax(net.parameters(), lr=lr, betas=(0.9,0.999))
-
-    log_softmax_fn = nn.LogSoftmax(dim=1)
-    loss_fn = nn.NLLLoss()
-    
-    loss_hist = []
-    for e in range(nb_epochs):
-        local_loss = []
-        for x_local, y_local in sparse_data_generator_from_hdf5_spikes(x_data,
-			y_data, batch_size, nb_steps, nb_inputs, max_time):
-            output,recs = run_snn(x_local.to_dense())
-            _,spks=recs
-            m,_=torch.max(output,1)
-            log_p_y = log_softmax_fn(m)
-            
-            # Here we set up our regularizer loss
-            # The strength paramters here are merely a guess and there should be ample room for improvement by
-            # tuning these paramters.
-            # reg_loss = 2e-6*torch.sum(spks) # L1 loss on total number of spikes
-            # reg_loss += 2e-6*torch.mean(torch.sum(torch.sum(spks,dim=0),dim=0)**2) # L2 loss on spikes per neuron
-            
-            # Here we combine supervised loss and the regularizer
-            loss_val = loss_fn(log_p_y, y_local) # + reg_loss
-
-            optimizer.zero_grad()
-            loss_val.backward()
-            optimizer.step()
-            local_loss.append(loss_val.item())
-        mean_loss = np.mean(local_loss)
-        loss_hist.append(mean_loss)
-        live_plot(loss_hist)
-        print("Epoch %i: loss=%.5f"%(e+1,mean_loss))
-        
-    return loss_hist
-
-
-def print_batch_accuracy(net, data, batch_size, num_steps, targets, train=False):
-
-	output, _ = net(data.view(batch_size, -1), num_steps)
-
-	_, idx = output.sum(dim=0).max(1)
-
-	acc = np.mean((targets == idx).detach().cpu().numpy())
-
-	if train:
-		print(f"Train set accuracy for a single minibatch: {acc*100:.2f}%")
-	else:
-		print(f"Test set accuracy for a single minibatch: {acc*100:.2f}%")
 
 def compute_classification_accuracy(net, data_label_couples):
 
@@ -159,8 +109,6 @@ def compute_classification_accuracy(net, data_label_couples):
 		accs.append(label == am)
 
 	return np.mean(accs)
-
-
 
 
 def train_printer(net, batch_size, epoch, iter_counter, loss_hist,
