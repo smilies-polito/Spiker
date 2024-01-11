@@ -112,6 +112,15 @@ torch.nn.init.normal_(w2, mean=0.0, std=weight_scale/np.sqrt(nb_hidden))
 v1 = torch.empty((nb_hidden, nb_hidden), device=device, dtype=dtype, requires_grad=True)
 torch.nn.init.normal_(v1, mean=0.0, std=weight_scale/np.sqrt(nb_hidden))
 
+with open("w1_pre.pt", "wb") as fp:
+    torch.save(w1, fp)
+
+with open("v1_pre.pt", "wb") as fp:
+    torch.save(v1, fp)
+
+with open("w2_pre.pt", "wb") as fp:
+    torch.save(w2, fp)
+
 print("init done")
 
 def plot_voltage_traces(mem, spk=None, dim=(3,5), spike_height=5):
@@ -279,6 +288,7 @@ def compute_classification_accuracy(x_data, y_data):
     return np.mean(accs)
 
 nb_epochs = 300
+
 
 loss_hist = train(x_train, y_train, lr=2e-4, nb_epochs=nb_epochs)
 print("Training accuracy: %.3f"%(compute_classification_accuracy(x_train,y_train)))
