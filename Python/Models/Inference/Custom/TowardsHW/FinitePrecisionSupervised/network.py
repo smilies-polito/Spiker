@@ -53,9 +53,9 @@ def run(network, networkList, spikesTrains, dt_tauDict, exp_shift, stdpDict,
 
 	# Initialize the output spikes counter to 0
 	spikesCounter = np.zeros((1, lastLayerSize))
-	spikesMonitor_0 = np.zeros(trainDuration).astype(bool)
-	spikesMonitor_1 = np.zeros(trainDuration).astype(bool)
-	membraneMonitor = np.zeros(trainDuration).astype(int)
+	spikesMonitor_0 = np.zeros((trainDuration, networkList[1])).astype(bool)
+	spikesMonitor_1 = np.zeros((trainDuration, lastLayerSize)).astype(bool)
+	membraneMonitor = np.zeros((trainDuration, lastLayerSize)).astype(int)
 
 	for i in range(trainDuration):
 
