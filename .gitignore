@@ -28,6 +28,7 @@ __pycache__
 *.gen
 .Xil
 *.rpx
+*.debug
 
 # Files on iCloud
 *.icloud
