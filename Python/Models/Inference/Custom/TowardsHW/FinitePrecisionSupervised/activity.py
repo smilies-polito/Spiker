@@ -110,6 +110,10 @@ output_spiking_activity = 0
 
 count = 0
 
+tot_cycles_in 	= 0
+tot_cycles_0 	= 0
+tot_cycles_1 	= 0
+
 # Minibatch training loop
 for test_data, test_targets in test_batch:
 
@@ -130,20 +134,22 @@ for test_data, test_targets in test_batch:
 
 		rest(net, networkList)
 
-		spikesMonitor_in = np.sum(np.array(spikesTrains))
-		spikesMonitor_0 = np.sum(np.array(spikesMonitor_0))
-		spikesMonitor_1 = np.sum(np.array(spikesMonitor_1))
+		active_cycles_in = np.sum(np.array(spikesTrains), axis = 1)
+		active_cycles_0 = np.sum(np.array(spikesMonitor_0), axis = 1)
+		active_cycles_1 = np.sum(np.array(spikesMonitor_1), axis = 1)
 
-		input_spiking_activity += spikesMonitor_in / (num_inputs*num_steps)
-		hidden_spiking_activity += spikesMonitor_0 / (num_hidden*num_steps)
-		output_spiking_activity += spikesMonitor_1 / (num_outputs*num_steps)
+		tot_cycles_in += np.sum(active_cycles_in != 0)/active_cycles_in.shape[0]
+		tot_cycles_0 += np.sum(active_cycles_0 != 0)/active_cycles_0.shape[0]
+		tot_cycles_1 += np.sum(active_cycles_1 != 0)/active_cycles_1.shape[0]
 
 		count += 1
 
-input_spiking_activity = input_spiking_activity / count
-hidden_spiking_activity = hidden_spiking_activity / count
-output_spiking_activity = output_spiking_activity / count
+		if count == 10:
+			break
+tot_cycles_in /= count 
+tot_cycles_0 /= count
+tot_cycles_1 /= count
 
-print("Input spike activity: ", input_spiking_activity)
-print("Hidden spike activity: ", hidden_spiking_activity)
-print("Output spike activity: ", output_spiking_activity)
+print("Input spike activity: ", tot_cycles_in)
+print("Hidden spike activity: ", tot_cycles_0)
+print("Output spike activity: ", tot_cycles_1)
