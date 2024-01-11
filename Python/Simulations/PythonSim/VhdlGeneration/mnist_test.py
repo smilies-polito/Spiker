@@ -12,9 +12,9 @@ spiker = DummyAccelerator(
 )
 
 write_file_all(spiker,
-	output_dir	= "DummyAccelerator",
+	output_dir	= "Prova",
 	rm		= True
 )
 
-fast_compile(spiker, output_dir = "DummyAccelerator")
-elaborate(spiker, output_dir = "DummyAccelerator")
+fast_compile(spiker, output_dir = "Prova")
+elaborate(spiker, output_dir = "Prova")
