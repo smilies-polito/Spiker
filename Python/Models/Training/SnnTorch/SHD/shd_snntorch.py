@@ -1,11 +1,13 @@
 import numpy as np
+
 import tonic
+from tonic import datasets, transforms
 
 import snntorch as snn
-from snntorch import spikegen
 
 import torch
 import torch.nn as nn
+from torch.utils.data import DataLoader
 
 # Define Network
 class Net(nn.Module):
@@ -34,9 +36,10 @@ class Net(nn.Module):
 		mem2_rec = []
 
 		spk1 = torch.zeros(self.num_hidden)
+		input_spikes = input_spikes.float()
 
-		for step in range(input_spikes.shape[0]):
-			cur1 = self.fc1(input_spikes[step]) + self.fb1(spk1)
+		for step in range(input_spikes.shape[1]):
+			cur1 = self.fc1(input_spikes[:, step, :]) + self.fb1(spk1)
 			spk1, syn1, mem1 = self.lif1(cur1, syn1, mem1)
 			cur2 = self.fc2(spk1)
 			spk2, syn2, mem2 = self.lif2(cur2, syn2, mem2)
@@ -46,73 +49,28 @@ class Net(nn.Module):
 
 		return torch.stack(spk2_rec, dim=0), torch.stack(mem2_rec, dim=0)
 
-class TonicTransform:
 
-	def __init__(self, min_time : float, max_time : float, n_samples :
-			int = 100, n_inputs : int = 700):
+def print_batch_accuracy(net, data, batch_size, num_steps, targets, train=False):
 
-		self.min_time	= min_time
-		self.max_time	= max_time
-		self.n_samples	= n_samples
-		self.n_inputs	= n_inputs
+	spk_rec, mem_rec= net(data[:, :, 0, :])
+	
+	m, _ = torch.max(mem_rec, 0) # max over time
 
-	def __call__(self, sparse_tensor : torch.Tensor) -> torch.Tensor:
-		return self.events_to_sparse(sparse_tensor)
+	_, am = torch.max(m, 1)      # argmax over output units
+	print(m.shape)
+	print(am.shape)
 
+	acc = np.mean((targets == am).detach().cpu().numpy())
 
-	def events_to_sparse(self, sparse_tensor : torch.Tensor) -> \
-		torch.Tensor:
-
-		assert "t" and "x" 
-		times = self.resample(sparse_tensor["t"])
-
-		units = sparse_tensor["x"]
-
-		indexes = np.stack((times, units), axis = 0)
-		values = np.ones(times.shape[0])
-
-		return torch.sparse_coo_tensor(indexes, values, (self.n_samples,
-			self.n_inputs), dtype = torch.float)
-
-	def resample(self, np_array : np.array) -> np.array:
-
-		sampling_index = np.linspace(
-			self.min_time,
-			self.max_time,
-			self.n_samples
-		)
-
-		return np.digitize(np_array, sampling_index)
+	if train:
+		print(f"Train set accuracy for a single minibatch: {acc*100:.2f}%")
+	else:
+		print(f"Test set accuracy for a single minibatch: {acc*100:.2f}%")
 
 
-def compute_classification_accuracy(net, data_label_couples):
-
-	""" 
-	Computes classification accuracy on supplied data in batches.
-	"""
-
-	accs = []
-
-	for sample in data_label_couples:
-
-		dense_sample = transform(sample[0]).to_dense()
-		label = sample[1]
-
-		_, mem_rec = net(dense_sample)
-
-		# Max over time
-		m,_= torch.max(mem_rec, 1)
-
-		# Argmax over output units
-		_, am=torch.max(m, 0)
-
-		accs.append(label == am)
-
-	return np.mean(accs)
-
-
-def train_printer(net, batch_size, epoch, iter_counter, loss_hist,
-		test_loss_hist, counter, train_couples, test_couples):
+def train_printer(net, batch_size, num_steps, epoch, iter_counter, loss_hist,
+		test_loss_hist, counter, data, targets, test_data,
+		test_targets):
 
 	print(f"Epoch {epoch}, Iteration {iter_counter}")
 
@@ -120,24 +78,22 @@ def train_printer(net, batch_size, epoch, iter_counter, loss_hist,
 
 	print(f"Test Set Loss: {test_loss_hist[counter]:.2f}")
 
-	print(compute_classification_accuracy(net, train_couples))
+	print_batch_accuracy(net, data, batch_size, num_steps, targets, train=True)
 
-	print(compute_classification_accuracy(net, test_couples))
-
+	print_batch_accuracy(net, test_data, batch_size, num_steps, test_targets, 
+			train=False)
 
 	print("\n")
 
 
-n_epochs	= 300
-
-
+n_epochs	= 200
 n_samples	= 100
 num_inputs	= tonic.datasets.hsd.SHD.sensor_size[0]
 num_hidden	= 200
 num_outputs	= 20
 
 time_step	= 1e-3
-batch_size	= 1
+batch_size	= 256
 
 tau_mem		= 10e-3
 tau_syn		= 5e-3
@@ -148,15 +104,26 @@ beta		= float(np.exp(-time_step/tau_mem))
 min_time	= 0
 max_time	= 1.4 * 10**6
 
-train_set 	= tonic.datasets.hsd.SHD(save_to='./data', train=True)
-test_set 	= tonic.datasets.hsd.SHD(save_to='./data', train=False)
-
-transform = TonicTransform(
-	min_time	= min_time,
-	max_time	= max_time,
-	n_samples	= n_samples,
-	n_inputs	= num_inputs
+transform = transforms.Compose(
+    [
+        transforms.ToFrame(
+            sensor_size=tonic.datasets.hsd.SHD.sensor_size,
+            n_time_bins=100,
+        )
+    ]
 )
+
+train_set 	= tonic.datasets.hsd.SHD(save_to='./data', train=True, transform
+		= transform)
+test_set 	= tonic.datasets.hsd.SHD(save_to='./data', train=False,
+		transform = transform)
+
+train_loader 	= DataLoader(train_set, batch_size=batch_size, shuffle=True,
+		drop_last=True)
+test_loader 	= DataLoader(test_set, batch_size=batch_size, shuffle=True,
+		drop_last=True)
+
+
 
 # Check whether a GPU is available
 if torch.cuda.is_available():
@@ -181,23 +148,19 @@ counter = 0
 for epoch in range(n_epochs):
 
 	iter_counter = 0
+	train_batches	= iter(train_loader)
 
 	# Minibatch training loop
-	for train_data in train_set:
+	for data, labels in train_batches:
 
 		# Forward pass
 		net.train()
 
-		dense_data = transform(train_data[0]).to_dense()
-		label = torch.tensor(train_data[1])
-		label = torch.reshape(label, (-1,))
-		
-		spk_rec, mem_rec = net(dense_data)
+		spk_rec, mem_rec = net(data[:, :, 0, :])
 		m, _ = torch.max(mem_rec, 0)
-		m = torch.reshape(m, (1, -1))
 		log_p_y = log_softmax_fn(m)
 
-		loss_val = loss_fn(log_p_y, label)
+		loss_val = loss_fn(log_p_y, labels)
 
 		# Gradient calculation + weight update
 		optimizer.zero_grad()
@@ -209,38 +172,29 @@ for epoch in range(n_epochs):
 
 		# Test set
 		with torch.no_grad():
+
 			net.eval()
 
-			test_couple = next(iter(test_set))
-			test_data = transform(test_couple[0]).to_dense()
-			test_label = torch.tensor(test_couple[1])
-			test_label = torch.reshape(test_label, (-1,))
+			test_data, test_labels = next(iter(test_loader))
 
 			# Test set forward pass
-			test_spk_rec, test_mem_rec = net(test_data)
+			test_spk_rec, test_mem_rec = net(test_data[:, :, 0, :])
 
 			test_m, _ = torch.max(test_mem_rec, 0)
-			test_m = torch.reshape(test_m, (1, -1))
 			test_log_p_y = log_softmax_fn(test_m)
 
-			test_loss = loss_fn(test_log_p_y, test_label)
+			test_loss = loss_fn(test_log_p_y, test_labels)
 
 			# Test set loss
 			test_loss_hist.append(test_loss.item())
 
 			# Print train/test loss/accuracy
-			if counter % 50 == 0 and counter > 0:
-				train_printer(net, batch_size, epoch,
+			if counter % 2 == 0 and counter > 0:
+				train_printer(net, batch_size, n_samples, epoch,
 						iter_counter, loss_hist,
-						test_loss_hist, counter,
-						train_couples, test_couples)
-
-				train_couples = []
-				test_couples = []
-
-			else:
-				train_couples.append(train_data) 
-				test_couples.append(test_couple)
+						test_loss_hist, counter, data,
+						labels, test_data,
+						test_labels)
 
 			counter += 1
 			iter_counter +=1
