@@ -41,7 +41,6 @@ tmp.*
 
 # Singularity images
 *.sif
-*.def
 
 # Screen log files
 screenlog.*
