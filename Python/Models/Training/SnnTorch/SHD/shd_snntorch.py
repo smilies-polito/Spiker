@@ -9,6 +9,8 @@ import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader
 
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
 # Define Network
 class Net(nn.Module):
 	def __init__(self, num_inputs, num_hidden, num_outputs, alpha, beta):
@@ -57,8 +59,6 @@ def print_batch_accuracy(net, data, batch_size, num_steps, targets, train=False)
 	m, _ = torch.max(mem_rec, 0) # max over time
 
 	_, am = torch.max(m, 1)      # argmax over output units
-	print(m.shape)
-	print(am.shape)
 
 	acc = np.mean((targets == am).detach().cpu().numpy())
 
@@ -123,15 +123,8 @@ train_loader 	= DataLoader(train_set, batch_size=batch_size, shuffle=True,
 test_loader 	= DataLoader(test_set, batch_size=batch_size, shuffle=True,
 		drop_last=True)
 
-
-
-# Check whether a GPU is available
-if torch.cuda.is_available():
-    device = torch.device("cuda")     
-else:
-    device = torch.device("cpu")
-
 net = Net(num_inputs, num_hidden, num_outputs, alpha, beta)
+
 
 log_softmax_fn = nn.LogSoftmax(dim=1)
 loss_fn = nn.NLLLoss()
@@ -144,6 +137,8 @@ train_couples = []
 test_couples = []
 counter = 0
 
+net.to(device)
+
 # Outer training loop
 for epoch in range(n_epochs):
 
@@ -152,6 +147,8 @@ for epoch in range(n_epochs):
 
 	# Minibatch training loop
 	for data, labels in train_batches:
+
+		data.to(device)
 
 		# Forward pass
 		net.train()
@@ -176,6 +173,8 @@ for epoch in range(n_epochs):
 			net.eval()
 
 			test_data, test_labels = next(iter(test_loader))
+
+			test_data.to(device)
 
 			# Test set forward pass
 			test_spk_rec, test_mem_rec = net(test_data[:, :, 0, :])
