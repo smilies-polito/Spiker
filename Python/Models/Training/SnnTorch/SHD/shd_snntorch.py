@@ -10,6 +10,7 @@ import torch.nn as nn
 from torch.utils.data import DataLoader
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+print("Device: ", device)
 
 # Define Network
 class Net(nn.Module):
@@ -37,8 +38,8 @@ class Net(nn.Module):
 		spk2_rec = []
 		mem2_rec = []
 
-		spk1 = torch.zeros(self.num_hidden)
-		input_spikes = input_spikes.float()
+		spk1 = torch.zeros(self.num_hidden).to(device)
+		input_spikes = input_spikes.float().to(device)
 
 		for step in range(input_spikes.shape[1]):
 			cur1 = self.fc1(input_spikes[:, step, :]) + self.fb1(spk1)
