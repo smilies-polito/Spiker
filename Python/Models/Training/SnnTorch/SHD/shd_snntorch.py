@@ -38,8 +38,8 @@ class Net(nn.Module):
 		spk2_rec = []
 		mem2_rec = []
 
-		spk1 = torch.zeros(self.num_hidden).to(device)
-		input_spikes = input_spikes.float().to(device)
+		spk1 = torch.zeros(self.num_hidden)
+		input_spikes = input_spikes.float()
 
 		for step in range(input_spikes.shape[1]):
 			cur1 = self.fc1(input_spikes[:, step, :]) + self.fb1(spk1)
@@ -149,13 +149,13 @@ for epoch in range(n_epochs):
 	# Minibatch training loop
 	for data, labels in train_batches:
 
-		data.to(device)
-		labels.to(device)
+		inputs = data.to(device)
+		y = labels.to(device)
 
 		# Forward pass
 		net.train()
 
-		spk_rec, mem_rec = net(data[:, :, 0, :])
+		spk_rec, mem_rec = net(inputs[:, :, 0, :])
 		m, _ = torch.max(mem_rec, 0)
 		log_p_y = log_softmax_fn(m)
 
@@ -163,9 +163,10 @@ for epoch in range(n_epochs):
 		print("mem_rec: ", mem_rec.get_device())
 		print("m: ", m.get_device())
 		print("log_p_y: ", log_p_y.get_device())
-		print("labels: ", labels.get_device())
+		print("data: ", inputs.get_device())
+		print("labels: ", y.get_device())
 
-		loss_val = loss_fn(log_p_y, labels)
+		loss_val = loss_fn(log_p_y, y)
 
 		# Gradient calculation + weight update
 		optimizer.zero_grad()
