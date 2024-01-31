@@ -191,7 +191,7 @@ for epoch in range(n_epochs):
 			test_loss_hist.append(test_loss.item())
 
 			# Print train/test loss/accuracy
-			if counter % 2 == 0 and counter > 0:
+			if counter % 50 == 0 and counter > 0:
 				train_printer(net, batch_size, n_samples, epoch,
 						iter_counter, loss_hist,
 						test_loss_hist, counter, inputs,
