@@ -180,12 +180,12 @@ for epoch in range(n_epochs):
 			test_y = test_labels.to(device)
 
 			# Test set forward pass
-			test_spk_rec, test_mem_rec = net(test_data[:, :, 0, :])
+			test_spk_rec, test_mem_rec = net(test_inputs[:, :, 0, :])
 
 			test_m, _ = torch.max(test_mem_rec, 0)
 			test_log_p_y = log_softmax_fn(test_m)
 
-			test_loss = loss_fn(test_log_p_y, test_labels)
+			test_loss = loss_fn(test_log_p_y, test_y)
 
 			# Test set loss
 			test_loss_hist.append(test_loss.item())
