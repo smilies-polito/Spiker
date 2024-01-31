@@ -159,6 +159,11 @@ for epoch in range(n_epochs):
 		m, _ = torch.max(mem_rec, 0)
 		log_p_y = log_softmax_fn(m)
 
+		print("spk_rec: ", spk_rec.get_device())
+		print("mem_rec: ", mem_rec.get_device())
+		print("m: ", m.get_device())
+		print("log_p_y: ", log_p_y.get_device())
+
 		loss_val = loss_fn(log_p_y, labels)
 
 		# Gradient calculation + weight update
