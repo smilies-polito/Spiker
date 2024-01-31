@@ -194,9 +194,9 @@ for epoch in range(n_epochs):
 			if counter % 2 == 0 and counter > 0:
 				train_printer(net, batch_size, n_samples, epoch,
 						iter_counter, loss_hist,
-						test_loss_hist, counter, data,
-						labels, test_data,
-						test_labels)
+						test_loss_hist, counter, inputs,
+						y, test_inputs,
+						test_y)
 
 			counter += 1
 			iter_counter +=1
