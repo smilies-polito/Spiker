@@ -163,6 +163,7 @@ for epoch in range(n_epochs):
 		print("mem_rec: ", mem_rec.get_device())
 		print("m: ", m.get_device())
 		print("log_p_y: ", log_p_y.get_device())
+		print("labels: ", labels.get_device())
 
 		loss_val = loss_fn(log_p_y, labels)
 
