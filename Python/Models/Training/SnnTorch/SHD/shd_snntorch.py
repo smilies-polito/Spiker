@@ -150,6 +150,7 @@ for epoch in range(n_epochs):
 	for data, labels in train_batches:
 
 		data.to(device)
+		labels.to(device)
 
 		# Forward pass
 		net.train()
