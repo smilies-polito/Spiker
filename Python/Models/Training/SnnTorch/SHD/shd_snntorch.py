@@ -38,10 +38,8 @@ class Net(nn.Module):
 		spk2_rec = []
 		mem2_rec = []
 
-		spk1 = torch.zeros(self.num_hidden)
-		print(spk1.get_device())
+		spk1 = torch.zeros(self.num_hidden).to(device)
 		input_spikes = input_spikes.float()
-		print(input_spikes.get_device())
 
 		for step in range(input_spikes.shape[1]):
 			cur1 = self.fc1(input_spikes[:, step, :]) + self.fb1(spk1)
