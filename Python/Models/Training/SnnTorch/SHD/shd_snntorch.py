@@ -159,13 +159,6 @@ for epoch in range(n_epochs):
 		m, _ = torch.max(mem_rec, 0)
 		log_p_y = log_softmax_fn(m)
 
-		print("spk_rec: ", spk_rec.get_device())
-		print("mem_rec: ", mem_rec.get_device())
-		print("m: ", m.get_device())
-		print("log_p_y: ", log_p_y.get_device())
-		print("data: ", inputs.get_device())
-		print("labels: ", y.get_device())
-
 		loss_val = loss_fn(log_p_y, y)
 
 		# Gradient calculation + weight update
@@ -183,7 +176,8 @@ for epoch in range(n_epochs):
 
 			test_data, test_labels = next(iter(test_loader))
 
-			test_data.to(device)
+			test_inputs = test_data.to(device)
+			test_y = test_labels.to(device)
 
 			# Test set forward pass
 			test_spk_rec, test_mem_rec = net(test_data[:, :, 0, :])
