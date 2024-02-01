@@ -119,14 +119,14 @@ beta		= float(np.exp(-time_step/tau_mem))
 
 sigmoid_slope	= 100
 
-# L1 regularization
+# Regularization
 r1		= 2e-6
-
-# L2 regularization
 r2		= 2e-6
 
-min_time	= 0
-max_time	= 1.4 * 10**6
+# Optimizer
+adam_beta1	= 0.9
+adam_beta2	= 0.999
+lr		= 2e-4
 
 transform = transforms.Compose(
     [
