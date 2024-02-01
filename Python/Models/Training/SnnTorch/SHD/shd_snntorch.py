@@ -4,6 +4,7 @@ import tonic
 from tonic import datasets, transforms
 
 import snntorch as snn
+from snntorch import surrogate
 
 import torch
 import torch.nn as nn
@@ -14,19 +15,34 @@ print("Device: ", device)
 
 # Define Network
 class Net(nn.Module):
-	def __init__(self, num_inputs, num_hidden, num_outputs, alpha, beta):
+	def __init__(self, num_inputs, num_hidden, num_outputs, alpha, beta,
+			sigmoid_slope):
+
 		super().__init__()
 
+		#Network dimensions
 		self.num_inputs = num_inputs
 		self.num_hidden = num_hidden
 		self.num_outputs = num_outputs
 
+		# Hidden spikes. Need to be on GPU, so I initialize them here
+		self.spk1 = torch.zeros(self.num_hidden)
+
+		# Fast sigmoid surrogate gradient
+		self.spike_grad = surrogate.fast_sigmoid(slope =
+				sigmoid_slope)
+
 		# Initialize layers
 		self.fc1 = nn.Linear(num_inputs, num_hidden)
 		self.fb1 = nn.Linear(num_hidden, num_hidden)
-		self.lif1 = snn.Synaptic(alpha = alpha, beta = beta)
+
+		self.lif1 = snn.Synaptic(alpha = alpha, beta = beta, 
+				spike_grad = self.spike_grad)
+
 		self.fc2 = nn.Linear(num_hidden, num_outputs)
-		self.lif2 = snn.Synaptic(alpha = alpha, beta = beta)
+
+		self.lif2 = snn.Synaptic(alpha = alpha, beta = beta, 
+				spike_grad = self.spike_grad)
 
 	def forward(self, input_spikes):
 
@@ -38,13 +54,13 @@ class Net(nn.Module):
 		spk2_rec = []
 		mem2_rec = []
 
-		spk1 = torch.zeros(self.num_hidden).to(device)
 		input_spikes = input_spikes.float()
 
 		for step in range(input_spikes.shape[1]):
-			cur1 = self.fc1(input_spikes[:, step, :]) + self.fb1(spk1)
-			spk1, syn1, mem1 = self.lif1(cur1, syn1, mem1)
-			cur2 = self.fc2(spk1)
+			cur1 = self.fc1(input_spikes[:, step, :]) + \
+				self.fb1(self.spk1)
+			self.spk1, syn1, mem1 = self.lif1(cur1, syn1, mem1)
+			cur2 = self.fc2(self.spk1)
 			spk2, syn2, mem2 = self.lif2(cur2, syn2, mem2)
 
 			spk2_rec.append(spk2)
@@ -102,6 +118,8 @@ tau_syn		= 5e-3
 alpha		= float(np.exp(-time_step/tau_syn))
 beta		= float(np.exp(-time_step/tau_mem))
 
+sigmoid_slope	= 100
+
 min_time	= 0
 max_time	= 1.4 * 10**6
 
@@ -124,7 +142,14 @@ train_loader 	= DataLoader(train_set, batch_size=batch_size, shuffle=True,
 test_loader 	= DataLoader(test_set, batch_size=batch_size, shuffle=True,
 		drop_last=True)
 
-net = Net(num_inputs, num_hidden, num_outputs, alpha, beta)
+net = Net(
+	num_inputs	= num_inputs,
+	num_hidden	= num_hidden,
+	num_outputs	= num_outputs,
+	alpha		= alpha,
+	beta		= beta,
+	sigmoid_slope	= sigmoid_slope
+)
 
 
 log_softmax_fn = nn.LogSoftmax(dim=1)
