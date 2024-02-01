@@ -25,9 +25,6 @@ class Net(nn.Module):
 		self.num_hidden = num_hidden
 		self.num_outputs = num_outputs
 
-		# Hidden spikes. Need to be on GPU, so I initialize them here
-		self.spk1 = torch.zeros(self.num_hidden)
-
 		# Fast sigmoid surrogate gradient
 		self.spike_grad = surrogate.fast_sigmoid(slope =
 				sigmoid_slope)
@@ -55,12 +52,14 @@ class Net(nn.Module):
 		mem2_rec = []
 
 		input_spikes = input_spikes.float()
+		spk1 = torch.zeros(self.num_hidden).to(device)
+
 
 		for step in range(input_spikes.shape[1]):
 			cur1 = self.fc1(input_spikes[:, step, :]) + \
-				self.fb1(self.spk1)
-			self.spk1, syn1, mem1 = self.lif1(cur1, syn1, mem1)
-			cur2 = self.fc2(self.spk1)
+				self.fb1(spk1)
+			spk1, syn1, mem1 = self.lif1(cur1, syn1, mem1)
+			cur2 = self.fc2(spk1)
 			spk2, syn2, mem2 = self.lif2(cur2, syn2, mem2)
 
 			spk2_rec.append(spk2)
