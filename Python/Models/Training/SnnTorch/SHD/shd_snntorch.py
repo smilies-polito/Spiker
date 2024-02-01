@@ -119,6 +119,12 @@ beta		= float(np.exp(-time_step/tau_mem))
 
 sigmoid_slope	= 100
 
+# L1 regularization
+r1		= 2e-6
+
+# L2 regularization
+r2		= 2e-6
+
 min_time	= 0
 max_time	= 1.4 * 10**6
 
@@ -183,7 +189,13 @@ for epoch in range(n_epochs):
 		m, _ = torch.max(mem_rec, 0)
 		log_p_y = log_softmax_fn(m)
 
-		loss_val = loss_fn(log_p_y, y)
+		# L1 loss on total number of spikes
+		reg_loss = r1 * torch.sum(spk_rec)
+
+		# L2 loss on spikes per neuron
+		reg_loss += r2 * torch.mean(torch.sum(torch.sum(spk_rec, dim=0), dim=0)**2)
+
+		loss_val = loss_fn(log_p_y, y) + reg_loss
 
 		# Gradient calculation + weight update
 		optimizer.zero_grad()
