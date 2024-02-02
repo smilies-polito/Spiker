@@ -124,7 +124,7 @@ sigmoid_slope	= 100
 # Optimizer
 adam_beta1	= 0.9
 adam_beta2	= 0.999
-lr		= 2e-4
+lr		= 1e-4
 weight_decay 	= 1e-5
 
 transform = transforms.Compose(
