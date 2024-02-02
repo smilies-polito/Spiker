@@ -119,13 +119,13 @@ beta		= float(np.exp(-time_step/tau_mem))
 
 sigmoid_slope	= 100
 
-l2 = 1e-5
 
 
 # Optimizer
 adam_beta1	= 0.9
 adam_beta2	= 0.999
 lr		= 2e-4
+weight_decay 	= 1e-5
 
 transform = transforms.Compose(
     [
@@ -160,8 +160,8 @@ net = Net(
 log_softmax_fn = nn.LogSoftmax(dim=1)
 loss_fn = nn.NLLLoss()
 
-optimizer = torch.optim.Adam(net.parameters(), lr=lr, betas=(adam_beta1,
-		adam_beta2))
+optimizer = torch.optim.Adam(net.parameters(), lr = lr, betas = (adam_beta1,
+		adam_beta2), weight_decay = weight_decay)
 
 loss_hist = []
 test_loss_hist = []
