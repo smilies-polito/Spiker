@@ -142,10 +142,15 @@ train_set 	= tonic.datasets.hsd.SHD(save_to='./data', train=True, transform
 test_set 	= tonic.datasets.hsd.SHD(save_to='./data', train=False,
 		transform = transform)
 
-train_loader 	= DataLoader(train_set, batch_size=batch_size, shuffle=True,
-		drop_last=True)
-test_loader 	= DataLoader(test_set, batch_size=batch_size, shuffle=True,
-		drop_last=True)
+# train_loader 	= DataLoader(train_set, batch_size=batch_size, shuffle=True,
+# 		drop_last=True)
+# test_loader 	= DataLoader(test_set, batch_size=batch_size, shuffle=True,
+# 		drop_last=True)
+
+train_loader 	= DataLoader(train_set, batch_size=batch_size, shuffle=False,
+		drop_last=False)
+test_loader 	= DataLoader(test_set, batch_size=batch_size, shuffle=False,
+		drop_last=False)
 
 net = Net(
 	num_inputs	= num_inputs,
