@@ -119,9 +119,8 @@ beta		= float(np.exp(-time_step/tau_mem))
 
 sigmoid_slope	= 100
 
-# Regularization
-r1		= 2e-6
-r2		= 2e-6
+l2 = 1e-5
+
 
 # Optimizer
 adam_beta1	= 0.9
@@ -142,15 +141,11 @@ train_set 	= tonic.datasets.hsd.SHD(save_to='./data', train=True, transform
 test_set 	= tonic.datasets.hsd.SHD(save_to='./data', train=False,
 		transform = transform)
 
-# train_loader 	= DataLoader(train_set, batch_size=batch_size, shuffle=True,
-# 		drop_last=True)
-# test_loader 	= DataLoader(test_set, batch_size=batch_size, shuffle=True,
-# 		drop_last=True)
+train_loader 	= DataLoader(train_set, batch_size=batch_size, shuffle=True,
+		drop_last=True)
+test_loader 	= DataLoader(test_set, batch_size=batch_size, shuffle=True,
+		drop_last=True)
 
-train_loader 	= DataLoader(train_set, batch_size=batch_size, shuffle=False,
-		drop_last=False)
-test_loader 	= DataLoader(test_set, batch_size=batch_size, shuffle=False,
-		drop_last=False)
 
 net = Net(
 	num_inputs	= num_inputs,
@@ -165,7 +160,8 @@ net = Net(
 log_softmax_fn = nn.LogSoftmax(dim=1)
 loss_fn = nn.NLLLoss()
 
-optimizer = torch.optim.Adam(net.parameters(), lr=1e-3, betas=(0.9, 0.999))
+optimizer = torch.optim.Adam(net.parameters(), lr=lr, betas=(adam_beta1,
+		adam_beta2))
 
 loss_hist = []
 test_loss_hist = []
@@ -194,13 +190,7 @@ for epoch in range(n_epochs):
 		m, _ = torch.max(mem_rec, 0)
 		log_p_y = log_softmax_fn(m)
 
-		# L1 loss on total number of spikes
-		reg_loss = r1 * torch.sum(spk_rec)
-
-		# L2 loss on spikes per neuron
-		reg_loss += r2 * torch.mean(torch.sum(torch.sum(spk_rec, dim=0), dim=0)**2)
-
-		loss_val = loss_fn(log_p_y, y) + reg_loss
+		loss_val = loss_fn(log_p_y, y)
 
 		# Gradient calculation + weight update
 		optimizer.zero_grad()
