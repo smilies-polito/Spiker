@@ -26,6 +26,9 @@ __pycache__
 *.zip
 *.srcs
 *.gen
+.Xil
+*.rpx
+*.debug
 
 # Files on iCloud
 *.icloud
@@ -35,3 +38,10 @@ tmp.*
 
 # Vim back-up files
 *.swp
+
+# Singularity images
+*.sif
+
+# Screen log files
+screenlog.*
+*log*
