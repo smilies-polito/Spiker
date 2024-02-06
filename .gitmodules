@@ -1,6 +1,3 @@
 [submodule "HdlTools"]
 	path = Python/HdlTools
 	url = https://github.com/smilies-polito/hdltools.git
-[submodule "Python/Models/Training/SpyTorch"]
-	path = Python/Models/Training/SpyTorch
-	url = https://github.com/fzenke/spytorch.git
