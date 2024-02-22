@@ -1,6 +1,21 @@
 import numpy as np
 
-parameters_dir = "./Parameters"
+import sys
+
+vhdl_gen_dir = "../../VhdlGenerator"
+hdl_dir = "../../HdlTools/hdltools"
+
+if vhdl_gen_dir not in sys.path:
+	sys.path.insert(0, vhdl_gen_dir)
+
+if hdl_dir not in sys.path:
+	sys.path.insert(0, hdl_dir)
+
+from network import DummyAccelerator
+from vhdl import write_file_all, fast_compile, elaborate
+
+parameters_dir 	= "./Parameters"
+spiker_dir	= "VhdlSpiker"
 
 
 # with open(parameters_dir + "/w1.npy", "rb") as fp:
@@ -73,4 +88,15 @@ config_dict = {
 	"layer_1"	: layer_1
 }
 
-# ------------------------------------------------------------------------------
+
+spiker = DummyAccelerator(
+	config	= config_dict
+)
+
+write_file_all(spiker,
+	output_dir	= spiker_dir,
+	rm		= True
+)
+
+fast_compile(spiker, output_dir = spiker_dir)
+elaborate(spiker, output_dir = spiker_dir)
