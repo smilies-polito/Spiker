@@ -3,40 +3,34 @@ import numpy as np
 parameters_dir = "./Parameters"
 
 
-with open(parameters_dir + "/weights1.npy", "rb") as fp:
-	exc_w1 = np.load(fp)
+# with open(parameters_dir + "/w1.npy", "rb") as fp:
+# 	exc_w1 = np.transpose(np.load(fp))
+# 
+# with open(parameters_dir + "/v1.npy", "rb") as fp:
+# 	inh_w1 = np.transpose(np.load(fp))
+# 
+# with open(parameters_dir + "/w2.npy", "rb") as fp:
+# 	exc_w2 = np.transpose(np.load(fp))
 
-with open(parameters_dir + "/weights2.npy", "rb") as fp:
-	exc_w2 = np.load(fp)
+exc_w1 = np.random.rand(690, 700)
+inh_w1 = np.random.rand(690, 690)
+exc_w2 = np.random.rand(20, 690)
 
-with open(parameters_dir + "/thresholds1.npy", "rb") as fp:
-	th1 = np.load(fp)[0]
+th1 = np.ones((exc_w1.shape[0])).astype(int)
+th2 = np.ones((exc_w2.shape[0])).astype(int)
 
-with open(parameters_dir + "/thresholds2.npy", "rb") as fp:
-	th2 = np.load(fp)[0]
+inh_w2 = np.zeros([exc_w2.shape[0], exc_w2.shape[0]]).astype(int)
 
-exc_w1 = np.random.rand(2500, 784)
+reset1 = np.zeros(th1.shape[0]).astype(int)
+reset2 = np.zeros(th2.shape[0]).astype(int)
 
-exc_w2 = np.random.rand(10, 2500)
-
-th1 = np.ones(2500)
-
-th2 = np.ones(2500)
-
-
-inh_w1 = np.zeros([exc_w1.shape[0], exc_w1.shape[0]])
-inh_w2 = np.zeros([exc_w2.shape[0], exc_w2.shape[0]])
-
-reset1 = np.zeros(th1.shape[0])
-reset2 = np.zeros(th2.shape[0])
-
-fp_dec		= 4
-bitwidth1	= 6
-bitwidth2	= 6
-w_bitwidth1	= 4
-w_bitwidth_fb1	= 1
-w_bitwidth2 	= 4
-exp_shift	= 10
+fp_dec		= 9
+bitwidth1	= 8
+bitwidth2	= 8
+w_bitwidth1	= 6
+w_bitwidth_fb1	= 5
+w_bitwidth2 	= 6
+exp_shift	= 4
 
 n_cycles = 100
 
