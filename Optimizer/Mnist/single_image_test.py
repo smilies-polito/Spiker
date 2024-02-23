@@ -16,6 +16,7 @@ from bitWidths import *
 from mnist import loadDataset
 
 image_index	= 13
+in_spikes_file	= "in_spikes.txt"
 out_spikes_file	= "out_spikes_python.txt"
 
 # Load the MNIST dataset
@@ -35,6 +36,12 @@ image = test_data[image_index][0].view(batch_size, -1).numpy()
 label = int(test_data[image_index][1].int())
 
 spikesTrains = imgToSpikeTrain(image, num_steps, rng)
+
+with open(in_spikes_file, "w") as fp:
+	for inputs in spikesTrains:
+		fp.write((str(inputs.astype(int))[1:-1].replace(" ",
+			"").replace("\n", "")))
+		fp.write("\n")
 
 _, _, out_spikes, _= run(net, networkList, spikesTrains,
 		dt_tauDict, exp_shift, None, mode, None,
