@@ -27,6 +27,9 @@ net = createNetwork(networkList, weightFilename, thresholdFilename, mode,
 			fixed_point_decimals, neuron_bitWidth, weights_bitWidth,
 			trainPrecision, rng)
 
+np.set_printoptions(threshold=np.inf)
+print(net["exc2exc2"]["weights"])
+
 
 #checkBitWidth(net["exc2exc1"]["weights"], weights_bitWidth)
 
@@ -44,7 +47,7 @@ for test_data, test_targets in test_batch:
 
 		spikesTrains = imgToSpikeTrain(image, num_steps, rng)
 
-		outputCounters, _, _ = run(net, networkList, spikesTrains,
+		outputCounters, _, _, _= run(net, networkList, spikesTrains,
 				dt_tauDict, exp_shift, None, mode, None,
 				neuron_bitWidth)
 
