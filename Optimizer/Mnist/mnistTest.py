@@ -8,9 +8,8 @@ import torch
 from torchvision import datasets, transforms
 from torch.utils.data import DataLoader
 
-from createNetwork import createNetwork
 from poisson import imgToSpikeTrain
-from network import run, rest
+from network import run, rest, createNetwork
 from storeParameters import *
 from utils import checkBitWidth, fixedPoint
 
