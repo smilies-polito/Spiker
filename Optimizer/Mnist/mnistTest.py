@@ -4,6 +4,7 @@ import numpy as np
 
 from snntorch import spikegen
 
+import torch
 from torchvision import datasets, transforms
 from torch.utils.data import DataLoader
 
@@ -11,13 +12,9 @@ from createNetwork import createNetwork
 from poisson import imgToSpikeTrain
 from network import run, rest
 from storeParameters import *
-from utils import checkBitWidth
+from utils import checkBitWidth, fixedPoint
 
-from runParameters import *
 from bitWidths import *
-
-image_height		= 28
-image_width		= 28
 
 # Directory in which parameters and performance of the network are stored
 paramDir = "./Parameters128"
@@ -32,6 +29,103 @@ trainPerformanceFile = paramDir + "/trainPerformance.txt"
 testPerformanceFile = paramDir + "/testPerformance.txt"
 
 data_dir ='./data/mnist'
+
+image_height		= 28
+image_width		= 28
+
+# dataloader arguments
+batch_size = 256
+
+dtype = torch.float
+
+# Network Architecture
+num_inputs = image_width*image_height
+num_hidden = 128
+num_outputs = 10
+
+# Temporal Dynamics
+num_steps = 100
+beta = 0.9375
+tauExc = 100
+
+
+num_epochs = 30
+loss_hist = []
+test_loss_hist = []
+counter = 0
+
+# List of layer sizes
+networkList = [784, 128, 10]
+
+mode = "test"
+trainPrecision = "float"
+
+# Excitatory layer
+excDict = {			# Shifted values to minimize the interval
+				# ----------------------------------------------
+				# |Original|	|  Ref  |	|Shift |
+				# |--------|----|-------|-------|------|
+	"vRest"		: 0,	# | -65.0  | =	| -65.0 | + 	| 0.0  | mV
+	"vReset"	: 0,	# | -60.0  | =	| -65.0 | + 	| 5.0  | mV
+	"vThresh0"	: 1,	# | -52.0  | =	| -65.0 | + 	| 13.0 | mV
+	"vThreshPlus"	: 0.05,	# |  0.05  | =	|   -   | + 	|  -   | mV
+}
+
+
+# Finite precision
+excDict["vRest"] = fixedPoint(excDict["vRest"], fixed_point_decimals,
+		neuron_bitWidth[0])
+excDict["vReset"] = fixedPoint(excDict["vReset"], fixed_point_decimals,
+		neuron_bitWidth[0])
+excDict["vThresh0"] = fixedPoint(excDict["vThresh0"], fixed_point_decimals,
+		neuron_bitWidth[0])
+excDict["vThreshPlus"] = fixedPoint(excDict["vThreshPlus"],
+				fixed_point_decimals, neuron_bitWidth[0])
+
+# List of dictionaries of parameters for the layers
+excDictList = [excDict] * (len(networkList) - 1)
+
+# Training and resting periods in milliseconds
+trainDuration = 350	# ms
+
+# Array of scale factors for the random generation of the weights
+scaleFactors = np.ones(len(networkList) - 1)
+
+# Time step duration in milliseconds
+dt = 2**-4 * tauExc		# ms
+
+
+# Exponential time constants
+dt_tauDict = {
+	"exc" 		: dt/tauExc,
+}
+
+# Update and print intervals expressed in number of images
+updateInterval = 10
+printInterval = 250
+
+# Initial intensity of the input pixels
+startInputIntensity = 2.
+inputIntensity = startInputIntensity
+
+
+# Initialize history of accuracies
+accuracies = []
+
+# Initialize history of spikes
+spikesEvolution = np.zeros((updateInterval, networkList[-1]))
+
+
+# Minimum acceptable number of output spikes generated during the training.
+countThreshold = 5
+
+# NumPy default random generator.
+rng = np.random.default_rng()
+
+
+
+
+
 
 # Define a transform
 transform = transforms.Compose([
