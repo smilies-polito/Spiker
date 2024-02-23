@@ -9,7 +9,7 @@ from torchvision import datasets, transforms
 from torch.utils.data import DataLoader
 
 from network import run, rest, createNetwork
-from utils import checkBitWidth, fixedPoint
+from utils import fixedPoint
 
 from bitWidths import *
 
