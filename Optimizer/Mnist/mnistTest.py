@@ -13,12 +13,25 @@ from network import run, rest
 from storeParameters import *
 from utils import checkBitWidth
 
-from files import *
 from runParameters import *
 from bitWidths import *
 
 image_height		= 28
 image_width		= 28
+
+# Directory in which parameters and performance of the network are stored
+paramDir = "./Parameters128"
+
+# Name of the parameters files
+weightFilename = paramDir + "/weights"
+thresholdFilename = paramDir + "/thresholds"
+assignmentsFile = paramDir + "/assignments.npy"
+
+# Name of the performance files
+trainPerformanceFile = paramDir + "/trainPerformance.txt"
+testPerformanceFile = paramDir + "/testPerformance.txt"
+
+data_dir ='./data/mnist'
 
 # Define a transform
 transform = transforms.Compose([
@@ -28,7 +41,7 @@ transform = transforms.Compose([
 	transforms.Normalize((0,), (1,))]
 )
 
-test_set = datasets.MNIST(root=data_path, train=False, download=True,
+test_set = datasets.MNIST(root=data_dir, train=False, download=True,
 		transform=transform)
 
 test_loader = DataLoader(test_set, batch_size=batch_size, shuffle=False,
@@ -42,8 +55,6 @@ net = createNetwork(networkList, weightFilename, thresholdFilename, mode,
 			excDictList, scaleFactors, None,
 			fixed_point_decimals, neuron_bitWidth, weights_bitWidth,
 			trainPrecision, rng)
-
-#checkBitWidth(net["exc2exc1"]["weights"], weights_bitWidth)
 
 
 # Minibatch training loop
