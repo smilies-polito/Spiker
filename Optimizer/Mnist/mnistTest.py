@@ -4,6 +4,9 @@ import numpy as np
 
 from snntorch import spikegen
 
+from torchvision import datasets, transforms
+from torch.utils.data import DataLoader
+
 from createNetwork import createNetwork
 from poisson import imgToSpikeTrain
 from network import run, rest
@@ -15,9 +18,23 @@ from runParameters import *
 from bitWidths import *
 from mnist import loadDataset
 
+image_height		= 28
+image_width		= 28
 
-# Load the MNIST dataset
-train_loader, test_loader = loadDataset(data_path, batch_size)
+# Define a transform
+transform = transforms.Compose([
+	transforms.Resize((image_width, image_height)),
+	transforms.Grayscale(),
+	transforms.ToTensor(),
+	transforms.Normalize((0,), (1,))]
+)
+
+test_set = datasets.MNIST(root=data_path, train=False, download=True,
+		transform=transform)
+
+test_loader = DataLoader(test_set, batch_size=batch_size, shuffle=False,
+		drop_last=True)
+
 
 test_batch = iter(test_loader)
 
@@ -26,10 +43,6 @@ net = createNetwork(networkList, weightFilename, thresholdFilename, mode,
 			excDictList, scaleFactors, None,
 			fixed_point_decimals, neuron_bitWidth, weights_bitWidth,
 			trainPrecision, rng)
-
-np.set_printoptions(threshold=np.inf)
-print(net["exc2exc2"]["weights"])
-
 
 #checkBitWidth(net["exc2exc1"]["weights"], weights_bitWidth)
 
