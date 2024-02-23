@@ -16,7 +16,6 @@ from utils import checkBitWidth
 from files import *
 from runParameters import *
 from bitWidths import *
-from mnist import loadDataset
 
 image_height		= 28
 image_width		= 28
