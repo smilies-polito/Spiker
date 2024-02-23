@@ -11,7 +11,7 @@ from torch.utils.data import DataLoader
 from network import run, rest, createNetwork
 from utils import fixedPoint
 
-from bitWidths import *
+from bitwidths import *
 
 def imgToSpikeTrain(image, num_steps, rng):
 

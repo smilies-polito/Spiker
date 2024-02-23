@@ -1,7 +1,7 @@
 import numpy as np
 
 from utils import expDecay, checkBitWidth, saturateArray, fixedPointArray
-from bitWidths import fixed_point_decimals, neuron_bitWidth
+from bitwidths import fixed_point_decimals, neuron_bitWidth
 
 
 def run(network, networkList, spikesTrains, dt_tauDict, exp_shift, stdpDict,
