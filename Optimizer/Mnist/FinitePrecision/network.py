@@ -64,12 +64,13 @@ def run(network, networkList, spikesTrains, dt_tauDict, exp_shift, stdpDict,
 				exp_shift, stdpDict, mode, neuron_bitWidth)
 
 		spikesMonitor_0[i] = network["excLayer" +
-				str(1)]["outSpikes"][0][0]
+				str(1)]["outSpikes"][0]
+
 		spikesMonitor_1[i] = network["excLayer" +
-				str(lastLayerIndex)]["outSpikes"][0][0]
+				str(lastLayerIndex)]["outSpikes"][0]
 
 		membraneMonitor[i] = network["excLayer" +
-				str(lastLayerIndex)]["v"][0][0]
+				str(lastLayerIndex)]["v"][0]
 
 
 		# Update the output spikes counter
