@@ -7,7 +7,7 @@ from files import *
 
 
 # dataloader arguments
-batch_size = 256
+batch_size = 1
 
 dtype = torch.float
 
