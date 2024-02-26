@@ -263,6 +263,16 @@ def compute_classification_accuracy(dataset):
 
 quantize = Quantize()
 
+
+# Bit-widths
+fp_dec = 10
+bitwidth1 = 64
+bitwidth2 = 64
+w_bitwidth1 = 64
+w_bitwidth_fb1 = 64
+w_bitwidth2 = 64
+
+
 # Check whether a GPU is available
 if torch.cuda.is_available():
     device = torch.device("cuda")     
@@ -296,14 +306,6 @@ transform = TonicTransform(
 	n_samples	= n_samples,
 	n_inputs	= n_inputs
 )
-
-# Bit-widths
-fp_dec = 10
-bitwidth1 = 64
-bitwidth2 = 64
-w_bitwidth1 = 64
-w_bitwidth_fb1 = 64
-w_bitwidth2 = 64
 
 # Import trained weights
 w1 = quantize.fixed_point(torch.load("w1.pt",
