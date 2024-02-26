@@ -116,7 +116,7 @@ networkList 		= [784, 128, 10]
 
 # Import weights and thresholds from state_dict
 with open(paramDir + "/" + state_dict_file, "rb") as fp:
-	state_dict	= torch.load(fp)
+	state_dict	= torch.load(fp, map_location=torch.device('cpu'))
 
 	layer_count = 1
 	for layer_size in networkList[1:]:
