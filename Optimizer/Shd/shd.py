@@ -268,6 +268,11 @@ w_bitwidth1 = 64
 w_bitwidth_fb1 = 64
 w_bitwidth2 = 64
 
+param_dir	= "./TrainedParameters"
+state_dict_file	= "state_dict_shd.pt"
+
+weights_fw_filename = "w"
+weights_fb_filename = "v"
 
 # Check whether a GPU is available
 if torch.cuda.is_available():
@@ -282,6 +287,12 @@ n_samples = 100
 n_inputs = tonic.datasets.hsd.SHD.sensor_size[0]
 n_hidden = 200
 n_output = 20
+
+network_list = [
+	n_inputs,
+	n_hidden,
+	n_output
+]
 
 # Conversion parameters
 min_time = 0
@@ -303,17 +314,46 @@ transform = TonicTransform(
 	n_inputs	= n_inputs
 )
 
+
+# Import weights and thresholds from state_dict
+with open(param_dir + "/" + state_dict_file, "rb") as fp:
+	state_dict	= torch.load(fp, map_location=torch.device('cpu'))
+
+	layer_count = 1
+	for layer_size in network_list[1:]:
+
+		weights_fw_key 	= "fc" + str(layer_count) + ".weight"
+
+		if weights_fw_key in state_dict.keys():
+			weights		= state_dict[weights_fw_key]
+
+			# All the script is based on reading weights and
+			# thresholds. Write them donw on file
+			with open(weights_fw_filename + str(layer_count) +
+			".pt", "wb") as weights_fp:
+				torch.save(weights, weights_fp)
+
+		weights_fb_key 	= "fb" + str(layer_count) + ".weight"
+
+		if weights_fb_key in state_dict.keys():
+			weights		= state_dict[weights_fb_key]
+
+			# All the script is based on reading weights and
+			# thresholds. Write them donw on file
+			with open(weights_fb_filename + str(layer_count) +
+			".pt", "wb") as weights_fp:
+				torch.save(weights, weights_fp)
+
+
+		layer_count += 1
+
 # Import trained weights
 w1 = quantize.fixed_point(torch.load("w1.pt",
-		map_location=torch.device('cpu')).transpose(0, 1), fp_dec,
-		w_bitwidth1)
+		map_location=torch.device('cpu')), fp_dec, w_bitwidth1)
 v1 = quantize.fixed_point(torch.load("v1.pt",
-		map_location=torch.device('cpu')).transpose(0, 1), fp_dec,
-		w_bitwidth_fb1)
+		map_location=torch.device('cpu')), fp_dec, w_bitwidth_fb1)
 w2 = quantize.fixed_point(torch.load("w2.pt",
-		map_location=torch.device('cpu')).transpose(0, 1), fp_dec,
-		w_bitwidth2)
-
+		map_location=torch.device('cpu')), fp_dec, w_bitwidth2)
 
 snn = SNN(
 	num_inputs	= n_inputs,
