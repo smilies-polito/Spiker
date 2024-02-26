@@ -78,45 +78,68 @@ def poisson(image, random2D):
 
 
 # Directory in which parameters and performance of the network are stored
-paramDir = "./Parameters128"
+paramDir 		= "./Parameters128"
+state_dict_file		= "state_dict_mnist.pt"
 
 # Name of the parameters files
-weightFilename = paramDir + "/weights"
-thresholdFilename = paramDir + "/thresholds"
-assignmentsFile = paramDir + "/assignments.npy"
+weightFilename 		= paramDir + "/weights"
+thresholdFilename 	= paramDir + "/thresholds"
 
-# Name of the performance files
-trainPerformanceFile = paramDir + "/trainPerformance.txt"
-testPerformanceFile = paramDir + "/testPerformance.txt"
-
-data_dir ='./data/mnist'
+data_dir 		='./data/mnist'
 
 image_height		= 28
 image_width		= 28
 
 # dataloader arguments
-batch_size = 256
+batch_size 		= 256
 
-dtype = torch.float
+dtype 			= torch.float
 
 # Network Architecture
-num_inputs = image_width*image_height
-num_hidden = 128
-num_outputs = 10
+num_inputs 		= image_width*image_height
+num_hidden 		= 128
+num_outputs 		= 10
 
 # Temporal Dynamics
-num_steps = 100
-beta = 0.9375
-tauExc = 100
+num_steps 		= 100
+beta 			= 0.9375
+tauExc 			= 100
 
 
-num_epochs = 30
-loss_hist = []
-test_loss_hist = []
-counter = 0
+num_epochs 		= 30
+loss_hist 		= []
+test_loss_hist 		= []
+counter 		= 0
 
 # List of layer sizes
-networkList = [784, 128, 10]
+networkList 		= [784, 128, 10]
+
+# Import weights and thresholds from state_dict
+with open(paramDir + "/" + state_dict_file, "rb") as fp:
+	state_dict	= torch.load(fp)
+
+	layer_count = 1
+	for layer_size in networkList[1:]:
+
+		weights_key 	= "fc" + str(layer_count) + ".weight"
+		thresh_key	= "lif" + str(layer_count) + ".threshold"
+
+		weights		= state_dict[weights_key]
+		thresholds 	= state_dict[thresh_key].repeat(layer_size)
+
+		# All the script is based on reading weights and
+		# thresholds. Write them donw on file
+		with open(weightFilename + str(layer_count) +
+		".npy", "wb") as weights_fp:
+			np.save(weights_fp, weights.numpy())
+
+		with open(thresholdFilename + str(layer_count) +
+		".npy", "wb") as thresh_fp:
+			np.save(thresh_fp, thresholds.numpy())
+
+
+
+		layer_count += 1
 
 mode = "test"
 trainPrecision = "float"
