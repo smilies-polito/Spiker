@@ -161,10 +161,6 @@ class SNN(nn.Module):
 		self.v1 = v1
 		self.w2 = w2
 
-		print(self.w1)
-		print(self.v1)
-		print(self.w2)
-
 		if not alpha_shift2:
 			alpha_shift2 = alpha_shift
 
