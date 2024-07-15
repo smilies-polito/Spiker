@@ -8,8 +8,15 @@ __pycache__
 # Report files and similar
 *.txt
 
+# Plots and figures
+*.svg
+*.png
+
+
 # Numpy arrays
 *.npy
+*.pt
+*.pkl
 
 # Vivado simulation files
 *.jou
@@ -36,8 +43,9 @@ __pycache__
 # Temporary files
 tmp.*
 
-# Vim back-up files
+# Vim config or temporary files
 *.swp
+tags
 
 # Singularity images
 *.sif
@@ -45,3 +53,23 @@ tmp.*
 # Screen log files
 screenlog.*
 *log*
+
+# Datasets
+*.gz
+*.h5*
+
+# MNIST dataset files
+t10k-images-idx3-ubyte
+t10k-labels-idx1-ubyte
+train-images-idx3-ubyte
+train-labels-idx1-ubyte
+
+# Generated VHDL and verilog
+*.vhd
+*.v
+
+# Memory initialization files
+*.coe
+*.mem
+*.mif
+*.tmp

@@ -48,21 +48,31 @@ Spiker design flow
 
 ## DEPENDENCIES
 * __MNIST__
+	* numpy
 
 * __Python__
-	* __Models__: python models of the Spiking Neural Network.
-		* Brian2: models developed using [Brian 2 simulator](https://brian2.readthedocs.io/en/stable/)
-			* PeterDiehl: brian2 translation of the original work from Peter Diel et al. (see related documents).
-			* Simplified: simplified LIF neuron model with respect to the conductance-based model used by Peter Diehl et al.
-	* __Simulations__: scripts to automate simulations.
-		* VhdlSim: scripts to simulate the VHDL components
-
+	* __Models__:
+		* Brian2:
+			* Brian 2: to describe the model using differential equations.
+			* Numpy
+			* Timeit: for measuring execution times.
+			* Sys: to import modules from other directories.
+			* Subprocess: to delete and create directories and files.
+			* Matplotlib: only for test and evaluation, not required to run the model.
+			* Scipy.sparse: only for test and evaluation, not required to run the model.
+		* Custom: models developed without using any external module expept numpy to accelerate the execution throgh vectorization
+			* Numpy
+			* Timeit: for measuring execution times.
+			* Sys: to import modules from other directories.
+			* Subprocess: to delete and create directories and files.
+			* Matplotlib: only for test and evaluation, not required to run the model.
+			* Scipy.sparse: only for test and evaluation, not required to run the model.
+	* __Simulations__: 
+		* Numpy
+		* Timeit: for measuring execution times.
+		* Subprocess: to delete and create directories and files.
 * __Vhdl__
-	* The accelerator was developed using Vivado design suite. 
-		* All the TCL scripts follows the Xilinx standard. 
-		* The BRAM components are instantiated from the Vivado libraries for the target FPGA. You need to instantiate memory blocks that are specific for your target platform. This can be done by modifying the weights_bram component.
-
-	  The rest of the VHDL code itself can be synthesized with whichever tool you like
+	All the tcl scripts and simulations where performed using Xilinx Vivado 2020. The BRAM components in weights_bram.vhd are imported from Vivado libraries. All the rest of the VHDL code is completely general.
 
 
 
