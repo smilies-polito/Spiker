@@ -1028,6 +1028,12 @@ net = createNetwork(networkList, weightFilename, thresholdFilename, mode,
 			fixed_point_decimals, neuron_bitWidth, weights_bitWidth,
 			trainPrecision, rng)
 
+with open("weights.txt", "w") as fp:
+	for i in range(net["exc2exc1"]["weights"].shape[0]):
+		fp.write(str(list(net["exc2exc1"]["weights"][i]))[1:-1].replace(", ", ""))
+		fp.write("\n")
+
+
 image = test_data[image_index][0].view(batch_size, -1).numpy()
 label = int(test_data[image_index][1].int())
 
