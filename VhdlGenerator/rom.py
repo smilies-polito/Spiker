@@ -72,7 +72,7 @@ class Rom(VHDLblock):
 				bin_weight = int_to_bin(fp_array[i][j], width =
 						self.bitwidth)
 
-				rom_row += bin_weight
+				rom_row = bin_weight + rom_row
 
 			rows.append(rom_row)
 
