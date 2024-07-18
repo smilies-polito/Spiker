@@ -63,7 +63,8 @@ architecture behavior of network_tb is
             sample : out std_logic;
             in_spikes : in std_logic_vector(783 downto 0);
             out_spikes : out std_logic_vector(9 downto 0);
-            exc_weight_db : out signed(3 downto 0)
+            exc_weight_db : out signed(3 downto 0);
+            out_spikes_0_db : out std_logic_vector(127 downto 0)
         );
     end component;
 
@@ -81,6 +82,7 @@ architecture behavior of network_tb is
     signal out_spikes_w_en : std_logic;
     signal in_spikes_rd_en : std_logic;
     signal exc_weight_db : signed(3 downto 0);
+    signal out_spikes_0_db : std_logic_vector(127 downto 0);
 
 begin
 
@@ -260,7 +262,8 @@ begin
             sample => sample,
             in_spikes => in_spikes,
             out_spikes => out_spikes,
-	    exc_weight_db => exc_weight_db
+	    exc_weight_db => exc_weight_db,
+            out_spikes_0_db => out_spikes_0_db
         );
 
 

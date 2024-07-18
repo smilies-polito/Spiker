@@ -47,7 +47,8 @@ entity network is
         sample : out std_logic;
         in_spikes : in std_logic_vector(783 downto 0);
         out_spikes : out std_logic_vector(9 downto 0);
-        exc_weight_db : out signed(3 downto 0)
+        exc_weight_db : out signed(3 downto 0);
+        out_spikes_0_db : out std_logic_vector(127 downto 0)
     );
 end entity network;
 
@@ -133,6 +134,8 @@ begin
     all_ready <= sample_ready and layer_0_ready and layer_1_ready ;
     out_spikes <= layer_1_feedback;
     exc_spikes_0_to_1<= layer_0_feedback;
+
+    out_spikes_0_db <= layer_0_feedback;
 
 
     multi_cycle_control : multi_cycle
