@@ -52,7 +52,9 @@ entity layer_128_neurons_784_inputs is
         exc_spikes : in std_logic_vector(n_exc_inputs-1 downto 0);
         inh_spikes : in std_logic_vector(n_inh_inputs-1 downto 0);
         ready : out std_logic;
-        out_spikes : out std_logic_vector(127 downto 0)
+        out_spikes : out std_logic_vector(127 downto 0);
+        exc_weight_db : out signed(exc_weights_bit_width-1 downto 0)
+        
     );
 end entity layer_128_neurons_784_inputs;
 
@@ -935,6 +937,8 @@ architecture behavior of layer_128_neurons_784_inputs is
     signal exc_weight_7f : std_logic_vector(exc_weights_bit_width-1 downto 0);
 
 begin
+
+    exc_weight_db <= signed(exc_weight_0);
 
     neurons_ready <= neuron_ready_0 and neuron_ready_1 and neuron_ready_2 and neuron_ready_3 and neuron_ready_4 and neuron_ready_5 and neuron_ready_6 and neuron_ready_7 and neuron_ready_8 and neuron_ready_9 and neuron_ready_a and neuron_ready_b and neuron_ready_c and neuron_ready_d and neuron_ready_e and neuron_ready_f and neuron_ready_10 and neuron_ready_11 and neuron_ready_12 and neuron_ready_13 and neuron_ready_14 and neuron_ready_15 and neuron_ready_16 and neuron_ready_17 and neuron_ready_18 and neuron_ready_19 and neuron_ready_1a and neuron_ready_1b and neuron_ready_1c and neuron_ready_1d and neuron_ready_1e and neuron_ready_1f and neuron_ready_20 and neuron_ready_21 and neuron_ready_22 and neuron_ready_23 and neuron_ready_24 and neuron_ready_25 and neuron_ready_26 and neuron_ready_27 and neuron_ready_28 and neuron_ready_29 and neuron_ready_2a and neuron_ready_2b and neuron_ready_2c and neuron_ready_2d and neuron_ready_2e and neuron_ready_2f and neuron_ready_30 and neuron_ready_31 and neuron_ready_32 and neuron_ready_33 and neuron_ready_34 and neuron_ready_35 and neuron_ready_36 and neuron_ready_37 and neuron_ready_38 and neuron_ready_39 and neuron_ready_3a and neuron_ready_3b and neuron_ready_3c and neuron_ready_3d and neuron_ready_3e and neuron_ready_3f and neuron_ready_40 and neuron_ready_41 and neuron_ready_42 and neuron_ready_43 and neuron_ready_44 and neuron_ready_45 and neuron_ready_46 and neuron_ready_47 and neuron_ready_48 and neuron_ready_49 and neuron_ready_4a and neuron_ready_4b and neuron_ready_4c and neuron_ready_4d and neuron_ready_4e and neuron_ready_4f and neuron_ready_50 and neuron_ready_51 and neuron_ready_52 and neuron_ready_53 and neuron_ready_54 and neuron_ready_55 and neuron_ready_56 and neuron_ready_57 and neuron_ready_58 and neuron_ready_59 and neuron_ready_5a and neuron_ready_5b and neuron_ready_5c and neuron_ready_5d and neuron_ready_5e and neuron_ready_5f and neuron_ready_60 and neuron_ready_61 and neuron_ready_62 and neuron_ready_63 and neuron_ready_64 and neuron_ready_65 and neuron_ready_66 and neuron_ready_67 and neuron_ready_68 and neuron_ready_69 and neuron_ready_6a and neuron_ready_6b and neuron_ready_6c and neuron_ready_6d and neuron_ready_6e and neuron_ready_6f and neuron_ready_70 and neuron_ready_71 and neuron_ready_72 and neuron_ready_73 and neuron_ready_74 and neuron_ready_75 and neuron_ready_76 and neuron_ready_77 and neuron_ready_78 and neuron_ready_79 and neuron_ready_7a and neuron_ready_7b and neuron_ready_7c and neuron_ready_7d and neuron_ready_7e and neuron_ready_7f and barrier_ready;
 

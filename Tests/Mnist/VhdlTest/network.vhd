@@ -28,6 +28,7 @@
 
 library ieee;
 use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
 library work;
 use work.spiker_pkg.all;
 
@@ -45,7 +46,8 @@ entity network is
         ready : out std_logic;
         sample : out std_logic;
         in_spikes : in std_logic_vector(783 downto 0);
-        out_spikes : out std_logic_vector(9 downto 0)
+        out_spikes : out std_logic_vector(9 downto 0);
+        exc_weight_db : out signed(3 downto 0)
     );
 end entity network;
 
@@ -87,7 +89,8 @@ architecture behavior of network is
             exc_spikes : in std_logic_vector(n_exc_inputs-1 downto 0);
             inh_spikes : in std_logic_vector(n_inh_inputs-1 downto 0);
             ready : out std_logic;
-            out_spikes : out std_logic_vector(127 downto 0)
+            out_spikes : out std_logic_vector(127 downto 0);
+            exc_weight_db : out signed(exc_weights_bit_width-1 downto 0)
         );
     end component;
 
@@ -166,7 +169,8 @@ begin
             exc_spikes => in_spikes,
             inh_spikes => layer_0_feedback,
             ready => layer_0_ready,
-            out_spikes => layer_0_feedback
+            out_spikes => layer_0_feedback,
+	    exc_weight_db => exc_weight_db
         );
 
     layer_1 : layer_10_neurons_128_inputs
