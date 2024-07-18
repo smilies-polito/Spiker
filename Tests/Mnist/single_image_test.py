@@ -438,8 +438,8 @@ def resetPotentials(network, layerName):
 
 
 	network[layerName]["v"][0][network[layerName]["outSpikes"][0]] = \
-		network[layerName]["vReset"]
-
+	network[layerName]["v"][0][network[layerName]["outSpikes"][0]] - \
+	network[layerName]["vThresh"][network[layerName]["outSpikes"][0]]
 
 
 
@@ -1028,9 +1028,12 @@ net = createNetwork(networkList, weightFilename, thresholdFilename, mode,
 			fixed_point_decimals, neuron_bitWidth, weights_bitWidth,
 			trainPrecision, rng)
 
+
+np.set_printoptions(threshold = np.inf)
+
 with open("weights.txt", "w") as fp:
 	for i in range(net["exc2exc1"]["weights"].shape[0]):
-		fp.write(str(list(net["exc2exc1"]["weights"][i]))[1:-1].replace(", ", ""))
+		fp.write(str(net["exc2exc1"]["weights"][i]).replace("\n", " "))
 		fp.write("\n")
 
 
@@ -1041,13 +1044,17 @@ spikesTrains = imgToSpikeTrain(image, num_steps, rng)
 
 with open(in_spikes_file, "w") as fp:
 	for inputs in spikesTrains:
-		fp.write((str(inputs.astype(int))[1:-1].replace(" ",
+		fp.write((str(inputs.astype(int))[-2:0:-1].replace(" ",
 			"").replace("\n", "")))
 		fp.write("\n")
 
-_, _, out_spikes, _= run(net, networkList, spikesTrains,
+_, spikes_1, out_spikes, _= run(net, networkList, spikesTrains,
 		dt_tauDict, exp_shift, None, mode, None,
 		neuron_bitWidth)
+
+for i in range(spikes_1.shape[0]):
+	print(hex(int(str(spikes_1[i].astype(int))[1:-1].replace(" ",
+		"").replace("\n", ""))))
 
 with open(out_spikes_file, "w") as fp:
 	for output in out_spikes:
