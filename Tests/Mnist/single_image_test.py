@@ -468,12 +468,13 @@ def all2allUpdate(network, layerName, synapseName, inputSpikes, bitwidth):
 
 	"""
 
-	network[layerName]["v"][0] = network[layerName]["v"][0] + np.sum(
-				network[synapseName]["weights"][:, inputSpikes],
-				axis=1)
+	for i in range(len(inputSpikes)):
 
-	network[layerName]["v"][0] = saturateArray(network[layerName]["v"][0],
-			bitwidth)
+		network[layerName]["v"][0] = network[layerName]["v"][0] + \
+		network[synapseName]["weights"][:, i] * inputSpikes[i]
+
+		network[layerName]["v"][0] = saturateArray(network[layerName]["v"][0],
+				bitwidth)
 
 
 def createNetwork(networkList, weightFilename, thresholdFilename, mode,
