@@ -39,10 +39,7 @@ entity add_sub is
         in0 : in signed(N-1 downto 0);
         in1 : in signed(N-1 downto 0);
         add_or_sub : in std_logic;
-        add_sub_out : out signed(N-1 downto 0);
-        l_out : out signed(N downto 0);
-	l_in0	: out signed(N downto 0);
-	l_in1	: out signed(N downto 0)
+        add_sub_out : out signed(N-1 downto 0)
     );
 end entity add_sub;
 
@@ -57,14 +54,10 @@ architecture behavior of add_sub is
 
 begin
 
-    l_in0 <= local_in0;
-    l_in1 <= local_in1;
-    l_out <= local_out;
-
     local_in0 <= in0(N-1) & in0;
     local_in1 <= in1(N-1) & in1;
 
-    operation : process(local_in0, local_in1, local_out, add_or_sub)
+    saturated_sum_sub : process(local_in0, local_in1, local_out, add_or_sub)
     begin
 
         if add_or_sub = '0' 
@@ -89,7 +82,7 @@ begin
 		add_sub_out <= local_out(N-1 downto 0);
 	end if;
 
-    end process operation;
+    end process saturated_sum_sub;
 
 
 end architecture behavior;
