@@ -100,9 +100,6 @@ class AddSub(VHDLblock):
 					add("add_sub_out <= local_out(N-1 downto 0);")
 
 
-
-
-
 		else:
 
 			# Add/sub process
@@ -125,17 +122,3 @@ class AddSub(VHDLblock):
 		# Debug
 		if debug:
 			debug_component(self, debug_list)
-
-import sys
-
-hdl_dir = "../../HdlTools/hdltools"
-
-if hdl_dir not in sys.path:
-	sys.path.insert(0, hdl_dir)
-
-from vhdl import write_file_all, fast_compile, elaborate
-
-a = AddSub(bitwidth = 4, saturated = True)
-a.write_file()
-fast_compile(a)
-elaborate(a)
