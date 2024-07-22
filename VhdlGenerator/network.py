@@ -346,6 +346,22 @@ class Network_tb(Testbench):
 		self.architecture.processes["start_gen"].if_list[0]._if_.\
 			body.add(ready_if)
 
+
+		del self.architecture.processes["sample_ready_gen"]
+		self.architecture.bodyCodeHeader.add("sample_ready <= '1';")
+
+		del self.architecture.processes["ready_w_en_gen"]
+		self.architecture.bodyCodeHeader.add("ready_w_en <= '0';")
+
+		del self.architecture.processes["sample_w_en_gen"]
+		self.architecture.bodyCodeHeader.add("sample_w_en <= '0';")
+
+		del self.architecture.processes["out_spikes_w_en_gen"]
+		self.architecture.bodyCodeHeader.add("out_spikes_w_en <= sample;")
+
+		del self.architecture.processes["in_spikes_rd_en_gen"]
+		self.architecture.bodyCodeHeader.add("in_spikes_rd_en <= sample;")
+
 		if file_input and "in_spike" in input_signal_list:
 			del self.architecture.processes["in_spikes_rd_en_gen"]
 			self.architecture.bodyCodeHeader.add(
