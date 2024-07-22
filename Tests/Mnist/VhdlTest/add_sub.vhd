@@ -33,6 +33,7 @@ use ieee.numeric_std.all;
 
 entity add_sub is
     generic (
+    	saturate	: string := "False";
         N : integer := 6
     );
     port (
@@ -57,7 +58,7 @@ begin
     local_in0 <= in0(N-1) & in0;
     local_in1 <= in1(N-1) & in1;
 
-    saturated_sum_sub : process(local_in0, local_in1, local_out, add_or_sub)
+    sum_sub : process(local_in0, local_in1, local_out, add_or_sub)
     begin
 
         if add_or_sub = '0' 
@@ -70,19 +71,27 @@ begin
 
         end if;
 
-	if local_out(N) /= local_out(N-1)
+	if saturate = "True"
 	then
-		if local_out(N) = '1'
+		if local_out(N) /= local_out(N-1)
 		then
-			add_sub_out <= to_signed(sat_down, add_sub_out'length);
+			if local_out(N) = '1'
+			then
+				add_sub_out <= to_signed(sat_down, add_sub_out'length);
+			else
+				add_sub_out <= to_signed(sat_up, add_sub_out'length);
+			end if;
 		else
-			add_sub_out <= to_signed(sat_up, add_sub_out'length);
+			add_sub_out <= local_out(N-1 downto 0);
 		end if;
+
 	else
+
 		add_sub_out <= local_out(N-1 downto 0);
+
 	end if;
 
-    end process saturated_sum_sub;
+    end process sum_sub;
 
 
 end architecture behavior;
