@@ -66,6 +66,14 @@ class AddSub(VHDLblock):
 				signal_type	= "signed(N downto 0)"
 			)
 
+			# Extended inputs
+			self.architecture.bodyCodeHeader.add(
+				"local_in0 <= in0(N-1) & in0;"
+			)
+			self.architecture.bodyCodeHeader.add(
+				"local_in1 <= in1(N-1) & in1;"
+			)
+
 			# Add/sub
 			self.architecture.processes.add("sat_add_sub")
 			self.architecture.processes["sat_add_sub"].sensitivity_list.add(

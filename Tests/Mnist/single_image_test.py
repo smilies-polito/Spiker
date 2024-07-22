@@ -1059,9 +1059,6 @@ _, spikes_1, out_spikes, m0, m1 = run(net, networkList, spikesTrains,
 		neuron_bitWidth)
 
 
-# print(m1[:, 1])
-# print(out_spikes[:, 1])
-
 with open(out_spikes_file, "w") as fp:
 	for output in out_spikes:
 		fp.write((str(output.astype(int))[1:-1].replace(" ", "")))

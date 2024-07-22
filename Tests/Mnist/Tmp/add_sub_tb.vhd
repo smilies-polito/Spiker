@@ -11,7 +11,7 @@ architecture behavior of add_sub_tb is
 
 	component add_sub is
 	    generic (
-	        saturate : string := "False";
+	        --saturate : string := "False";
 		N : integer := 6
 	    );
 	    port (
@@ -57,7 +57,7 @@ begin
 
 	dut	: add_sub
 	    generic map(
-	    	saturate	=> "True",
+	    	--saturate	=> "True",
 		N 		=> N
 	    )
 	    port map(

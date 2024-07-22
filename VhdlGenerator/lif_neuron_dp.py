@@ -41,7 +41,8 @@ class LIFneuronDP(VHDLblock):
 							bitwidth)
 
 		self.add_sub			= AddSub(
-							bitwidth = bitwidth)
+							bitwidth = bitwidth,
+							saturated = True)
 
 		if self.reset == "fixed":
 			self.mux2to1_signed	= Mux(
