@@ -24,7 +24,7 @@ class Layer(VHDLblock):
 		0.3]]), w_inh = np.array([[-0.1, -0.2]]), v_th = np.array([8]),
 		v_reset = np.array([2]), bitwidth = 16, fp_decimals = 0,
 		w_inh_bw = 5, w_exc_bw = 5, shift = 10, reset = "fixed",
-		debug = False, debug_list = []):
+		functional = False, debug = False, debug_list = []):
 
 		self.n_neurons		= w_exc.shape[0]
 		self.n_exc_inputs 	= w_exc.shape[1]
@@ -46,6 +46,8 @@ class Layer(VHDLblock):
 		self.w_inh		= w_inh
 		self.v_th		= fixed_point_array(v_th, bitwidth,
 					fp_decimals)
+
+		self.functional		= functional
 
 		self.spiker_pkg = SpikerPackage()
 
@@ -70,14 +72,16 @@ class Layer(VHDLblock):
 			init_array 	= w_exc,
 			bitwidth 	= w_exc_bw,
 			fp_decimals	= fp_decimals,
-			name_term 	= "_exc" + label
+			name_term 	= "_exc" + label,
+			functional	= self.functional
 		) 
 
 		self.inh_mem = Rom(
 			init_array 	= w_inh,
 			bitwidth 	= w_inh_bw,
 			fp_decimals	= fp_decimals,
-			name_term 	= "_inh" + label
+			name_term 	= "_inh" + label,
+			functional	= self.functional
 		) 
 
 		self.addr_converter = AddrConverter(

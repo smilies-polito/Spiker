@@ -59,6 +59,7 @@ layer_0 = Layer(
 	w_exc_bw	= w_bitwidth1,
 	shift		= exp_shift,
 	reset		= "subtractive",
+	functional	= True,
 	debug		= False,
 	debug_list	= []
 )
@@ -75,6 +76,7 @@ layer_1 = Layer(
 	w_exc_bw	= w_bitwidth1,
 	shift		= exp_shift,
 	reset		= "subtractive",
+	functional	= True,
 	debug		= False,
 	debug_list	= []
 )
