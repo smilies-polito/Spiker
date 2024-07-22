@@ -11,14 +11,12 @@ architecture behavior of add_sub_tb is
 
 	component add_sub is
 	    generic (
+	        saturate : string := "False";
 		N : integer := 6
 	    );
 	    port (
 		in0 		: in signed(N-1 downto 0);
 		in1 		: in signed(N-1 downto 0);
-		l_in0 		: out signed(N downto 0);
-		l_in1 		: out signed(N downto 0);
-		l_out 		: out signed(N downto 0);
 		add_or_sub 	: in std_logic;
 		add_sub_out 	: out signed(N-1 downto 0)
 	    );
@@ -26,9 +24,6 @@ architecture behavior of add_sub_tb is
 
 	signal in0 		: signed(N-1 downto 0);
 	signal in1 		: signed(N-1 downto 0);
-	signal l_in0 		: signed(N downto 0);
-	signal l_in1 		: signed(N downto 0);
-	signal l_out 		: signed(N downto 0);
 	signal add_or_sub 	: std_logic;
 	signal add_sub_out 	: signed(N-1 downto 0);
 
@@ -62,14 +57,12 @@ begin
 
 	dut	: add_sub
 	    generic map(
+	    	saturate	=> "True",
 		N 		=> N
 	    )
 	    port map(
 		in0 		=> in0,
 		in1 		=> in1, 	   
-		l_in0 		=> l_in0,
-		l_in1 		=> l_in1, 	   
-		l_out 		=> l_out, 	   
 		add_or_sub 	=> add_or_sub,
 		add_sub_out 	=> add_sub_out
 	    );
