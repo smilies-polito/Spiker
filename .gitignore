@@ -57,6 +57,7 @@ screenlog.*
 # Datasets
 *.gz
 *.h5*
+*.wav
 
 # MNIST dataset files
 t10k-images-idx3-ubyte
