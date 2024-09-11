@@ -151,7 +151,7 @@ class Readout(snn.Leaky):
 
 class Net(nn.Module):
 
-	def __init__(self, num_inputs = 40, num_hidden1 = 128, num_hidden2 = 32,
+	def __init__(self, num_inputs = 40, num_hidden = 128,
 			num_outputs = 10, model = "lif", bias = False,
 			beta = 0.9, threshold = 1., state_quant = False):
 
@@ -159,32 +159,19 @@ class Net(nn.Module):
 
 		self.fc1 = nn.Linear(
 			in_features	= num_inputs,
-			out_features	= num_hidden1,
+			out_features	= num_hidden,
 			bias 		= bias
 		)
 
 		self.lif1 = snn.Leaky(
 			beta		= beta,
 			threshold 	= threshold,
-			reset_mechanism	= "none",
+			reset_mechanism	= "subtract",
 			state_quant	= state_quant
 		)
 
 		self.fc2 = nn.Linear(
-			in_features	= num_hidden1,
-			out_features	= num_hidden2,
-			bias 		= bias
-		)
-
-		self.lif2 = snn.Leaky(
-			beta		= beta,
-			threshold 	= threshold,
-			reset_mechanism	= "none",
-			state_quant	= state_quant
-		)
-
-		self.fc3 = nn.Linear(
-			in_features	= num_hidden2,
+			in_features	= num_hidden,
 			out_features	= num_outputs,
 			bias 		= bias
 		)
@@ -197,7 +184,6 @@ class Net(nn.Module):
 
 		# Initialize hidden states at t=0
 		mem1 = self.lif1.reset_mem()
-		mem2 = self.lif2.reset_mem()
 		mem_out = self.readout.reset_mem()
 
 		# Record the final layer
@@ -210,10 +196,7 @@ class Net(nn.Module):
 			spk1, mem1 = self.lif1(cur1, mem1)
 
 			cur2 = self.fc2(spk1)
-			spk2, mem2 = self.lif2(cur2, mem2)
-
-			cur3 = self.fc3(spk2)
-			mem_out, out = self.readout(cur3, mem_out)
+			mem_out, out = self.readout(cur2, mem_out)
 
 			mem_out_rec.append(mem_out)
 			out_rec.append(out)
@@ -325,12 +308,11 @@ if __name__ == "__main__":
 	n_epochs		= 20
 
 	num_inputs		= n_mels
-	num_hidden1		= 128
-	num_hidden2		= 32
+	num_hidden		= 150
 	num_outputs		= 10
 
-	w_bits			= 6
-	mem_bits		= 16
+	w_bits			= 4
+	mem_bits		= 12
 
 	beta			= 0.9375
 
@@ -346,15 +328,13 @@ if __name__ == "__main__":
 	adam_beta2	= 0.999
 	lr		= 5e-4
 
-	weight_quant = quantize(num_bits = w_bits)
 	mem_quant = quantize(num_bits = mem_bits)
 
-	print("Creatring the network\n")
+	print("Creating the network\n")
 
 	net = Net(
 		num_inputs	= num_inputs,
-		num_hidden1	= num_hidden1,
-		num_hidden2	= num_hidden2,
+		num_hidden	= num_hidden,
 		num_outputs	= num_outputs,
 		beta		= beta,
 		state_quant	= mem_quant
@@ -364,6 +344,12 @@ if __name__ == "__main__":
 
 	for key in state_dict.keys():
 		if "weight" in key:
+
+			sigma, mean = torch.std_mean(state_dict[key])
+
+			weight_quant = quantize(num_bits = w_bits, threshold =
+					2*sigma, upper_limit = 0)
+
 			state_dict[key] = weight_quant(state_dict[key])
 
 	net.load_state_dict(state_dict)
@@ -402,7 +388,8 @@ if __name__ == "__main__":
 			acc += np.mean((test_labels == idx).detach().cpu().numpy())
 			counter += 1
 
-		print("Accuracy: " + "{:.2f}".format(acc / counter * 100) + "%")
+
+			print("Accuracy: " + "{:.2f}".format(acc / counter * 100) + "%")
 
 
 end_time = time.time()
