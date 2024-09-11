@@ -247,7 +247,7 @@ if __name__ == "__main__":
 
 	start_time = time.time()
 
-	root_dir	= "./Data"
+	root_dir	= "../../Models/SnnTorch/AudioMnist/Data"
 	batch_size	= 128
 	sample_rate	= 48e3
 
@@ -311,12 +311,12 @@ if __name__ == "__main__":
 	num_hidden		= 150
 	num_outputs		= 10
 
-	w_bits			= 4
-	mem_bits		= 12
+	w_bits			= 6
+	mem_bits		= 8
 
 	beta			= 0.9375
 
-	trained_param_dir	= "./TrainedParameters"
+	trained_param_dir	= "../../Models/SnnTorch/AudioMnist/TrainedParameters"
 
 	if not os.path.exists(trained_param_dir):
 		os.makedirs(trained_param_dir)
