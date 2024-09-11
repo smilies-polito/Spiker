@@ -6,6 +6,7 @@ from torch.utils.data import Dataset, DataLoader, random_split
 import torch.nn as nn
 import torch.nn.functional as fn
 import snntorch as snn
+from snntorch.functional.quant import state_quant as quantize
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print("Device: ", device)
@@ -152,38 +153,40 @@ class Net(nn.Module):
 
 	def __init__(self, num_inputs = 40, num_hidden1 = 128, num_hidden2 = 32,
 			num_outputs = 10, model = "lif", bias = False,
-			beta = 0.9, threshold = 1.):
+			beta = 0.9, threshold = 1., state_quant = False):
 
 		super().__init__()
 
 		self.fc1 = nn.Linear(
 			in_features	= num_inputs,
 			out_features	= num_hidden1,
-			bias 		= bias,
+			bias 		= bias
 		)
 
 		self.lif1 = snn.Leaky(
 			beta		= beta,
 			threshold 	= threshold,
-			reset_mechanism	= "none"
+			reset_mechanism	= "none",
+			state_quant	= state_quant
 		)
 
 		self.fc2 = nn.Linear(
 			in_features	= num_hidden1,
 			out_features	= num_hidden2,
-			bias 		= bias,
+			bias 		= bias
 		)
 
 		self.lif2 = snn.Leaky(
 			beta		= beta,
 			threshold 	= threshold,
-			reset_mechanism	= "none"
+			reset_mechanism	= "none",
+			state_quant	= state_quant
 		)
 
 		self.fc3 = nn.Linear(
 			in_features	= num_hidden2,
 			out_features	= num_outputs,
-			bias 		= bias,
+			bias 		= bias
 		)
 
 		self.readout = Readout(
@@ -326,6 +329,9 @@ if __name__ == "__main__":
 	num_hidden2		= 32
 	num_outputs		= 10
 
+	w_bits			= 6
+	mem_bits		= 16
+
 	beta			= 0.9375
 
 	trained_param_dir	= "./TrainedParameters"
@@ -340,6 +346,9 @@ if __name__ == "__main__":
 	adam_beta2	= 0.999
 	lr		= 5e-4
 
+	weight_quant = quantize(num_bits = w_bits)
+	mem_quant = quantize(num_bits = mem_bits)
+
 	print("Creatring the network\n")
 
 	net = Net(
@@ -347,10 +356,17 @@ if __name__ == "__main__":
 		num_hidden1	= num_hidden1,
 		num_hidden2	= num_hidden2,
 		num_outputs	= num_outputs,
-		beta		= beta
+		beta		= beta,
+		state_quant	= mem_quant
 	)
 
-	net.load_state_dict(torch.load(trained_param_dict, map_location = device))
+	state_dict = torch.load(trained_param_dict, map_location = device)
+
+	for key in state_dict.keys():
+		if "weight" in key:
+			state_dict[key] = weight_quant(state_dict[key])
+
+	net.load_state_dict(state_dict)
 
 	loss_fn = nn.CrossEntropyLoss()
 
