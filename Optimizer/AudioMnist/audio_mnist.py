@@ -311,7 +311,7 @@ if __name__ == "__main__":
 	num_hidden		= 150
 	num_outputs		= 10
 
-	w_bits			= 6
+	w_bits			= 5
 	mem_bits		= 8
 
 	beta			= 0.9375
@@ -328,7 +328,39 @@ if __name__ == "__main__":
 	adam_beta2	= 0.999
 	lr		= 5e-4
 
-	mem_quant = quantize(num_bits = mem_bits)
+	state_dict = torch.load(trained_param_dict, map_location = device)
+
+	max_sigma = 0
+
+	for key in state_dict.keys():
+
+		if "weight" in key:
+
+			sigma, _ = torch.std_mean(state_dict[key])
+
+			if sigma > max_sigma:
+				max_sigma = sigma
+
+	weight_quant = quantize(num_bits = w_bits, threshold =
+			2*max_sigma, upper_limit = 0)
+
+	for key in state_dict.keys():
+
+		if "weight" in key:
+
+			state_dict[key] = weight_quant(state_dict[key])
+
+	threshold = 1.
+	upper_limit = 4.
+	lower_limit = 4.
+
+	mem_bits = int(torch.log2(((threshold + threshold*upper_limit) - (-threshold -
+		threshold*lower_limit)) / (4*max_sigma / 2**w_bits)).item())
+
+	print("Membrane bits: ", mem_bits)
+
+	mem_quant = quantize(num_bits = mem_bits, threshold = threshold,
+			upper_limit = upper_limit, lower_limit = lower_limit)
 
 	print("Creating the network\n")
 
@@ -340,17 +372,7 @@ if __name__ == "__main__":
 		state_quant	= mem_quant
 	)
 
-	state_dict = torch.load(trained_param_dict, map_location = device)
 
-	for key in state_dict.keys():
-		if "weight" in key:
-
-			sigma, mean = torch.std_mean(state_dict[key])
-
-			weight_quant = quantize(num_bits = w_bits, threshold =
-					2*sigma, upper_limit = 0)
-
-			state_dict[key] = weight_quant(state_dict[key])
 
 	net.load_state_dict(state_dict)
 
