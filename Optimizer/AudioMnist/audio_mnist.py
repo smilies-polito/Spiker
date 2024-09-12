@@ -256,7 +256,7 @@ if __name__ == "__main__":
 
 	start_time = time.time()
 
-	root_dir	= "./Data"
+	root_dir	= "../../Models/SnnTorch/AudioMnist/Data"
 	batch_size	= 128
 	sample_rate	= 48e3
 
@@ -325,7 +325,7 @@ if __name__ == "__main__":
 
 	beta			= 0.9375
 
-	trained_param_dir	= "./TrainedParameters"
+	trained_param_dir	= "../../Models/SnnTorch/AudioMnist/TrainedParameters"
 
 	if not os.path.exists(trained_param_dir):
 		os.makedirs(trained_param_dir)
@@ -369,6 +369,10 @@ if __name__ == "__main__":
 	counter = 0
 	iter_counter = 0
 
+	in_activity = 0
+	hidden_activity = 0
+	out_activity = 0
+
 	net.to(device)
 
 	print("Starting the testing loop\n")
@@ -390,7 +394,19 @@ if __name__ == "__main__":
 					to(device)
 			test_labels	= test_labels.to(device)
 
+			
 			mem1_rec, spk1_rec, mem_out_rec, out_rec = net(test_data)
+
+			print(test_data.shape)
+			print(spk1_rec.shape)
+			print(out_rec.shape)
+
+			in_activity += torch.any(test_data, axis = 2).sum() / \
+					(batch_size * 73)
+			hidden_activity += torch.any(spk1_rec, axis = 2).sum() / \
+					(batch_size * 73)
+			out_activity += torch.any(out_rec, axis = 2).sum() / \
+					(batch_size * 73)
 
 			_, idx = out_rec.sum(dim=0).max(1)
 
@@ -399,6 +415,13 @@ if __name__ == "__main__":
 
 
 			print("Accuracy: " + "{:.2f}".format(acc / counter * 100) + "%")
+
+		print("Average input activity: " + "{:.2f}".format(in_activity /
+			counter))
+		print("Average hidden activity: " + "{:.2f}".format(hidden_activity /
+			counter))
+		print("Average output activity: " + "{:.2f}".format(out_activity /
+			counter))
 
 
 end_time = time.time()
