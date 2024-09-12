@@ -176,8 +176,11 @@ class Net(nn.Module):
 			bias 		= bias
 		)
 
-		self.readout = Readout(
-			beta		= beta
+		self.readout = snn.Leaky(
+			beta		= beta,
+			threshold 	= threshold,
+			reset_mechanism	= "subtract",
+			state_quant	= state_quant
 		)
 
 	def forward(self, input_spikes):
@@ -187,6 +190,8 @@ class Net(nn.Module):
 		mem_out = self.readout.reset_mem()
 
 		# Record the final layer
+		mem1_rec = []
+		spk1_rec = []
 		mem_out_rec = []
 		out_rec = []
 
@@ -198,10 +203,14 @@ class Net(nn.Module):
 			cur2 = self.fc2(spk1)
 			mem_out, out = self.readout(cur2, mem_out)
 
+			mem1_rec.append(mem1)
+			spk1_rec.append(spk1)
 			mem_out_rec.append(mem_out)
 			out_rec.append(out)
 
-		return torch.stack(mem_out_rec, dim=0), \
+		return torch.stack(mem1_rec, dim=0), \
+			torch.stack(spk1_rec, dim=0), \
+			torch.stack(mem_out_rec, dim=0), \
 			torch.stack(out_rec, dim=0)
 
 
@@ -381,7 +390,7 @@ if __name__ == "__main__":
 					to(device)
 			test_labels	= test_labels.to(device)
 
-			_, out_rec = net(test_data)
+			mem1_rec, spk1_rec, mem_out_rec, out_rec = net(test_data)
 
 			_, idx = out_rec.sum(dim=0).max(1)
 
