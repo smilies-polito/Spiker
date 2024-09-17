@@ -11,13 +11,13 @@ class SNN(nn.Module):
 
 		self.layers = nn.ModuleDict()
 
-		self.mem_rec = []
-		self.spk_rec = []
+		self.mem_rec = {}
+		self.spk_rec = {}
 
-		self.build_network(net_dict)
+		self.build_snn(net_dict)
 
 	
-	def build_network(self, net_dict):
+	def build_snn(self, net_dict):
 
 		for key in net_dict:
  
@@ -38,6 +38,8 @@ class SNN(nn.Module):
 						threshold		= net_dict[key]["threshold"],
 						learn_threshold	= net_dict[key]["learn_threshold"]
 					)
+
+
 
 				elif net_dict[key]["neuron_model"] == "lif":
 
@@ -96,7 +98,17 @@ class SNN(nn.Module):
 						"Pick one between " \
 						"if, lif, syn, rif, rlif, rsyn."
 					)
- 
+
+	def reset_snn(self):
+
+		for layer in self.layers:
+
+			idx = str(self.extract_index(layer))
+
+			if "fc" not in layer:
+				if layer == "if" + idx:
+					self.layers[layer].
+
 
 				
 	def extract_index(self, layer_name):
