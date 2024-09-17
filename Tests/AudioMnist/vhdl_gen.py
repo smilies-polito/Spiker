@@ -36,8 +36,8 @@ th2 = state_dict["readout.threshold"].cpu().detach().numpy() * \
 	np.ones((exc_w2.shape[0]))
 
 fp_dec		= 7
-bitwidth1	= 8
-bitwidth2	= 8
+bitwidth1	= 31
+bitwidth2	= 31
 w_bitwidth1	= 6
 w_bitwidth_fb1	= 1
 w_bitwidth2 	= 6
