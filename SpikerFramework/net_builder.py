@@ -5,9 +5,7 @@ import snntorch as snn
 
 class SNN(nn.Module):
 
-	def __init__(self, num_inputs = 40, num_hidden = 128,
-			num_outputs = 10, model = "lif", bias = False,
-			beta = 0.9, threshold = 1.):
+	def __init__(self, net_dict):
 
 		super(SNN, self).__init__()
 
@@ -15,6 +13,8 @@ class SNN(nn.Module):
 
 		self.mem_rec = []
 		self.spk_rec = []
+
+		self.build_network(net_dict)
 
 	
 	def build_network(self, net_dict):
@@ -142,10 +142,6 @@ if __name__ == "__main__":
 
 	from net_dict import net_dict
 
-	print(net_dict)
-
-	spiker = SNN()
-
-	spiker.build_network(net_dict)
+	spiker = SNN(net_dict)
 
 	print(spiker)
