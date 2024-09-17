@@ -11,6 +11,7 @@ class SNN(nn.Module):
 
 		self.layers = nn.ModuleDict()
 
+		self.syn = {}
 		self.mem = {}
 		self.spk = {}
 
@@ -41,6 +42,8 @@ class SNN(nn.Module):
 						learn_threshold	= net_dict[key]["learn_threshold"]
 					)
 
+					self.mem[name] = self.layers[name].reset_mem()
+
 				elif net_dict[key]["neuron_model"] == "lif":
 
 					name = "lif" + idx
@@ -51,6 +54,8 @@ class SNN(nn.Module):
 						threshold		= net_dict[key]["threshold"],
 						learn_threshold	= net_dict[key]["learn_threshold"]
 					)
+
+					self.mem[name] = self.layers[name].reset_mem()
 
 				elif net_dict[key]["neuron_model"] == "syn":
 
@@ -65,6 +70,8 @@ class SNN(nn.Module):
 						learn_threshold	= net_dict[key]["learn_threshold"]
 					)
 
+					self.syn[name], self.mem[name] = self.layers[name].reset_mem()
+
 				elif net_dict[key]["neuron_model"] == "rif":
 
 					name = "rif" + idx
@@ -75,6 +82,9 @@ class SNN(nn.Module):
 						threshold		= net_dict[key]["threshold"],
 						learn_threshold	= net_dict[key]["learn_threshold"]
 					)
+
+					self.spk[name], self.mem[name] = self.layers[name].\
+													reset_mem()
 
 				elif net_dict[key]["neuron_model"] == "rlif":
 
@@ -87,6 +97,9 @@ class SNN(nn.Module):
 						threshold		= net_dict[key]["threshold"],
 						learn_threshold	= net_dict[key]["learn_threshold"]
 					)
+
+					self.spk[name], self.mem[name] = self.layers[name].\
+													reset_mem()
 
 				elif net_dict[key]["neuron_model"] == "rsyn":
 
@@ -102,6 +115,9 @@ class SNN(nn.Module):
 						learn_threshold	= net_dict[key]["learn_threshold"]
 					)
 
+					self.spk[name], self.syn[name], self.mem[name] = \
+							self.layers[name].reset_mem()
+
 				else:
 					raise ValueError(
 						"Invalid neuron model. "\
@@ -109,15 +125,15 @@ class SNN(nn.Module):
 						"if, lif, syn, rif, rlif, rsyn."
 					)
 
-	def reset_snn(self):
+	# def reset_snn(self):
 
-		for layer in self.layers:
+	# 	for layer in self.layers:
 
-			idx = str(self.extract_index(layer))
+	# 		idx = str(self.extract_index(layer))
 
-			if "fc" not in layer:
-				if layer == "if" + idx:
-					self.layers[layer].
+	# 		if "fc" not in layer:
+	# 			if layer == "if" + idx:
+	# 				self.layers[layer].
 
 
 				
