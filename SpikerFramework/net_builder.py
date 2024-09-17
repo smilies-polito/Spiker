@@ -31,17 +31,24 @@ class SNN(nn.Module):
 					bias 		= False,
 				)
 
-
-				print(self.layers)
- 
- 
-				# if net_dict[key]["neuron_model"] == "if":
- 				# elif net_dict[key]["neuron_model"] == "lif":
- 				# elif net_dict[key]["neuron_model"] == "syn":
- 				# elif net_dict[key]["neuron_model"] == "rif":
- 				# elif net_dict[key]["neuron_model"] == "rlif":
- 				# elif net_dict[key]["neuron_model"] == "rsyn":
- 				# else:
+				if net_dict[key]["neuron_model"] == "if":
+					pass
+				elif net_dict[key]["neuron_model"] == "lif":
+					pass
+				elif net_dict[key]["neuron_model"] == "syn":
+					pass
+				elif net_dict[key]["neuron_model"] == "rif":
+					pass
+				elif net_dict[key]["neuron_model"] == "rlif":
+					pass
+				elif net_dict[key]["neuron_model"] == "rsyn":
+					pass
+				else:
+					raise ValueError(
+						"Invalid neuron model. "\
+						"Pick one between " \
+						"if, lif, syn, rif, rlif, rsyn."
+					)
  
 
 				
