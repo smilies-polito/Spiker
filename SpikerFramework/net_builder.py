@@ -1,4 +1,5 @@
 import re
+import torch
 import torch.nn as nn
 import snntorch as snn
 
@@ -14,6 +15,10 @@ class SNN(nn.Module):
 		self.syn = {}
 		self.mem = {}
 		self.spk = {}
+
+		self.syn_rec = {}
+		self.mem_rec = {}
+		self.spk_rec = {}
 
 		self.build_snn(net_dict)
 
@@ -42,8 +47,6 @@ class SNN(nn.Module):
 						learn_threshold	= net_dict[key]["learn_threshold"]
 					)
 
-					self.mem[name] = self.layers[name].reset_mem()
-
 				elif net_dict[key]["neuron_model"] == "lif":
 
 					name = "lif" + idx
@@ -54,8 +57,6 @@ class SNN(nn.Module):
 						threshold		= net_dict[key]["threshold"],
 						learn_threshold	= net_dict[key]["learn_threshold"]
 					)
-
-					self.mem[name] = self.layers[name].reset_mem()
 
 				elif net_dict[key]["neuron_model"] == "syn":
 
@@ -70,9 +71,6 @@ class SNN(nn.Module):
 						learn_threshold	= net_dict[key]["learn_threshold"]
 					)
 
-					self.syn[name], self.mem[name] = self.layers[name].\
-													reset_mem()
-
 				elif net_dict[key]["neuron_model"] == "rif":
 
 					name = "rif" + idx
@@ -83,9 +81,6 @@ class SNN(nn.Module):
 						threshold		= net_dict[key]["threshold"],
 						learn_threshold	= net_dict[key]["learn_threshold"]
 					)
-
-					self.spk[name], self.mem[name] = self.layers[name].\
-													reset_mem()
 
 				elif net_dict[key]["neuron_model"] == "rlif":
 
@@ -98,9 +93,6 @@ class SNN(nn.Module):
 						threshold		= net_dict[key]["threshold"],
 						learn_threshold	= net_dict[key]["learn_threshold"]
 					)
-
-					self.spk[name], self.mem[name] = self.layers[name].\
-													reset_mem()
 
 				elif net_dict[key]["neuron_model"] == "rsyn":
 
@@ -116,9 +108,6 @@ class SNN(nn.Module):
 						learn_threshold	= net_dict[key]["learn_threshold"]
 					)
 
-					self.spk[name], self.syn[name], self.mem[name] = \
-							self.layers[name].reset_mem()
-
 				else:
 					raise ValueError(
 						"Invalid neuron model. "\
@@ -126,13 +115,17 @@ class SNN(nn.Module):
 						"if, lif, syn, rif, rlif, rsyn."
 					)
 
-	def reset_snn(self):
+	def reset(self):
 
 		for layer in self.layers:
 
 			idx = str(self.extract_index(layer))
 
 			if "fc" not in layer:
+
+				self.mem_rec[layer] = []
+				self.syn_rec[layer] = []
+				self.spk_rec[layer] = []
 
 				if layer == "if" + idx:
 					self.mem[layer] = self.layers[layer].reset_mem()
@@ -156,6 +149,28 @@ class SNN(nn.Module):
 					self.spk[layer], self.syn[layer], self.mem[layer] = \
 							self.layers[layer].reset_mem()
 
+	def record(self, layer):
+
+		if not "fc" in layer:
+			self.mem_rec[layer].append(self.mem[layer])
+			self.spk_rec[layer].append(self.spk[layer])
+
+			if "syn" in layer:
+				self.syn_rec[layer].append(self.syn[layer])
+
+	def stack_rec(self):
+
+			for layer in self.layers:
+
+				if not "fc" in layer:
+					self.mem_rec[layer] = torch.stack(self.mem_rec[layer], 
+											dim=0)
+					self.spk_rec[layer] = torch.stack(self.spk_rec[layer], 
+											dim=0)
+
+					if "syn" in layer:
+						self.syn_rec[layer] = torch.stack(self.syn_rec[layer], 
+											dim=0)
 
 				
 	def extract_index(self, layer_name):
@@ -175,27 +190,51 @@ class SNN(nn.Module):
 
 	def forward(self, input_spikes):
 
-		# Initialize hidden states at t=0
-		mem1 = self.lif1.reset_mem()
-		mem_out = self.readout.reset_mem()
+		self.reset()
 
-		# Record the final layer
-		mem_out_rec = []
-		out_rec = []
+		cur = {}
 
 		for step in range(input_spikes.shape[0]):
 
-			cur1 = self.fc1(input_spikes[step])
-			spk1, mem1 = self.lif1(cur1, mem1)
+			for layer in self.layers:
 
-			cur2 = self.fc2(spk1)
-			mem_out, out = self.readout(cur2, mem_out)
+				idx = str(self.extract_index(layer))
+				
+				if "fc" in layer:
 
-			mem_out_rec.append(mem_out)
-			out_rec.append(out)
+					cur[layer] = self.layers[layer](input_spikes[step])
+					fc_layer = layer
 
-		return torch.stack(mem_out_rec, dim=0), \
-			torch.stack(out_rec, dim=0)
+				elif layer == "if" + idx:
+					self.spk[layer], self.mem[layer] = self.layers[layer]\
+							(cur[fc_layer], self.mem[layer])
+
+				elif layer == "lif" + idx:
+					self.spk[layer], self.mem[layer] = self.layers[layer]\
+							(cur[fc_layer], self.mem[layer])
+
+				elif layer == "syn" + idx:
+					self.spk[layer], self.syn[layer], self.mem[layer] = \
+							self.layers[layer](cur[fc_layer], self.syn[layer],
+							self.mem[layer])
+
+				elif layer == "rif" + idx:
+					self.spk[layer], self.mem[layer] = self.layers[layer]\
+							(cur[fc_layer], self.spk[layer], self.mem[layer])
+
+				elif layer == "rlif" + idx:
+					self.spk[layer], self.mem[layer] = self.layers[layer]\
+							(cur[fc_layer], self.spk[layer], self.mem[layer])
+
+				elif layer == "rsyn" + idx:
+					self.spk[layer], self.syn[layer], self.mem[layer] = \
+							self.layers[layer](cur[fc_layer], self.spk[layer], 
+							self.syn[layer], self.mem[layer])
+
+				self.record(layer)
+
+		self.stack_rec()
+
 
 if __name__ == "__main__": 
 
@@ -203,4 +242,8 @@ if __name__ == "__main__":
 
 	spiker = SNN(net_dict)
 
-	print(spiker)
+	spiker.forward(torch.ones((4, 10)))
+
+	print(spiker.mem_rec)
+	print(spiker.syn_rec)
+	print(spiker.spk_rec)
