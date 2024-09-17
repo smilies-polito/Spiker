@@ -15,25 +15,21 @@ from network import Layer, Network, Network_tb
 from vhdl import write_file_all, fast_compile, elaborate
 
 
-parameters_dir 	= "./Parameters"
+parameters_dir 	= "./Parameters128"
 spiker_dir 	= "VhdlSpiker"
 
-# with open(parameters_dir + "/weights1.npy", "rb") as fp:
-# 	exc_w1 = np.load(fp)
-# 
-# with open(parameters_dir + "/weights2.npy", "rb") as fp:
-# 	exc_w2 = np.load(fp)
-# 
-# with open(parameters_dir + "/thresholds1.npy", "rb") as fp:
-# 	th1 = np.load(fp)[0]
-# 
-# with open(parameters_dir + "/thresholds2.npy", "rb") as fp:
-# 	th2 = np.load(fp)[0]
+with open(parameters_dir + "/weights1.npy", "rb") as fp:
+	exc_w1 = np.load(fp)
 
-exc_w1 = np.random.rand(128, 784)
-exc_w2 = np.random.rand(10, 128)
-th1 = np.ones(128)
-th2 = np.ones(128)
+with open(parameters_dir + "/weights2.npy", "rb") as fp:
+	exc_w2 = np.load(fp)
+
+with open(parameters_dir + "/thresholds1.npy", "rb") as fp:
+	th1 = np.load(fp)[0]*np.ones(exc_w1.shape[0]).astype(int)
+
+with open(parameters_dir + "/thresholds2.npy", "rb") as fp:
+	th2 = np.load(fp)[0]*np.ones(exc_w2.shape[0]).astype(int)
+
 
 inh_w1 = np.zeros([exc_w1.shape[0], exc_w1.shape[0]])
 inh_w2 = np.zeros([exc_w2.shape[0], exc_w2.shape[0]])
@@ -63,6 +59,7 @@ layer_0 = Layer(
 	w_exc_bw	= w_bitwidth1,
 	shift		= exp_shift,
 	reset		= "subtractive",
+	functional	= True,
 	debug		= False,
 	debug_list	= []
 )
@@ -79,6 +76,7 @@ layer_1 = Layer(
 	w_exc_bw	= w_bitwidth1,
 	shift		= exp_shift,
 	reset		= "subtractive",
+	functional	= True,
 	debug		= False,
 	debug_list	= []
 )

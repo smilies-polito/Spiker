@@ -138,6 +138,7 @@ def fixedPoint(value, fixed_point_decimals, bitwidth):
 
 
 def saturate(value, bitwidth):
+
 	if value > 2**(bitwidth-1)-1:
 		value = 2**(bitwidth-1)-1
 
@@ -258,7 +259,8 @@ def run(network, networkList, spikesTrains, dt_tauDict, exp_shift, stdpDict,
 	spikesCounter = np.zeros((1, lastLayerSize))
 	spikesMonitor_0 = np.zeros((trainDuration, networkList[1])).astype(bool)
 	spikesMonitor_1 = np.zeros((trainDuration, lastLayerSize)).astype(bool)
-	membraneMonitor = np.zeros((trainDuration, lastLayerSize)).astype(int)
+	membraneMonitor_0 = np.zeros((trainDuration, networkList[1])).astype(int)
+	membraneMonitor_1 = np.zeros((trainDuration, lastLayerSize)).astype(int)
 
 	for i in range(trainDuration):
 
@@ -272,7 +274,10 @@ def run(network, networkList, spikesTrains, dt_tauDict, exp_shift, stdpDict,
 		spikesMonitor_1[i] = network["excLayer" +
 				str(lastLayerIndex)]["outSpikes"][0]
 
-		membraneMonitor[i] = network["excLayer" +
+		membraneMonitor_0[i] = network["excLayer" +
+				str(1)]["v"][0]
+
+		membraneMonitor_1[i] = network["excLayer" +
 				str(lastLayerIndex)]["v"][0]
 
 
@@ -284,7 +289,8 @@ def run(network, networkList, spikesTrains, dt_tauDict, exp_shift, stdpDict,
 		# Normalize the weights
 		normalizeWeights(network, networkList, constSums)
 	
-	return spikesCounter, spikesMonitor_0, spikesMonitor_1, membraneMonitor
+	return spikesCounter, spikesMonitor_0, spikesMonitor_1, \
+		membraneMonitor_0, membraneMonitor_1
 
 
 
@@ -438,8 +444,8 @@ def resetPotentials(network, layerName):
 
 
 	network[layerName]["v"][0][network[layerName]["outSpikes"][0]] = \
-		network[layerName]["vReset"]
-
+	network[layerName]["v"][0][network[layerName]["outSpikes"][0]] - \
+	network[layerName]["vThresh"][network[layerName]["outSpikes"][0]]
 
 
 
@@ -462,12 +468,13 @@ def all2allUpdate(network, layerName, synapseName, inputSpikes, bitwidth):
 
 	"""
 
-	network[layerName]["v"][0] = network[layerName]["v"][0] + np.sum(
-				network[synapseName]["weights"][:, inputSpikes],
-				axis=1)
+	for i in range(len(inputSpikes)):
 
-	network[layerName]["v"][0] = saturateArray(network[layerName]["v"][0],
-			bitwidth)
+		network[layerName]["v"][0] = network[layerName]["v"][0] + \
+		network[synapseName]["weights"][:, i] * inputSpikes[i]
+
+		network[layerName]["v"][0] = saturateArray(network[layerName]["v"][0],
+				bitwidth)
 
 
 def createNetwork(networkList, weightFilename, thresholdFilename, mode,
@@ -1028,6 +1035,14 @@ net = createNetwork(networkList, weightFilename, thresholdFilename, mode,
 			fixed_point_decimals, neuron_bitWidth, weights_bitWidth,
 			trainPrecision, rng)
 
+np.set_printoptions(threshold = np.inf)
+
+with open("weights.txt", "w") as fp:
+	for i in range(net["exc2exc1"]["weights"].shape[0]):
+		fp.write(str(net["exc2exc1"]["weights"][i]).replace("\n", " "))
+		fp.write("\n")
+
+
 image = test_data[image_index][0].view(batch_size, -1).numpy()
 label = int(test_data[image_index][1].int())
 
@@ -1035,13 +1050,14 @@ spikesTrains = imgToSpikeTrain(image, num_steps, rng)
 
 with open(in_spikes_file, "w") as fp:
 	for inputs in spikesTrains:
-		fp.write((str(inputs.astype(int))[1:-1].replace(" ",
+		fp.write((str(inputs.astype(int))[-2:0:-1].replace(" ",
 			"").replace("\n", "")))
 		fp.write("\n")
 
-_, _, out_spikes, _= run(net, networkList, spikesTrains,
+_, spikes_1, out_spikes, m0, m1 = run(net, networkList, spikesTrains,
 		dt_tauDict, exp_shift, None, mode, None,
 		neuron_bitWidth)
+
 
 with open(out_spikes_file, "w") as fp:
 	for output in out_spikes:
