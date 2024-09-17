@@ -17,23 +17,32 @@ class SNN(nn.Module):
 		self.spk_rec = []
 
 	
-# 	def build_network(self, net_dict):
-# 
-# 		for key in net_dict:
-# 
-# 			if "layer" in key:
-# 
-# 				self.layers[]
-# 
-# 
-# 				if net_dict[key]["neuron_model"] == "if":
-# 				elif net_dict[key]["neuron_model"] == "lif":
-# 				elif net_dict[key]["neuron_model"] == "syn":
-# 				elif net_dict[key]["neuron_model"] == "rif":
-# 				elif net_dict[key]["neuron_model"] == "rlif":
-# 				elif net_dict[key]["neuron_model"] == "rsyn":
-# 				else:
-# 
+	def build_network(self, net_dict):
+
+		for key in net_dict:
+ 
+			if "layer" in key:
+
+				idx = str(self.extract_index(key) + 1)
+
+				self.layers["fc" + idx] = nn.Linear(
+					in_features	= 3,
+					out_features	= 2,
+					bias 		= False,
+				)
+
+
+				print(self.layers)
+ 
+ 
+				# if net_dict[key]["neuron_model"] == "if":
+ 				# elif net_dict[key]["neuron_model"] == "lif":
+ 				# elif net_dict[key]["neuron_model"] == "syn":
+ 				# elif net_dict[key]["neuron_model"] == "rif":
+ 				# elif net_dict[key]["neuron_model"] == "rlif":
+ 				# elif net_dict[key]["neuron_model"] == "rsyn":
+ 				# else:
+ 
 
 				
 	def extract_index(self, layer_name):
@@ -77,6 +86,8 @@ class SNN(nn.Module):
 
 if __name__ == "__main__": 
 
+	from net_dict import net_dict
+
 	snn = SNN()
 
-	print(snn.extract_index("layer_10_1"))
+	print(snn.build_network(net_dict))
