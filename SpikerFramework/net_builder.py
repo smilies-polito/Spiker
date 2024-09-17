@@ -26,23 +26,70 @@ class SNN(nn.Module):
 				idx = str(self.extract_index(key) + 1)
 
 				self.layers["fc" + idx] = nn.Linear(
-					in_features	= 3,
-					out_features	= 2,
-					bias 		= False,
+					in_features		= net_dict["n_inputs"],
+					out_features	= net_dict[key]["n_neurons"],
+					bias 			= False
 				)
 
 				if net_dict[key]["neuron_model"] == "if":
-					pass
+					
+					self.layers["if" + idx] = snn.Leaky(
+						beta			= 0.,
+						threshold		= net_dict[key]["threshold"],
+						learn_threshold	= net_dict[key]["learn_threshold"]
+					)
+
 				elif net_dict[key]["neuron_model"] == "lif":
-					pass
+
+					self.layers["lif" + idx] = snn.Leaky(
+						beta			= net_dict[key]["beta"],
+						learn_beta		= net_dict[key]["learn_beta"],
+						threshold		= net_dict[key]["threshold"],
+						learn_threshold	= net_dict[key]["learn_threshold"]
+					)
+
 				elif net_dict[key]["neuron_model"] == "syn":
-					pass
+
+					self.layers["syn" + idx] = snn.Synaptic(
+						alpha			= net_dict[key]["alpha"],
+						learn_alpha		= net_dict[key]["learn_alpha"],
+						beta			= net_dict[key]["beta"],
+						learn_beta		= net_dict[key]["learn_beta"],
+						threshold		= net_dict[key]["threshold"],
+						learn_threshold	= net_dict[key]["learn_threshold"]
+					)
+
 				elif net_dict[key]["neuron_model"] == "rif":
-					pass
+
+					self.layers["rif" + idx] = snn.RLeaky(
+						linear_features	= net_dict[key]["n_neurons"],
+						beta			= 0.,
+						threshold		= net_dict[key]["threshold"],
+						learn_threshold	= net_dict[key]["learn_threshold"]
+					)
+
 				elif net_dict[key]["neuron_model"] == "rlif":
-					pass
+
+					self.layers["rlif" + idx] = snn.RLeaky(
+						linear_features	= net_dict[key]["n_neurons"],
+						beta			= net_dict[key]["beta"],
+						learn_beta		= net_dict[key]["learn_beta"],
+						threshold		= net_dict[key]["threshold"],
+						learn_threshold	= net_dict[key]["learn_threshold"]
+					)
+
 				elif net_dict[key]["neuron_model"] == "rsyn":
-					pass
+
+					self.layers["rsyn" + idx] = snn.RSynaptic(
+						linear_features	= net_dict[key]["n_neurons"],
+						alpha			= net_dict[key]["alpha"],
+						learn_alpha		= net_dict[key]["learn_alpha"],
+						beta			= net_dict[key]["beta"],
+						learn_beta		= net_dict[key]["learn_beta"],
+						threshold		= net_dict[key]["threshold"],
+						learn_threshold	= net_dict[key]["learn_threshold"]
+					)
+
 				else:
 					raise ValueError(
 						"Invalid neuron model. "\
@@ -95,6 +142,10 @@ if __name__ == "__main__":
 
 	from net_dict import net_dict
 
-	snn = SNN()
+	print(net_dict)
 
-	print(snn.build_network(net_dict))
+	spiker = SNN()
+
+	spiker.build_network(net_dict)
+
+	print(spiker)
