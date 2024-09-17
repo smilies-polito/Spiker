@@ -70,7 +70,8 @@ class SNN(nn.Module):
 						learn_threshold	= net_dict[key]["learn_threshold"]
 					)
 
-					self.syn[name], self.mem[name] = self.layers[name].reset_mem()
+					self.syn[name], self.mem[name] = self.layers[name].\
+													reset_mem()
 
 				elif net_dict[key]["neuron_model"] == "rif":
 
@@ -125,15 +126,35 @@ class SNN(nn.Module):
 						"if, lif, syn, rif, rlif, rsyn."
 					)
 
-	# def reset_snn(self):
+	def reset_snn(self):
 
-	# 	for layer in self.layers:
+		for layer in self.layers:
 
-	# 		idx = str(self.extract_index(layer))
+			idx = str(self.extract_index(layer))
 
-	# 		if "fc" not in layer:
-	# 			if layer == "if" + idx:
-	# 				self.layers[layer].
+			if "fc" not in layer:
+
+				if layer == "if" + idx:
+					self.mem[layer] = self.layers[layer].reset_mem()
+
+				elif layer == "lif" + idx:
+					self.mem[layer] = self.layers[layer].reset_mem()
+
+				elif layer == "syn" + idx:
+					self.syn[layer], self.mem[layer] = self.layers[layer].\
+														reset_mem()
+
+				elif layer == "rif" + idx:
+					self.spk[layer], self.mem[layer] = self.layers[layer].\
+													reset_mem()
+
+				elif layer == "rlif" + idx:
+					self.spk[layer], self.mem[layer] = self.layers[layer].\
+													reset_mem()
+
+				elif layer == "rsyn" + idx:
+					self.spk[layer], self.syn[layer], self.mem[layer] = \
+							self.layers[layer].reset_mem()
 
 
 				
