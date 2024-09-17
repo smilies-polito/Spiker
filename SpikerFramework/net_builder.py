@@ -11,8 +11,8 @@ class SNN(nn.Module):
 
 		self.layers = nn.ModuleDict()
 
-		self.mem_rec = {}
-		self.spk_rec = {}
+		self.mem = {}
+		self.spk = {}
 
 		self.build_snn(net_dict)
 
@@ -32,18 +32,20 @@ class SNN(nn.Module):
 				)
 
 				if net_dict[key]["neuron_model"] == "if":
+
+					name = "if" + idx
 					
-					self.layers["if" + idx] = snn.Leaky(
+					self.layers[name] = snn.Leaky(
 						beta			= 0.,
 						threshold		= net_dict[key]["threshold"],
 						learn_threshold	= net_dict[key]["learn_threshold"]
 					)
 
-
-
 				elif net_dict[key]["neuron_model"] == "lif":
 
-					self.layers["lif" + idx] = snn.Leaky(
+					name = "lif" + idx
+
+					self.layers[name] = snn.Leaky(
 						beta			= net_dict[key]["beta"],
 						learn_beta		= net_dict[key]["learn_beta"],
 						threshold		= net_dict[key]["threshold"],
@@ -52,7 +54,9 @@ class SNN(nn.Module):
 
 				elif net_dict[key]["neuron_model"] == "syn":
 
-					self.layers["syn" + idx] = snn.Synaptic(
+					name = "syn" + idx
+
+					self.layers[name] = snn.Synaptic(
 						alpha			= net_dict[key]["alpha"],
 						learn_alpha		= net_dict[key]["learn_alpha"],
 						beta			= net_dict[key]["beta"],
@@ -63,7 +67,9 @@ class SNN(nn.Module):
 
 				elif net_dict[key]["neuron_model"] == "rif":
 
-					self.layers["rif" + idx] = snn.RLeaky(
+					name = "rif" + idx
+
+					self.layers[name] = snn.RLeaky(
 						linear_features	= net_dict[key]["n_neurons"],
 						beta			= 0.,
 						threshold		= net_dict[key]["threshold"],
@@ -72,7 +78,9 @@ class SNN(nn.Module):
 
 				elif net_dict[key]["neuron_model"] == "rlif":
 
-					self.layers["rlif" + idx] = snn.RLeaky(
+					name = "rlif" + idx
+
+					self.layers[name] = snn.RLeaky(
 						linear_features	= net_dict[key]["n_neurons"],
 						beta			= net_dict[key]["beta"],
 						learn_beta		= net_dict[key]["learn_beta"],
@@ -82,7 +90,9 @@ class SNN(nn.Module):
 
 				elif net_dict[key]["neuron_model"] == "rsyn":
 
-					self.layers["rsyn" + idx] = snn.RSynaptic(
+					name = "rsyn" + idx
+
+					self.layers[name] = snn.RSynaptic(
 						linear_features	= net_dict[key]["n_neurons"],
 						alpha			= net_dict[key]["alpha"],
 						learn_alpha		= net_dict[key]["learn_alpha"],
