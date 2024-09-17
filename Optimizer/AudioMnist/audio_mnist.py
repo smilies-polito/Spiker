@@ -88,8 +88,8 @@ class CustomDataset(Dataset):
 class MelFilterbank:
 
 	def __init__(self, sample_rate = 48e3, fft_window = 25e-3,
-		hop_length_s = 10e-3, n_mels = 40, db = False, normalize = False,
-		spikify = False, spiking_thresh = 0.9):
+		hop_length_s = 10e-3, n_mels = 40, db = False, 
+		normalize = False, spikify = False, spiking_thresh = 0.9):
 
 		self.sample_rate	= sample_rate
 		self.n_fft		= int(fft_window * sample_rate)
@@ -304,9 +304,6 @@ if __name__ == "__main__":
  		drop_last 	= True
  	)
 
-	# Network Architecture
-	n_epochs		= 20
-
 	num_inputs		= n_mels
 	num_hidden		= 150
 	num_outputs		= 10
@@ -316,12 +313,14 @@ if __name__ == "__main__":
 
 	beta			= 0.9375
 
-	trained_param_dir	= "../../Models/SnnTorch/AudioMnist/TrainedParameters"
+	trained_param_dir	= "../../Models/SnnTorch/AudioMnist/"\
+					"TrainedParameters"
 
 	if not os.path.exists(trained_param_dir):
 		os.makedirs(trained_param_dir)
 
-	trained_param_dict	= trained_param_dir + "/state_dict_audiomnist.pt"
+	trained_param_dict	= trained_param_dir + \
+				"/state_dict_audiomnist.pt"
 
 	# Optimizer
 	adam_beta1	= 0.9
@@ -341,77 +340,114 @@ if __name__ == "__main__":
 			if sigma > max_sigma:
 				max_sigma = sigma
 
-	weight_quant = quantize(num_bits = w_bits, threshold =
-			2*max_sigma, upper_limit = 0)
+	quantize_mem 		= True
+	quantize_weights 	= False
 
-	for key in state_dict.keys():
+	membrane_bitwidths	= [1, 2, 4, 8, 16]
+	weights_bitwidths	= [2, 4, 5, 6, 8, 16]
 
-		if "weight" in key:
+	for mem_bits in membrane_bitwidths:
 
-			state_dict[key] = weight_quant(state_dict[key])
+		for w_bits in weights_bitwidths:
 
-	threshold = 1.
-	upper_limit = 4.
-	lower_limit = 4.
+			quant_state_dict = state_dict.copy()
 
-	mem_bits = int(torch.log2(((threshold + threshold*upper_limit) - (-threshold -
-		threshold*lower_limit)) / (4*max_sigma / 2**w_bits)).item())
+			if quantize_weights:
 
-	print("Membrane bits: ", mem_bits)
+				weight_quant = quantize(num_bits = w_bits, 
+						threshold = 2*max_sigma,
+						upper_limit = 0)
 
-	mem_quant = quantize(num_bits = mem_bits, threshold = threshold,
-			upper_limit = upper_limit, lower_limit = lower_limit)
+				for key in state_dict.keys():
 
-	print("Creating the network\n")
+					if "weight" in key:
 
-	net = Net(
-		num_inputs	= num_inputs,
-		num_hidden	= num_hidden,
-		num_outputs	= num_outputs,
-		beta		= beta,
-		state_quant	= mem_quant
-	)
+						quant_state_dict[key] = \
+						weight_quant(state_dict[key])
 
+			threshold = 1.
+			upper_limit = 4.
+			lower_limit = 4.
 
+			if quantize_mem:
 
-	net.load_state_dict(state_dict)
+				mem_quant = quantize(num_bits = mem_bits, 
+					threshold = threshold,
+					upper_limit = upper_limit,
+					lower_limit = lower_limit)
+			else:
+				mem_quant = False
 
-	loss_fn = nn.CrossEntropyLoss()
+			print("Creating the network\n")
 
-	test_loss_hist = []
-	counter = 0
-	iter_counter = 0
-
-	net.to(device)
-
-	print("Starting the testing loop\n")
-
-
-	# Test set
-	with torch.no_grad():
-
-		net.eval()
-
-		acc = 0
-		counter = 0
-
-		# Iterate over the dataloader
-		for _, (test_data, _, test_labels) in \
-			enumerate(test_loader):
-
-			test_data 	= test_data.permute(1, 0, 2).\
-					to(device)
-			test_labels	= test_labels.to(device)
-
-			_, out_rec = net(test_data)
-
-			_, idx = out_rec.sum(dim=0).max(1)
-
-			acc += np.mean((test_labels == idx).detach().cpu().numpy())
-			counter += 1
+			net = Net(
+				num_inputs	= num_inputs,
+				num_hidden	= num_hidden,
+				num_outputs	= num_outputs,
+				beta		= beta,
+				state_quant	= mem_quant
+			)
 
 
-			print("Accuracy: " + "{:.2f}".format(acc / counter * 100) + "%")
+
+			net.load_state_dict(quant_state_dict)
+
+			loss_fn = nn.CrossEntropyLoss()
+
+			test_loss_hist = []
+			counter = 0
+			iter_counter = 0
+
+			net.to(device)
+
+			print("Starting the testing loop\n")
+
+
+			# Test set
+			with torch.no_grad():
+
+				net.eval()
+
+				acc = 0
+				counter = 0
+
+				# Iterate over the dataloader
+				for _, (test_data, _, test_labels) in \
+					enumerate(test_loader):
+
+					test_data 	= test_data.permute(
+								1, 0, 2).\
+								to(device)
+					test_labels	= test_labels.to(device)
+
+					_, out_rec = net(test_data)
+
+					_, idx = out_rec.sum(dim=0).max(1)
+
+					acc += np.mean((test_labels == idx).\
+							detach().cpu().numpy())
+					counter += 1
+
+				quant_message = "\n"
+
+				if quantize_mem:
+					quant_message += "Membrane bits: "
+					quant_message += str(mem_bits) + "\n"
+
+				if quantize_weights:
+					quant_message += "Weights bits: "
+					quant_message += str(w_bits) + "\n"
+
+				quant_message += "Accuracy: " + "{:.2f}".format(
+					acc / counter * 100) + "%\n\n"
+
+				print(quant_message)
+
+			if not quantize_weights:
+				break
+
+		if not quantize_mem:
+			break
 
 
 end_time = time.time()
