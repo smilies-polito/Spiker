@@ -65,3 +65,30 @@ class Trainer:
 
 		_, idx = out_rec.sum(dim=0).max(1)
 		accuracy = np.mean((labels == idx).detach().cpu().numpy())
+
+	def evaluate(self, dataloader):
+
+		# Test set
+		with torch.no_grad():
+
+			self.net.eval()
+
+			# Iterate over the dataloader
+			for _, (data, _, labels) in enumerate(dataloader):
+
+				data 	= data.to(self.device)
+				labels	= labels.to(self.device)
+
+				_, out_rec = net(test_data)
+
+				# Reshape mem_rec to combine the time and batch dims
+				out_rec_flat = out_rec.view(-1, out_rec.shape[-1])
+				labels_repeat = test_labels.repeat(out_rec.shape[0])
+
+				# Compute the loss over all time steps at once
+				loss_val = loss_fn(out_rec_flat, labels_repeat)
+
+		_, idx = out_rec.sum(dim=0).max(1)
+		accuracy = np.mean((labels == idx).detach().cpu().numpy())
+
+		return loss_val, accuracy
