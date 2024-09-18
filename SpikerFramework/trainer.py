@@ -66,6 +66,7 @@ class Trainer:
 		_, idx = out_rec.sum(dim=0).max(1)
 		accuracy = np.mean((labels == idx).detach().cpu().numpy())
 
+
 	def evaluate(self, dataloader):
 
 		# Test set
@@ -92,3 +93,27 @@ class Trainer:
 		accuracy = np.mean((labels == idx).detach().cpu().numpy())
 
 		return loss_val, accuracy
+
+
+	def log(self, epoch, train_loss, val_loss, train_acc, val_acc, start_time =
+			None):
+
+		epoch = str(epoch)
+
+		if start_time:
+			elapsed = time.time() - start_time
+			elapsed = "{:.2f}".format(elapsed) + "s"
+
+		train_loss = "{:.2f}".format(train_loss)
+		val_loss = "{:.2f}".format(val_loss)
+
+		train_acc = str(train_acc * 100) + "%"
+		val_acc = str(val_acc * 100) + "%"
+
+		logging.info("Epoch " + epoch)
+		logging.info("Elapsed time: " + elapsed)
+		logging.info("Train loss: ", train_loss)
+		logging.info("Train loss: ", val_loss)
+		logging.info("Trining accuracy: ", train_acc)
+		logging.info("Trining accuracy: ", val_acc)
+
