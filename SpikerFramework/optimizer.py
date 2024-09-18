@@ -50,13 +50,11 @@ def Quantizer:
 
 class QuantSNN(SNN):
 
-	def __init__(self, net, net_dict, quant_state_dict):
+	def __init__(self, net_dict):
 
 		super().__init__(net_dict)
 
 		self.quantizer = Quantizer()
-
-		net.load_state_dict(quant_state_dict)
 
 
 	def forward(self, input_spikes):
@@ -122,7 +120,7 @@ class QuantSNN(SNN):
 
 class Optimizer:
 
-	def __init__(self, net, optim_config):
+	def __init__(self, net, net_dict, optim_config):
 
 		self.default_config = {
 
@@ -139,10 +137,12 @@ class Optimizer:
 
 		self.allowed_keys = self.default_config.keys()
 
-		self.net = net
+		self.quantizer = Quantizer()
+
+		self.state_dict = net.state_dict()
+		self.net_dict = net_dict
 
 		self.optim_config = self.parse_config(optim_config)
-
 		
 
 	def parse_config(self, optim_config):
@@ -184,6 +184,34 @@ class Optimizer:
 		logging.info(log_message)
 
 		return optim_dict
+
+
+	def build(self, weights_bw, neurons_bw):
+
+		quant_snn = QuantSNN(self.net_dict)
+
+		quant_state_dict = self.state_dict.copy()
+
+		for key in quant_state_dict.keys():
+
+			if "weight" in key:
+
+				quant_state_dict[key] = self.quantizer.fixed_point(
+						quant_state_dict[key], weights_bw)
+
+			elif "threshold" in key:
+
+				quant_state_dict[key] = self.quantizer.fixed_point(
+						quant_state_dict[key], neurons_bw)
+
+			# Aggiungere approssimazione di beta
+
+			quant_snn.load_state_dict(quant_state_dict)
+
+		log_message = "Network ready: " + str(snn) + "\n"
+		logging.info(log_message)
+
+		return quant_snn
 
 
 	def optimize(self):
