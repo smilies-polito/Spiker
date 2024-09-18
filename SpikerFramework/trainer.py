@@ -58,6 +58,14 @@ class Trainer:
 
 		self.net.to(self.device)
 
+		log_message = "Training set-up: \n"
+		log_message += "Readout type: " + str(self.readout_type) + "\n"
+		log_message += "Optimizer: " + str(self.optimizer) + "\n"
+		log_message += "Loss function: " + str(self.loss_fn) + "\n"
+		log_message += "Device: " + str(self.device) + "\n"
+
+		logging.info(log_message)
+
 
 
 	def train(self, train_loader, val_loader, n_epochs = 20, store = False,
@@ -220,7 +228,7 @@ if __name__ == "__main__":
 	from torch.utils.data import DataLoader, random_split
 
 	from net_dict import net_dict
-	from net_builder import SNN
+	from net_builder import NetBuilder
 
 	import sys
 
@@ -232,10 +240,6 @@ if __name__ == "__main__":
 	from audio_mnist import MelFilterbank, CustomDataset
 
 	logging.basicConfig(level=logging.INFO)
-
-	spiker = SNN(net_dict)
-
-	trainer = Trainer(spiker, readout_type = "mem_softmax")
 
 	root_dir	= "../Models/SnnTorch/AudioMnist/Data"
 	batch_size	= 128
@@ -291,5 +295,11 @@ if __name__ == "__main__":
  		drop_last 	= True
  	)
 
+
+	net_builder		= NetBuilder(net_dict)
+
+	snn = net_builder.build()
+
+	trainer 		= Trainer(snn)
 
 	trainer.train(train_loader, test_loader)
