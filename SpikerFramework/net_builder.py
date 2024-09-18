@@ -44,7 +44,8 @@ class SNN(nn.Module):
 					self.layers[name] = snn.Leaky(
 						beta			= 0.,
 						threshold		= net_dict[key]["threshold"],
-						learn_threshold	= net_dict[key]["learn_threshold"]
+						learn_threshold	= net_dict[key]["learn_threshold"],
+						reset_mechanism = net_dict[key]["reset_mechanism"]
 					)
 
 				elif net_dict[key]["neuron_model"] == "lif":
@@ -55,7 +56,8 @@ class SNN(nn.Module):
 						beta			= net_dict[key]["beta"],
 						learn_beta		= net_dict[key]["learn_beta"],
 						threshold		= net_dict[key]["threshold"],
-						learn_threshold	= net_dict[key]["learn_threshold"]
+						learn_threshold	= net_dict[key]["learn_threshold"],
+						reset_mechanism = net_dict[key]["reset_mechanism"]
 					)
 
 				elif net_dict[key]["neuron_model"] == "syn":
@@ -68,7 +70,8 @@ class SNN(nn.Module):
 						beta			= net_dict[key]["beta"],
 						learn_beta		= net_dict[key]["learn_beta"],
 						threshold		= net_dict[key]["threshold"],
-						learn_threshold	= net_dict[key]["learn_threshold"]
+						learn_threshold	= net_dict[key]["learn_threshold"],
+						reset_mechanism = net_dict[key]["reset_mechanism"]
 					)
 
 				elif net_dict[key]["neuron_model"] == "rif":
@@ -79,7 +82,8 @@ class SNN(nn.Module):
 						linear_features	= net_dict[key]["n_neurons"],
 						beta			= 0.,
 						threshold		= net_dict[key]["threshold"],
-						learn_threshold	= net_dict[key]["learn_threshold"]
+						learn_threshold	= net_dict[key]["learn_threshold"],
+						reset_mechanism = net_dict[key]["reset_mechanism"]
 					)
 
 				elif net_dict[key]["neuron_model"] == "rlif":
@@ -91,7 +95,8 @@ class SNN(nn.Module):
 						beta			= net_dict[key]["beta"],
 						learn_beta		= net_dict[key]["learn_beta"],
 						threshold		= net_dict[key]["threshold"],
-						learn_threshold	= net_dict[key]["learn_threshold"]
+						learn_threshold	= net_dict[key]["learn_threshold"],
+						reset_mechanism = net_dict[key]["reset_mechanism"]
 					)
 
 				elif net_dict[key]["neuron_model"] == "rsyn":
@@ -105,7 +110,8 @@ class SNN(nn.Module):
 						beta			= net_dict[key]["beta"],
 						learn_beta		= net_dict[key]["learn_beta"],
 						threshold		= net_dict[key]["threshold"],
-						learn_threshold	= net_dict[key]["learn_threshold"]
+						learn_threshold	= net_dict[key]["learn_threshold"],
+						reset_mechanism = net_dict[key]["reset_mechanism"]
 					)
 
 				else:
