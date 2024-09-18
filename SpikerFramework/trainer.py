@@ -89,6 +89,8 @@ class Trainer:
 		_, idx = out_rec.sum(dim=0).max(1)
 		accuracy = np.mean((labels == idx).detach().cpu().numpy())
 
+		return loss_val, accuracy
+
 
 	def evaluate(self, dataloader):
 
