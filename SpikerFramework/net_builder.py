@@ -1,4 +1,6 @@
 import re
+import json
+import logging
 import torch
 import torch.nn as nn
 import snntorch as snn
@@ -299,7 +301,18 @@ class NetBuilder:
 			"rsyn"	: True,
 		}
 
-		self.parse_config(net_dict)
+		self.supported_resets = ["zero", "subtract", "none"]
+
+		self.net_dict = self.parse_config(net_dict)
+
+	def build(self):
+
+		snn = SNN(self.net_dict)
+
+		log_message = "Network ready: " + str(snn) + "\n"
+		logging.info(log_message)
+
+		return snn
 
 
 	def select_keys(self):
@@ -340,7 +353,7 @@ class NetBuilder:
 					parsed_dict[key] = {}
 					layer = net_dict[key]
 
-					if "n_neuron" in layer.keys():
+					if "n_neurons" in layer.keys():
 
 						if not isinstance(layer["n_neurons"], int):
 							raise ValueError("Number of neurons must be "
@@ -395,6 +408,22 @@ class NetBuilder:
 					else:
 						parsed_dict[key]["learn_threshold"] = \
 							self.default_dict["layer_0"]["learn_threshold"]
+
+					if "reset_mechanism" in layer.keys():
+
+						if layer["reset_mechanism"] not in \
+						self.supported_resets:
+							raise ValueError("Invalid reset mechanism. "
+									"Choose one between " +
+									str(self.supported_resets) + "\n")
+
+						else:
+							parsed_dict[key]["reset_mechanism"] = \
+									layer["reset_mechanism"]
+
+					else:
+						parsed_dict[key]["reset_mechanism"] = \
+							self.default_dict["layer_0"]["reset_mechanism"]
 
 
 					if self.has_alpha[parsed_dict[key]["neuron_model"]]:
@@ -476,7 +505,7 @@ class NetBuilder:
 		for key in parsed_dict:
 			if "layer_" in key:
 				at_least_one_layer = True
-		
+
 		if not at_least_one_layer:
 
 			for key in self.default_dict:
@@ -485,21 +514,13 @@ class NetBuilder:
 
 					parsed_dict[key] = self.default_dict[key]
 
+		log_message = "Network configured: \n"
+		log_message += json.dumps(parsed_dict, indent = 4) + "\n"
 
+		logging.info(log_message)
 
+		return parsed_dict
 
-
-
-
-
-
-
-
-		print(parsed_dict)
-
-
-
-				
 
 
 
@@ -507,4 +528,8 @@ if __name__ == "__main__":
 
 	from net_dict import net_dict
 
+	logging.basicConfig(level=logging.INFO)
+
 	net_builder = NetBuilder(net_dict)
+
+	snn = net_builder.build()	
