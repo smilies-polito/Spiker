@@ -2,12 +2,30 @@ import time
 import logging
 import torch
 import torch.nn as nn
+import torch.nn.functional as fn
 
 class Trainer:
 
-	def __init__(self, net, optimizer = None, loss_fn = None):
+	def __init__(self, net, readout_type = "mem", optimizer = None,
+			loss_fn = None):
 
-		self.net = net
+		self.supported_readouts = [
+			"spk",
+			"spk_count",
+			"mem",
+			"mem_softmax",
+			"mem_max",
+			"mem_avg"
+		]
+
+		self.net			= net
+
+		if readout_type in self.supported_readouts:
+			self.readout_type	= readout_type
+
+		else:
+			raise ValueError("Invalid readout type. Choose between " +
+					str(self.supported_readouts) + "\n")
 
 		if not optimizer:
 
@@ -48,7 +66,7 @@ class Trainer:
 		train_loss = torch.zeros(n_epochs)
 		val_loss = torch.zeros(n_epochs)
 
-		logging.info("Begin training")
+		logging.info("Begin training\n")
 		start_time = time.time()
 
 		for epoch in range(n_epochs):
@@ -78,21 +96,16 @@ class Trainer:
 
 			self.net(data)
 
-			_, out_rec = list(self.net.mem_rec.items())[-1]
-
-			# Reshape mem_rec to combine the time and batch dims
-			out_rec_flat = out_rec.view(-1, out_rec.shape[-1])
-			labels_repeat = labels.repeat(out_rec.shape[0])
+			out_rec, targets = self.readout(labels)
 
 			# Compute the loss over all time steps at once
-			loss_val = self.loss_fn(out_rec_flat, labels_repeat)
+			loss_val = self.loss_fn(out_rec, targets)
 
 			# Gradient calculation + weight update
 			loss_val.backward()
 			self.optimizer.step()
 
-		_, idx = out_rec.sum(dim=0).max(1)
-		accuracy = torch.mean((labels == idx).float().detach().cpu())
+		accuracy = self.compute_accuracy(labels)
 
 		return loss_val.item(), accuracy.item()
 
@@ -112,19 +125,55 @@ class Trainer:
 
 				self.net(data)
 
-				_, out_rec = list(self.net.mem_rec.items())[-1]
-
-				# Reshape mem_rec to combine the time and batch dims
-				out_rec_flat = out_rec.view(-1, out_rec.shape[-1])
-				labels_repeat = labels.repeat(out_rec.shape[0])
+				out_rec, targets = self.readout(labels)
 
 				# Compute the loss over all time steps at once
-				loss_val = self.loss_fn(out_rec_flat, labels_repeat)
+				loss_val = self.loss_fn(out_rec, targets)
 
-		_, idx = out_rec.sum(dim=0).max(1)
-		accuracy = torch.mean((labels == idx).float().detach().cpu())
+		accuracy = self.compute_accuracy(labels)
 
 		return loss_val.item(), accuracy.item()
+
+
+	def readout(self, labels):
+
+		if "mem" in self.readout_type:
+			_, out_rec = list(self.net.mem_rec.items())[-1]
+
+			if self.readout_type == "mem_max":
+				out_rec, _ = torch.max(out_rec, dim = 0, keepdim = True)
+
+			elif self.readout_type == "mem_avg":
+				out_rec = torch.mean(out_rec, dim = 0, keepdim = True)
+
+			elif self.readout_type == "mem_softmax":
+				out_rec = fn.softmax(out_rec, dim = -1)
+
+
+		else:
+			_, out_rec = list(self.net.spk_rec.items())[-1]
+
+			if self.readout_type == "spk_count":
+				out_rec = torch.sum(out_rec, dim = 0, keepdim = True)
+
+		return out_rec.reshape(-1, out_rec.shape[-1]), \
+				labels.repeat(out_rec.shape[0])
+
+
+	def compute_accuracy(self, labels):
+
+		if "mem" in self.readout_type:
+			_, out_rec = list(self.net.mem_rec.items())[-1]
+
+			_, idx = torch.mean(out_rec, dim = 0).max(dim = 1)
+
+		else:
+			_, out_rec = list(self.net.spk_rec.items())[-1]
+
+			_, idx = torch.sum(out_rec, dim = 0).max(dim = 1)
+
+		return torch.mean((labels == idx).float().detach().cpu())
+
 
 
 	def log(self, epoch, train_loss, val_loss, train_acc, val_acc, start_time =
@@ -186,7 +235,7 @@ if __name__ == "__main__":
 
 	spiker = SNN(net_dict)
 
-	trainer = Trainer(spiker)
+	trainer = Trainer(spiker, readout_type = "mem_softmax")
 
 	root_dir	= "../Models/SnnTorch/AudioMnist/Data"
 	batch_size	= 128
