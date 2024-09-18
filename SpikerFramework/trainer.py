@@ -117,3 +117,15 @@ class Trainer:
 		logging.info("Trining accuracy: ", train_acc)
 		logging.info("Trining accuracy: ", val_acc)
 
+
+	def store(self, out_dir, out_file = None):
+
+		if not os.path.exists(out_dir):
+			os.makedirs(out_dir)
+
+		if not out_file:
+			out_file = "trained_state_dict.pt"
+
+		out_path	= out_dir + "/" + out_file
+
+		torch.save(self.net.state_dict(), out_path)
