@@ -1,28 +1,12 @@
 optim_config = {
 
-	"layer_0"	: {
-
-		"weights_bw"	: {
-			"min"	: 4,
-			"max"	: 8
-		},
-
-		"neruons_bw"	: {
-			"min"	: 4,
-			"max"	: 10
-		}
+	"weights_bw"	: {
+		"min"	: 4,
+		"max"	: 8
 	},
 
-	"layer_1"	: {
-
-		"weights_bw"	: {
-			"min"	: 4,
-			"max"	: 8
-		},
-
-		"neruons_bw"	: {
-			"min"	: 4,
-			"max"	: 10
-		}
+	"neruons_bw"	: {
+		"min"	: 4,
+		"max"	: 10
 	}
 }
