@@ -73,6 +73,49 @@ class Optimizer:
 
 		pass
 
+
+	def fixed_point(self, value, fp_dec, bitwidth):
+
+		quant = value * 2**fp_dec
+
+		return self.saturated_int(quant, bitwidth))
+
+	def saturated_int(self, value, bitwidth):
+		return self.saturate(self.to_int(value), bitwidth)
+
+	def saturate(self, value, bitwidth):
+
+		if type(value).__module__ == np.__name__ or \
+		type(value).__module__ == torch.__name__:
+
+			value[value > 2**(bitwidth-1)-1] = \
+				2**(bitwidth-1)-1
+			value[value < -2**(bitwidth-1)] = \
+				-2**(bitwidth-1)
+		else:
+			if value > 2**(bitwidth-1)-1:
+				value = 2**(bitwidth-1)-1
+
+			elif value < -2**(bitwidth-1):
+				value = -2**(bitwidth-1)
+
+		return value
+
+	def to_int(self, value):
+
+		if type(value).__module__ == np.__name__:
+			quant = value.astype(int)
+
+		elif type(value).__module__ == torch.__name__:
+			quant = value.type(torch.int64)
+
+		else:
+			quant = int(value)
+
+		return quant
+
+
+
 if __name__ == "__main__":
 
 	from optim_config import optim_config
