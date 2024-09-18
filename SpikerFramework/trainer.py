@@ -38,6 +38,29 @@ class Trainer:
 		self.net.to(self.device)
 
 
+
+	def train(self, train_loader, val_loader, n_epochs = 20, store = False,
+			output_dir = "Trained"):
+
+		train_loss = torch.zeros(n_epochs)
+		val_loss = torch.zeros(n_epochs)
+
+		logging.info("Begin training")
+		start_time = time.time()
+
+		for epoch in range(n_epochs):
+
+			train_loss[epoch], train_acc = self.train_one_epoch(train_loader)
+			val_loss[epoch], val_acc = self.evaluate(val_loader)
+
+			self.log(epoch, train_loss[epoch], val_loss[epoch], train_acc,
+					val_acc, start_time)
+
+		if store:
+			self.store(output_dir)
+
+
+
 	def train_one_epoch(self, dataloader):
 
 		# Iterate over the dataloader
