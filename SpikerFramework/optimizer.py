@@ -2,6 +2,124 @@ import logging
 import json
 import torch
 
+from net_builder import SNN
+
+def Quantizer:
+
+	def fixed_point(self, value, fp_dec, bitwidth):
+
+		quant = value * 2**fp_dec
+
+		return self.saturated_int(quant, bitwidth))
+
+	def saturated_int(self, value, bitwidth):
+		return self.saturate(self.to_int(value), bitwidth)
+
+	def saturate(self, value, bitwidth):
+
+		if type(value).__module__ == np.__name__ or \
+		type(value).__module__ == torch.__name__:
+
+			value[value > 2**(bitwidth-1)-1] = \
+				2**(bitwidth-1)-1
+			value[value < -2**(bitwidth-1)] = \
+				-2**(bitwidth-1)
+		else:
+			if value > 2**(bitwidth-1)-1:
+				value = 2**(bitwidth-1)-1
+
+			elif value < -2**(bitwidth-1):
+				value = -2**(bitwidth-1)
+
+		return value
+
+	def to_int(self, value):
+
+		if type(value).__module__ == np.__name__:
+			quant = value.astype(int)
+
+		elif type(value).__module__ == torch.__name__:
+			quant = value.type(torch.int64)
+
+		else:
+			quant = int(value)
+
+		return quant
+
+
+
+class QuantSNN(SNN):
+
+	def __init__(self, net, net_dict, quant_state_dict):
+
+		super().__init__(net_dict)
+
+		self.quantizer = Quantizer()
+
+		net.load_state_dict(quant_state_dict)
+
+
+	def forward(self, input_spikes):
+
+		self.reset()
+
+		cur = {}
+
+		for step in range(input_spikes.shape[0]):
+
+			for layer in self.layers:
+
+				idx = str(self.extract_index(layer))
+				
+				if "fc" in layer:
+
+					cur[layer] = self.layers[layer](input_spikes[step])
+					fc_layer = layer
+
+				elif layer == "if" + idx:
+					self.spk[layer], self.mem[layer] = self.layers[layer]\
+							(cur[fc_layer], self.mem[layer])
+
+				elif layer == "lif" + idx:
+					self.spk[layer], self.mem[layer] = self.layers[layer]\
+							(cur[fc_layer], self.mem[layer])
+
+				elif layer == "syn" + idx:
+					self.spk[layer], self.syn[layer], self.mem[layer] = \
+							self.layers[layer](cur[fc_layer], self.syn[layer],
+							self.mem[layer])
+
+				elif layer == "rif" + idx:
+					self.spk[layer], self.mem[layer] = self.layers[layer]\
+							(cur[fc_layer], self.spk[layer], self.mem[layer])
+
+				elif layer == "rlif" + idx:
+					self.spk[layer], self.mem[layer] = self.layers[layer]\
+							(cur[fc_layer], self.spk[layer], self.mem[layer])
+
+				elif layer == "rsyn" + idx:
+					self.spk[layer], self.syn[layer], self.mem[layer] = \
+							self.layers[layer](cur[fc_layer], self.spk[layer], 
+							self.syn[layer], self.mem[layer])
+
+				self.quantize(layer)
+
+				self.record(layer)
+
+		self.stack_rec()
+
+	def quantize(self):
+
+		if not "fc" in layer:
+			self.mem[layer] = self.quantizer.saturate_int(
+					self.mem[layer], self.neuron_bw)
+
+			if "syn" in layer:
+				self.syn[layer] = self.quantizer.saturate_int(
+					self.syn[layer], self.neuron_bw)
+
+
+
 class Optimizer:
 
 	def __init__(self, net, optim_config):
@@ -74,45 +192,6 @@ class Optimizer:
 		pass
 
 
-	def fixed_point(self, value, fp_dec, bitwidth):
-
-		quant = value * 2**fp_dec
-
-		return self.saturated_int(quant, bitwidth))
-
-	def saturated_int(self, value, bitwidth):
-		return self.saturate(self.to_int(value), bitwidth)
-
-	def saturate(self, value, bitwidth):
-
-		if type(value).__module__ == np.__name__ or \
-		type(value).__module__ == torch.__name__:
-
-			value[value > 2**(bitwidth-1)-1] = \
-				2**(bitwidth-1)-1
-			value[value < -2**(bitwidth-1)] = \
-				-2**(bitwidth-1)
-		else:
-			if value > 2**(bitwidth-1)-1:
-				value = 2**(bitwidth-1)-1
-
-			elif value < -2**(bitwidth-1):
-				value = -2**(bitwidth-1)
-
-		return value
-
-	def to_int(self, value):
-
-		if type(value).__module__ == np.__name__:
-			quant = value.astype(int)
-
-		elif type(value).__module__ == torch.__name__:
-			quant = value.type(torch.int64)
-
-		else:
-			quant = int(value)
-
-		return quant
 
 
 
