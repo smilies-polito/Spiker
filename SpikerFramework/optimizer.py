@@ -1,16 +1,18 @@
 import logging
 import json
 import torch
+import numpy as np
 
 from net_builder import SNN
+from trainer import Trainer
 
-def Quantizer:
+class Quantizer:
 
 	def fixed_point(self, value, fp_dec, bitwidth):
 
 		quant = value * 2**fp_dec
 
-		return self.saturated_int(quant, bitwidth))
+		return self.saturated_int(quant, bitwidth)
 
 	def saturated_int(self, value, bitwidth):
 		return self.saturate(self.to_int(value), bitwidth)
@@ -24,25 +26,29 @@ def Quantizer:
 				2**(bitwidth-1)-1
 			value[value < -2**(bitwidth-1)] = \
 				-2**(bitwidth-1)
+
+			return value.float()
+
 		else:
+
 			if value > 2**(bitwidth-1)-1:
 				value = 2**(bitwidth-1)-1
 
 			elif value < -2**(bitwidth-1):
 				value = -2**(bitwidth-1)
 
-		return value
+			return float(value)
 
 	def to_int(self, value):
 
 		if type(value).__module__ == np.__name__:
-			quant = value.astype(int)
+			quant = value.astype(int).astype(float)
 
 		elif type(value).__module__ == torch.__name__:
-			quant = value.type(torch.int64)
+			quant = value.type(torch.int64).float()
 
 		else:
-			quant = int(value)
+			quant = float(int(value))
 
 		return quant
 
@@ -50,9 +56,11 @@ def Quantizer:
 
 class QuantSNN(SNN):
 
-	def __init__(self, net_dict):
+	def __init__(self, net_dict, neurons_bw):
 
 		super().__init__(net_dict)
+
+		self.neurons_bw = neurons_bw
 
 		self.quantizer = Quantizer()
 
@@ -106,21 +114,23 @@ class QuantSNN(SNN):
 
 		self.stack_rec()
 
-	def quantize(self):
+	def quantize(self, layer):
 
 		if not "fc" in layer:
-			self.mem[layer] = self.quantizer.saturate_int(
-					self.mem[layer], self.neuron_bw)
+			self.mem[layer] = self.quantizer.saturated_int(
+					self.mem[layer], self.neurons_bw)
 
 			if "syn" in layer:
-				self.syn[layer] = self.quantizer.saturate_int(
-					self.syn[layer], self.neuron_bw)
+				self.syn[layer] = self.quantizer.saturated_int(
+					self.syn[layer], self.neurons_bw)
 
 
 
-class Optimizer:
+class Optimizer(Trainer):
 
-	def __init__(self, net, net_dict, optim_config):
+	def __init__(self, net, net_dict, optim_config, readout_type = "mem"):
+
+		super().__init__(net, readout_type)
 
 		self.default_config = {
 
@@ -129,7 +139,7 @@ class Optimizer:
 				"max"	: 8
 			},
 
-			"neruons_bw"	: {
+			"neurons_bw"	: {
 				"min"	: 4,
 				"max"	: 10
 			}
@@ -143,6 +153,12 @@ class Optimizer:
 		self.net_dict = net_dict
 
 		self.optim_config = self.parse_config(optim_config)
+
+		if torch.cuda.is_available():
+			self.device = torch.device("cuda")
+
+		else:
+			self.device = torch.device("cpu")
 		
 
 	def parse_config(self, optim_config):
@@ -185,10 +201,24 @@ class Optimizer:
 
 		return optim_dict
 
+	def optimize(self, dataloader):
 
-	def build(self, weights_bw, neurons_bw):
+		for w_bw in self.optim_config["weights_bw"]:
 
-		quant_snn = QuantSNN(self.net_dict)
+			for neuron_bw in self.optim_config["neurons_bw"]:
+
+				self.build_quant_snn(w_bw, neuron_bw)
+
+				self.evaluate(dataloader)
+
+				break
+
+			break
+
+
+	def build_quant_snn(self, weights_bw, neurons_bw):
+
+		self.net = QuantSNN(self.net_dict, neurons_bw)
 
 		quant_state_dict = self.state_dict.copy()
 
@@ -197,37 +227,99 @@ class Optimizer:
 			if "weight" in key:
 
 				quant_state_dict[key] = self.quantizer.fixed_point(
-						quant_state_dict[key], weights_bw)
+						quant_state_dict[key], 5, weights_bw)
 
 			elif "threshold" in key:
 
 				quant_state_dict[key] = self.quantizer.fixed_point(
-						quant_state_dict[key], neurons_bw)
+						quant_state_dict[key], 5, neurons_bw)
 
 			# Aggiungere approssimazione di beta
 
-			quant_snn.load_state_dict(quant_state_dict)
+			self.net.load_state_dict(quant_state_dict)
 
-		log_message = "Network ready: " + str(snn) + "\n"
+		self.net.to(self.device)
+
+		log_message = "Network ready:\n"
+		log_message += "Weights bitwidth: " + str(weights_bw) + "\n"
+		log_message += "Neurons bitwidth: " + str(neurons_bw) + "\n"
 		logging.info(log_message)
-
-		return quant_snn
-
-
-	def optimize(self):
-
-
-		pass
-
 
 
 
 
 if __name__ == "__main__":
 
+	from torch.utils.data import DataLoader, random_split
+
 	from optim_config import optim_config
 	from net_builder import NetBuilder
 	from net_dict import net_dict
+
+	import sys
+
+	audio_mnist_dir = "../Models/SnnTorch/AudioMnist/"
+
+	if audio_mnist_dir not in sys.path:
+		sys.path.append(audio_mnist_dir)
+
+	from audio_mnist import MelFilterbank, CustomDataset
+
+	logging.basicConfig(level=logging.INFO)
+
+	root_dir	= "../Models/SnnTorch/AudioMnist/Data"
+	batch_size	= 128
+
+	sample_rate	= 48e3
+
+	# Short Term Fourier Transform (STFT) window
+	fft_window	= 25e-3 # s
+
+	# Step from one window to the other (controls overlap)
+	hop_length_s	= 10e-3 #s
+
+	# Number of input channels: filters in the mel bank
+	n_mels		= 40
+
+	# Spiking threshold
+	spiking_thresh 	= 0.9
+
+	transform = MelFilterbank(
+		sample_rate 	= sample_rate,
+		fft_window 	= fft_window,
+		hop_length_s	= hop_length_s,
+		n_mels 		= n_mels,
+		db 		= True,
+		normalize	= True,
+		spikify		= True,
+		spiking_thresh	= spiking_thresh
+	)
+
+	dataset = CustomDataset(
+		root_dir	= root_dir,
+		transform	= transform
+	)
+
+	# Train/test split
+	train_size 		= int(0.8 * len(dataset))
+	test_size		= len(dataset) - train_size
+
+	# Split the dataset into training and validation sets
+	train_set, test_set = random_split(dataset, [train_size, test_size])
+
+	train_loader = DataLoader(train_set, 
+ 		batch_size	= batch_size,
+ 		shuffle		= True,
+ 		num_workers	= 4,
+ 		drop_last 	= True
+ 	)
+
+	test_loader = DataLoader(test_set, 
+ 		batch_size	= batch_size,
+ 		shuffle		= True,
+ 		num_workers	= 4,
+ 		drop_last 	= True
+ 	)
 
 	logging.basicConfig(level=logging.INFO)
 
@@ -235,4 +327,6 @@ if __name__ == "__main__":
 
 	snn = net_builder.build()
 
-	opt = Optimizer(snn, optim_config)
+	opt = Optimizer(snn, net_dict, optim_config)
+
+	opt.optimize(test_loader)
