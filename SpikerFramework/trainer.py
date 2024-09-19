@@ -232,7 +232,7 @@ if __name__ == "__main__":
 
 	import sys
 
-	audio_mnist_dir = "../Models/SnnTorch/AudioMnist/"
+	audio_mnist_dir = "../../SnnModels/SnnTorch/AudioMnist/"
 
 	if audio_mnist_dir not in sys.path:
 		sys.path.append(audio_mnist_dir)
@@ -241,7 +241,7 @@ if __name__ == "__main__":
 
 	logging.basicConfig(level=logging.INFO)
 
-	root_dir	= "../Models/SnnTorch/AudioMnist/Data"
+	root_dir	= audio_mnist_dir + "/Data"
 	batch_size	= 128
 
 	sample_rate	= 48e3
