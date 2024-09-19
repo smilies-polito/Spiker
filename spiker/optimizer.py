@@ -3,8 +3,8 @@ import json
 import torch
 import numpy as np
 
-from net_builder import SNN
-from trainer import Trainer
+from .net_builder import SNN
+from .trainer import Trainer
 
 class Quantizer:
 
