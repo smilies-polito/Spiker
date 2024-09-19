@@ -1,10 +1,8 @@
 import subprocess as sp
 
-from vhdl import debug_component, sub_components
+from .vhdl import debug_component, sub_components
 
-import path_config
-
-from vhdl_block import VHDLblock
+from .vhdltools.vhdl_block import VHDLblock
 
 class Cmp(VHDLblock):
 

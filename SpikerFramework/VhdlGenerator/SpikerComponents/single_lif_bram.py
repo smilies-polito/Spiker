@@ -2,17 +2,16 @@ import numpy as np
 
 from math import log2
 
-from multi_cycle_lif import MultiCycleLIF
-from rom import Rom
-from addr_converter import AddrConverter
-from testbench import Testbench
-from spiker_pkg import SpikerPackage
-from vhdl import track_signals, debug_component, sub_components, write_file_all
-from utils import ceil_pow2, random_binary
+from .multi_cycle_lif import MultiCycleLIF
+from .rom import Rom
+from .addr_converter import AddrConverter
+from .testbench import Testbench
+from .spiker_pkg import SpikerPackage
+from .vhdl import track_signals, debug_component, sub_components, write_file_all
+from .utils import ceil_pow2, random_binary
 
-import path_config
-from vhdl_block import VHDLblock
-from if_statement import If
+from .vhdltools.vhdl_block import VHDLblock
+from .vhdltools.if_statement import If
 
 
 class SingleLifBram(VHDLblock):
@@ -459,41 +458,41 @@ class SingleLifBram_tb(Testbench):
 		write_file_all(self, output_dir = output_dir, rm = rm)
 
 
+if __name__ == "__main__":
 
-from vhdl import fast_compile, elaborate
+	from .vhdl import fast_compile, elaborate
+	from .utils import generate_spikes
 
-from utils import generate_spikes
+	generate_spikes("exc_spikes.txt", 10, 20)
+	generate_spikes("inh_spikes.txt", 10, 20)
 
-generate_spikes("exc_spikes.txt", 10, 20)
-generate_spikes("inh_spikes.txt", 10, 20)
+	tb = SingleLifBram_tb(
+		n_cycles	= 20,
+		bitwidth	= 16,
+		w_exc_bw	= 16,
+		w_inh_bw	= 16,
+		shift		= 5,
+		w_exc_array	= np.array([[0.1, 0.2, 0.8, 0.5, 0.3, 0.1, 0.4, 0.8,
+			0.1, 0.3]]),
+		w_inh_array	= np.array([[0.1, 0.2, 0.8, 0.5, 0.3, 0.1, 0.4, 0.8,
+			0.3, 0.2]]),
+		file_input = True,
+		input_signal_list = [
+			"exc_spikes",
+			"inh_spikes"
+		],
+		debug = True,
+		debug_list = [
+			"single_lif_bram_exc_cnt",
+			"single_lif_bram_exc_weight",
+			"multi_input_lif_exc_spike",
+			"neuron_cu_present_state",
+			"neuron_datapath_v"
+		]
+	)
 
-tb = SingleLifBram_tb(
-	n_cycles	= 20,
-	bitwidth	= 16,
-	w_exc_bw	= 16,
-	w_inh_bw	= 16,
-	shift		= 5,
-	w_exc_array	= np.array([[0.1, 0.2, 0.8, 0.5, 0.3, 0.1, 0.4, 0.8,
-		0.1, 0.3]]),
-	w_inh_array	= np.array([[0.1, 0.2, 0.8, 0.5, 0.3, 0.1, 0.4, 0.8,
-		0.3, 0.2]]),
-	file_input = True,
-	input_signal_list = [
-		"exc_spikes",
-		"inh_spikes"
-	],
-	debug = True,
-	debug_list = [
-		"single_lif_bram_exc_cnt",
-		"single_lif_bram_exc_weight",
-		"multi_input_lif_exc_spike",
-		"neuron_cu_present_state",
-		"neuron_datapath_v"
-	]
-)
+	print(tb.components)
 
-print(tb.components)
-
-tb.write_file_all(rm = True)
-fast_compile(tb)
-elaborate(tb)
+	tb.write_file_all(rm = True)
+	fast_compile(tb)
+	elaborate(tb)

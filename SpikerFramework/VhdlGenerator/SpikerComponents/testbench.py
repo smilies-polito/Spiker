@@ -1,7 +1,6 @@
-from vhdl import sub_components, write_file_all
-import path_config
-from vhdl_block import VHDLblock
-from if_statement import If
+from .vhdl import sub_components, write_file_all
+from .vhdltools.vhdl_block import VHDLblock
+from .vhdltools.if_statement import If
 
 
 class Testbench(VHDLblock):

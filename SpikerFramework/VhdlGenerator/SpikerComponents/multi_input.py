@@ -1,14 +1,13 @@
 from math import log2
 
-from multi_input_dp import MultiInputDP
-from multi_input_cu import MultiInputCU
-from testbench import Testbench
-from spiker_pkg import SpikerPackage
-from vhdl import track_signals, debug_component, sub_components, write_file_all
-from utils import ceil_pow2
+from .multi_input_dp import MultiInputDP
+from .multi_input_cu import MultiInputCU
+from .testbench import Testbench
+from .spiker_pkg import SpikerPackage
+from .vhdl import track_signals, debug_component, sub_components, write_file_all
+from .utils import ceil_pow2
 
-import path_config
-from vhdl_block import VHDLblock
+from .vhdltools.vhdl_block import VHDLblock
 
 class MultiInput(VHDLblock):
 

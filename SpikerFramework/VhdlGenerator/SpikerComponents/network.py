@@ -2,22 +2,21 @@ import numpy as np
 
 from math import log2
 
-from multi_cycle import MultiCycle
-from layer import Layer
-from testbench import Testbench
-from spiker_pkg import SpikerPackage
-from decoder import Decoder
-from mux import Mux
-from reg import Reg
-from vhdl import track_signals, debug_component, sub_components, write_file_all
-from utils import ceil_pow2, obj_types, is_iterable
+from .multi_cycle import MultiCycle
+from .layer import Layer
+from .testbench import Testbench
+from .spiker_pkg import SpikerPackage
+from .decoder import Decoder
+from .mux import Mux
+from .reg import Reg
+from .vhdl import track_signals, debug_component, sub_components, write_file_all
+from .utils import ceil_pow2, obj_types, is_iterable
 
-import path_config
-from vhdl_block import VHDLblock
-from if_statement import If, ConditionsList
-from text import SingleCodeLine
-from for_statement import For
-from instance import Instance
+from .vhdltools.vhdl_block import VHDLblock
+from .vhdltools.if_statement import If, ConditionsList
+from .vhdltools.text import SingleCodeLine
+from .vhdltools.for_statement import For
+from .vhdltools.instance import Instance
 
 
 class Network(VHDLblock, dict):

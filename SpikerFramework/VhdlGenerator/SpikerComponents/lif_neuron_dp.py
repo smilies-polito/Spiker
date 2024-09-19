@@ -1,15 +1,14 @@
-from shifter import Shifter
-from add_sub import AddSub
-from mux import Mux
-from reg import Reg
-from cmp import Cmp
+from .shifter import Shifter
+from .add_sub import AddSub
+from .mux import Mux
+from .reg import Reg
+from .cmp import Cmp
 
-from testbench import Testbench
-from vhdl import track_signals, debug_component, sub_components, write_file_all
+from .testbench import Testbench
+from .vhdl import track_signals, debug_component, sub_components, write_file_all
 
-import path_config
-from vhdl_block import VHDLblock
-from if_statement import If
+from .vhdltools.vhdl_block import VHDLblock
+from .vhdltools.if_statement import If
 
 class LIFneuronDP(VHDLblock):
 

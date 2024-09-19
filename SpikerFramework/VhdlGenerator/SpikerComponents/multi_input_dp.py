@@ -1,17 +1,16 @@
 from math import log2
 
-from vhdl_or import Or
-from mux import Mux
-from reg import Reg
-from cnt import Cnt
-from cmp import Cmp
-from testbench import Testbench
-from vhdl import track_signals, debug_component, sub_components, write_file_all
-from utils import ceil_pow2, random_binary 
+from .vhdl_or import Or
+from .mux import Mux
+from .reg import Reg
+from .cnt import Cnt
+from .cmp import Cmp
+from .testbench import Testbench
+from .vhdl import track_signals, debug_component, sub_components, write_file_all
+from .utils import ceil_pow2, random_binary 
 
-import path_config
-from vhdl_block import VHDLblock
-from if_statement import If
+from .vhdltools.vhdl_block import VHDLblock
+from .vhdltools.if_statement import If
 
 class MultiInputDP(VHDLblock):
 

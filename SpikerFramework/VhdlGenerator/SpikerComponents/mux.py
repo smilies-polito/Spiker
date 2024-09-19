@@ -1,10 +1,9 @@
 from math import log2
 
-from vhdl import sub_components, debug_component
-from utils import ceil_pow2
+from .vhdl import sub_components, debug_component
+from .utils import ceil_pow2
 
-import path_config
-from vhdl_block import VHDLblock
+from .vhdltools.vhdl_block import VHDLblock
 
 class Mux(VHDLblock):
 

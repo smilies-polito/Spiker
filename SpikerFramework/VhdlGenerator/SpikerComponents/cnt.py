@@ -1,11 +1,9 @@
 import subprocess as sp
 
-from vhdl import sub_components, debug_component
+from .vhdl import sub_components, debug_component
 
-import path_config
-
-from if_statement import If
-from vhdl_block import VHDLblock
+from .vhdltools.if_statement import If
+from .vhdltools.vhdl_block import VHDLblock
 
 class Cnt(VHDLblock):
 

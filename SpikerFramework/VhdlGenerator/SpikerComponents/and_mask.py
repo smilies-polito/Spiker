@@ -1,7 +1,6 @@
-from vhdl import sub_components, debug_component
+from .vhdl import sub_components, debug_component
 
-import path_config
-from vhdl_block import VHDLblock
+from .vhdltools.vhdl_block import VHDLblock
 
 class AndMask(VHDLblock):
 

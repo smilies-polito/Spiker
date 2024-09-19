@@ -1,13 +1,12 @@
-from lif_neuron_dp import LIFneuronDP
-from lif_neuron_cu import LIFneuronCU
-from and_mask import AndMask
-from testbench import Testbench
+from .lif_neuron_dp import LIFneuronDP
+from .lif_neuron_cu import LIFneuronCU
+from .and_mask import AndMask
+from .testbench import Testbench
 
-from spiker_pkg import SpikerPackage
-from vhdl import track_signals, debug_component, sub_components, write_file_all
+from .spiker_pkg import SpikerPackage
+from .vhdl import track_signals, debug_component, sub_components, write_file_all
 
-import path_config
-from vhdl_block import VHDLblock
+from .vhdltools.vhdl_block import VHDLblock
 
 class LIFneuron(VHDLblock):
 

@@ -4,11 +4,10 @@ import torch
 from math import log2
 from typing import Union
 
-from utils import fixed_point_array, ceil_pow2, int_to_hex, int_to_bin
-from vhdl import sub_components, debug_component, coe_file
+from .utils import fixed_point_array, ceil_pow2, int_to_hex, int_to_bin
+from .vhdl import sub_components, debug_component, coe_file
 
-import path_config
-from vhdl_block import VHDLblock
+from .vhdltools.vhdl_block import VHDLblock
 
 
 class Rom(VHDLblock):

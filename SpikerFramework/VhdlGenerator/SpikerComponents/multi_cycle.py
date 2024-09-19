@@ -1,14 +1,13 @@
 from math import log2
 
-from multi_cycle_dp import MultiCycleDP
-from multi_cycle_cu import MultiCycleCU
-from testbench import Testbench
-from spiker_pkg import SpikerPackage
-from vhdl import track_signals, debug_component, sub_components, write_file_all
-from utils import ceil_pow2, random_binary
+from .multi_cycle_dp import MultiCycleDP
+from .multi_cycle_cu import MultiCycleCU
+from .testbench import Testbench
+from .spiker_pkg import SpikerPackage
+from .vhdl import track_signals, debug_component, sub_components, write_file_all
+from .utils import ceil_pow2, random_binary
 
-import path_config
-from vhdl_block import VHDLblock
+from .vhdltools.vhdl_block import VHDLblock
 
 class MultiCycle(VHDLblock):
 

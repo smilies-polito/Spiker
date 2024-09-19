@@ -1,8 +1,7 @@
-from vhdl import sub_components, debug_component
+from .vhdl import sub_components, debug_component
 
-import path_config
-from vhdl_block import VHDLblock
-from if_statement import If
+from .vhdltools.vhdl_block import VHDLblock
+from .vhdltools.if_statement import If
 
 class AddSub(VHDLblock):
 

@@ -1,11 +1,10 @@
 import subprocess as sp
 from os.path import isfile, isdir
 
-from utils import obj_types, is_iterable
-from headers import coe_header
+from .utils import obj_types, is_iterable
+from .headers import coe_header
 
-import path_config
-from write_file import write_file
+from .vhdltools.write_file import write_file
 
 
 def write_file_all(component, output_dir = "output", rm = False):

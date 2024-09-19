@@ -1,6 +1,4 @@
-import path_config
-
-from package_vhdl import Package
+from .vhdltools.package_vhdl import Package
 
 class SpikerPackage(Package):
 

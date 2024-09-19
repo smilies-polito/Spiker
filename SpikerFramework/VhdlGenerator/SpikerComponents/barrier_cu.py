@@ -1,10 +1,8 @@
-from spiker_pkg import SpikerPackage
-from vhdl import track_signals, debug_component, sub_components, write_file_all
+from .spiker_pkg import SpikerPackage
+from .vhdl import track_signals, debug_component, sub_components, write_file_all
 
-import path_config
-
-from vhdl_block import VHDLblock
-from if_statement import If
+from .vhdltools.vhdl_block import VHDLblock
+from .vhdltools.if_statement import If
 
 class BarrierCU(VHDLblock):
 
