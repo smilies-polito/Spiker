@@ -1,1 +1,1 @@
-from spiker_components.network import Network
+from .vhdl.network import Network
