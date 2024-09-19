@@ -11,6 +11,11 @@ class VhdlGenerator:
 		self.net = net
 		self.optim_config = optim_config
 
+	def generate(self):
+		pass
+
+		
+
 	def init_layer(self, layer, ff_w):
 
 		th = np.repeat(self.extract_threshold(layer), ff_w.shape[0]) 
@@ -34,7 +39,6 @@ class VhdlGenerator:
 			reset		= "subtractive",
 			functional	= True
 		)
-
 
 	def extract_weights(self, layer):
 
