@@ -5,7 +5,7 @@ optim_config = {
 		"max"	: 8
 	},
 
-	"neruons_bw"	: {
+	"neurons_bw"	: {
 		"min"	: 4,
 		"max"	: 10
 	}
