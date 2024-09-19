@@ -1,3 +1,2 @@
 [submodule "HdlTools"]
-	path = SpikerFramework/VhdlGenerator/VhdlTools
 	url = https://github.com/smilies-polito/hdltools.git
