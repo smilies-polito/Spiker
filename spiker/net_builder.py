@@ -229,41 +229,48 @@ class SNN(nn.Module):
 
 		for step in range(input_spikes.shape[0]):
 
+			first = True
+
 			for layer in self.layers:
 
 				idx = str(self.extract_index(layer))
 				
 				if "fc" in layer:
 
-					cur[layer] = self.layers[layer](input_spikes[step])
-					fc_layer = layer
+					if first:
+						cur[layer] = self.layers[layer](input_spikes[step])
+						first = False
+
+					else:
+						cur[layer] = self.layers[layer](self.spk[prev_layer])
 
 				elif layer == "if" + idx:
 					self.spk[layer], self.mem[layer] = self.layers[layer]\
-							(cur[fc_layer], self.mem[layer])
+							(cur[prev_layer], self.mem[layer])
 
 				elif layer == "lif" + idx:
 					self.spk[layer], self.mem[layer] = self.layers[layer]\
-							(cur[fc_layer], self.mem[layer])
+							(cur[prev_layer], self.mem[layer])
 
 				elif layer == "syn" + idx:
 					self.spk[layer], self.syn[layer], self.mem[layer] = \
-							self.layers[layer](cur[fc_layer], self.syn[layer],
+							self.layers[layer](cur[prev_layer], self.syn[layer],
 							self.mem[layer])
 
 				elif layer == "rif" + idx:
 					self.spk[layer], self.mem[layer] = self.layers[layer]\
-							(cur[fc_layer], self.spk[layer], self.mem[layer])
+							(cur[prev_layer], self.spk[layer], self.mem[layer])
 
 				elif layer == "rlif" + idx:
 					self.spk[layer], self.mem[layer] = self.layers[layer]\
-							(cur[fc_layer], self.spk[layer], self.mem[layer])
+							(cur[prev_layer], self.spk[layer], self.mem[layer])
 
 				elif layer == "rsyn" + idx:
 					self.spk[layer], self.syn[layer], self.mem[layer] = \
-							self.layers[layer](cur[fc_layer], self.spk[layer], 
+							self.layers[layer](cur[prev_layer], self.spk[layer], 
 							self.syn[layer], self.mem[layer])
 
+				prev_layer = layer
 				self.record(layer)
 
 		self.stack_rec()
