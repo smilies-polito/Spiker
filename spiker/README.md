@@ -12,7 +12,9 @@ Figure 1: spiker framework building blocks
 
 Once installed the package can be imported with
 
+```python
     import spiker
+```
 
 At this point it becomes possible to instantiate the various blocks. Next
 sections will go more in detail on the framework's components.
@@ -34,12 +36,12 @@ net_dict = {
 		"layer_0"	: {
 			
 			"neuron_model"		: "lif",
-			"n_neurons"			: 128,
-			"alpha"				: None,
+			"n_neurons"		: 128,
+			"alpha"			: None,
 			"learn_alpha"		: False,
-			"beta"				: 0.9375,
+			"beta"			: 0.9375,
 			"learn_beta"		: False,
-			"threshold"			: 1.,
+			"threshold"		: 1.,
 			"learn_threshold"	: False,
 			"reset_mechanism"	: "subtract"
 		},
@@ -47,16 +49,17 @@ net_dict = {
 		"layer_1"	: {
 			
 			"neuron_model"		: "lif",
-			"n_neurons"			: 10,
-			"alpha"				: None,
+			"n_neurons"		: 10,
+			"alpha"			: None,
 			"learn_alpha"		: False,
-			"beta"				: 0.9375,
+			"beta"			: 0.9375,
 			"learn_beta"		: False,
-			"threshold"			: 1.,
+			"threshold"		: 1.,
 			"learn_threshold"	: False,
 			"reset_mechanism"	: "none"
 		}
 }
+```
 
 
 ![Figure 2: spiker hardware architecture, building blocks](../Doc/spiker.png)
