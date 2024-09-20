@@ -1,6 +1,7 @@
 import logging
 import json
 import torch
+from tabulate import tabulate
 import numpy as np
 
 from .net_builder import SNN
@@ -71,7 +72,15 @@ class QuantSNN(SNN):
 
 		cur = {}
 
+		if input_spikes.shape[0] != self.n_cycles:
+			logging.warning("Input data have a time dimension different from "\
+					"the network's number of steps. It's ok at this level, "\
+					"but remember to use a suitable number of steps in the "\
+					"vhdl generator")
+
 		for step in range(input_spikes.shape[0]):
+
+			first = True
 
 			for layer in self.layers:
 
@@ -79,34 +88,40 @@ class QuantSNN(SNN):
 				
 				if "fc" in layer:
 
-					cur[layer] = self.layers[layer](input_spikes[step])
-					fc_layer = layer
+					if first:
+						cur[layer] = self.layers[layer](input_spikes[step])
+						first = False
+
+					else:
+						cur[layer] = self.layers[layer](self.spk[prev_layer])
 
 				elif layer == "if" + idx:
 					self.spk[layer], self.mem[layer] = self.layers[layer]\
-							(cur[fc_layer], self.mem[layer])
+							(cur[prev_layer], self.mem[layer])
 
 				elif layer == "lif" + idx:
 					self.spk[layer], self.mem[layer] = self.layers[layer]\
-							(cur[fc_layer], self.mem[layer])
+							(cur[prev_layer], self.mem[layer])
 
 				elif layer == "syn" + idx:
 					self.spk[layer], self.syn[layer], self.mem[layer] = \
-							self.layers[layer](cur[fc_layer], self.syn[layer],
+							self.layers[layer](cur[prev_layer], self.syn[layer],
 							self.mem[layer])
 
 				elif layer == "rif" + idx:
 					self.spk[layer], self.mem[layer] = self.layers[layer]\
-							(cur[fc_layer], self.spk[layer], self.mem[layer])
+							(cur[prev_layer], self.spk[layer], self.mem[layer])
 
 				elif layer == "rlif" + idx:
 					self.spk[layer], self.mem[layer] = self.layers[layer]\
-							(cur[fc_layer], self.spk[layer], self.mem[layer])
+							(cur[prev_layer], self.spk[layer], self.mem[layer])
 
 				elif layer == "rsyn" + idx:
 					self.spk[layer], self.syn[layer], self.mem[layer] = \
-							self.layers[layer](cur[fc_layer], self.spk[layer], 
+							self.layers[layer](cur[prev_layer], self.spk[layer], 
 							self.syn[layer], self.mem[layer])
+
+				prev_layer = layer
 
 				self.quantize(layer)
 
@@ -142,6 +157,11 @@ class Optimizer(Trainer):
 			"neurons_bw"	: {
 				"min"	: 4,
 				"max"	: 10
+			},
+
+			"fp_dec"	: {
+				"min"	: 2,
+				"max"	: 3
 			}
 		}
 
@@ -203,20 +223,39 @@ class Optimizer(Trainer):
 
 	def optimize(self, dataloader):
 
-		for w_bw in self.optim_config["weights_bw"]:
 
-			for neuron_bw in self.optim_config["neurons_bw"]:
+		headers = ["Fixed-point decimals", "Neurons' bitwidth", 
+					"Weights bitwidth", "Loss", "Accuracy"]
+		table = []
 
-				self.build_quant_snn(w_bw, neuron_bw)
+		for fp_dec in self.optim_config["fp_dec"]:
 
-				self.evaluate(dataloader)
+			for w_bw in self.optim_config["neurons_bw"]:
 
-				break
+				for neuron_bw in self.optim_config["weights_bw"]:
 
-			break
+					self.build_quant_snn(w_bw, neuron_bw, fp_dec)
+
+					loss, acc = self.evaluate(dataloader)
+
+					log_message = "\nLoss: " + "{:.2f}".format(loss) + "\n"
+					log_message += "Acc: " + "{:.2f}".format(acc*100) + "%\n"
+					logging.info(log_message)
+
+					table.append([
+						str(fp_dec),
+						str(w_bw),
+						str(neuron_bw),
+						str(loss),
+						str(acc)
+					])
+
+		table = "\n" + tabulate(table, headers = headers, tablefmt = "grid")
+
+		logging.info(table)
 
 
-	def build_quant_snn(self, weights_bw, neurons_bw):
+	def build_quant_snn(self, weights_bw, neurons_bw, fp_dec):
 
 		self.net = QuantSNN(self.net_dict, neurons_bw)
 
@@ -227,106 +266,19 @@ class Optimizer(Trainer):
 			if "weight" in key:
 
 				quant_state_dict[key] = self.quantizer.fixed_point(
-						quant_state_dict[key], 5, weights_bw)
+						quant_state_dict[key], fp_dec, weights_bw)
 
 			elif "threshold" in key:
 
 				quant_state_dict[key] = self.quantizer.fixed_point(
-						quant_state_dict[key], 5, neurons_bw)
-
-			# Aggiungere approssimazione di beta
+						quant_state_dict[key], fp_dec, neurons_bw)
 
 			self.net.load_state_dict(quant_state_dict)
 
 		self.net.to(self.device)
 
 		log_message = "Network ready:\n"
-		log_message += "Weights bitwidth: " + str(weights_bw) + "\n"
+		log_message += "Fixed-point decimals: " + str(fp_dec) + "\n"
 		log_message += "Neurons bitwidth: " + str(neurons_bw) + "\n"
+		log_message += "Weights bitwidth: " + str(weights_bw) + "\n"
 		logging.info(log_message)
-
-
-
-
-if __name__ == "__main__":
-
-	from torch.utils.data import DataLoader, random_split
-
-	from optim_config import optim_config
-	from net_builder import NetBuilder
-	from net_dict import net_dict
-
-	import sys
-
-	audio_mnist_dir = "../Models/SnnTorch/AudioMnist/"
-
-	if audio_mnist_dir not in sys.path:
-		sys.path.append(audio_mnist_dir)
-
-	from audio_mnist import MelFilterbank, CustomDataset
-
-	logging.basicConfig(level=logging.INFO)
-
-	root_dir	= "../Models/SnnTorch/AudioMnist/Data"
-	batch_size	= 128
-
-	sample_rate	= 48e3
-
-	# Short Term Fourier Transform (STFT) window
-	fft_window	= 25e-3 # s
-
-	# Step from one window to the other (controls overlap)
-	hop_length_s	= 10e-3 #s
-
-	# Number of input channels: filters in the mel bank
-	n_mels		= 40
-
-	# Spiking threshold
-	spiking_thresh 	= 0.9
-
-	transform = MelFilterbank(
-		sample_rate 	= sample_rate,
-		fft_window 	= fft_window,
-		hop_length_s	= hop_length_s,
-		n_mels 		= n_mels,
-		db 		= True,
-		normalize	= True,
-		spikify		= True,
-		spiking_thresh	= spiking_thresh
-	)
-
-	dataset = CustomDataset(
-		root_dir	= root_dir,
-		transform	= transform
-	)
-
-	# Train/test split
-	train_size 		= int(0.8 * len(dataset))
-	test_size		= len(dataset) - train_size
-
-	# Split the dataset into training and validation sets
-	train_set, test_set = random_split(dataset, [train_size, test_size])
-
-	train_loader = DataLoader(train_set, 
- 		batch_size	= batch_size,
- 		shuffle		= True,
- 		num_workers	= 4,
- 		drop_last 	= True
- 	)
-
-	test_loader = DataLoader(test_set, 
- 		batch_size	= batch_size,
- 		shuffle		= True,
- 		num_workers	= 4,
- 		drop_last 	= True
- 	)
-
-	logging.basicConfig(level=logging.INFO)
-
-	net_builder = NetBuilder(net_dict)
-
-	snn = net_builder.build()
-
-	opt = Optimizer(snn, net_dict, optim_config)
-
-	opt.optimize(test_loader)
