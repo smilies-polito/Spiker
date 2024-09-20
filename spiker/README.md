@@ -145,6 +145,8 @@ To print the code of the generated network you can run
 print(vhdl_snn.code())
 ```
 
+The **vhdl** directory contains all the code necessary to translate a *snnTorch* description of the network into a synthesizable VHDL description of the corresponding accelerator.
+
 Figure 2 shows a block diagram of the generated architecture. For more details about the various components refer to [Spiker: a framework for the generation of efficient Spiking Neural Networks FPGA accelerators for inference at the edge](https://arxiv.org/abs/2401.01141).
 
 ![Figure 2: spiker hardware architecture, building blocks](../Doc/spiker.png)
