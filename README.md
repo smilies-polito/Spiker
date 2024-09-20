@@ -25,3 +25,13 @@ You can access the documentation for spiker directly in the associated directory
 	year = {2024},  
 	keywords = {Computer Science - Neural and Evolutionary Computing, Computer Science - Artificial Intelligence, Computer Science - Hardware Architecture}   
 }
+
+# Installation
+
+    git clone https://github.com/smilies-polito/Spiker.git
+    cd Spiker
+	pip install .
+
+Or alternatively
+
+	python setup.py install
