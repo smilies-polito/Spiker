@@ -1,4 +1,4 @@
-# Spiker: a framework for the generation of efficient Spiking Neural Networks FPGA accelerators for inference at the edge
+.. Spiker: a framework for the generation of efficient Spiking Neural Networks FPGA accelerators for inference at the edge
 
 snnTorch Structure
 ^^^^^^^^^^^^^^^^^^^^^^^^
