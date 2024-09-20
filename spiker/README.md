@@ -19,6 +19,13 @@ Once installed the package can be imported with
 At this point it becomes possible to instantiate the various blocks. Next
 sections will go more in detail on the framework's components.
 
+The tool is based on the *logging* python built-in module. To enable progress printing at the various steps run
+
+```python
+logging.basicConfig(level=logging.INFO)
+```
+
+
 ## Net builder
 
 The **NetBuilder** is in charge of translating a high-level description of the network in an [snnTorch](https://snntorch.readthedocs.io/en/latest/)-based trainable object.
@@ -57,13 +64,6 @@ net_dict = {
 			"reset_mechanism"	: "none"
 		}
 }
-```
-
-The tool is based on the *logging* python built-in module. To enable printing of
-progress run
-
-```python
-logging.basicConfig(level=logging.INFO)
 ```
 
 At this point the network can be built with two lines of code:
