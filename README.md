@@ -1,4 +1,5 @@
 # Spiker: a framework for the generation of efficient Spiking Neural Networks FPGA accelerators for inference at the edge
+This is the official repo of spiker, a comprehensive framework for generating efficient, low-power, and low-area customized Spiking Neural Networks (SNN) accelerators on FPGA for inference at the edge. spiker presents a library of highly efficient neuron architectures and a design framework, enabling the development of complex neural network accelerators with few lines of Python code. 
 
 
 # Project structure
