@@ -125,7 +125,7 @@ optim_params = {
 
 	"weights_bw"	: 6,
 	"neurons_bw"	: 8,
-	"fp_dec"		: 4
+	"fp_dec"	: 4
 
 }
 ```
