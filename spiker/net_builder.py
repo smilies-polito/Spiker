@@ -12,6 +12,8 @@ class SNN(nn.Module):
 
 		super(SNN, self).__init__()
 
+		self.n_cycles = net_dict["n_cycles"]
+
 		self.layers = nn.ModuleDict()
 
 		self.syn = {}
@@ -27,17 +29,34 @@ class SNN(nn.Module):
 	
 	def build_snn(self, net_dict):
 
+		first = True
+
 		for key in net_dict:
  
 			if "layer" in key:
 
 				idx = str(self.extract_index(key) + 1)
 
-				self.layers["fc" + idx] = nn.Linear(
-					in_features		= net_dict["n_inputs"],
-					out_features	= net_dict[key]["n_neurons"],
-					bias 			= False
-				)
+				if first:
+					self.layers["fc" + idx] = nn.Linear(
+						in_features		= net_dict["n_inputs"],
+						out_features	= net_dict[key]["n_neurons"],
+						bias 			= False
+					)
+
+					n_inputs_next = net_dict[key]["n_neurons"]
+
+					first = False
+
+				else:
+
+					self.layers["fc" + idx] = nn.Linear(
+						in_features		= n_inputs_next,
+						out_features	= net_dict[key]["n_neurons"],
+						bias 			= False
+					)
+
+					n_inputs_next = net_dict[key]["n_neurons"]
 
 				if net_dict[key]["neuron_model"] == "if":
 
@@ -201,6 +220,12 @@ class SNN(nn.Module):
 		self.reset()
 
 		cur = {}
+
+		if input_spikes.shape[0] != self.n_cycles:
+			logging.warning("Input data have a time dimension different from "\
+					"the network's number of steps. It's ok at this level, "\
+					"but remember to use a suitable number of steps in the "\
+					"vhdl generator")
 
 		for step in range(input_spikes.shape[0]):
 
