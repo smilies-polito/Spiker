@@ -9,7 +9,6 @@ This is the official repo of spiker, a comprehensive framework for generating ef
 |	**Tutorials**	|									Examples on how to use the different components of spiker										|
 |	**Doc**			|				Project documentation. It will be gradually filled with schematics, timing diagrams and similar						|
 
-You can access the documentation for spiker directly in the associated directory.
 
 # Requirements
 
