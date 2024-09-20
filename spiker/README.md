@@ -1,3 +1,13 @@
 # spiker package
-![Prova](../Doc/framework.png)
-
+![framework](../Doc/framework.png)
+![fcff snn](../Doc/fcff_snn.png)
+![rsnn](../Doc/rsnn.png)
+![spiker](../Doc/spiker.png)
+![central control](../Doc/central_control.png)
+![spikes control](../Doc/spikes_control.png)
+![if rst sub](../Doc/if_rst_dyn.png)
+![if rst zero](../Doc/if_rst_fixed.png)
+![lif II rst sub](../Doc/lif_ord_II_rst_dyn.png)
+![lif II rst zero](../Doc/lif_ord_II_rst_fixed.png)
+![lif rst sub](../Doc/lif_ord_I_rst_dyn.png)
+![lif rst zero](../Doc/lif_ord_I_rst_fixed.png)
