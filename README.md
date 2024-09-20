@@ -1,102 +1,51 @@
-# Spiker: FPGA-oriented hardware accelerator for Spiking Neural Networks (SNN)
-Spiker is a neuromorphic processor to accelerate inference in edge applications, targeting area- and performance-constrained applications.
-
-Here you can find all the code developed to obtain a VHDL description of Spiker. Next image shows the step followed for the design.
-
-![DesignFlow](Doc/Figures/designFlow.png){fig:spikerDesignFlow}
-Spiker design flow
-
-## CHARACTERISTICS
-* __Neuron model__: Leaky Integrate and Fire
-* __Network architecture__: single layer fully-connected
-* __Target dataset__: MNIST
-
-## PROJECT ORGANIZATION
-* __MNIST__
-	* MNIST dataset files in IDX format
-	* mnist.py: script to import the dataset in form of numpy array
-
-* __Python__
-	* __Models__: python models of the Spiking Neural Network.
-		* Brian2: models developed using [Brian 2 simulator](https://brian2.readthedocs.io/en/stable/)
-			* PeterDiehl: brian2 translation of the original work from Peter Diel et al. (see related documents).
-			* Simplified: simplified LIF neuron model with respect to the conductance-based model used by Peter Diehl et al.
-
-		* Custom: models developed without using any external module expept numpy to accelerate the execution throgh vectorization
-			* Full precision model: float64 model
-			* TowardsHW: simplifications of the full-precision model to make it more suitable for the VHDL implementation.
-				* FinitePrecision: integer transaltion of the full precison model.
-				* SingleLFSR: input interface substituted by the python simulation of a Linear Feedback Shift Register (LFSR)
-		* __Simulations__: scripts to automate simulations.
-		* VhdlSim: scripts to simulate the VHDL components
-
-* __Vhdl__
-	* __Hierarchical__: complete VHDL accelerator, organized hierarchical blocks.
-		* __Vhd__: VHDL components
-			* __Vhd__: VHDL components
-			* __Debug__: VHDL components with additional in/out signals for debugging
-		* __Tb__: testbenches for VHDL components
-			* __Vhd__: testbenches for the VHDL components
-			* __Debug__: testbenches for the debug components
-		* __Sim__
-			* Bash and Xilinx TCL simulation scripts
-	* __Flat__: 
-		* Directory containing all the VHDL components requires to create the accelerator, without any hierarchical organization
-	
-	* updateFlat.sh: bash script to copy the components from the hierarchical directory to the flat one. The idea is to develop and simulates component in the hierarchical directory, using the scripts contained in the Sim directory, and then to copy the updated code in the flat directory to easily compile the full accelerator.
+# Spiker: a framework for the generation of efficient Spiking Neural Networks FPGA accelerators for inference at the edge
+This is the official repo of spiker, a comprehensive framework for generating efficient, low-power, and low-area customized Spiking Neural Networks (SNN) accelerators on FPGA for inference at the edge. spiker presents a library of highly efficient neuron architectures and a design framework, enabling the development of complex neural network accelerators with few lines of Python code. 
 
 
-## DEPENDENCIES
-* __MNIST__
-	* numpy
+# Project structure
+|	Component		|															Description																|
+|:-----------------:|:---------------------------------------------------------------------------------------------------------------------------------:|
+|	**spiker**		|	Python package to build, train, quantize and generate the VHDL description of hardware accelerators for Spiking Neural Networks	|
+|	**Tutorials**	|									Examples on how to use the different components of spiker										|
+|	**Doc**			|				Project documentation. It will be gradually filled with schematics, timing diagrams and similar						|
 
-* __Python__
-	* __Models__:
-		* Brian2:
-			* Brian 2: to describe the model using differential equations.
-			* Numpy
-			* Timeit: for measuring execution times.
-			* Sys: to import modules from other directories.
-			* Subprocess: to delete and create directories and files.
-			* Matplotlib: only for test and evaluation, not required to run the model.
-			* Scipy.sparse: only for test and evaluation, not required to run the model.
-		* Custom: models developed without using any external module expept numpy to accelerate the execution throgh vectorization
-			* Numpy
-			* Timeit: for measuring execution times.
-			* Sys: to import modules from other directories.
-			* Subprocess: to delete and create directories and files.
-			* Matplotlib: only for test and evaluation, not required to run the model.
-			* Scipy.sparse: only for test and evaluation, not required to run the model.
-	* __Simulations__: 
-		* Numpy
-		* Timeit: for measuring execution times.
-		* Subprocess: to delete and create directories and files.
-* __Vhdl__
-	All the tcl scripts and simulations where performed using Xilinx Vivado 2020. The BRAM components in weights_bram.vhd are imported from Vivado libraries. All the rest of the VHDL code is completely general.
+You can access the documentation for spiker directly in the associated directory.
 
+# Requirements
 
+- numpy >= 1.20
+- torch >= 1.12
+- snntorch >= 0.9.1
+- tabulate >= 0.9.0
 
-## HOW TO CITE
-1. A. Carpegna, A. Savino and S. Di Carlo, "Spiker: an FPGA-optimized Hardware accelerator for Spiking Neural Networks," 2022 IEEE Computer Society Annual Symposium on VLSI (ISVLSI), Nicosia, Cyprus, 2022, pp. 14-19, doi: [10.1109/ISVLSI54635.2022.00016](https://doi.org/10.1109/ISVLSI54635.2022.00016).
+# Installation
 
-2. Alessio Carpegna: [Design of an hardware accelerator for a Spiking Neural Network](https://webthesis.biblio.polito.it/20606/).  Rel. Stefano Di Carlo, Alessandro Savino. Politecnico di Torino, Corso di laurea magistrale in Ingegneria Elettronica (Electronic Engineering), 2021 
+    git clone https://github.com/smilies-polito/Spiker.git
+    cd Spiker
+	pip install .
 
+Or alternatively
 
+	python setup.py install
 
-## RELATED DOCUMENTS
-1. S. Li, Z. Zhang, R. Mao, J. Xiao, L. Chang and J. Zhou, "A Fast and Energy-Efficient SNN Processor With Adaptive Clock/Event-Driven Computation Scheme and Online Learning," in IEEE Transactions on Circuits and Systems I: Regular Papers, vol. 68, no. 4, pp. 1543-1552, April 2021, doi: [10.1109/TCSI.2021.3052885](https://doi.org/10.1109/TCSI.2021.3052885).
+# Citation
+[Spiker: a framework for the generation of efficient Spiking Neural Networks FPGA accelerators for inference at the edge](https://arxiv.org/abs/2401.01141)
 
-2. Diehl, P. U., & Cook, M. (2015). Unsupervised learning of digit recognition using spike-timing-dependent plasticity. Frontiers in Computational Neuroscience, doi: [10.3389/fncom.2015.00099](https://doi.org/10.3389/fncom.2015.00099) 
+    @misc{carpegna\_spiker\_2024,
+    	title = {Spiker+: a framework for the generation of efficient {Spiking} {Neural} {Networks} {FPGA} accelerators for inference at the edge},  
+    	shorttitle = {Spiker+},  
+    	url = {http://arxiv.org/abs/2401.01141},  
+    	doi = {10.48550/arXiv.2401.01141},  
+    	urldate = {2024-01-26},  
+    	publisher = {arXiv},  
+    	author = {Carpegna, Alessio and Savino, Alessandro and Di Carlo, Stefano},  
+    	month = jan,  
+    	year = {2024},  
+    	keywords = {Computer Science - Neural and Evolutionary Computing, Computer Science - Artificial Intelligence, Computer Science - Hardware Architecture}   
+    }
 
-3. Heeger, David. "Poisson model of spike generation." Handout, University of Standford 5.1-13 (2000): 76.
+# Acknowledgemnets
 
+[Neuropuls](https://neuropuls.eu/)
 
-
-## TO DO
-1. Fix Peter Diehl Parameters
-2. Fix automatic VHDL simulation in Python/Simulations/VhdlSim
-3. Upload python models' flowcharts
-4. Upload architecture schematics
-5. Merge Linux driver to interface the accelerator
-6. Upload complete Xilinx project with compiled accelerator + linux driver
-7. Singularity container
+This project has received funding from the European Union’s Horizon Europe research and innovation programme under grant agreement No. 101070238. Views and opinions expressed are however those of the author(s) only and do not necessarily reflect those of the European Union. Neither the European Union nor the granting authority can be held responsible for them.

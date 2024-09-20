@@ -74,3 +74,6 @@ train-labels-idx1-ubyte
 *.mem
 *.mif
 *.tmp
+
+# Python package generated files
+*.egg-info
