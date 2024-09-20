@@ -10,6 +10,16 @@
 
 You can access the documentation for spiker directly in the associated directory.
 
+# Installation
+
+    git clone https://github.com/smilies-polito/Spiker.git
+    cd Spiker
+	pip install .
+
+Or alternatively
+
+	python setup.py install
+
 # Citation
 [Spiker: a framework for the generation of efficient Spiking Neural Networks FPGA accelerators for inference at the edge](https://arxiv.org/abs/2401.01141)
 
@@ -25,13 +35,3 @@ You can access the documentation for spiker directly in the associated directory
     	year = {2024},  
     	keywords = {Computer Science - Neural and Evolutionary Computing, Computer Science - Artificial Intelligence, Computer Science - Hardware Architecture}   
     }
-
-# Installation
-
-    git clone https://github.com/smilies-polito/Spiker.git
-    cd Spiker
-	pip install .
-
-Or alternatively
-
-	python setup.py install
