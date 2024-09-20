@@ -34,9 +34,9 @@ net_dict = {
 
 optim_config = {
 
-	"weights_bw"	: 4,
+	"weights_bw"	: 6,
 	"neurons_bw"	: 8,
-	"fp_dec"		: 3
+	"fp_dec"		: 4
 
 }
 
