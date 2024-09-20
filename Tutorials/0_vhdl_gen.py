@@ -47,7 +47,4 @@ snn = net_builder.build()
 
 vhdl_generator = VhdlGenerator(snn, optim_config)
 
-import torch
-ff_w = torch.ones((128, 40)).numpy()
-
-print(vhdl_generator.init_layer("lif1", ff_w).code())
+vhdl_generator.generate()
