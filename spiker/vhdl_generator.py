@@ -12,8 +12,22 @@ class VhdlGenerator:
 		self.optim_config = optim_config
 
 	def generate(self):
-		pass
 
+		vhdl_net = Network(self.net.n_cycles)
+
+		for layer in self.net.layers:
+
+			if "fc" in layer:
+
+				ff_w = self.extract_weights(layer)
+
+				print(ff_w.shape)
+
+			else:
+
+				vhdl_net.add(self.init_layer(layer, ff_w))
+
+		return vhdl_net
 		
 
 	def init_layer(self, layer, ff_w):
@@ -39,6 +53,7 @@ class VhdlGenerator:
 			reset		= "subtractive",
 			functional	= True
 		)
+
 
 	def extract_weights(self, layer):
 
