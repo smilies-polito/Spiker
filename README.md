@@ -9,3 +9,16 @@
 
 # Citation
 [Spiker: a framework for the generation of efficient Spiking Neural Networks FPGA accelerators for inference at the edge](https://arxiv.org/abs/2401.01141)
+
+@misc{carpegna\_spiker\_2024,
+	title = {Spiker+: a framework for the generation of efficient {Spiking} {Neural} {Networks} {FPGA} accelerators for inference at the edge},
+	shorttitle = {Spiker+},
+	url = {http://arxiv.org/abs/2401.01141},
+	doi = {10.48550/arXiv.2401.01141},
+	urldate = {2024-01-26},
+	publisher = {arXiv},
+	author = {Carpegna, Alessio and Savino, Alessandro and Di Carlo, Stefano},
+	month = jan,
+	year = {2024},
+	keywords = {Computer Science - Neural and Evolutionary Computing, Computer Science - Artificial Intelligence, Computer Science - Hardware Architecture},
+}
