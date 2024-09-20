@@ -10,6 +10,13 @@
 
 You can access the documentation for spiker directly in the associated directory.
 
+# Requirements
+
+- numpy >= 1.20
+- torch >= 1.12
+- snntorch >= 0.9.1
+- tabulate >= 0.9.0
+
 # Installation
 
     git clone https://github.com/smilies-polito/Spiker.git
