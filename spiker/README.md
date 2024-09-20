@@ -21,17 +21,15 @@ sections will go more in detail on the framework's components.
 
 ## Net builder
 
-The **NetBuilder** is in charge of translating a high-level description of the
-network in an [snnTorch](https://snntorch.readthedocs.io/en/latest/)based
-trainable object.
+The **NetBuilder** is in charge of translating a high-level description of the network in an [snnTorch](https://snntorch.readthedocs.io/en/latest/)-based trainable object.
 
-The network can be described through a simple Python dictionary
+The network can be described through a simple Python dictionary:
 
 ```python
 net_dict = {
 
-		"n_cycles"				: 73,
-		"n_inputs"				: 40,
+		"n_cycles"			: 73,
+		"n_inputs"			: 40,
 
 		"layer_0"	: {
 			
@@ -60,6 +58,21 @@ net_dict = {
 		}
 }
 ```
+
+The tool is based on the *logging* python built-in module. To enable printing of
+progress run
+
+```python
+logging.basicConfig(level=logging.INFO)
+```
+
+At this point the network can be built with two lines of code:
+
+```python
+net_builder = NetBuilder(net_dict)
+snn = net_builder.build()
+```
+
 
 
 ![Figure 2: spiker hardware architecture, building blocks](../Doc/spiker.png)
