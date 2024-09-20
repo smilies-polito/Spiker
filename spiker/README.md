@@ -75,12 +75,19 @@ snn = net_builder.build()
 
 ## Trainer
 
+Once the network is built it can be trained on the desired dataset. The
+**Trainer** component is the block in charge of training the network
+
 ```python
 trainer = Trainer(snn)
 trainer.train(train_loader, test_loader)
 ```
 
+Notice that the trainer expects two [torch](https://pytorch.org/) dataloaders.  They are not covered here, refer to the tutorials for more information.
+
 ## Optimizer
+
+The **Optimizer** role is to convert internal parameters in a format that can be implemented on the target hardware architecture, namely fixed-point. To do this a quantization step is required. For each parameter, the **Optimizer** performs a grid search between the specified values and returns a log with all the explored configurations and the corresponding loss and accuracy. The range of search for the different bit-widths can be again specified using a python dictionary.
 
 ```python
 optim_config = {
@@ -100,12 +107,18 @@ optim_config = {
 		"max"	: 3
 	}
 }
+```
 
+The **Optimizer** expects to receive a trained network object, the network configuration dictionary, as the one used for the **NetBuilder**, and the dictionary containing the search ranges.
+
+```
 opt = Optimizer(snn, net_dict, optim_config)
 opt.optimize(test_loader)
 ```
 
 ## VHDL generator
+
+Finally, the network is ready to be translated into the corresponding accelerator, described using VHDL language. Between the different parameters explored by the optimizer the user is asked to pick the trade-off which best satisfies its requirements. Again, this can be done using a python dictionary.
 
 ```python
 optim_params = {
@@ -115,11 +128,24 @@ optim_params = {
 	"fp_dec"		: 4
 
 }
-
-vhdl_generator = VhdlGenerator(snn, optim_params)
-vhdl_generator.generate()
 ```
 
+Starting from the trained network, and using the specified set of bitwidths,
+**VhdlGenerator** automatically translates the network into the corresponding
+VHDL description.
+
+```python
+vhdl_generator = VhdlGenerator(snn, optim_params)
+vhdl_snn = vhdl_generator.generate()
+```
+
+To print the code of the generated network you can run
+
+```python
+print(vhdl_snn.code())
+```
+
+Figure 2 shows a block diagram of the generated architecture. For more details about the various components refer to [Spiker: a framework for the generation of efficient Spiking Neural Networks FPGA accelerators for inference at the edge](https://arxiv.org/abs/2401.01141).
 
 ![Figure 2: spiker hardware architecture, building blocks](../Doc/spiker.png)
 Figure 2: spiker hardware architecture, building blocks
