@@ -73,6 +73,52 @@ net_builder = NetBuilder(net_dict)
 snn = net_builder.build()
 ```
 
+## Trainer
+
+```python
+trainer = Trainer(snn)
+trainer.train(train_loader, test_loader)
+```
+
+## Optimizer
+
+```python
+optim_config = {
+
+	"weights_bw"	: {
+		"min"	: 5,
+		"max"	: 6
+	},
+
+	"neurons_bw"	: {
+		"min"	: 5,
+		"max"	: 6
+	},
+
+	"fp_dec"	: {
+		"min"	: 2,
+		"max"	: 3
+	}
+}
+
+opt = Optimizer(snn, net_dict, optim_config)
+opt.optimize(test_loader)
+```
+
+## VHDL generator
+
+```python
+optim_params = {
+
+	"weights_bw"	: 6,
+	"neurons_bw"	: 8,
+	"fp_dec"		: 4
+
+}
+
+vhdl_generator = VhdlGenerator(snn, optim_params)
+vhdl_generator.generate()
+```
 
 
 ![Figure 2: spiker hardware architecture, building blocks](../Doc/spiker.png)
