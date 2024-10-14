@@ -1,9 +1,10 @@
 from spiker import NetBuilder, VhdlGenerator
+from spiker.vhdl.vhdl import write_file_all, fast_compile, elaborate
 
 net_dict = {
 
-		"n_cycles"				: 73,
-		"n_inputs"				: 40,
+		"n_cycles"				: 100,
+		"n_inputs"				: 784,
 
 		"layer_0"	: {
 			
@@ -34,8 +35,8 @@ net_dict = {
 
 optim_config = {
 
-	"weights_bw"	: 6,
-	"neurons_bw"	: 8,
+	"weights_bw"	: 4,
+	"neurons_bw"	: 6,
 	"fp_dec"		: 4
 
 }
@@ -47,4 +48,8 @@ snn = net_builder.build()
 
 vhdl_generator = VhdlGenerator(snn, optim_config)
 
-vhdl_generator.generate()
+vhdl_snn  = vhdl_generator.generate()
+
+write_file_all(vhdl_snn)
+fast_compile(vhdl_snn)
+elaborate(vhdl_snn)
