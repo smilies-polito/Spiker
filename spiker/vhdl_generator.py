@@ -21,8 +21,6 @@ class VhdlGenerator:
 
 				ff_w = self.extract_weights(layer)
 
-				print(ff_w.shape)
-
 			else:
 
 				vhdl_net.add(self.init_layer(layer, ff_w))
