@@ -1,9 +1,8 @@
 import logging
 
+from spikerplus.dataloaders import AudioMnistDL
 from spikerplus import NetBuilder, Trainer, Optimizer, VhdlGenerator
 from spikerplus.vhdl import write_vhdl
-
-from Dataloaders.audio_mnist_dl import AudioMnistDL
 
 # Print progress at the different steps
 logging.basicConfig(level=logging.INFO)
