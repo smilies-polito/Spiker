@@ -1,0 +1,3 @@
+[submodule "Tutorials/AudioMnist"]
+	path = Tutorials/AudioMnist
+	url = https://github.com/soerenab/AudioMNIST.git
