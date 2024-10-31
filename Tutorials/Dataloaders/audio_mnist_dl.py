@@ -156,7 +156,7 @@ class CustomDataset(Dataset):
 
 		lens = torch.tensor([x.shape[0] for x in waveform])
 
-		return waveform, lens, label
+		return waveform, label
 
 
 class MelFilterbank:
