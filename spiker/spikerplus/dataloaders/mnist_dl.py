@@ -1,19 +1,27 @@
 import os
 import torch
-import torchaudio
+from torchvision import datasets, transforms
 from torch.utils.data import Dataset, DataLoader, random_split
 import torch.nn.functional as fn
+from snntorch import spikegen
 
 class MnistDL:
 
-	def __init__(self, data_dir, transform = "default", download = True):
+	def __init__(self, data_dir, transform = "default", download = True,
+			image_width = 28, image_height = 28, num_steps = 100, gain = 1):
+
+		self.spike_transform = SpikeTransform(
+				num_steps	= num_steps,
+				gain		= gain
+		)
 
 		if transform == "default":
 			self.transform = transforms.Compose([
 				transforms.Resize((image_width, image_height)),
 				transforms.Grayscale(),
 				transforms.ToTensor(),
-				transforms.Normalize((0,), (1,))]
+				transforms.Normalize((0,), (1,)),
+				self.spike_transform]
 			)
 		else:
 			self.transform = transform
@@ -54,3 +62,22 @@ class MnistDL:
 				drop_last	= test_drop_last)
 
 		return train_loader, test_loader
+
+
+class SpikeTransform:
+
+	def __init__(self, num_steps = 100, gain = 1):
+
+		self.num_steps	= num_steps
+		self.gain		= gain
+    
+	def __call__(self, img):
+
+		img = img.reshape(img.shape[1]*img.shape[2])
+
+		spikes = spikegen.rate(img,
+			num_steps	= self.num_steps,
+			gain 		= self.gain
+		)
+
+		return spikes
