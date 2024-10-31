@@ -1,7 +1,7 @@
 import logging
 
-from spiker import NetBuilder, Trainer, Optimizer, VhdlGenerator
-from spiker.vhdl import write_vhdl
+from spikerplus import NetBuilder, Trainer, Optimizer, VhdlGenerator
+from spikerplus.vhdl import write_vhdl
 
 from Dataloaders.audio_mnist_dl import AudioMnistDL
 
