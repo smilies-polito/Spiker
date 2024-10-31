@@ -1,58 +1,88 @@
 import os
 import torch
 import torchaudio
-from torch.utils.data import Dataset
+from torch.utils.data import Dataset, DataLoader, random_split
+import torch.nn.functional as fn
 
-sample_rate	= 48e3
+class AudioMnistDL:
 
-# Short Term Fourier Transform (STFT) window
-fft_window	= 25e-3 # s
+	def __init__(self, data_dir,
+		fft_window 		= 25e-3, #s
+		hop_length_s	= 10e-3, #s
+		n_channels		= 40,
+		spiking_thresh	= 0.9,
+		transform		= "mel"
+	):
 
-# Step from one window to the other (controls overlap)
-hop_length_s	= 10e-3 #s
+		# Input data sample rate
+		self.sample_rate		= 48e3 # Hz
 
-# Number of input channels: filters in the mel bank
-n_mels		= 40
+		# Short Term Fourier Transform (STFT) window
+		self.fft_window			= fft_window
 
-# Spiking threshold
-spiking_thresh 	= 0.9
+		# Step from one window to the other (controls overlap)
+		self.hop_length_s		= hop_length_s
 
-transform = MelFilterbank(
-	sample_rate 	= sample_rate,
-	fft_window 	= fft_window,
-	hop_length_s	= hop_length_s,
-	n_mels 		= n_mels,
-	db 		= True,
-	normalize	= True,
-	spikify		= True,
-	spiking_thresh	= spiking_thresh
-)
+		# Number of input channels: filters in the mel bank
+		self.n_mels				= n_channels
 
-dataset = CustomDataset(
-	root_dir	= root_dir,
-	transform	= transform
-)
+		# Spiking threshold
+		self.spiking_thresh 	= spiking_thresh
 
-# Train/test split
-train_size 		= int(0.8 * len(dataset))
-test_size		= len(dataset) - train_size
+		if transform == "mel":
 
-# Split the dataset into training and validation sets
-train_set, test_set = random_split(dataset, [train_size, test_size])
+			self.transform = MelFilterbank(
+				sample_rate 		= self.sample_rate,
+				fft_window 			= self.fft_window,
+				hop_length_s		= self.hop_length_s,
+				n_mels 				= self.n_mels,
+				db 					= True,
+				normalize			= True,
+				spikify				= True,
+				spiking_thresh		= self.spiking_thresh
+			)
 
-train_loader = DataLoader(train_set, 
-	batch_size	= batch_size,
-	shuffle		= True,
-	num_workers	= 4,
-	drop_last 	= True
-)
+		else:
+			self.transform = transform
 
-test_loader = DataLoader(test_set, 
-	batch_size	= batch_size,
-	shuffle		= True,
-	num_workers	= 4,
-	drop_last 	= True
-)
+		self.dataset = CustomDataset(
+			root_dir	= data_dir,
+			transform	= self.transform
+		)
+
+		self.num_cpu_cores = os.cpu_count()
+
+
+	def load(self, train_size = 0.8, train_drop_last = True, train_shuffle =
+			True, test_drop_last = True, test_shuffle = True, batch_size = 64,
+			num_workers = None):
+
+		if not num_workers:
+			num_workers = self.num_cpu_cores
+
+		# Train/test split
+		train_len 		= int(train_size * len(self.dataset))
+		test_len		= len(self.dataset) - train_len
+
+		# Split the dataset into training and validation sets
+		train_set, test_set = random_split(self.dataset, [train_len, test_len])
+
+		train_loader = DataLoader(train_set, 
+			batch_size	= batch_size,
+			shuffle		= train_shuffle,
+			num_workers	= num_workers,
+			drop_last 	= train_drop_last
+		)
+
+		test_loader = DataLoader(test_set, 
+			batch_size	= batch_size,
+			shuffle		= test_shuffle,
+			num_workers	= num_workers,
+			drop_last 	= test_drop_last
+		)
+
+		return train_loader, test_loader
+
 
 class CustomDataset(Dataset):
 
