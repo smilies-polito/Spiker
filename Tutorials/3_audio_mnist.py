@@ -1,6 +1,8 @@
 import logging
 
-from spiker import NetBuilder, Trainer
+from spiker import NetBuilder, Trainer, Optimizer, VhdlGenerator
+from spiker.vhdl import write_vhdl
+
 from Dataloaders.audio_mnist_dl import AudioMnistDL
 
 logging.basicConfig(level=logging.INFO)
@@ -11,10 +13,13 @@ batch_size	= 64
 data_loader = AudioMnistDL(data_dir = data_dir)
 train_loader, test_loader = data_loader.load(batch_size = 64)
 
+n_cycles = next(iter(train_loader))[0].shape[1]
+n_inputs = next(iter(train_loader))[0].shape[2]
+
 net_dict = {
 
-		"n_cycles"				: 73,
-		"n_inputs"				: 40,
+		"n_cycles"				: n_cycles,
+		"n_inputs"				: n_inputs,
 
 		"layer_0"	: {
 			
@@ -46,23 +51,20 @@ net_dict = {
 optim_config = {
 
 	"weights_bw"	: {
-		"min"	: 5,
-		"max"	: 6
+		"min"	: 4,
+		"max"	: 10
 	},
 
 	"neurons_bw"	: {
-		"min"	: 5,
-		"max"	: 6
+		"min"	: 4,
+		"max"	: 10
 	},
 
 	"fp_dec"	: {
-		"min"	: 2,
-		"max"	: 3
+		"min"	: 4,
+		"max"	: 6
 	}
 }
-
-
-logging.basicConfig(level=logging.INFO)
 
 net_builder = NetBuilder(net_dict)
 
@@ -70,4 +72,24 @@ snn = net_builder.build()
 
 trainer = Trainer(snn)
 
-trainer.train(train_loader, test_loader)
+trainer.train(train_loader, test_loader, n_epochs = 20)
+
+opt = Optimizer(snn, net_dict, optim_config)
+
+opt.optimize(test_loader)
+
+optim_config = {}
+optim_config["weights_bw"] 	= int(input(
+	"Pick the best weights bitwidth: "))
+
+optim_config["neurons_bw"]	= int(input(
+	"Pick the best neurons bitwidth: "))
+
+optim_config["fp_dec"]		= int(input(
+	"Pick the best number of fixed point digits: "))
+
+vhdl_generator = VhdlGenerator(snn, optim_config)
+
+vhdl_snn  = vhdl_generator.generate()
+
+write_vhdl(vhdl_snn, output_dir = "SpikerAudioMnist")

@@ -247,7 +247,7 @@ class Optimizer(Trainer):
 						str(w_bw),
 						str(neuron_bw),
 						str(loss),
-						str(acc)
+						"{:.2f}".format(acc*100) + "%"
 					])
 
 		table = "\n" + tabulate(table, headers = headers, tablefmt = "grid")
