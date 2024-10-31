@@ -1,15 +1,15 @@
 import logging
-from torch.utils.data import DataLoader, random_split
 
 from spiker import NetBuilder, Trainer
-from Dataloaders.audio_mnist_dl import MelFilterbank, CustomDataset
+from Dataloaders.audio_mnist_dl import AudioMnistDL
 
 logging.basicConfig(level=logging.INFO)
 
 data_dir	= "AudioMnist/data"
-
 batch_size	= 64
 
+data_loader = AudioMnistDL(data_dir = data_dir)
+train_loader, test_loader = data_loader.load(batch_size = 64)
 
 net_dict = {
 
