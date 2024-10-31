@@ -1,17 +1,16 @@
 import logging
 
+from spikerplus.dataloaders import MnistDL
 from spikerplus import NetBuilder, Trainer, Optimizer, VhdlGenerator
 from spikerplus.vhdl import write_vhdl
-
-from Dataloaders.audio_mnist_dl import AudioMnistDL
 
 # Print progress at the different steps
 logging.basicConfig(level=logging.INFO)
 
-data_dir	= "AudioMnist/data"
+data_dir	= "Mnist/data"
 batch_size	= 64
 
-data_loader = AudioMnistDL(data_dir = data_dir)
+data_loader = MnistDL(data_dir = data_dir)
 train_loader, test_loader = data_loader.load(batch_size = 64)
 
 # Extract number of timesteps of the input data (by default 73)
@@ -106,4 +105,4 @@ vhdl_generator = VhdlGenerator(snn, optim_config)
 vhdl_snn  = vhdl_generator.generate()
 
 # Write all the VHDL sources
-write_vhdl(vhdl_snn, output_dir = "SpikerAudioMnist")
+write_vhdl(vhdl_snn, output_dir = "SpikerMnist")
