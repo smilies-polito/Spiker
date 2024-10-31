@@ -79,3 +79,4 @@ train-labels-idx1-ubyte
 *.egg-info
 lib*
 bdist*
+*.whl
