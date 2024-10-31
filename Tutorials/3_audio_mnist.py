@@ -62,8 +62,6 @@ optim_config = {
 }
 
 
-logging.basicConfig(level=logging.INFO)
-
 net_builder = NetBuilder(net_dict)
 
 snn = net_builder.build()
