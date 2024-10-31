@@ -244,8 +244,8 @@ class Optimizer(Trainer):
 
 					table.append([
 						str(fp_dec),
-						str(w_bw),
 						str(neuron_bw),
+						str(w_bw),
 						str(loss),
 						"{:.2f}".format(acc*100) + "%"
 					])
