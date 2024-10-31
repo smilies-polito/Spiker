@@ -93,7 +93,7 @@ class Trainer:
 	def train_one_epoch(self, dataloader):
 
 		# Iterate over the dataloader
-		for batch_idx, (data, _, labels) in enumerate(dataloader):
+		for batch_idx, (data, labels) in enumerate(dataloader):
 
 			data 	= data.permute(1, 0, 2).to(self.device)
 			labels	= labels.to(self.device)
@@ -126,7 +126,7 @@ class Trainer:
 			self.net.eval()
 
 			# Iterate over the dataloader
-			for _, (data, _, labels) in enumerate(dataloader):
+			for _, (data, labels) in enumerate(dataloader):
 
 				data 	= data.permute(1, 0, 2).to(self.device)
 				labels	= labels.to(self.device)
