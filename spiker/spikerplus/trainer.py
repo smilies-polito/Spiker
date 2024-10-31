@@ -74,7 +74,20 @@ class Trainer:
 		train_loss = torch.zeros(n_epochs)
 		val_loss = torch.zeros(n_epochs)
 
-		logging.info("Begin training\n")
+		batch_size = next(iter(train_loader))[0].shape[0]
+
+		log_message = "Epochs: " + str(n_epochs) + "\n"
+		log_message += "Batch size: " + str(batch_size) + "\n"
+		log_message += "Training batches: " + str(len(train_loader)) + "\n"
+		log_message += "Training samples: "
+		log_message += str(len(train_loader)*batch_size) + "\n"
+		log_message += "Validation batches: " + str(len(val_loader)) + "\n"
+		log_message += "Validation samples: "
+		log_message += str(len(val_loader)*batch_size) + "\n\n"
+		log_message += "Begin training\n\n"
+
+		logging.info(log_message)
+
 		start_time = time.time()
 
 		for epoch in range(n_epochs):
