@@ -1,7 +1,7 @@
 import logging
 
 from spiker import NetBuilder, Trainer, Optimizer, VhdlGenerator
-from spiker.vhdl import write_vhdl, compile_vhdl, elaborate_vhdl
+from spiker.vhdl import write_vhdl
 
 from Dataloaders.audio_mnist_dl import AudioMnistDL
 
@@ -93,5 +93,3 @@ vhdl_generator = VhdlGenerator(snn, optim_config)
 vhdl_snn  = vhdl_generator.generate()
 
 write_vhdl(vhdl_snn, output_dir = "SpikerAudioMnist")
-compile_vhdl(vhdl_snn, output_dir = "SpikerAudioMnist")
-elaborate_vhdl(vhdl_snn, output_dir = "SpikerAudioMnist")
