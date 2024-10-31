@@ -51,12 +51,12 @@ net_dict = {
 optim_config = {
 
 	"weights_bw"	: {
-		"min"	: 7,
+		"min"	: 4,
 		"max"	: 10
 	},
 
 	"neurons_bw"	: {
-		"min"	: 8,
+		"min"	: 4,
 		"max"	: 10
 	},
 
@@ -72,7 +72,7 @@ snn = net_builder.build()
 
 trainer = Trainer(snn)
 
-trainer.train(train_loader, test_loader, n_epochs = 1)
+trainer.train(train_loader, test_loader, n_epochs = 20)
 
 opt = Optimizer(snn, net_dict, optim_config)
 
