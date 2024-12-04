@@ -368,62 +368,21 @@ class Network_tb(Testbench):
 			self.architecture.bodyCodeHeader.add(
 				"out_spike_w_en <= ready;")
 
-class DummyAccelerator(VHDLblock):
+class FullAccelerator(VHDLblock):
 
-	def __init__(self, config, debug = False, debug_list = []):
+	def __init__(self, net, input_size, output_size, debug = False,
+			debug_list = []):
 
-		self.name = "dummy_spiker"
+		self.name = "full_accelerator"
 
 		self.spiker_pkg = SpikerPackage()
 
-		self.net = Network(
-				n_cycles	= config["n_cycles"],
-				debug		= debug,
-				debug_list	= debug_list
-		)
-
-		self.layer_sizes = []
-
-		if "layer_0" in config.keys():
-			if "w_exc" in config["layer_0"].keys():
-				self.input_size = config["layer_0"]["w_exc"].\
-							shape[1]
-		else:
-			raise ValueError("Invalid config dictionary")
-
-		for key in config:
-			if "layer" in key:
-
-				new_layer = Layer(
-					label		= config[key]["label"],
-					w_exc		= config[key]["w_exc"],
-					w_inh		= config[key]["w_inh"],
-					v_th		= config[key]["v_th"],
-					v_reset		= config[key][
-								"v_reset"],
-					bitwidth	= config[key][
-								"bitwidth"],
-					fp_decimals	= config[key][
-								"fp_decimals"],
-					w_inh_bw	= config[key][
-								"w_inh_bw"],
-					w_exc_bw	= config[key][
-								"w_exc_bw"],
-					shift		= config[key]["shift"],
-					reset		= config[key]["reset"],
-					debug		= config[key]["debug"],
-					debug_list 	= config[key][
-								"debug_list"]
-				)
-
-				self.net.add(new_layer)
-
-				self.layer_sizes.append(
-					config[key]["w_exc"].shape[0]
-				)
+		self.net = net
+		self.input_size = input_size
+		self.output_size = output_size
 
 		self.in_addr_bw	= int(log2(ceil_pow2(self.input_size)))
-		self.out_addr_bw = int(log2(ceil_pow2(self.layer_sizes[-1])))
+		self.out_addr_bw = int(log2(ceil_pow2(self.output_size)))
 
 		self.input_decoder = Decoder(
 			bitwidth = self.in_addr_bw
@@ -523,7 +482,7 @@ class DummyAccelerator(VHDLblock):
 		self.architecture.signal.add(
 			name		= "out_spikes",
 			signal_type	= "std_logic_vector(" +
-					str(self.layer_sizes[-1]-1)
+					str(self.output_size-1)
 					+ " downto 0)"
 		)
 
@@ -558,22 +517,27 @@ class DummyAccelerator(VHDLblock):
 				"output_mux")
 		self.architecture.instances["output_mux"].port_map()
 
-		self.architecture.instances["output_mux"].p_map.add(
-			"mux_sel", "out_spike_addr"
-		)
+		if self.output_size > 2:
+			self.architecture.instances["output_mux"].p_map.add(
+				"mux_sel", "out_spike_addr"
+			)
 
-		for i in range(self.layer_sizes[-1]):
+		elif self.output_size <= 2:
+			self.architecture.instances["output_mux"].p_map.add(
+				"mux_sel", "out_spike_addr(0)"
+			)
+
+		for i in range(self.output_size):
 			self.architecture.instances["output_mux"].p_map.add(
 				"in" + str(i), "out_spikes(" + str(i) + ")"
 			)
 
-		if self.layer_sizes[-1] < 2**self.out_addr_bw:
-			for i in range(self.layer_sizes[-1],
+		if self.output_size < 2**self.out_addr_bw:
+			for i in range(self.output_size,
 			2**self.out_addr_bw):
 				self.architecture.instances["output_mux"].p_map.add(
 					"in" + str(i), "\'0\'"
 				)
-
 
 		self.architecture.instances["output_mux"].p_map.add(
 			"mux_out", "out_spike"
@@ -591,9 +555,9 @@ class DummyAccelerator(VHDLblock):
 			)
 
 
-class DummyAccelerator_tb(Testbench):
+class FullAccelerator_tb(Testbench):
 
-	def __init__(self, dummy_accelerator, clock_period = 20, file_output =
+	def __init__(self, full_accelerator, clock_period = 20, file_output =
 			False, output_dir = "output", file_input = False,
 			input_dir = "", input_signal_list = [], debug = False,
 			debug_list = []):
