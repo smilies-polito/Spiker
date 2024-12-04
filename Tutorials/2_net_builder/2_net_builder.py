@@ -1,5 +1,5 @@
 import logging
-from spiker import NetBuilder
+from spikerplus import NetBuilder
 
 # Print result of network build
 logging.basicConfig(level=logging.INFO)
