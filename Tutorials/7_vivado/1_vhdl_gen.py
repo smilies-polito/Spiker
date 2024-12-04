@@ -51,5 +51,7 @@ vhdl_generator = VhdlGenerator(snn, optim_config)
 vhdl_snn  = vhdl_generator.generate()
 
 write_vhdl(vhdl_snn, rm = True)
+
+# spikerplus integrates the possibility to compile and elaborate VHDL code
 compile_vhdl(vhdl_snn)
 elaborate_vhdl(vhdl_snn)
