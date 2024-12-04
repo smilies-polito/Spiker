@@ -102,7 +102,7 @@ optim_config["fp_dec"]		= int(input(
 vhdl_generator = VhdlGenerator(snn, optim_config)
 
 # Generate VHDL
-vhdl_snn  = vhdl_generator.generate()
+vhdl_snn  = vhdl_generator.generate(interface = True)
 
 # Write all the VHDL sources
 write_vhdl(vhdl_snn, output_dir = "SpikerAudioMnist")
