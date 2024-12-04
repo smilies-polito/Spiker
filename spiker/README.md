@@ -1,153 +1,54 @@
-# spiker package
-
-spiker is a python package which aims to reduce at a minimum the effort required
-to build, train, optimize and generage the VHDL description of hardware
-accelerators for Spiking Neural Networks, targeting in particular FPGA
-implementations. Figure 1 shows spiker building blocks.
-
-![Figure 1: spiker framework building blocks](../Doc/framework.png)
-Figure 1: spiker framework building blocks
-
-# Usage
-
-Once installed the package can be imported with
-
-```python
-    import spiker
-```
-
-At this point it becomes possible to instantiate the various blocks. Next
-sections will go more in detail on the framework's components.
-
-The tool is based on the *logging* python built-in module. To enable progress printing at the various steps run
-
-```python
-logging.basicConfig(level=logging.INFO)
-```
+# Spiker: a framework for the generation of efficient Spiking Neural Networks FPGA accelerators for inference at the edge
+This is the official repo of spiker, a comprehensive framework for generating efficient, low-power, and low-area customized Spiking Neural Networks (SNN) accelerators on FPGA for inference at the edge. spiker presents a library of highly efficient neuron architectures and a design framework, enabling the development of complex neural network accelerators with few lines of Python code. 
 
 
-## Net builder
+# Project structure
+|	Component		|															Description																|
+|:-----------------:|:---------------------------------------------------------------------------------------------------------------------------------:|
+|	**spiker**		|	Python package to build, train, quantize and generate the VHDL description of hardware accelerators for Spiking Neural Networks	|
+|	**Tutorials**	|									Examples on how to use the different components of spiker										|
+|	**Doc**			|				Project documentation. It will be gradually filled with schematics, timing diagrams and similar						|
 
-The **NetBuilder** is in charge of translating a high-level description of the network in an [snnTorch](https://snntorch.readthedocs.io/en/latest/)-based trainable object.
 
-The network can be described through a simple Python dictionary:
+# Requirements
 
-```python
-net_dict = {
+- numpy >= 1.20
+- torch >= 1.12
+- snntorch >= 0.9.1
+- tabulate >= 0.9.0
 
-		"n_cycles"			: 73,
-		"n_inputs"			: 40,
+# Installation
 
-		"layer_0"	: {
-			
-			"neuron_model"		: "lif",
-			"n_neurons"		: 128,
-			"alpha"			: None,
-			"learn_alpha"		: False,
-			"beta"			: 0.9375,
-			"learn_beta"		: False,
-			"threshold"		: 1.,
-			"learn_threshold"	: False,
-			"reset_mechanism"	: "subtract"
-		},
+    git clone https://github.com/smilies-polito/Spiker.git
+    cd Spiker
+	pip install .
 
-		"layer_1"	: {
-			
-			"neuron_model"		: "lif",
-			"n_neurons"		: 10,
-			"alpha"			: None,
-			"learn_alpha"		: False,
-			"beta"			: 0.9375,
-			"learn_beta"		: False,
-			"threshold"		: 1.,
-			"learn_threshold"	: False,
-			"reset_mechanism"	: "none"
-		}
-}
-```
+Or alternatively
 
-At this point the network can be built with two lines of code:
+	python setup.py install
 
-```python
-net_builder = NetBuilder(net_dict)
-snn = net_builder.build()
-```
+# Citation
+[Spiker: a framework for the generation of efficient Spiking Neural Networks FPGA accelerators for inference at the edge](https://arxiv.org/abs/2401.01141)
 
-## Trainer
+    @misc{carpegna\_spiker\_2024,
+    	title = {Spiker+: a framework for the generation of efficient {Spiking} {Neural} {Networks} {FPGA} accelerators for inference at the edge},  
+    	shorttitle = {Spiker+},  
+    	url = {http://arxiv.org/abs/2401.01141},  
+    	doi = {10.48550/arXiv.2401.01141},  
+    	urldate = {2024-01-26},  
+    	publisher = {arXiv},  
+    	author = {Carpegna, Alessio and Savino, Alessandro and Di Carlo, Stefano},  
+    	month = jan,  
+    	year = {2024},  
+    	keywords = {Computer Science - Neural and Evolutionary Computing, Computer Science - Artificial Intelligence, Computer Science - Hardware Architecture}   
+    }
 
-Once the network is built it can be trained on the desired dataset. The
-**Trainer** component is the block in charge of training the network
+# Acknowledgements
 
-```python
-trainer = Trainer(snn)
-trainer.train(train_loader, test_loader)
-```
+[Neuropuls](https://neuropuls.eu/)
 
-Notice that the trainer expects two [torch](https://pytorch.org/) dataloaders.  They are not covered here, refer to the tutorials for more information.
+This project has received funding from the European Union’s Horizon Europe research and innovation programme under grant agreement No. 101070238. Views and opinions expressed are however those of the author(s) only and do not necessarily reflect those of the European Union. Neither the European Union nor the granting authority can be held responsible for them.
 
-## Optimizer
+The code in spiker/vhdl/vhdltools was modified starting from [rftafas/hdltools](https://github.com/rftafas/hdltools).
 
-The **Optimizer** role is to convert internal parameters in a format that can be implemented on the target hardware architecture, namely fixed-point. To do this a quantization step is required. For each parameter, the **Optimizer** performs a grid search between the specified values and returns a log with all the explored configurations and the corresponding loss and accuracy. The range of search for the different bit-widths can be again specified using a python dictionary.
-
-```python
-optim_config = {
-
-	"weights_bw"	: {
-		"min"	: 5,
-		"max"	: 6
-	},
-
-	"neurons_bw"	: {
-		"min"	: 5,
-		"max"	: 6
-	},
-
-	"fp_dec"	: {
-		"min"	: 2,
-		"max"	: 3
-	}
-}
-```
-
-The **Optimizer** expects to receive a trained network object, the network configuration dictionary, as the one used for the **NetBuilder**, and the dictionary containing the search ranges.
-
-```
-opt = Optimizer(snn, net_dict, optim_config)
-opt.optimize(test_loader)
-```
-
-## VHDL generator
-
-Finally, the network is ready to be translated into the corresponding accelerator, described using VHDL language. Between the different parameters explored by the optimizer the user is asked to pick the trade-off which best satisfies its requirements. Again, this can be done using a python dictionary.
-
-```python
-optim_params = {
-
-	"weights_bw"	: 6,
-	"neurons_bw"	: 8,
-	"fp_dec"	: 4
-
-}
-```
-
-Starting from the trained network, and using the specified set of bitwidths,
-**VhdlGenerator** automatically translates the network into the corresponding
-VHDL description.
-
-```python
-vhdl_generator = VhdlGenerator(snn, optim_params)
-vhdl_snn = vhdl_generator.generate()
-```
-
-To print the code of the generated network you can run
-
-```python
-print(vhdl_snn.code())
-```
-
-The **vhdl** directory contains all the code necessary to translate a *snnTorch* description of the network into a synthesizable VHDL description of the corresponding accelerator.
-
-Figure 2 shows a block diagram of the generated architecture. For more details about the various components refer to [Spiker: a framework for the generation of efficient Spiking Neural Networks FPGA accelerators for inference at the edge](https://arxiv.org/abs/2401.01141).
-
-![Figure 2: spiker hardware architecture, building blocks](../Doc/spiker.png)
-Figure 2: spiker hardware architecture, building blocks
+I would like to thank Domenico Elia Sabella for their valuable assistance in revising and cleaning the final version of the code published on the open repository.

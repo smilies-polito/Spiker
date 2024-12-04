@@ -355,7 +355,7 @@ class Layer(VHDLblock):
 
 			elif self.w_exc_bw == self.bitwidth:
 				self.architecture.signal.add(
-					name 		= "exc_weight" +
+					name 		= "exc_weight_" +
 							int_to_hex(i,
 							hex_width),
 					signal_type	= "std_logic_vector("

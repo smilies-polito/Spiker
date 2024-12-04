@@ -1,8 +1,8 @@
 from setuptools import setup, find_packages
 
 setup(
-    name							= "spiker",
-    version							= "2.0.0",
+    name							= "spikerplus",
+    version							= "2.0.1",
     author							= "Alessio Carpegna",
     author_email					= "alessio.carpegna@polito.it",
     description						= "Build, train, optimize and generate "\
@@ -15,7 +15,7 @@ setup(
     packages						= find_packages(),
     classifiers						= [
         "Programming Language :: Python :: 3",
-        "License :: CC BY-NC-SA 4.0",
+        "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
     ],
     python_requires					= ">=3.9",
