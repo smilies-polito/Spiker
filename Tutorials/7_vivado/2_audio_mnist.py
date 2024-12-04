@@ -99,7 +99,7 @@ optim_config["fp_dec"]		= int(input(
 	"Pick the best number of fixed point digits: "))
 
 # Instantiate VHDL generateor
-vhdl_generator = VhdlGenerator(snn, optim_config)
+vhdl_generator = VhdlGenerator(snn, optim_config, functional = False)
 
 # Generate VHDL
 vhdl_snn  = vhdl_generator.generate(interface = True)
