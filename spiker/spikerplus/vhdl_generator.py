@@ -7,13 +7,14 @@ from .vhdl.network import Network, FullAccelerator
 
 class VhdlGenerator:
 
-	def __init__(self, net, optim_config):
+	def __init__(self, net, optim_config, functional = True):
 		
 		self.net = net
 		self.optim_config = optim_config
+		self.functional = functional
 
-		self.input_size = self.layer_size(list(self.net.layers)[0])
-		self.output_size = self.layer_size(list(self.net.layers)[-2])
+		self.input_size = self.input_size(list(self.net.layers)[0])
+		self.output_size = self.output_size(list(self.net.layers)[-2])
 
 	def generate(self, interface = False):
 
@@ -37,11 +38,22 @@ class VhdlGenerator:
 
 			return FullAccelerator(vhdl_net, self.input_size, self.output_size)
 
-	def layer_size(self, layer):
+	def input_size(self, layer):
 
 			if "fc" in layer:
 
 				ff_w = self.extract_weights(layer)
+
+				return ff_w.shape[1]
+
+			raise ValueError("Cannot compute size. I need a linear layer")
+
+	def output_size(self, layer):
+
+			if "fc" in layer:
+
+				ff_w = self.extract_weights(layer)
+
 				return ff_w.shape[0]
 
 			raise ValueError("Cannot compute size. I need a linear layer")
@@ -67,7 +79,7 @@ class VhdlGenerator:
 			w_exc_bw	= self.optim_config["weights_bw"],
 			shift		= beta_shift,
 			reset		= "subtractive",
-			functional	= True
+			functional	= self.functional
 		)
 
 
