@@ -2,7 +2,8 @@ from math import log2
 import torch
 import numpy as np
 
-from .vhdl.network import Network, Layer
+from .vhdl.layer import Layer
+from .vhdl.network import Network, FullAccelerator
 
 class VhdlGenerator:
 
@@ -11,7 +12,10 @@ class VhdlGenerator:
 		self.net = net
 		self.optim_config = optim_config
 
-	def generate(self):
+		self.input_size = self.layer_size(list(self.net.layers)[0])
+		self.output_size = self.layer_size(list(self.net.layers)[-2])
+
+	def generate(self, interface = False):
 
 		vhdl_net = Network(self.net.n_cycles)
 
@@ -25,8 +29,22 @@ class VhdlGenerator:
 
 				vhdl_net.add(self.init_layer(layer, ff_w))
 
-		return vhdl_net
-		
+		if not interface:
+
+			return vhdl_net
+
+		else:
+
+			return FullAccelerator(vhdl_net, self.input_size, self.output_size)
+
+	def layer_size(self, layer):
+
+			if "fc" in layer:
+
+				ff_w = self.extract_weights(layer)
+				return ff_w.shape[0]
+
+			raise ValueError("Cannot compute size. I need a linear layer")
 
 	def init_layer(self, layer, ff_w):
 

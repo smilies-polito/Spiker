@@ -11,7 +11,8 @@ class AudioMnistDL:
 		hop_length_s	= 10e-3, #s
 		n_channels		= 40,
 		spiking_thresh	= 0.9,
-		transform		= "mel"
+		transform		= "default",
+		train_size 		= 0.8
 	):
 
 		# Input data sample rate
@@ -29,7 +30,7 @@ class AudioMnistDL:
 		# Spiking threshold
 		self.spiking_thresh 	= spiking_thresh
 
-		if transform == "mel":
+		if transform == "default":
 
 			self.transform = MelFilterbank(
 				sample_rate 		= self.sample_rate,
@@ -52,29 +53,30 @@ class AudioMnistDL:
 
 		self.num_cpu_cores = os.cpu_count()
 
+		# Train/test split
+		train_len 		= int(train_size * len(self.dataset))
+		test_len		= len(self.dataset) - train_len
 
-	def load(self, train_size = 0.8, train_drop_last = True, train_shuffle =
+		# Split the dataset into training and validation sets
+		self.train_set, self.test_set = random_split(self.dataset,
+				[train_len, test_len])
+
+
+	def load(self, train_drop_last = True, train_shuffle =
 			True, test_drop_last = True, test_shuffle = True, batch_size = 64,
 			num_workers = None):
 
 		if not num_workers:
 			num_workers = self.num_cpu_cores
 
-		# Train/test split
-		train_len 		= int(train_size * len(self.dataset))
-		test_len		= len(self.dataset) - train_len
-
-		# Split the dataset into training and validation sets
-		train_set, test_set = random_split(self.dataset, [train_len, test_len])
-
-		train_loader = DataLoader(train_set, 
+		train_loader = DataLoader(self.train_set, 
 			batch_size	= batch_size,
 			shuffle		= train_shuffle,
 			num_workers	= num_workers,
 			drop_last 	= train_drop_last
 		)
 
-		test_loader = DataLoader(test_set, 
+		test_loader = DataLoader(self.test_set, 
 			batch_size	= batch_size,
 			shuffle		= test_shuffle,
 			num_workers	= num_workers,
@@ -156,7 +158,7 @@ class CustomDataset(Dataset):
 
 		lens = torch.tensor([x.shape[0] for x in waveform])
 
-		return waveform, lens, label
+		return waveform, label
 
 
 class MelFilterbank:
