@@ -105,6 +105,8 @@ class Trainer:
 
 	def train_one_epoch(self, dataloader):
 
+		accuracy = 0
+
 		# Iterate over the dataloader
 		for batch_idx, (data, labels) in enumerate(dataloader):
 
@@ -126,7 +128,9 @@ class Trainer:
 			loss_val.backward()
 			self.optimizer.step()
 
-		accuracy = self.compute_accuracy(labels)
+			accuracy += self.compute_accuracy(labels)
+
+		accuracy /= batch_idx
 
 		return loss_val.item(), accuracy.item()
 
@@ -138,8 +142,10 @@ class Trainer:
 
 			self.net.eval()
 
+			accuracy = 0
+
 			# Iterate over the dataloader
-			for _, (data, labels) in enumerate(dataloader):
+			for batch_idx, (data, labels) in enumerate(dataloader):
 
 				data 	= data.permute(1, 0, 2).to(self.device)
 				labels	= labels.to(self.device)
@@ -151,7 +157,9 @@ class Trainer:
 				# Compute the loss over all time steps at once
 				loss_val = self.loss_fn(out_rec, targets)
 
-		accuracy = self.compute_accuracy(labels)
+				accuracy += self.compute_accuracy(labels)
+
+			accuracy /= batch_idx
 
 		return loss_val.item(), accuracy.item()
 
