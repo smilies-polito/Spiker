@@ -1,20 +1,19 @@
 import logging
 
+from spikerplus.dataloaders import ShdDL
 from spikerplus import NetBuilder, Trainer, Optimizer, VhdlGenerator
 from spikerplus.vhdl import write_vhdl
-
-from Dataloaders.audio_mnist_dl import AudioMnistDL
 
 # Print progress at the different steps
 logging.basicConfig(level=logging.INFO)
 
-data_dir	= "AudioMnist/data"
+data_dir	= "Data"
 batch_size	= 64
 
-data_loader = AudioMnistDL(data_dir = data_dir)
+data_loader = ShdDL(data_dir = data_dir)
 train_loader, test_loader = data_loader.load(batch_size = 64)
 
-# Extract number of timesteps of the input data (by default 73)
+# Extract number of timesteps of the input data (by default 100)
 n_cycles = next(iter(train_loader))[0].shape[1]
 
 # Extract number of inputs (by default 40)
@@ -41,7 +40,7 @@ net_dict = {
 		"layer_1"	: {
 			
 			"neuron_model"		: "lif",
-			"n_neurons"			: 10,
+			"n_neurons"			: 20,
 			"beta"				: 0.9375,
 			"learn_beta"		: False,
 			"threshold"			: 1.,
@@ -106,4 +105,4 @@ vhdl_generator = VhdlGenerator(snn, optim_config)
 vhdl_snn  = vhdl_generator.generate()
 
 # Write all the VHDL sources
-write_vhdl(vhdl_snn, output_dir = "SpikerAudioMnist")
+write_vhdl(vhdl_snn, output_dir = "SpikerSHD")
