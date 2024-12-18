@@ -371,12 +371,10 @@ class Network_tb(Testbench):
 		del self.architecture.processes["ready_w_en_gen"]
 		del self.architecture.processes["ready_save"]
 		del self.architecture.signal["ready_w_en"]
-		# self.architecture.bodyCodeHeader.add("ready_w_en <= '0';")
 
 		del self.architecture.processes["sample_w_en_gen"]
 		del self.architecture.processes["sample_save"]
 		del self.architecture.signal["sample_w_en"]
-		# self.architecture.bodyCodeHeader.add("sample_w_en <= '0';")
 
 		del self.architecture.processes["out_spikes_w_en_gen"]
 		self.architecture.bodyCodeHeader.add("out_spikes_w_en <= sample;")
@@ -660,3 +658,57 @@ class FullAccelerator_tb(Testbench):
 
 		del self.architecture.processes["sample_ready_gen"]
 		self.architecture.bodyCodeHeader.add("sample_ready <= sample;")
+
+
+
+class NetworkSimulator:
+
+	def __init__(self, vhdl_net, clock_period = 20, output_dir = "output",
+			readout_type = "mem"): 
+
+		self.supported_readouts = [
+			"spk",
+			"spk_count",
+			"mem",
+			"mem_softmax",
+			"mem_max",
+			"mem_avg"
+		]
+
+		if readout_type in self.supported_readouts:
+			self.readout_type	= readout_type
+
+		else:
+			raise ValueError("Invalid readout type. Choose between " +
+					str(self.supported_readouts) + "\n")
+
+
+		if "mem" in readout_type:
+
+			debug				= True
+			debug_list			= ["neuron_dp_none_v"] 
+
+		else:
+			debug				= False
+			debug_list			= None
+
+		self.testbench = Network_tb(vhdl_net,
+			clock_period		= clock_period,
+			output_dir			= output_dir,
+			file_output			= True,
+			file_input			= True,
+			input_signal_list	= ["in_spikes"],
+			debug				= debug,
+			debug_list			= debug_list
+		)
+
+
+		if "mem" in readout_type:
+
+			del self.testbench.architecture.processes[
+					"neuron_dp_none_v_w_en_gen"
+			]
+
+			self.testbench.architecture.bodyCodeHeader.add(
+					"neuron_dp_none_v_w_en <= sample;"
+			)
