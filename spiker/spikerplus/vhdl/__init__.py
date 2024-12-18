@@ -60,7 +60,7 @@ from .multi_input_dp import MultiInputDP
 from .multi_input_lif import MultiInputLIF
 from .multiplier import Multiplier
 from .mux import Mux
-from .network import Network 
+from .network import Network, NetworkSimulator
 from .reg import Reg
 from .rom import Rom
 from .shifter import Shifter
