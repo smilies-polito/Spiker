@@ -1,4 +1,5 @@
 import numpy as np
+from copy import deepcopy
 
 from math import log2
 
@@ -52,6 +53,7 @@ class Network(VHDLblock, dict):
 		# Libraries and packages
 		self.library.add("ieee")
 		self.library["ieee"].package.add("std_logic_1164")
+		self.library["ieee"].package.add("numeric_std")
 
 		self.library.add("work")
 		self.library["work"].package.add("spiker_pkg")
@@ -215,11 +217,28 @@ class Network(VHDLblock, dict):
 						" network. Incompatile number"
 						" of inputs")
 
-			self.entity.port.add(
-				name		= "out_spikes",
-				direction	= "out",
-				port_type	= "std_logic_vector(" +
-				str(layer.n_neurons-1)  + " downto 0)")
+			layer_ports = deepcopy(layer.entity.port).items()
+
+			# Add layer's output signals 
+			for _, port in layer_ports:
+
+				if port.direction is "out" and port.name is not "ready":
+
+					for _, generic in layer.entity.generic.items():
+
+						if generic.name in port.port_type:
+
+							port.port_type = port.port_type.replace(
+									generic.name,
+									generic.value
+							)
+
+					self.entity.port.add(
+						name		= port.name,
+						direction	= port.direction,
+						port_type	= port.port_type
+					)
+
 
 
 			exc_spikes_internal = "exc_spikes_" + \
