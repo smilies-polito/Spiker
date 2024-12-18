@@ -7,20 +7,18 @@ from .vhdl.network import Network, FullAccelerator
 
 class VhdlGenerator:
 
-	def __init__(self, net, optim_config, functional = True):
+	def __init__(self, net, optim_config):
 		
 		self.net = net
 		self.optim_config = optim_config
-		self.functional = functional
 
 		self.input_size = self.input_size(list(self.net.layers)[0])
 		self.output_size = self.output_size(list(self.net.layers)[-2])
 
-		self.vhdl_net = None
+	def generate(self, functional = True, interface = False):
 
-	def generate(self, interface = False):
-
-		self.vhdl_net = Network(self.net.n_cycles)
+		vhdl_net = Network(self.net.n_cycles)
+		self.functional = functional
 
 		for layer in self.net.layers:
 
@@ -30,19 +28,17 @@ class VhdlGenerator:
 
 			else:
 
-				self.vhdl_net.add(self.init_layer(layer, ff_w))
+				vhdl_net.add(self.init_layer(layer, ff_w))
 
 		if not interface:
 
-			return self.vhdl_net
+			return vhdl_net
 
 		else:
 
-			return FullAccelerator(self.vhdl_net, self.input_size,
+			return FullAccelerator(vhdl_net, self.input_size,
 					self.output_size)
 
-	def simulate(self, clock_period = 20):
-		pass
 
 	def input_size(self, layer):
 
