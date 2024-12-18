@@ -347,13 +347,17 @@ class Network_tb(Testbench):
 
 
 		del self.architecture.processes["sample_ready_gen"]
-		self.architecture.bodyCodeHeader.add("sample_ready <= '1';")
+		self.architecture.bodyCodeHeader.add("sample_ready <= sample;")
 
 		del self.architecture.processes["ready_w_en_gen"]
-		self.architecture.bodyCodeHeader.add("ready_w_en <= '0';")
+		del self.architecture.processes["ready_save"]
+		del self.architecture.signal["ready_w_en"]
+		# self.architecture.bodyCodeHeader.add("ready_w_en <= '0';")
 
 		del self.architecture.processes["sample_w_en_gen"]
-		self.architecture.bodyCodeHeader.add("sample_w_en <= '0';")
+		del self.architecture.processes["sample_save"]
+		del self.architecture.signal["sample_w_en"]
+		# self.architecture.bodyCodeHeader.add("sample_w_en <= '0';")
 
 		del self.architecture.processes["out_spikes_w_en_gen"]
 		self.architecture.bodyCodeHeader.add("out_spikes_w_en <= sample;")
