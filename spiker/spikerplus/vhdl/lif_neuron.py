@@ -26,7 +26,8 @@ class LIFneuron(VHDLblock):
 
 		self.reset = reset
 
-		self.name = "neuron"
+		self.name = "neuron_" + self.reset
+		print(self.name)
 		self.spiker_pkg = SpikerPackage()
 
 		self.datapath = LIFneuronDP(

@@ -8,8 +8,6 @@ class LIFneuronCU(VHDLblock):
 
 	def __init__(self, reset = "fixed", debug = False, debug_list = []):
 
-		self.name = "neuron_cu"
-
 		self.reset_types = [
 			"fixed",
 			"subtractive",
@@ -21,6 +19,8 @@ class LIFneuronCU(VHDLblock):
 					"allowed")
 
 		self.reset = reset
+
+		self.name = "neuron_cu_" + self.reset
 
 		self.spiker_pkg = SpikerPackage()
 		self.components = sub_components(self)

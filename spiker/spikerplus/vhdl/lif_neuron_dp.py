@@ -28,7 +28,7 @@ class LIFneuronDP(VHDLblock):
 
 		self.reset = reset
 
-		self.name = "neuron_datapath"
+		self.name = "neuron_dp_" + self.reset
 
 		self.shifter			= Shifter(
 							bitwidth = bitwidth,
