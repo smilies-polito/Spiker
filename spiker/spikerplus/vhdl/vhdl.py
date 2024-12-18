@@ -130,6 +130,26 @@ def elaborate(component, output_dir = "output"):
 	print("\n")
 
 
+def simulate(component, output_dir = "output"):
+
+	attr_list = [ attr for attr in dir(component) if not
+			attr.startswith("__")]
+
+	if "entity" not in attr_list:
+		raise TypeError("Component has no entity to compile")
+
+	name		= component.entity.name
+
+	print("\nSimulating component %s\n" %(name))
+
+	command = "cd " + output_dir + "; "
+	command = command + "xsim " + name + " --runall"
+
+	sp.run(command, shell = True)
+
+	print("\n")
+
+
 def sub_components(component):
 
 	sub_comp = []
