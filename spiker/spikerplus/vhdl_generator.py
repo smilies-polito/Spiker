@@ -84,7 +84,7 @@ class VhdlGenerator:
 			w_inh_bw	= self.optim_config["weights_bw"],
 			w_exc_bw	= self.optim_config["weights_bw"],
 			shift		= beta_shift,
-			reset		= "subtractive",
+			reset		= reset,
 			functional	= self.functional
 		)
 
@@ -118,8 +118,11 @@ class VhdlGenerator:
 			elif reset == "zero":
 				return "fixed"
 
+			elif reset == "none":
+				return "none"
+
 			else:
-				return "fixed"
+				raise ValueError("Reset type not supported")
 
 
 	def extract_alpha(self, layer):
