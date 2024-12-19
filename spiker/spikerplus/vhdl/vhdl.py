@@ -130,7 +130,21 @@ def elaborate(component, output_dir = "output"):
 	print("\n")
 
 
-def simulate(component, output_dir = "output"):
+def simulate(component, output_dir = "output", sim_duration = "1000ns"):
+
+	if type(sim_duration) is not str:
+		raise ValueError("sim_duration must be string in the form: "
+			"<number><time unit measure>. E.g. 1000ns")
+
+	if type(output_dir) is not str:
+		raise ValueError("output_dir must be string.")
+
+	sim_script = "sim_script.tcl"
+
+	with open(output_dir + "/" + sim_script, "w") as file:
+
+		file.write("run " + sim_duration + "\n")
+		file.write("quit")
 
 	attr_list = [ attr for attr in dir(component) if not
 			attr.startswith("__")]
@@ -143,7 +157,7 @@ def simulate(component, output_dir = "output"):
 	print("\nSimulating component %s\n" %(name))
 
 	command = "cd " + output_dir + "; "
-	command = command + "xsim " + name + " --runall"
+	command = command + "xsim " + name + " -t " + sim_script
 
 	sp.run(command, shell = True)
 
