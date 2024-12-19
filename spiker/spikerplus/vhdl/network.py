@@ -1,3 +1,6 @@
+import torch
+
+
 import numpy as np
 from copy import deepcopy
 
@@ -700,10 +703,33 @@ class NetworkSimulator:
 
 	def simulate(self, dataloader):
 
+		torch.set_printoptions(threshold = np.inf)
+
 		# Iterate over the dataloader
 		for batch_idx, (data_batch, labels_batch) in enumerate(dataloader):
 
 			for i in range(data_batch.shape[0]):
 			
-				datum = data_batch[i, :, :]
-				print(datum.shape)
+				spike_trains = data_batch[i, :, :].to(int)
+
+				self.dump(spike_trains, "spikes.in")
+
+				break
+
+			break
+
+	def dump(self, spike_trains, filename):
+
+		with open(filename, "w") as f:
+
+			for timestep in spike_trains:
+				f.write("".join(map(str, timestep.tolist())) + "\n")
+
+		if time != self.testbench.dut.n_cycles:
+
+			log_message = "Number of timestes differ network's one. Expected "
+			log_message += str(self.testbench.dut.n_cycles)
+			log_message += " but found "
+			log_message += str(time)
+
+			logging.warning(log_message)
