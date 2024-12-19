@@ -15,9 +15,9 @@ class VhdlGenerator:
 		self.input_size = self.input_size(list(self.net.layers)[0])
 		self.output_size = self.output_size(list(self.net.layers)[-2])
 
-	def generate(self, functional = True, interface = False):
+	def generate(self, functional = True, interface = False, debug = False):
 
-		vhdl_net = Network(self.net.n_cycles)
+		vhdl_net = Network(self.net.n_cycles, debug = debug)
 		self.functional = functional
 
 		for layer in self.net.layers:
