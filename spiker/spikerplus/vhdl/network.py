@@ -371,7 +371,7 @@ class Network_tb(Testbench):
 
 
 		del self.architecture.processes["sample_ready_gen"]
-		self.architecture.bodyCodeHeader.add("sample_ready <= sample;")
+		self.architecture.bodyCodeHeader.add("sample_ready <= '1';")
 
 		del self.architecture.processes["ready_w_en_gen"]
 		del self.architecture.processes["ready_save"]
@@ -722,6 +722,8 @@ class NetworkSimulator:
 			
 				spike_trains = data_batch[i, :, :].to(int)
 
+				print(labels_batch[i])
+
 				self.dump(spike_trains, self.stimuli_file)
 
 				simulate_vhdl(self.testbench, output_dir = self.output_dir,
@@ -731,9 +733,6 @@ class NetworkSimulator:
 
 				print(mem_out)
 
-				break
-
-			break
 
 	def dump(self, spike_trains, filename):
 
@@ -789,7 +788,7 @@ class NetworkSimulator:
 
 		if mem_out.shape[0] != self.testbench.dut.n_cycles:
 
-			log_message = "Number of input timestes differ network's one. "
+			log_message = "Number of output timestes differ network's one. "
 			log_message += "Expected "
 			log_message += str(self.testbench.dut.n_cycles)
 			log_message += " but found "
