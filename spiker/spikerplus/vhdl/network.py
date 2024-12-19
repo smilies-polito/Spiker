@@ -1,10 +1,8 @@
 import torch
-
-
 import numpy as np
 from copy import deepcopy
-
 from math import log2
+import logging
 
 from .multi_cycle import MultiCycle
 from .layer import Layer
@@ -22,6 +20,10 @@ from .vhdltools.text import SingleCodeLine
 from .vhdltools.for_statement import For
 from .vhdltools.instance import Instance
 
+from .vhdl import write_file_all as write_vhdl
+from .vhdl import fast_compile as compile_vhdl
+from .vhdl import elaborate as elaborate_vhdl
+from .vhdl import simulate as simulate_vhdl
 
 class Network(VHDLblock, dict):
 
@@ -690,6 +692,9 @@ class NetworkSimulator:
 			input_signal_list	= ["in_spikes"]
 		)
 
+		self.output_dir = output_dir
+		self.stimuli_file = self.output_dir + "/in_spikes.txt"
+		self.readout_file = self.output_dir + "/neuron_dp_none_v.txt"
 
 		if "mem" in readout_type:
 
@@ -701,7 +706,12 @@ class NetworkSimulator:
 					"neuron_dp_none_v_w_en <= sample;"
 			)
 
-	def simulate(self, dataloader):
+		write_vhdl(self.testbench)
+		compile_vhdl(self.testbench)
+		elaborate_vhdl(self.testbench)
+
+
+	def simulate(self, dataloader, sim_duration = "10000ns"):
 
 		torch.set_printoptions(threshold = np.inf)
 
@@ -712,9 +722,14 @@ class NetworkSimulator:
 			
 				spike_trains = data_batch[i, :, :].to(int)
 
-				self.dump(spike_trains, "spikes.in")
+				self.dump(spike_trains, self.stimuli_file)
 
-				self.load("spikes.out")
+				simulate_vhdl(self.testbench, output_dir = self.output_dir,
+						sim_duration = sim_duration)
+
+				mem_out = self.load(self.readout_file)
+
+				print(mem_out)
 
 				break
 
@@ -724,17 +739,18 @@ class NetworkSimulator:
 
 		if spike_trains.shape[0] != self.testbench.dut.n_cycles:
 
-			log_message = "Number of timestes differ network's one. Expected "
+			log_message = "Number of input timestes differ network's one. "
+			log_message += "Expected "
 			log_message += str(self.testbench.dut.n_cycles)
 			log_message += " but found "
 			log_message += str(spike_trains.shape[0])
 
 			logging.warning(log_message)
 
-		with open(filename, "w") as f:
+		with open(filename, "w") as file:
 
 			for timestep in spike_trains:
-				f.write("".join(map(str, timestep.tolist())) + "\n")
+				file.write("".join(map(str, timestep.tolist())) + "\n")
 
 
 	def load(self, filename):
@@ -744,4 +760,62 @@ class NetworkSimulator:
 
 		bitwidth = self.testbench.dut[last_layer_key].bitwidth
 
-		print(bitwidth)
+		mem_out = []
+
+		with open(filename, "r") as file:
+
+			for line in file:
+
+				line = line[:-1]
+
+				if set(line) - {'0', '1'}:
+					raise ValueError("String must be binary")
+
+				mem_out_t = []
+
+				for i in range(0, len(line), bitwidth):
+
+					mem_binary = line[i : i + bitwidth]
+
+					mem = self.ca2_to_signed(mem_binary, bitwidth)
+
+					mem_out_t.append(mem)
+
+					i += bitwidth
+
+				mem_out.append(mem_out_t)
+
+		mem_out = torch.tensor(mem_out)
+
+		if mem_out.shape[0] != self.testbench.dut.n_cycles:
+
+			log_message = "Number of input timestes differ network's one. "
+			log_message += "Expected "
+			log_message += str(self.testbench.dut.n_cycles)
+			log_message += " but found "
+			log_message += str(mem_out.shape[0])
+
+			logging.warning(log_message)
+
+		if mem_out.shape[1] != self.testbench.dut[last_layer_key].n_neurons:
+
+			log_message = "Number of neurons differ from the network's one. "
+			log_message += "Expected "
+			log_message += str(self.testbench.dut[last_layer_key].n_neurons)
+			log_message += " but found "
+			log_message += str(mem_out.shape[1])
+
+			logging.warning(log_message)
+
+		return mem_out
+
+
+	def ca2_to_signed(self, binary_string, bitwidth):
+
+		ca2_val = int(binary_string, 2)
+
+		if binary_string[0] == '1':
+
+			ca2_val = ca2_val - (1 << bitwidth) 
+
+		return ca2_val
