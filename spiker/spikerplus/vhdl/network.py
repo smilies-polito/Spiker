@@ -714,22 +714,34 @@ class NetworkSimulator:
 
 				self.dump(spike_trains, "spikes.in")
 
+				self.load("spikes.out")
+
 				break
 
 			break
 
 	def dump(self, spike_trains, filename):
 
+		if spike_trains.shape[0] != self.testbench.dut.n_cycles:
+
+			log_message = "Number of timestes differ network's one. Expected "
+			log_message += str(self.testbench.dut.n_cycles)
+			log_message += " but found "
+			log_message += str(spike_trains.shape[0])
+
+			logging.warning(log_message)
+
 		with open(filename, "w") as f:
 
 			for timestep in spike_trains:
 				f.write("".join(map(str, timestep.tolist())) + "\n")
 
-		if time != self.testbench.dut.n_cycles:
 
-			log_message = "Number of timestes differ network's one. Expected "
-			log_message += str(self.testbench.dut.n_cycles)
-			log_message += " but found "
-			log_message += str(time)
+	def load(self, filename):
 
-			logging.warning(log_message)
+		last_layer_idx = self.testbench.dut.layer_index - 1
+		last_layer_key = "layer_" + str(last_layer_idx)
+
+		bitwidth = self.testbench.dut[last_layer_key].bitwidth
+
+		print(bitwidth)
