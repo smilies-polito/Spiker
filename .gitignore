@@ -37,6 +37,7 @@ __pycache__
 .Xil
 *.rpx
 *.debug
+*.wcfg
 
 # Files on iCloud
 *.icloud
