@@ -664,12 +664,9 @@ class FullAccelerator_tb(Testbench):
 class NetworkSimulator:
 
 	def __init__(self, vhdl_net, clock_period = 20, output_dir = "output",
-			readout_type = "mem"): 
+			readout_type = "mem_avg"): 
 
 		self.supported_readouts = [
-			"spk",
-			"spk_count",
-			"mem",
 			"mem_softmax",
 			"mem_max",
 			"mem_avg"
@@ -682,24 +679,12 @@ class NetworkSimulator:
 			raise ValueError("Invalid readout type. Choose between " +
 					str(self.supported_readouts) + "\n")
 
-
-		if "mem" in readout_type:
-
-			debug				= True
-			debug_list			= ["neuron_dp_none_v"] 
-
-		else:
-			debug				= False
-			debug_list			= None
-
 		self.testbench = Network_tb(vhdl_net,
 			clock_period		= clock_period,
 			output_dir			= output_dir,
 			file_output			= True,
 			file_input			= True,
-			input_signal_list	= ["in_spikes"],
-			debug				= debug,
-			debug_list			= debug_list
+			input_signal_list	= ["in_spikes"]
 		)
 
 
@@ -712,3 +697,13 @@ class NetworkSimulator:
 			self.testbench.architecture.bodyCodeHeader.add(
 					"neuron_dp_none_v_w_en <= sample;"
 			)
+
+	def simulate(self, dataloader):
+
+		# Iterate over the dataloader
+		for batch_idx, (data_batch, labels_batch) in enumerate(dataloader):
+
+			for i in range(data_batch.shape[0]):
+			
+				datum = data_batch[i, :, :]
+				print(datum.shape)
