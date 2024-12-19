@@ -90,9 +90,9 @@ snn = net_builder.build()
 # 
 # # Ask the user to select the quantization values he/she prefers
 optim_config = {
-	"weights_bw" 	: 3,
-	"neurons_bw"	: 4,
-	"fp_dec"		: 3
+	"weights_bw" 	: 12,
+	"neurons_bw"	: 16,
+	"fp_dec"		: 8
 }
 # optim_config["weights_bw"] 	= int(input(
 # 	"Pick the best weights bitwidth: "))
@@ -111,4 +111,4 @@ vhdl_snn  = vhdl_generator.generate(interface = False, functional = True)
 
 vhdl_sim = NetworkSimulator(vhdl_snn)
 
-vhdl_sim.simulate(test_loader)
+vhdl_sim.simulate(test_loader, sim_duration = "400us")
