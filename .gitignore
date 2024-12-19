@@ -7,11 +7,12 @@ __pycache__
 
 # Report files and similar
 *.txt
+*.in
+*.out
 
 # Plots and figures
 *.svg
 *.png
-
 
 # Numpy arrays
 *.npy
@@ -74,6 +75,9 @@ train-labels-idx1-ubyte
 *.mem
 *.mif
 *.tmp
+
+# Tool Command Language scripts
+*.tcl
 
 # Python package generated files
 *.egg-info
