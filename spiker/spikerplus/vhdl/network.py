@@ -259,7 +259,6 @@ class Network(VHDLblock, dict):
 
 			self.architecture.instances[current_layer].p_map.add(
 				"exc_spikes", exc_spikes_internal)
-Trainer, Optimizer, 
 			self.architecture.bodyCodeHeader[2] = SingleCodeLine(
 				"out_spikes <= ", current_layer + 
 				"_feedback;\n")
