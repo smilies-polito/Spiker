@@ -1,6 +1,8 @@
+import torch
 import numpy as np
-
+from copy import deepcopy
 from math import log2
+import logging
 
 from .multi_cycle import MultiCycle
 from .layer import Layer
@@ -18,6 +20,10 @@ from .vhdltools.text import SingleCodeLine
 from .vhdltools.for_statement import For
 from .vhdltools.instance import Instance
 
+from .vhdl import write_file_all as write_vhdl
+from .vhdl import fast_compile as compile_vhdl
+from .vhdl import elaborate as elaborate_vhdl
+from .vhdl import simulate as simulate_vhdl
 
 class Network(VHDLblock, dict):
 
@@ -52,6 +58,7 @@ class Network(VHDLblock, dict):
 		# Libraries and packages
 		self.library.add("ieee")
 		self.library["ieee"].package.add("std_logic_1164")
+		self.library["ieee"].package.add("numeric_std")
 
 		self.library.add("work")
 		self.library["work"].package.add("spiker_pkg")
@@ -215,11 +222,28 @@ class Network(VHDLblock, dict):
 						" network. Incompatile number"
 						" of inputs")
 
-			self.entity.port.add(
-				name		= "out_spikes",
-				direction	= "out",
-				port_type	= "std_logic_vector(" +
-				str(layer.n_neurons-1)  + " downto 0)")
+			layer_ports = deepcopy(layer.entity.port).items()
+
+			# Add layer's output signals 
+			for _, port in layer_ports:
+
+				if port.direction is "out" and port.name is not "ready":
+
+					for _, generic in layer.entity.generic.items():
+
+						if generic.name in port.port_type:
+
+							port.port_type = port.port_type.replace(
+									generic.name,
+									generic.value
+							)
+
+					self.entity.port.add(
+						name		= port.name,
+						direction	= port.direction,
+						port_type	= port.port_type
+					)
+
 
 
 			exc_spikes_internal = "exc_spikes_" + \
@@ -235,7 +259,7 @@ class Network(VHDLblock, dict):
 
 			self.architecture.instances[current_layer].p_map.add(
 				"exc_spikes", exc_spikes_internal)
-
+Trainer, Optimizer, 
 			self.architecture.bodyCodeHeader[2] = SingleCodeLine(
 				"out_spikes <= ", current_layer + 
 				"_feedback;\n")
@@ -350,10 +374,12 @@ class Network_tb(Testbench):
 		self.architecture.bodyCodeHeader.add("sample_ready <= '1';")
 
 		del self.architecture.processes["ready_w_en_gen"]
-		self.architecture.bodyCodeHeader.add("ready_w_en <= '0';")
+		del self.architecture.processes["ready_save"]
+		del self.architecture.signal["ready_w_en"]
 
 		del self.architecture.processes["sample_w_en_gen"]
-		self.architecture.bodyCodeHeader.add("sample_w_en <= '0';")
+		del self.architecture.processes["sample_save"]
+		del self.architecture.signal["sample_w_en"]
 
 		del self.architecture.processes["out_spikes_w_en_gen"]
 		self.architecture.bodyCodeHeader.add("out_spikes_w_en <= sample;")
@@ -637,3 +663,182 @@ class FullAccelerator_tb(Testbench):
 
 		del self.architecture.processes["sample_ready_gen"]
 		self.architecture.bodyCodeHeader.add("sample_ready <= sample;")
+
+
+
+class NetworkSimulator:
+
+	def __init__(self, vhdl_net, clock_period = 20, output_dir = "output",
+			readout_type = "mem_avg"): 
+
+		self.supported_readouts = [
+			"mem_softmax",
+			"mem_max",
+			"mem_avg"
+		]
+
+		if readout_type in self.supported_readouts:
+			self.readout_type	= readout_type
+
+		else:
+			raise ValueError("Invalid readout type. Choose between " +
+					str(self.supported_readouts) + "\n")
+
+		self.testbench = Network_tb(vhdl_net,
+			clock_period		= clock_period,
+			output_dir			= output_dir,
+			file_output			= True,
+			file_input			= True,
+			input_signal_list	= ["in_spikes"]
+		)
+
+		self.output_dir = output_dir
+		self.stimuli_file = self.output_dir + "/in_spikes.txt"
+		self.readout_file = self.output_dir + "/neuron_dp_none_v.txt"
+
+		if "mem" in readout_type:
+
+			del self.testbench.architecture.processes[
+					"neuron_dp_none_v_w_en_gen"
+			]
+
+			self.testbench.architecture.bodyCodeHeader.add(
+					"neuron_dp_none_v_w_en <= sample;"
+			)
+
+		write_vhdl(self.testbench)
+		compile_vhdl(self.testbench)
+		elaborate_vhdl(self.testbench)
+
+
+	def simulate(self, dataloader, sim_duration = "10000ns", print_interval = 10):
+
+		torch.set_printoptions(threshold = np.inf)
+
+		acc = 0
+		iter_count = 0
+
+		logging.info("Simulating VHDL network")
+
+		# Iterate over the dataloader
+		for batch_idx, (data_batch, labels_batch) in enumerate(dataloader):
+
+			for i in range(data_batch.shape[0]):
+			
+				spike_trains = data_batch[i, :, :].to(int)
+				label = labels_batch[i].item()
+
+				self.dump(spike_trains, self.stimuli_file)
+
+				simulate_vhdl(self.testbench, output_dir = self.output_dir,
+						sim_duration = sim_duration)
+
+				mem_out = self.load(self.readout_file)
+
+				_, classified = mem_out.mean(dim=0).max(dim=0)
+
+				classified = classified.item()
+
+				log_message = "Epected: " + str(label)
+				log_message = log_message + ". Classified: " + str(classified)
+				logging.info(log_message)
+
+				acc += (classified == label)
+
+				if iter_count == (print_interval - 1):
+
+					acc = acc / (iter_count+1) * 100
+
+					log_message = "Accuracy: " + "{:.2f}".format(acc) + "%\n"
+					logging.info(log_message)
+
+					acc = 0
+
+				iter_count = (iter_count + 1) % print_interval
+
+	def dump(self, spike_trains, filename):
+
+		if spike_trains.shape[0] != self.testbench.dut.n_cycles:
+
+			log_message = "Number of input timestes differ network's one. "
+			log_message += "Expected "
+			log_message += str(self.testbench.dut.n_cycles)
+			log_message += " but found "
+			log_message += str(spike_trains.shape[0])
+
+			logging.warning(log_message)
+
+		with open(filename, "w") as file:
+
+			for timestep in spike_trains:
+				file.write("".join(map(str, 
+				torch.flip(timestep, dims = (0,)).tolist())) + "\n")
+
+
+	def load(self, filename):
+
+		last_layer_idx = self.testbench.dut.layer_index - 1
+		last_layer_key = "layer_" + str(last_layer_idx)
+
+		bitwidth = self.testbench.dut[last_layer_key].bitwidth
+
+		mem_out = []
+
+		with open(filename, "r") as file:
+
+			for line in file:
+
+				line = line[:-1]
+
+				if set(line) - {'0', '1'}:
+					raise ValueError("String must be binary")
+
+				mem_out_t = []
+
+				for i in range(0, len(line), bitwidth):
+
+					mem_binary = line[i : i + bitwidth]
+
+					mem = self.ca2_to_signed(mem_binary, bitwidth)
+
+					mem_out_t.append(mem)
+
+					i += bitwidth
+
+				mem_out.append(mem_out_t)
+
+		mem_out = torch.tensor(mem_out)
+		mem_out = mem_out.flip(dims=(1,))
+
+		if mem_out.shape[0] != self.testbench.dut.n_cycles:
+
+			log_message = "Number of output timestes differ network's one. "
+			log_message += "Expected "
+			log_message += str(self.testbench.dut.n_cycles)
+			log_message += " but found "
+			log_message += str(mem_out.shape[0])
+
+			logging.warning(log_message)
+
+		if mem_out.shape[1] != self.testbench.dut[last_layer_key].n_neurons:
+
+			log_message = "Number of neurons differ from the network's one. "
+			log_message += "Expected "
+			log_message += str(self.testbench.dut[last_layer_key].n_neurons)
+			log_message += " but found "
+			log_message += str(mem_out.shape[1])
+
+			logging.warning(log_message)
+
+		return mem_out.to(float)
+
+
+	def ca2_to_signed(self, binary_string, bitwidth):
+
+		ca2_val = int(binary_string, 2)
+
+		if binary_string[0] == '1':
+
+			ca2_val = ca2_val - (1 << bitwidth) 
+
+		return ca2_val

@@ -25,6 +25,10 @@ class Layer(VHDLblock):
 		w_inh_bw = 5, w_exc_bw = 5, shift = 10, reset = "fixed",
 		functional = False, debug = False, debug_list = []):
 
+		if reset == "none":
+			debug = True
+			debug_list.append("neuron_dp_none_v")
+
 		self.n_neurons		= w_exc.shape[0]
 		self.n_exc_inputs 	= w_exc.shape[1]
 		self.n_inh_inputs 	= w_inh.shape[1]
@@ -426,6 +430,14 @@ class Layer(VHDLblock):
 				self.architecture.instances[neuron_name].p_map.\
 					add("v_reset", v_reset_name)
 
+			elif self.lif_neuron.reset == "none":
+				self.architecture.instances[neuron_name].p_map.\
+					add("neuron_dp_none_v", 
+						"neuron_dp_none_v(" + str(self.bitwidth * (i+1) - 1) +
+						" downto " + str(self.bitwidth * i) + ")"
+					)
+
+
 			self.architecture.instances[neuron_name].p_map.add(
 				"restart", "neuron_restart")
 			self.architecture.instances[neuron_name].p_map.add(
@@ -507,11 +519,19 @@ class Layer(VHDLblock):
 		self.architecture.instances["spikes_barrier"].p_map.add(
 				"ready", "barrier_ready")
 
-	
-		
 		# Debug
 		if debug:
 			debug_component(self, debug_list)
+
+
+		if self.lif_neuron.reset == "none":
+			self.entity.port.add(
+				name 		= "neuron_dp_none_v", 
+				direction	= "out", 
+				port_type	= "signed(" + \
+					str(self.bitwidth*self.n_neurons - 1) + " downto 0)"
+			)
+
 
 	def write_file_all(self, output_dir = "output", rm = False):
 		write_file_all(self, output_dir = output_dir, rm = rm)
