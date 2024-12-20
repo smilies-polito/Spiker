@@ -259,7 +259,7 @@ class Network(VHDLblock, dict):
 
 			self.architecture.instances[current_layer].p_map.add(
 				"exc_spikes", exc_spikes_internal)
-
+Trainer, Optimizer, 
 			self.architecture.bodyCodeHeader[2] = SingleCodeLine(
 				"out_spikes <= ", current_layer + 
 				"_feedback;\n")
@@ -711,9 +711,14 @@ class NetworkSimulator:
 		elaborate_vhdl(self.testbench)
 
 
-	def simulate(self, dataloader, sim_duration = "10000ns"):
+	def simulate(self, dataloader, sim_duration = "10000ns", print_interval = 10):
 
 		torch.set_printoptions(threshold = np.inf)
+
+		acc = 0
+		iter_count = 0
+
+		logging.info("Simulating VHDL network")
 
 		# Iterate over the dataloader
 		for batch_idx, (data_batch, labels_batch) in enumerate(dataloader):
@@ -721,8 +726,7 @@ class NetworkSimulator:
 			for i in range(data_batch.shape[0]):
 			
 				spike_trains = data_batch[i, :, :].to(int)
-
-				print(labels_batch[i])
+				label = labels_batch[i].item()
 
 				self.dump(spike_trains, self.stimuli_file)
 
@@ -731,8 +735,26 @@ class NetworkSimulator:
 
 				mem_out = self.load(self.readout_file)
 
-				print(mem_out)
+				_, classified = mem_out.mean(dim=0).max(dim=0)
 
+				classified = classified.item()
+
+				log_message = "Epected: " + str(label)
+				log_message = log_message + ". Classified: " + str(classified)
+				logging.info(log_message)
+
+				acc += (classified == label)
+
+				if iter_count == (print_interval - 1):
+
+					acc = acc / (iter_count+1) * 100
+
+					log_message = "Accuracy: " + "{:.2f}".format(acc) + "%\n"
+					logging.info(log_message)
+
+					acc = 0
+
+				iter_count = (iter_count + 1) % print_interval
 
 	def dump(self, spike_trains, filename):
 
@@ -749,7 +771,8 @@ class NetworkSimulator:
 		with open(filename, "w") as file:
 
 			for timestep in spike_trains:
-				file.write("".join(map(str, timestep.tolist())) + "\n")
+				file.write("".join(map(str, 
+				torch.flip(timestep, dims = (0,)).tolist())) + "\n")
 
 
 	def load(self, filename):
@@ -785,6 +808,7 @@ class NetworkSimulator:
 				mem_out.append(mem_out_t)
 
 		mem_out = torch.tensor(mem_out)
+		mem_out = mem_out.flip(dims=(1,))
 
 		if mem_out.shape[0] != self.testbench.dut.n_cycles:
 
@@ -806,7 +830,7 @@ class NetworkSimulator:
 
 			logging.warning(log_message)
 
-		return mem_out
+		return mem_out.to(float)
 
 
 	def ca2_to_signed(self, binary_string, bitwidth):
