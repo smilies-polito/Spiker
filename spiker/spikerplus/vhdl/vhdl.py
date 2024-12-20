@@ -1,3 +1,4 @@
+import logging
 import subprocess as sp
 from os.path import isfile, isdir
 
@@ -130,7 +131,8 @@ def elaborate(component, output_dir = "output"):
 	print("\n")
 
 
-def simulate(component, output_dir = "output", sim_duration = "1000ns"):
+def simulate(component, output_dir = "output", sim_duration = "1000ns", log =
+		False):
 
 	if type(sim_duration) is not str:
 		raise ValueError("sim_duration must be string in the form: "
@@ -154,14 +156,14 @@ def simulate(component, output_dir = "output", sim_duration = "1000ns"):
 
 	name		= component.entity.name
 
-	print("\nSimulating component %s\n" %(name))
+	if log:
+		logging.info("\nSimulating component %s\n" %(name))
 
 	command = "cd " + output_dir + "; "
 	command = command + "xsim " + name + " -t " + sim_script
+	command = command + " > /dev/null"
 
 	sp.run(command, shell = True)
-
-	print("\n")
 
 
 def sub_components(component):
