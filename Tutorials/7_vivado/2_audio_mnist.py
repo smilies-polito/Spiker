@@ -1,7 +1,8 @@
+import torch
 import logging
 
 from spikerplus.dataloaders import AudioMnistDL
-from spikerplus import NetBuilder, Trainer, Optimizer, VhdlGenerator
+from spikerplus import NetBuilder, VhdlGenerator
 from spikerplus.vhdl import write_vhdl, compile_vhdl, elaborate_vhdl
 from spikerplus.vhdl import NetworkSimulator
 
@@ -51,57 +52,39 @@ net_dict = {
 		}
 }
 
-# Search ranges for the optimizer
-optim_config = {
-
-	"weights_bw"	: {
-		"min"	: 4,
-		"max"	: 10
-	},
-
-	"neurons_bw"	: {
-		"min"	: 4,
-		"max"	: 10
-	},
-
-	"fp_dec"	: {
-		"min"	: 4,
-		"max"	: 6
-	}
-}
-
 # Instantiate network builder providing the network configuration
 net_builder = NetBuilder(net_dict)
 
 # Build snn model
 snn = net_builder.build()
 
-# # Instantiate trainer
-# trainer = Trainer(snn)
-# 
-# # Train network and evaluate it on the test set
-# trainer.train(train_loader, test_loader, n_epochs = 1)
-# 
-# # Instantiate optimizer
-# opt = Optimizer(snn, net_dict, optim_config)
-# 
-# # Run grid search over provided quantization ranges
-# opt.optimize(test_loader)
-# 
+# Load pre-trained state dict
+state_dict = torch.load("net_state_dict.pt")
+
+new_state_dict = {}
+
+# Add "layers." prefix to match model
+for key, value in state_dict.items():
+
+	new_key = f"layers.{key}" if not key.startswith("layers.") else key
+
+	print(new_key)
+
+	if "readout" in new_key:
+		new_key = new_key.replace("readout", "lif2")
+
+	print(new_key)
+
+	new_state_dict[new_key] = value
+
+snn.load_state_dict(new_state_dict)
+
 # # Ask the user to select the quantization values he/she prefers
 optim_config = {
 	"weights_bw" 	: 12,
 	"neurons_bw"	: 16,
 	"fp_dec"		: 8
 }
-# optim_config["weights_bw"] 	= int(input(
-# 	"Pick the best weights bitwidth: "))
-# 
-# optim_config["neurons_bw"]	= int(input(
-# 	"Pick the best neurons bitwidth: "))
-# 
-# optim_config["fp_dec"]		= int(input(
-# 	"Pick the best number of fixed point digits: "))
 
 # Instantiate VHDL generateor
 vhdl_generator = VhdlGenerator(snn, optim_config)
@@ -111,4 +94,4 @@ vhdl_snn  = vhdl_generator.generate(interface = False, functional = True)
 
 vhdl_sim = NetworkSimulator(vhdl_snn)
 
-vhdl_sim.simulate(test_loader, sim_duration = "400us")
+vhdl_sim.simulate(test_loader, sim_duration = "200us")
