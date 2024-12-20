@@ -46,9 +46,9 @@ net_builder = NetBuilder(net_dict)
 
 snn = net_builder.build()
 
-vhdl_generator = VhdlGenerator(snn, optim_config, functional = False)
+vhdl_generator = VhdlGenerator(snn, optim_config)
 
-vhdl_snn  = vhdl_generator.generate(interface = True)
+vhdl_snn  = vhdl_generator.generate(interface = True, functional = False)
 
 write_vhdl(vhdl_snn, rm = True)
 
