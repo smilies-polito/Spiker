@@ -811,8 +811,8 @@ class NetworkSimulator:
 
 		if mem_out.shape[0] != self.testbench.dut.n_cycles:
 
-			log_message = "Number of output timestes differ network's one. "
-			log_message += "Expected "
+			log_message = "Number of output timesteps differs from network's"
+			log_message += "one. Expected "
 			log_message += str(self.testbench.dut.n_cycles)
 			log_message += " but found "
 			log_message += str(mem_out.shape[0])
@@ -821,7 +821,7 @@ class NetworkSimulator:
 
 		if mem_out.shape[1] != self.testbench.dut[last_layer_key].n_neurons:
 
-			log_message = "Number of neurons differ from the network's one. "
+			log_message = "Number of neurons differs from the network's one. "
 			log_message += "Expected "
 			log_message += str(self.testbench.dut[last_layer_key].n_neurons)
 			log_message += " but found "
