@@ -25,7 +25,7 @@ class Layer(VHDLblock):
 		w_inh_bw = 5, w_exc_bw = 5, shift = 10, reset = "fixed",
 		functional = False, debug = False, debug_list = []):
 
-		if reset == "none":
+		if reset == "none" and functional is True:
 			debug = True
 			debug_list.append("neuron_dp_none_v")
 
@@ -430,7 +430,7 @@ class Layer(VHDLblock):
 				self.architecture.instances[neuron_name].p_map.\
 					add("v_reset", v_reset_name)
 
-			elif self.lif_neuron.reset == "none":
+			elif self.lif_neuron.reset == "none" and self.functional is True:
 				self.architecture.instances[neuron_name].p_map.\
 					add("neuron_dp_none_v", 
 						"neuron_dp_none_v(" + str(self.bitwidth * (i+1) - 1) +
@@ -524,7 +524,7 @@ class Layer(VHDLblock):
 			debug_component(self, debug_list)
 
 
-		if self.lif_neuron.reset == "none":
+		if self.lif_neuron.reset == "none" and self.functional is True:
 			self.entity.port.add(
 				name 		= "neuron_dp_none_v", 
 				direction	= "out", 
