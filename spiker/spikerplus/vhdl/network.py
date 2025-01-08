@@ -434,6 +434,7 @@ class FullAccelerator(VHDLblock):
 		# Libraries and packages
 		self.library.add("ieee")
 		self.library["ieee"].package.add("std_logic_1164")
+		self.library["ieee"].package.add("numeric_std")
 
 		self.library.add("work")
 		self.library["work"].package.add("spiker_pkg")
@@ -727,18 +728,9 @@ class NetworkSimulator:
 				spike_trains = data_batch[i, :, :].to(int)
 				label = labels_batch[i].item()
 
-				self.dump(spike_trains, self.stimuli_file)
+				classified = self.inference(spike_trains, sim_duration)
 
-				simulate_vhdl(self.testbench, output_dir = self.output_dir,
-						sim_duration = sim_duration)
-
-				mem_out = self.load(self.readout_file)
-
-				_, classified = mem_out.mean(dim=0).max(dim=0)
-
-				classified = classified.item()
-
-				log_message = "Epected: " + str(label)
+				log_message = "Expected: " + str(label)
 				log_message = log_message + ". Classified: " + str(classified)
 				logging.info(log_message)
 
@@ -754,6 +746,21 @@ class NetworkSimulator:
 					acc = 0
 
 				iter_count = (iter_count + 1) % print_interval
+
+
+	def inference(self, spike_trains, sim_duration):
+
+			self.dump(spike_trains, self.stimuli_file)
+
+			simulate_vhdl(self.testbench, output_dir = self.output_dir,
+					sim_duration = sim_duration)
+
+			mem_out = self.load(self.readout_file)
+
+			_, classified = mem_out.mean(dim=0).max(dim=0)
+
+			return classified.item()
+
 
 	def dump(self, spike_trains, filename):
 
