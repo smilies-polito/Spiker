@@ -16,7 +16,8 @@ class LIFneuron(VHDLblock):
 
 		self.reset_types = [
 			"fixed",
-			"subtractive"
+			"subtractive",
+			"none"
 		]
 		
 		if reset not in self.reset_types:
@@ -25,7 +26,7 @@ class LIFneuron(VHDLblock):
 
 		self.reset = reset
 
-		self.name = "neuron"
+		self.name = "neuron_" + self.reset
 		self.spiker_pkg = SpikerPackage()
 
 		self.datapath = LIFneuronDP(

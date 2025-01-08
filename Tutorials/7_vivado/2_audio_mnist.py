@@ -1,8 +1,10 @@
+import torch
 import logging
 
 from spikerplus.dataloaders import AudioMnistDL
-from spikerplus import NetBuilder, Trainer, Optimizer, VhdlGenerator
+from spikerplus import NetBuilder, VhdlGenerator
 from spikerplus.vhdl import write_vhdl, compile_vhdl, elaborate_vhdl
+from spikerplus.vhdl import NetworkSimulator
 
 # Print progress at the different steps
 logging.basicConfig(level=logging.INFO)
@@ -50,61 +52,46 @@ net_dict = {
 		}
 }
 
-# Search ranges for the optimizer
-optim_config = {
-
-	"weights_bw"	: {
-		"min"	: 4,
-		"max"	: 10
-	},
-
-	"neurons_bw"	: {
-		"min"	: 4,
-		"max"	: 10
-	},
-
-	"fp_dec"	: {
-		"min"	: 4,
-		"max"	: 6
-	}
-}
-
 # Instantiate network builder providing the network configuration
 net_builder = NetBuilder(net_dict)
 
 # Build snn model
 snn = net_builder.build()
 
-# Instantiate trainer
-trainer = Trainer(snn)
+# Load pre-trained state dict
+state_dict = torch.load("net_state_dict.pt")
 
-# Train network and evaluate it on the test set
-trainer.train(train_loader, test_loader, n_epochs = 1)
+new_state_dict = {}
 
-# Instantiate optimizer
-opt = Optimizer(snn, net_dict, optim_config)
+# Add "layers." prefix to match model
+for key, value in state_dict.items():
 
-# Run grid search over provided quantization ranges
-opt.optimize(test_loader)
+	new_key = f"layers.{key}" if not key.startswith("layers.") else key
 
-# Ask the user to select the quantization values he/she prefers
-optim_config = {}
-optim_config["weights_bw"] 	= int(input(
-	"Pick the best weights bitwidth: "))
+	print(new_key)
 
-optim_config["neurons_bw"]	= int(input(
-	"Pick the best neurons bitwidth: "))
+	if "readout" in new_key:
+		new_key = new_key.replace("readout", "lif2")
 
-optim_config["fp_dec"]		= int(input(
-	"Pick the best number of fixed point digits: "))
+	print(new_key)
+
+	new_state_dict[new_key] = value
+
+snn.load_state_dict(new_state_dict)
+
+# # Ask the user to select the quantization values he/she prefers
+optim_config = {
+	"weights_bw" 	: 12,
+	"neurons_bw"	: 16,
+	"fp_dec"		: 8
+}
 
 # Instantiate VHDL generateor
-vhdl_generator = VhdlGenerator(snn, optim_config, functional = False)
+vhdl_generator = VhdlGenerator(snn, optim_config)
 
 # Generate VHDL
-vhdl_snn  = vhdl_generator.generate(interface = True)
+vhdl_snn  = vhdl_generator.generate(interface = False, functional = True)
 
-# Write all the VHDL sources
-write_vhdl(vhdl_snn, output_dir = "SpikerAudioMnist")
-compile_vhdl(vhdl_snn)
-elaborate_vhdl(vhdl_snn)
+vhdl_sim = NetworkSimulator(vhdl_snn)
+
+vhdl_sim.simulate(test_loader, sim_duration = "200us")

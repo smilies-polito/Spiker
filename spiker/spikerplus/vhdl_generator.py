@@ -7,18 +7,18 @@ from .vhdl.network import Network, FullAccelerator
 
 class VhdlGenerator:
 
-	def __init__(self, net, optim_config, functional = True):
+	def __init__(self, net, optim_config):
 		
 		self.net = net
 		self.optim_config = optim_config
-		self.functional = functional
 
 		self.input_size = self.input_size(list(self.net.layers)[0])
 		self.output_size = self.output_size(list(self.net.layers)[-2])
 
-	def generate(self, interface = False):
+	def generate(self, functional = True, interface = False, debug = False):
 
-		vhdl_net = Network(self.net.n_cycles)
+		vhdl_net = Network(self.net.n_cycles, debug = debug)
+		self.functional = functional
 
 		for layer in self.net.layers:
 
@@ -36,7 +36,9 @@ class VhdlGenerator:
 
 		else:
 
-			return FullAccelerator(vhdl_net, self.input_size, self.output_size)
+			return FullAccelerator(vhdl_net, self.input_size,
+					self.output_size)
+
 
 	def input_size(self, layer):
 
@@ -78,7 +80,7 @@ class VhdlGenerator:
 			w_inh_bw	= self.optim_config["weights_bw"],
 			w_exc_bw	= self.optim_config["weights_bw"],
 			shift		= beta_shift,
-			reset		= "subtractive",
+			reset		= reset,
 			functional	= self.functional
 		)
 
@@ -112,8 +114,11 @@ class VhdlGenerator:
 			elif reset == "zero":
 				return "fixed"
 
+			elif reset == "none":
+				return "none"
+
 			else:
-				return "fixed"
+				raise ValueError("Reset type not supported")
 
 
 	def extract_alpha(self, layer):

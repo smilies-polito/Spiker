@@ -174,14 +174,6 @@ class Testbench(VHDLblock):
 		     var_type		= "line"
 		)
 
-		if self.dut.entity.port[signal_name].port_type != "std_logic":
-
-			self.architecture.processes[process_name].\
-			     variables.add(
-			     name 		= "write_var",
-			     var_type		= "integer"
-			)
-
 		self.architecture.processes[process_name].\
 			files.add(
 			name 		= out_file,
@@ -200,12 +192,9 @@ class Testbench(VHDLblock):
 				"write(row, " + signal_name  + ");")
 
 		else:
-			w_en_if._if_.body.add(
-				"write_var := to_integer("
-				"unsigned(" + signal_name  + "));")
 
 			w_en_if._if_.body.add(
-				"write(row, write_var);")
+				"write(row, std_logic_vector(" + signal_name  + "));")
 		w_en_if._if_.body.add(
 			"writeline(" + out_file  + ", row);")
 
