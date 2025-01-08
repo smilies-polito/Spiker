@@ -4,7 +4,7 @@ import torch
 from tabulate import tabulate
 import numpy as np
 
-from .net_builder import SNN
+from .net_builder import SNN, NetBuilder
 from .trainer import Trainer
 
 class Quantizer:
@@ -141,11 +141,12 @@ class QuantSNN(SNN):
 
 
 
-class Optimizer(Trainer):
+class Optimizer(Trainer, NetBuilder):
 
 	def __init__(self, net, net_dict, optim_config, readout_type = "mem"):
 
-		super().__init__(net, readout_type)
+		Trainer.__init__(self, net, readout_type)
+		NetBuilder.__init__(self, net_dict)
 
 		self.default_config = {
 
@@ -170,9 +171,9 @@ class Optimizer(Trainer):
 		self.quantizer = Quantizer()
 
 		self.state_dict = net.state_dict()
-		self.net_dict = net_dict
+		self.net_dict = self.parse_config(net_dict)
 
-		self.optim_config = self.parse_config(optim_config)
+		self.optim_config = self.parse_opt_config(optim_config)
 
 		if torch.cuda.is_available():
 			self.device = torch.device("cuda")
@@ -181,7 +182,7 @@ class Optimizer(Trainer):
 			self.device = torch.device("cpu")
 		
 
-	def parse_config(self, optim_config):
+	def parse_opt_config(self, optim_config):
 
 		optim_dict = {}
 
@@ -230,9 +231,9 @@ class Optimizer(Trainer):
 
 		for fp_dec in self.optim_config["fp_dec"]:
 
-			for w_bw in self.optim_config["neurons_bw"]:
+			for w_bw in self.optim_config["weights_bw"]:
 
-				for neuron_bw in self.optim_config["weights_bw"]:
+				for neuron_bw in self.optim_config["neurons_bw"]:
 
 					self.build_quant_snn(w_bw, neuron_bw, fp_dec)
 
@@ -244,10 +245,10 @@ class Optimizer(Trainer):
 
 					table.append([
 						str(fp_dec),
-						str(w_bw),
 						str(neuron_bw),
+						str(w_bw),
 						str(loss),
-						str(acc)
+						"{:.2f}".format(acc*100) + "%"
 					])
 
 		table = "\n" + tabulate(table, headers = headers, tablefmt = "grid")
