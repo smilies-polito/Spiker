@@ -18,7 +18,8 @@ class LIFneuronDP(VHDLblock):
 
 		self.reset_types = [
 			"fixed",
-			"subtractive"
+			"subtractive",
+			"none"
 		]
 		
 		if reset not in self.reset_types:
@@ -27,7 +28,7 @@ class LIFneuronDP(VHDLblock):
 
 		self.reset = reset
 
-		self.name = "neuron_datapath"
+		self.name = "neuron_dp_" + self.reset
 
 		self.shifter			= Shifter(
 							bitwidth = bitwidth,
@@ -251,6 +252,10 @@ class LIFneuronDP(VHDLblock):
 			self.architecture.instances["update_mux"].p_map.add(
 					"in0", "v_th")
 
+		elif self.reset == "none":
+			self.architecture.instances["update_mux"].p_map.add(
+					"in0", "(others => '0')")
+
 
 		self.architecture.instances["update_mux"].p_map.add("in1",
 				"v_shifted")
@@ -317,7 +322,7 @@ class LIFneuronDP(VHDLblock):
 			self.architecture.instances["update_add_sub"].p_map.add(
 					"add_sub_out", "update_value")
 
-		elif self.reset == "subtractive":
+		else:
 			self.architecture.instances["update_add_sub"].p_map.add(
 					"add_sub_out", "v_value")
 
