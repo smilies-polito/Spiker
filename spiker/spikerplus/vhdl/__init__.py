@@ -1,6 +1,7 @@
 from .vhdl import write_file_all as write_vhdl
 from .vhdl import fast_compile as compile_vhdl
 from .vhdl import elaborate as elaborate_vhdl
+from .vhdl import simulate as simulate_vhdl
 
 # Basic VHDL primitives
 # ------------------------------------------------------------------------------ 
@@ -59,7 +60,7 @@ from .multi_input_dp import MultiInputDP
 from .multi_input_lif import MultiInputLIF
 from .multiplier import Multiplier
 from .mux import Mux
-from .network import Network 
+from .network import Network, NetworkSimulator
 from .reg import Reg
 from .rom import Rom
 from .shifter import Shifter
