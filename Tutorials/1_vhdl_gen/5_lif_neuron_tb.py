@@ -7,13 +7,13 @@ lif_tb = LIFneuron_tb(
 	bitwidth 		= 16,
 
 	# Recurrent weights (unclear name, it will be changed in next versions)
-	w_inh_bw 		= 6,
+	w_inh_bw 		= 16,
 
 	# Feed-forward weights
-	w_exc_bw 		= 6,
+	w_exc_bw 		= 16,
 
 	# Shift for the exponential computation
-	shift 			= 4,
+	shift 			= 8,
 
 	# Reset to 0 when exceeding threshold
 	reset			= "fixed",

@@ -312,7 +312,7 @@ class NetBuilder:
 			}
 		}
 
-		self.allowed_keys = self.select_keys()
+		self.net_allowed_keys = self.select_keys()
 		self.supported_models = ["if", "lif", "syn", "rif", "rlif", "rsyn"]
 
 		self.has_alpha = {
@@ -370,7 +370,7 @@ class NetBuilder:
 
 		for key in net_dict:
 
-			if any([allowed in key for allowed in self.allowed_keys]):
+			if any([allowed in key for allowed in self.net_allowed_keys]):
 
 				if "layer" not in key:
 
@@ -526,7 +526,6 @@ class NetBuilder:
 							parsed_dict[key]["learn_beta"] = \
 								self.default_dict["layer_0"]["learn_beta"]
 
-						
 		if "n_cycles" not in parsed_dict:
 			parsed_dict["n_cycles"] = self.default_dict["n_cycles"]
 
