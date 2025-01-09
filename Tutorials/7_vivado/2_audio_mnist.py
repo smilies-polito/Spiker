@@ -59,31 +59,15 @@ net_builder = NetBuilder(net_dict)
 snn = net_builder.build()
 
 # Load pre-trained state dict
-state_dict = torch.load("net_state_dict.pt")
+state_dict = torch.load("trained_state_dict.pt")
 
-new_state_dict = {}
+snn.load_state_dict(state_dict)
 
-# Add "layers." prefix to match model
-for key, value in state_dict.items():
-
-	new_key = f"layers.{key}" if not key.startswith("layers.") else key
-
-	print(new_key)
-
-	if "readout" in new_key:
-		new_key = new_key.replace("readout", "lif2")
-
-	print(new_key)
-
-	new_state_dict[new_key] = value
-
-snn.load_state_dict(new_state_dict)
-
-# # Ask the user to select the quantization values he/she prefers
+# Ask the user to select the quantization values he/she prefers
 optim_config = {
-	"weights_bw" 	: 12,
-	"neurons_bw"	: 16,
-	"fp_dec"		: 8
+	"weights_bw" 	: 6,
+	"neurons_bw"	: 9,
+	"fp_dec"		: 5
 }
 
 # Instantiate VHDL generateor
