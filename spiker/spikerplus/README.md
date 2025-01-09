@@ -13,7 +13,7 @@ Figure 1: spiker framework building blocks
 Once installed the package can be imported with
 
 ```python
-    import spiker
+    import spikerplus
 ```
 
 At this point it becomes possible to instantiate the various blocks. Next
