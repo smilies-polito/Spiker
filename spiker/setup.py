@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name							= "spikerplus",
-    version							= "2.0.1",
+    version							= "2.0.2",
     author							= "Alessio Carpegna",
     author_email					= "alessio.carpegna@polito.it",
     description						= "Build, train, optimize and generate "\
