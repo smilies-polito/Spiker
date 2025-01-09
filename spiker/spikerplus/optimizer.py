@@ -224,7 +224,6 @@ class Optimizer(Trainer, NetBuilder):
 
 	def optimize(self, dataloader):
 
-
 		headers = ["Fixed-point decimals", "Neurons' bitwidth", 
 					"Weights bitwidth", "Loss", "Accuracy"]
 		table = []
@@ -274,7 +273,7 @@ class Optimizer(Trainer, NetBuilder):
 				quant_state_dict[key] = self.quantizer.fixed_point(
 						quant_state_dict[key], fp_dec, neurons_bw)
 
-			self.net.load_state_dict(quant_state_dict)
+		self.net.load_state_dict(quant_state_dict)
 
 		self.net.to(self.device)
 
