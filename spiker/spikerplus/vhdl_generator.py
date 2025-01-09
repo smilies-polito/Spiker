@@ -89,11 +89,11 @@ class VhdlGenerator:
 
 		if "weight" in dir(self.net.layers[layer]):
 
-			return self.net.layers[layer].weight.data.numpy()
+			return self.net.layers[layer].weight.data.cpu().numpy()
 
 		elif "recurrent" in dir(self.net.layers[layer]):
 
-			return self.net.layers[layer].recurrent.weight.data.numpy()
+			return self.net.layers[layer].recurrent.weight.data.cpu().numpy()
 
 
 	def extract_threshold(self, layer):
