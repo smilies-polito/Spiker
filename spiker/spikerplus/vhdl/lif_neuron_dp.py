@@ -262,15 +262,25 @@ class LIFneuronDP(VHDLblock):
 
 		if self.w_exc_bw < self.bitwidth:
 
+			self.architecture.signal.add(
+				name		= "in2_signal",
+				signal_type	= "signed(neuron_bit_width-1 downto 0)"
+			)
+
+			self.architecture.bodyCodeHeader.add(
+				"in2_signal(neuron_bit_width-1 downto exc_weights_bit_width)" +
+				" <= (others => exc_weight(exc_weights_bit_width-1))",
+				line_end = ";\n"
+			)
+
+			self.architecture.bodyCodeHeader.add(
+				"in2_signal(exc_weights_bit_width-1 downto 0)" +
+				" <= exc_weight",
+				line_end = ";\n"
+			)
+
 			self.architecture.instances["update_mux"].p_map.add(
-					"in2", "(others => "
-					"exc_weight(exc_weights_bit_width-1))", 
-					conn_range = "(neuron_bit_width-1 "
-					"downto exc_weights_bit_width)")
-			self.architecture.instances["update_mux"].p_map.add(
-					"in2", "exc_weight", 
-					conn_range = "(exc_weights_bit_width-1 "
-					"downto 0)")
+					"in2", "in2_signal")
 
 		elif self.w_exc_bw == self.bitwidth:
 			self.architecture.instances["update_mux"].p_map.add(
@@ -283,15 +293,25 @@ class LIFneuronDP(VHDLblock):
 
 		if self.w_inh_bw < self.bitwidth:
 
+			self.architecture.signal.add(
+				name		= "in3_signal",
+				signal_type	= "signed(neuron_bit_width-1 downto 0)"
+			)
+
+			self.architecture.bodyCodeHeader.add(
+				"in3_signal(neuron_bit_width-1 downto inh_weights_bit_width)" +
+				" <= (others => inh_weight(inh_weights_bit_width-1))",
+				line_end = ";\n"
+			)
+
+			self.architecture.bodyCodeHeader.add(
+				"in3_signal(inh_weights_bit_width-1 downto 0)" +
+				" <= inh_weight",
+				line_end = ";\n"
+			)
+
 			self.architecture.instances["update_mux"].p_map.add(
-					"in3", "(others => "
-					"inh_weight(inh_weights_bit_width-1))", 
-					conn_range = "(neuron_bit_width-1 "
-					"downto inh_weights_bit_width)")
-			self.architecture.instances["update_mux"].p_map.add(
-					"in3", "inh_weight", 
-					conn_range = "(inh_weights_bit_width-1 "
-					"downto 0)")
+					"in3", "in3_signal")
 
 		elif self.w_inh_bw == self.bitwidth:
 			self.architecture.instances["update_mux"].p_map.add(
