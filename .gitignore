@@ -39,6 +39,9 @@ __pycache__
 *.debug
 *.wcfg
 
+# Ghdl files
+*.cf
+
 # Files on iCloud
 *.icloud
 

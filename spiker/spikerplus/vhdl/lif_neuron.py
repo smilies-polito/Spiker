@@ -104,7 +104,7 @@ class LIFneuron(VHDLblock):
 			self.entity.port.add(
 				name 		= "v_reset", 
 				direction	= "in",
-				port_type	= "signed(neuron_bit_width-1"
+				port_type	= "signed(neuron_bit_width-1 "
 						"downto 0)")
 
 		if self.w_inh_bw < self.bitwidth:
