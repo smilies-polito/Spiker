@@ -1,0 +1,81 @@
+import torch
+import logging
+
+from spikerplus.dataloaders import AudioMnistDL
+from spikerplus import NetBuilder, VhdlGenerator
+from spikerplus.vhdl import write_vhdl, compile_vhdl, elaborate_vhdl
+from spikerplus.vhdl import NetworkSimulator
+
+# Print progress at the different steps
+logging.basicConfig(level=logging.INFO)
+
+data_dir	= "../4_audio_mnist/AudioMnist/data"
+batch_size	= 64
+
+data_loader = AudioMnistDL(data_dir = data_dir)
+train_loader, test_loader = data_loader.load(batch_size = 64)
+
+# Extract number of timesteps of the input data (by default 73)
+n_cycles = next(iter(train_loader))[0].shape[1]
+
+# Extract number of inputs (by default 40)
+n_inputs = next(iter(train_loader))[0].shape[2]
+
+# Configure the Spiking Neural Network
+net_dict = {
+
+		"n_cycles"				: n_cycles,
+		"n_inputs"				: n_inputs,
+
+		"layer_0"	: {
+			
+			"neuron_model"		: "lif",
+			"n_neurons"			: 128,
+			"beta"				: 0.9375,
+			"learn_beta"		: False,
+			"threshold"			: 1.,
+			"learn_threshold"	: False,
+			"reset_mechanism"	: "subtract"
+		},
+
+		# Readout layer: leaky integrator
+		"layer_1"	: {
+			
+			"neuron_model"		: "lif",
+			"n_neurons"			: 10,
+			"beta"				: 0.9375,
+			"learn_beta"		: False,
+			"threshold"			: 1.,
+			"learn_threshold"	: False,
+			# Don't reset the membrane: leaky integrator
+			"reset_mechanism"	: "none"
+		}
+}
+
+# Instantiate network builder providing the network configuration
+net_builder = NetBuilder(net_dict)
+
+# Build snn model
+snn = net_builder.build()
+
+# Load pre-trained state dict
+state_dict = torch.load("trained_state_dict.pt")
+
+snn.load_state_dict(state_dict)
+
+# Ask the user to select the quantization values he/she prefers
+optim_config = {
+	"weights_bw" 	: 6,
+	"neurons_bw"	: 9,
+	"fp_dec"		: 5
+}
+
+# Instantiate VHDL generateor
+vhdl_generator = VhdlGenerator(snn, optim_config)
+
+# Generate VHDL
+vhdl_snn  = vhdl_generator.generate(interface = False, functional = True)
+
+vhdl_sim = NetworkSimulator(vhdl_snn)
+
+vhdl_sim.simulate(test_loader, sim_duration = "200us")

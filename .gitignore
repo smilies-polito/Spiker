@@ -1,0 +1,90 @@
+# File that determines the positioning of directories and files inside
+# the current directory
+.DS_Store
+
+# Directory containing the bytecode precompiled files
+__pycache__
+
+# Report files and similar
+*.txt
+*.in
+*.out
+
+# Plots and figures
+*.svg
+*.png
+
+# Numpy arrays
+*.npy
+*.pt
+*.pkl
+
+# Vivado simulation files
+*.jou
+*.log
+*.pb
+*.dir
+*.str
+*.cache
+*.hw
+*.ip_user_files
+*.sim
+*.xpr
+*.runs
+*.zip
+*.srcs
+*.gen
+.Xil
+*.rpx
+*.debug
+*.wcfg
+
+# Ghdl files
+*.cf
+
+# Files on iCloud
+*.icloud
+
+# Temporary files
+tmp.*
+
+# Vim config or temporary files
+*.swp
+tags
+
+# Singularity images
+*.sif
+
+# Screen log files
+screenlog.*
+*log*
+
+# Datasets
+*.gz
+*.h5*
+*.wav
+
+# MNIST dataset files
+t10k-images-idx3-ubyte
+t10k-labels-idx1-ubyte
+train-images-idx3-ubyte
+train-labels-idx1-ubyte
+
+# Generated VHDL and verilog
+*.vhd
+*.v
+
+# Memory initialization files
+*.coe
+*.mem
+*.mif
+*.tmp
+
+# Tool Command Language scripts
+*.tcl
+
+# Python package generated files
+*.egg-info
+lib*
+bdist*
+*.whl
