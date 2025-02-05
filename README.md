@@ -19,29 +19,56 @@ This is the official repo of spiker, a comprehensive framework for generating ef
 
 # Installation
 
+From pip repositories
+
+    pip install spikerplus
+
+Or to install the last version from the repo
+
     git clone https://github.com/smilies-polito/Spiker.git
-    cd Spiker
+    cd Spiker/spiker
 	pip install .
 
-Or alternatively
+or equivalently 
 
+    git clone https://github.com/smilies-polito/Spiker.git
+    cd Spiker/spiker
 	python setup.py install
 
 # Citation
-[Spiker: a framework for the generation of efficient Spiking Neural Networks FPGA accelerators for inference at the edge](https://arxiv.org/abs/2401.01141)
 
-    @misc{carpegna\_spiker\_2024,
-    	title = {Spiker+: a framework for the generation of efficient {Spiking} {Neural} {Networks} {FPGA} accelerators for inference at the edge},  
-    	shorttitle = {Spiker+},  
-    	url = {http://arxiv.org/abs/2401.01141},  
-    	doi = {10.48550/arXiv.2401.01141},  
-    	urldate = {2024-01-26},  
-    	publisher = {arXiv},  
-    	author = {Carpegna, Alessio and Savino, Alessandro and Di Carlo, Stefano},  
-    	month = jan,  
-    	year = {2024},  
-    	keywords = {Computer Science - Neural and Evolutionary Computing, Computer Science - Artificial Intelligence, Computer Science - Hardware Architecture}   
+[Spiker+: a framework for the generation of efficient Spiking Neural Networks FPGA accelerators for inference at the edge](https://doi.org/10.1109/TETC.2024.3511676)
+
+    @article{carpegna\_spiker\_2024,
+        title = {Spiker+: a framework for the generation of efficient Spiking Neural Networks FPGA accelerators for inference at the edge},
+        issn = {2168-6750},
+        shorttitle = {Spiker+},
+        url = {https://ieeexplore.ieee.org/document/10794606},
+        doi = {10.1109/TETC.2024.3511676},
+        urldate = {2025-02-05},
+        journal = {IEEE Transactions on Emerging Topics in Computing},
+        author = {Carpegna, Alessio and Savino, Alessandro and Carlo, Stefano Di},
+        year = {2024},
+        pages = {1--15},
     }
+
+You can find the very first version of spiker at:
+
+[Spiker: an FPGA-optimized Hardware accelerator for Spiking Neural Networks](https://doi.org/10.1109/ISVLSI54635.2022.00016)
+
+    @inproceedings{carpegna\_spiker\_2022,
+        title = {Spiker: an FPGA-optimized Hardware accelerator for Spiking Neural Networks},
+        shorttitle = {Spiker},
+        url = {https://ieeexplore.ieee.org/document/9911998},
+        doi = {10.1109/ISVLSI54635.2022.00016},
+        urldate = {2025-02-05},
+        booktitle = {2022 {IEEE} {Computer} {Society} {Annual} {Symposium} on {VLSI} ({ISVLSI})},
+        author = {Carpegna, Alessio and Savino, Alessandro and Di Carlo, Stefano},
+        month = jul,
+        year = {2022},
+        pages = {14--19},
+    }
+    
 
 # Acknowledgements
 
