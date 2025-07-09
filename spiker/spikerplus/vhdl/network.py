@@ -674,7 +674,8 @@ class NetworkSimulator:
 		self.supported_readouts = [
 			"mem_softmax",
 			"mem_max",
-			"mem_avg"
+			"mem_avg",
+			"spk_count"
 		]
 
 		if readout_type in self.supported_readouts:
