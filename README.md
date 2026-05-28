@@ -32,11 +32,12 @@ Or to install the last version from the repo
     cd Spiker/spiker
 	pip install .
 
-or equivalently 
+or using the conda environment 
 
     git clone https://github.com/smilies-polito/Spiker.git
-    cd Spiker/spiker
-	python setup.py install
+    cd Spiker/
+    conda env create -f environment.yaml
+    conda activate spiker
 
 # Citation
 
