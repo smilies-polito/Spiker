@@ -11,8 +11,14 @@ from .vhdltools.vhdl_block import VHDLblock
 
 class MultiInput(VHDLblock):
 
-	def __init__(self, n_exc_inputs = 2, n_inh_inputs = 2, debug = False,
-			debug_list = []):
+	def __init__(self, n_exc_inputs = 2, n_inh_inputs = 2,
+			trainable = False, debug = False, debug_list = []):
+
+		# In trainable mode the block gains an ``update_weights`` input and a
+		# ``ram_wea`` output. The latter is asserted whenever an excitatory
+		# input is being processed while the trainer is active — the
+		# trainable Layer wires this directly to the dual-port RAM's wea.
+		self.trainable = trainable
 
 		self.name = "multi_input_" + str(n_exc_inputs) + "_exc_" + \
 			str(n_inh_inputs) + "_inh"
@@ -150,13 +156,23 @@ class MultiInput(VHDLblock):
 			port_type	= "std_logic")
 
 		self.entity.port.add(
-			name 		= "inh_spike", 
+			name 		= "inh_spike",
 			direction	= "out",
 			port_type	= "std_logic")
 
+		# Trainable-only ports: a write-strobe to the layer's RAM whenever
+		# an excitatory input fires while training is active.
+		if self.trainable:
+			self.entity.port.add(
+				name="update_weights", direction="in",
+				port_type="std_logic")
+			self.entity.port.add(
+				name="ram_wea", direction="out",
+				port_type="std_logic")
+
 		# Signals
 		self.architecture.signal.add(
-			name 		= "spike_sample", 
+			name 		= "spike_sample",
 			signal_type	= "std_logic")
 		self.architecture.signal.add(
 			name 		= "spike_rst_n", 
@@ -193,6 +209,16 @@ class MultiInput(VHDLblock):
 
 		self.architecture.bodyCodeHeader.add("out_sample <= "
 				"spike_sample;")
+
+		if self.trainable:
+			# Tap the datapath's exc_spike output so we can re-use it for
+			# both the original port and the new RAM write enable.
+			self.architecture.signal.add(
+				name="exc_spike_s", signal_type="std_logic")
+			self.architecture.bodyCodeHeader.add(
+				"exc_spike <= exc_spike_s;")
+			self.architecture.bodyCodeHeader.add(
+				"ram_wea <= update_weights and exc_spike_s;")
 		
 		# Datapath
 		self.architecture.instances.add(self.datapath,
@@ -207,6 +233,13 @@ class MultiInput(VHDLblock):
 				"spike_rst_n")
 		self.architecture.instances["datapath"].p_map.add("inh_rst_n",
 				"spike_rst_n")
+
+		if self.trainable:
+			# Override the auto-mapped exc_spike port so we can tap the
+			# datapath's output internally and still drive the top-level
+			# port. ``add`` with conn_range="" replaces the existing entry.
+			self.architecture.instances["datapath"].p_map.add(
+				"exc_spike", "exc_spike_s")
 
 		# Control unit
 		self.architecture.instances.add(self.control_unit,

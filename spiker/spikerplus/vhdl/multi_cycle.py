@@ -10,12 +10,19 @@ from .vhdltools.vhdl_block import VHDLblock
 
 class MultiCycle(VHDLblock):
 
-	def __init__(self, n_cycles = 2, debug = False, debug_list = []):
+	def __init__(self, n_cycles = 2, learning = False,
+			debug = False, debug_list = []):
 
 		self.name = "multi_cycle"
 
 		self.n_cycles = n_cycles
 		self.cycles_cnt_bitwidth = int(log2(ceil_pow2(n_cycles+1))) + 1
+
+		# When ``learning`` is True the block exposes extra ports
+		# (train_mode, update_every_n) and an inline counter generating
+		# the periodic update_weights_layer0/1 strobes. The underlying
+		# datapath/CU are reused unchanged.
+		self.learning = learning
 
 		self.spiker_pkg = SpikerPackage()
 
@@ -95,15 +102,75 @@ class MultiCycle(VHDLblock):
 
 		# Signals
 		self.architecture.signal.add(
-			name 		= "cycles_cnt_en", 
+			name 		= "cycles_cnt_en",
 			signal_type	= "std_logic")
 		self.architecture.signal.add(
-			name 		= "cycles_cnt_rst_n", 
+			name 		= "cycles_cnt_rst_n",
 			signal_type	= "std_logic")
 		self.architecture.signal.add(
-			name 		= "stop", 
+			name 		= "stop",
 			signal_type	= "std_logic")
 
+		if self.learning:
+			# Extra top-level ports for on-chip learning.
+			self.entity.port.add(
+				name="train_mode", direction="in", port_type="std_logic")
+			self.entity.port.add(
+				name="update_every_n", direction="in",
+				port_type="std_logic_vector("
+				"cycles_cnt_bitwidth-1 downto 0)")
+			self.entity.port.add(
+				name="update_weights_layer0", direction="out",
+				port_type="std_logic")
+			self.entity.port.add(
+				name="update_weights_layer1", direction="out",
+				port_type="std_logic")
+
+			# Internal counter that advances once per inference timestep
+			# (``cycles_cnt_en`` already pulses once per cycle inside the
+			# control unit). When it reaches ``update_every_n`` it
+			# strobes the layer-0 update and resets; layer-1's update is
+			# the same strobe delayed by one clock so the trainer sees
+			# the updated layer-0 spikes first.
+			self.architecture.signal.add(
+				name="update_cnt",
+				signal_type="unsigned(cycles_cnt_bitwidth-1 downto 0)")
+			self.architecture.signal.add(
+				name="update_weights_layer0_s", signal_type="std_logic")
+			self.architecture.signal.add(
+				name="update_weights_layer1_s", signal_type="std_logic")
+
+			update_cnt_proc = (
+				"update_cnt_proc : process(clk, rst_n)\n"
+				"    begin\n"
+				"        if rst_n = '0' then\n"
+				"            update_cnt <= (others => '0');\n"
+				"            update_weights_layer0_s <= '0';\n"
+				"            update_weights_layer1_s <= '0';\n"
+				"        elsif rising_edge(clk) then\n"
+				"            update_weights_layer1_s <= update_weights_layer0_s;\n"
+				"            update_weights_layer0_s <= '0';\n"
+				"            if cycles_cnt_en = '1' then\n"
+				"                if update_cnt + 1 >= unsigned(update_every_n) then\n"
+				"                    update_cnt <= (others => '0');\n"
+				"                    update_weights_layer0_s <= '1';\n"
+				"                else\n"
+				"                    update_cnt <= update_cnt + 1;\n"
+				"                end if;\n"
+				"            end if;\n"
+				"        end if;\n"
+				"    end process;"
+			)
+			self.architecture.bodyCodeHeader.add(update_cnt_proc)
+
+			# Final outputs are AND-gated by train_mode so the rest of
+			# the design sees zero update strobes during pure inference.
+			self.architecture.bodyCodeHeader.add(
+				"update_weights_layer0 <= update_weights_layer0_s and "
+				"train_mode;")
+			self.architecture.bodyCodeHeader.add(
+				"update_weights_layer1 <= update_weights_layer1_s and "
+				"train_mode;")
 
 		# Components
 		self.architecture.component.add(self.datapath)

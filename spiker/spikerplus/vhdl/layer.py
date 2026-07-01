@@ -2,6 +2,8 @@ import numpy as np
 
 from math import log2
 
+from ..quantizer import FP_DEC
+
 from .multi_input import MultiInput
 from .lif_neuron import LIFneuron
 from .rom import Rom
@@ -9,6 +11,8 @@ from .addr_converter import AddrConverter
 from .barrier import Barrier
 from .testbench import Testbench
 from .spiker_pkg import SpikerPackage
+from .hidden_layer_trainer import HiddenLayerTrainer
+from .output_layer_trainer import OutputLayerTrainer
 from .vhdl import track_signals, debug_component, sub_components, write_file_all
 from .utils import ceil_pow2, random_binary, int_to_hex, int_to_bin, \
 	fixed_point_array
@@ -23,11 +27,48 @@ class Layer(VHDLblock):
 		0.3]]), w_inh = np.array([[-0.1, -0.2]]), v_th = np.array([8]),
 		v_reset = np.array([2]), bitwidth = 16, fp_decimals = 0,
 		w_inh_bw = 5, w_exc_bw = 5, shift = 10, reset = "fixed",
-		functional = False, debug = False, debug_list = []):
+		functional = False,
+		# --- Spiker-LL learning-mode additions -----------------------------
+		# When ``trainable`` is True the layer instantiates an on-chip
+		# trainer module and replaces its excitatory weight ROM with a
+		# dual-port RAM. ``role`` picks between the two trainer flavours:
+		#   "hidden" -> HiddenLayerTrainer (uses sel_idx/neuron_constants)
+		#   "output" -> OutputLayerTrainer (uses output_lr/output_loss)
+		# These extra kwargs are ignored when ``trainable`` is False, so
+		# existing inference-only Layer call sites stay unchanged.
+		trainable = False, role = None, sel_idx = None,
+		neuron_constants = None, n_output_neurons = None,
+		output_lr = 0.01, output_loss_value = 0.2,
+		output_const_value = None,
+		# hw_fp_dec: the fixed-point decimal bits used during training.
+		# Passed to OutputLayerTrainer so its CONST is computed with the
+		# correct scale. None falls back to the module default (FP_DEC=8).
+		hw_fp_dec = None,
+		# -------------------------------------------------------------------
+		debug = False, debug_list = []):
 
 		if reset == "none" and functional is True:
 			debug = True
 			debug_list.append("neuron_dp_none_v")
+
+		# Learning-mode state. Validate aggressively here so a bad config
+		# fails at construction, not deep inside the VHDL emission code.
+		self.trainable = trainable
+		self.role = role
+		if trainable:
+			if role not in ("hidden", "output"):
+				raise ValueError(
+					"Layer(trainable=True) requires role='hidden' or 'output'; "
+					f"got {role!r}")
+			if role == "hidden":
+				if sel_idx is None or neuron_constants is None:
+					raise ValueError(
+						"Hidden-layer trainer needs sel_idx and "
+						"neuron_constants from the STSFTrainer")
+				if n_output_neurons is None:
+					raise ValueError(
+						"Hidden-layer trainer needs n_output_neurons "
+						"(the next layer's neuron count)")
 
 		self.n_neurons		= w_exc.shape[0]
 		self.n_exc_inputs 	= w_exc.shape[1]
@@ -57,6 +98,7 @@ class Layer(VHDLblock):
 		self.multi_input = MultiInput(
 			n_exc_inputs 	= self.n_exc_inputs,
 			n_inh_inputs 	= self.n_inh_inputs,
+			trainable	= self.trainable,
 			debug 		= debug,
 			debug_list 	= debug_list
 		)
@@ -71,13 +113,17 @@ class Layer(VHDLblock):
 			debug_list 	= debug_list
 		)
 
+		# Trainable layers use a dual-port RAM so the on-chip trainer can
+		# write back updated weights; inference-only layers keep the
+		# original read-only ROM.
 		self.exc_mem = Rom(
 			init_array 	= w_exc,
 			bitwidth 	= w_exc_bw,
 			fp_decimals	= fp_decimals,
 			name_term 	= "_exc" + label,
-			functional	= self.functional
-		) 
+			functional	= self.functional,
+			writable	= self.trainable,
+		)
 
 		self.inh_mem = Rom(
 			init_array 	= w_inh,
@@ -85,7 +131,32 @@ class Layer(VHDLblock):
 			fp_decimals	= fp_decimals,
 			name_term 	= "_inh" + label,
 			functional	= self.functional
-		) 
+		)
+
+		# Instantiate the appropriate on-chip trainer (None when inference).
+		if self.trainable and self.role == "hidden":
+			self.trainer = HiddenLayerTrainer(
+				n_hidden=self.n_neurons,
+				n_output=n_output_neurons,
+				neuron_bw=bitwidth,
+				sel_idx=sel_idx,
+				neuron_constants=neuron_constants,
+			)
+			self.n_output_neurons = n_output_neurons
+		elif self.trainable and self.role == "output":
+			self.trainer = OutputLayerTrainer(
+				n_neurons=self.n_neurons,
+				neuron_bw=bitwidth,
+				lr=output_lr,
+				loss_value=output_loss_value,
+				fp_dec=(hw_fp_dec if hw_fp_dec is not None else FP_DEC),
+				bw=bitwidth,
+				const_value=output_const_value,
+			)
+			self.n_output_neurons = self.n_neurons
+		else:
+			self.trainer = None
+			self.n_output_neurons = None
 
 		self.addr_converter = AddrConverter(
 			bitwidth	= self.exc_cnt_bitwidth
@@ -205,9 +276,36 @@ class Layer(VHDLblock):
 			port_type	= "std_logic_vector(" +
 					str(self.n_neurons-1) + " downto 0)")
 
+		# Spiker-LL learning-mode top-level ports. Added here so they end
+		# up next to the inference ports in the emitted entity, keeping
+		# the interface readable.
+		if self.trainable:
+			self.entity.port.add(
+				name="update_weights", direction="in",
+				port_type="std_logic")
+			# ``target`` and ``pred_spikes`` are needed by the hidden
+			# trainer's error calculation; the output trainer reuses
+			# ``target`` for its own target vector.
+			if self.role == "hidden":
+				self.entity.port.add(
+					name="target", direction="in",
+					port_type="std_logic_vector(" +
+					str(self.n_output_neurons-1) + " downto 0)")
+				self.entity.port.add(
+					name="pred_spikes", direction="in",
+					port_type="std_logic_vector(" +
+					str(self.n_output_neurons-1) + " downto 0)")
+			else:  # role == "output"
+				self.entity.port.add(
+					name="target", direction="in",
+					port_type="std_logic_vector(" +
+					str(self.n_neurons-1) + " downto 0)")
+
 		hex_width = int(log2(ceil_pow2(self.n_neurons)) // 4)
 		if hex_width == 0:
 			hex_width = 1
+		if hex_width < 2 and self.n_neurons > 16:
+			hex_width = 2
 
 		# Input parameters
 		for i in range(self.n_neurons):
@@ -315,6 +413,22 @@ class Layer(VHDLblock):
 			name 		= "out_sample",
 			signal_type	= "std_logic")
 
+		# Trainable-mode internal signals — the concatenated weight bus
+		# the trainer reads (weights_in) and the bus the RAM writes
+		# (weights_out / din), plus the RAM write enable produced by the
+		# multi_input block.
+		if self.trainable:
+			self.architecture.signal.add(
+				name="trainer_weights_in",
+				signal_type="std_logic_vector(" +
+				str(self.n_neurons*self.bitwidth-1) + " downto 0)")
+			self.architecture.signal.add(
+				name="trainer_weights_out",
+				signal_type="std_logic_vector(" +
+				str(self.n_neurons*self.bitwidth-1) + " downto 0)")
+			self.architecture.signal.add(
+				name="ram_wea", signal_type="std_logic")
+
 
 
 
@@ -398,6 +512,14 @@ class Layer(VHDLblock):
 		self.architecture.instances["multi_input_control"].generic_map()
 		self.architecture.instances["multi_input_control"].port_map()
 
+		if self.trainable:
+			# multi_input gains an update_weights input + ram_wea output
+			# when trainable=True is propagated; wire them here.
+			self.architecture.instances["multi_input_control"].p_map.add(
+				"update_weights", "update_weights")
+			self.architecture.instances["multi_input_control"].p_map.add(
+				"ram_wea", "ram_wea")
+
 		# LIF neuron
 		for i in range(self.n_neurons):
 
@@ -446,17 +568,39 @@ class Layer(VHDLblock):
 				"out_spike", "out_spikes_inst(" + str(i) + ")")
 			
 
-		# Excitatory memory
+		# Excitatory memory. When trainable=True the underlying entity is a
+		# dual-port RAM (ports clk/raddr/wea/waddr/din) instead of a ROM
+		# (ports clka/addra); pick the right port names per mode.
 		self.architecture.instances.add(self.exc_mem,
 				"exc_mem")
 		self.architecture.instances["exc_mem"].generic_map()
 		self.architecture.instances["exc_mem"].port_map()
-		self.architecture.instances["exc_mem"].p_map.add(
-				"addra", "exc_addr")
-		self.architecture.instances["exc_mem"].p_map.add(
-				"clka", "clk")
+		if self.trainable:
+			self.architecture.instances["exc_mem"].p_map.add(
+					"raddr", "exc_addr")
+			self.architecture.instances["exc_mem"].p_map.add(
+					"clk", "clk")
+			# Write port — wea/waddr/din are driven by the trainer +
+			# multi_input ram_wea strobe.
+			self.architecture.instances["exc_mem"].p_map.add(
+					"wea", "ram_wea")
+			# NOTE: waddr must be the raw exc_cnt, not exc_addr. exc_addr is
+			# exc_cnt+1 (addr_converter prefetches next cycle's read), so
+			# the data on dout_* this cycle -- and therefore the trainer's
+			# weights_in/weights_out -- corresponds to the *current* exc_cnt
+			# column, not exc_addr. Writing to exc_addr would silently
+			# update the wrong (next) column every cycle.
+			self.architecture.instances["exc_mem"].p_map.add(
+					"waddr", "exc_cnt")
+			self.architecture.instances["exc_mem"].p_map.add(
+					"din", "trainer_weights_out")
+		else:
+			self.architecture.instances["exc_mem"].p_map.add(
+					"addra", "exc_addr")
+			self.architecture.instances["exc_mem"].p_map.add(
+					"clka", "clk")
 		for i in range(self.n_neurons):
-			exc_weight_name = "exc_weight_" + int_to_hex(i, 
+			exc_weight_name = "exc_weight_" + int_to_hex(i,
 						hex_width)
 			dout_name = "dout_" + int_to_hex(i, hex_width)
 
@@ -518,6 +662,59 @@ class Layer(VHDLblock):
 				"reg_out", "out_spikes")
 		self.architecture.instances["spikes_barrier"].p_map.add(
 				"ready", "barrier_ready")
+
+		# Trainer (only present in learning mode).
+		if self.trainable:
+			self.architecture.component.add(self.trainer)
+
+			# Build the concatenated weights_in bus from the individual
+			# per-neuron exc_weight_<hex> signals. The MSB end of the
+			# concatenation is neuron N-1, matching the trainer's slicing
+			# convention: weights_in((i+1)*BW-1 downto i*BW) = neuron i.
+			weight_terms = []
+			for i in range(self.n_neurons - 1, -1, -1):
+				weight_terms.append(
+					"exc_weight_" + int_to_hex(i, hex_width))
+			self.architecture.bodyCodeHeader.add(
+				"trainer_weights_in <= " + " & ".join(weight_terms) + ";"
+			)
+
+			self.architecture.instances.add(self.trainer, "trainer")
+			self.architecture.instances["trainer"].generic_map(mode="self")
+			self.architecture.instances["trainer"].port_map()
+			self.architecture.instances["trainer"].p_map.add(
+				"update_weights", "update_weights")
+			self.architecture.instances["trainer"].p_map.add(
+				"weights_in", "trainer_weights_in")
+			self.architecture.instances["trainer"].p_map.add(
+				"weights_out", "trainer_weights_out")
+			self.architecture.instances["trainer"].p_map.add(
+				"target", "target")
+
+			if self.role == "hidden":
+				# Hidden trainer:
+				#   x_pre      <- most recent excitatory input spike
+				#   x_post     <- this layer's neuron spikes (out_spikes_inst)
+				#   out_spikes <- next layer's feedback (pred_spikes input)
+				self.architecture.instances["trainer"].p_map.add(
+					"x_pre", "exc_spike")
+				self.architecture.instances["trainer"].p_map.add(
+					"x_post", "out_spikes_inst")
+				self.architecture.instances["trainer"].p_map.add(
+					"out_spikes", "pred_spikes")
+			else:  # role == "output"
+				# Output trainer:
+				#   clk, rst_n drive the (currently unused) clocked ports
+				#   in_spike   <- last hidden-layer spike (this layer's exc input)
+				#   out_spikes <- this layer's own spikes (out_spikes_inst)
+				self.architecture.instances["trainer"].p_map.add(
+					"clk", "clk")
+				self.architecture.instances["trainer"].p_map.add(
+					"rst_n", "rst_n")
+				self.architecture.instances["trainer"].p_map.add(
+					"in_spike", "exc_spike")
+				self.architecture.instances["trainer"].p_map.add(
+					"out_spikes", "out_spikes_inst")
 
 		# Debug
 		if debug:

@@ -11,6 +11,7 @@ from .spiker_pkg import SpikerPackage
 from .decoder import Decoder
 from .mux import Mux
 from .reg import Reg
+from .output_voter import OutputVoter
 from .vhdl import track_signals, debug_component, sub_components, write_file_all
 from .utils import ceil_pow2, obj_types, is_iterable
 
@@ -27,11 +28,19 @@ from .vhdl import simulate as simulate_vhdl
 
 class Network(VHDLblock, dict):
 
-	def __init__(self, n_cycles = 10, debug = False, debug_list = []):
+	def __init__(self, n_cycles = 10, learning = None, n_classes = None,
+			debug = False, debug_list = []):
 
 		self.layer_index 	= 0
 		self.all_ready 		= ConditionsList()
 		self.n_cycles		= n_cycles
+
+		# Learning configuration. When non-None the network gains the
+		# train_mode / target / update_every_n top-level interface and an
+		# OutputVoter; the multi_cycle controller is built in learning
+		# mode so it emits the update_weights_layer{0,1} strobes.
+		self.learning = learning
+		self.n_classes = n_classes  # Required when learning is set.
 
 		self.name = "network"
 
@@ -43,9 +52,24 @@ class Network(VHDLblock, dict):
 
 		self.multi_cycle = MultiCycle(
 			n_cycles = self.n_cycles,
+			learning = (self.learning is not None),
 			debug = debug,
 			debug_list = debug_list
 		)
+
+		# OutputVoter is built lazily once n_classes is known. For the
+		# learning path the caller passes n_classes explicitly.
+		if self.learning is not None:
+			if self.n_classes is None:
+				raise ValueError(
+					"Network(learning=...) requires n_classes (the "
+					"output-layer neuron count)")
+			self.output_voter = OutputVoter(
+				n_classes=self.n_classes,
+				n_cycles=self.n_cycles,
+			)
+		else:
+			self.output_voter = None
 
 		self.components = sub_components(self)
 
@@ -103,13 +127,43 @@ class Network(VHDLblock, dict):
 			port_type	= "std_logic")
 
 		self.entity.port.add(
-			name 		= "sample", 
+			name 		= "sample",
 			direction	= "out",
 			port_type	= "std_logic")
+
+		# Spiker-LL learning-mode top-level ports.
+		if self.learning is not None:
+			self.entity.port.add(
+				name="train_mode", direction="in",
+				port_type="std_logic")
+			self.entity.port.add(
+				name="target", direction="in",
+				port_type="std_logic_vector(" +
+				str(self.n_classes-1) + " downto 0)")
+			self.entity.port.add(
+				name="update_every_n", direction="in",
+				port_type="std_logic_vector("
+				"cycles_cnt_bitwidth-1 downto 0)")
+			self.entity.port.add(
+				name="voted_class", direction="out",
+				port_type="std_logic_vector(" +
+				str(self.n_classes-1) + " downto 0)")
+			self.entity.port.add(
+				name="out_valid", direction="out",
+				port_type="std_logic")
 
 
 		# Components
 		self.architecture.component.add(self.multi_cycle)
+		if self.learning is not None:
+			self.architecture.component.add(self.output_voter)
+
+			# Update strobes coming out of multi_cycle and shared signals
+			# routed into both layers.
+			self.architecture.signal.add(
+				name="update_weights_layer0", signal_type="std_logic")
+			self.architecture.signal.add(
+				name="update_weights_layer1", signal_type="std_logic")
 
 		self.architecture.signal.add(
 			name		= "start_all",
@@ -135,6 +189,17 @@ class Network(VHDLblock, dict):
 				"multi_cycle_control")
 		self.architecture.instances["multi_cycle_control"].generic_map()
 		self.architecture.instances["multi_cycle_control"].port_map()
+
+		if self.learning is not None:
+			# Forward the learning-mode signals to the multi_cycle.
+			self.architecture.instances["multi_cycle_control"].p_map.add(
+				"train_mode", "train_mode")
+			self.architecture.instances["multi_cycle_control"].p_map.add(
+				"update_every_n", "update_every_n")
+			self.architecture.instances["multi_cycle_control"].p_map.add(
+				"update_weights_layer0", "update_weights_layer0")
+			self.architecture.instances["multi_cycle_control"].p_map.add(
+				"update_weights_layer1", "update_weights_layer1")
 
 		self.all_ready.add("sample_ready")
 		self.architecture.bodyCodeHeader.add("all_ready <= " +
@@ -189,6 +254,18 @@ class Network(VHDLblock, dict):
 			"out_spikes", current_layer + "_feedback")
 		self.architecture.instances[current_layer].p_map.add(
 			"inh_spikes", current_layer + "_feedback")
+
+		# Spiker-LL learning-mode wiring: route update strobe and target
+		# into the trainable layer. The hidden layer also needs the
+		# output layer's spikes (pred_spikes); since layers are added in
+		# order layer_0, layer_1 we deferred the pred_spikes binding to
+		# finalize() once layer_1's feedback signal exists.
+		if getattr(layer, "trainable", False):
+			update_sig = "update_weights_layer" + str(self.layer_index)
+			self.architecture.instances[current_layer].p_map.add(
+				"update_weights", update_sig)
+			self.architecture.instances[current_layer].p_map.add(
+				"target", "target")
 
 
 		if self.layer_index == 0:
@@ -292,6 +369,57 @@ class Network(VHDLblock, dict):
 				return False
 
 		return True
+
+	def finalize(self):
+		"""Resolve cross-layer wiring that depends on all layers existing.
+
+		Specifically: in learning mode, the hidden layer (layer_0) needs
+		``pred_spikes`` connected to the output layer (layer_1) feedback,
+		and the OutputVoter must be wired between layer_1's spikes and
+		the top-level voted_class / out_valid ports.
+
+		Idempotent: calling more than once is harmless.
+		"""
+		if self.learning is None:
+			return
+		if self.layer_index < 2:
+			raise ValueError(
+				"Network.finalize() called before both layers were added; "
+				f"got layer_index={self.layer_index}, expected 2.")
+
+		# Hidden layer needs the *previous* timestep's output spikes; the
+		# multi_cycle update strobe is delayed one clock for layer 1, so
+		# wiring directly to layer_1_feedback is the correct alignment.
+		if getattr(self["layer_0"], "trainable", False):
+			self.architecture.instances["layer_0"].p_map.add(
+				"pred_spikes", "layer_1_feedback")
+
+		# OutputVoter wiring. ``count_en`` ticks once per inference
+		# timestep; ``vote`` fires once per sample at completion.
+		self.architecture.signal.add(
+			name="vote_strobe", signal_type="std_logic")
+		self.architecture.bodyCodeHeader.add(
+			"vote_strobe <= ready;")
+
+		self.architecture.instances.add(self.output_voter, "output_voter")
+		self.architecture.instances["output_voter"].generic_map(mode="self")
+		self.architecture.instances["output_voter"].port_map()
+		self.architecture.instances["output_voter"].p_map.add(
+			"clk", "clk")
+		self.architecture.instances["output_voter"].p_map.add(
+			"rst_n", "rst_n")
+		self.architecture.instances["output_voter"].p_map.add(
+			"count_en", "start_all")
+		self.architecture.instances["output_voter"].p_map.add(
+			"count_rst", "restart")
+		self.architecture.instances["output_voter"].p_map.add(
+			"spikes_in", "layer_1_feedback")
+		self.architecture.instances["output_voter"].p_map.add(
+			"vote", "vote_strobe")
+		self.architecture.instances["output_voter"].p_map.add(
+			"voted_class", "voted_class")
+		self.architecture.instances["output_voter"].p_map.add(
+			"vote_valid", "out_valid")
 
 	def write_file_all(self, output_dir = "output", rm = False):
 		write_file_all(self, output_dir = output_dir, rm = rm)
