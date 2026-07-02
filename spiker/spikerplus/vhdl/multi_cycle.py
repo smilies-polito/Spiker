@@ -112,6 +112,11 @@ class MultiCycle(VHDLblock):
 			signal_type	= "std_logic")
 
 		if self.learning:
+			# update_cnt below is `unsigned`, which needs numeric_std --
+			# only pulled in for the learning path so plain (non-learning)
+			# generation is untouched.
+			self.library["ieee"].package.add("numeric_std")
+
 			# Extra top-level ports for on-chip learning.
 			self.entity.port.add(
 				name="train_mode", direction="in", port_type="std_logic")

@@ -401,24 +401,24 @@ class Network(VHDLblock, dict):
 		self.architecture.bodyCodeHeader.add(
 			"vote_strobe <= ready;")
 
-		self.architecture.instances.add(self.output_voter, "output_voter")
-		self.architecture.instances["output_voter"].generic_map(mode="self")
-		self.architecture.instances["output_voter"].port_map()
-		self.architecture.instances["output_voter"].p_map.add(
+		self.architecture.instances.add(self.output_voter, "voter")
+		self.architecture.instances["voter"].generic_map(mode="self")
+		self.architecture.instances["voter"].port_map()
+		self.architecture.instances["voter"].p_map.add(
 			"clk", "clk")
-		self.architecture.instances["output_voter"].p_map.add(
+		self.architecture.instances["voter"].p_map.add(
 			"rst_n", "rst_n")
-		self.architecture.instances["output_voter"].p_map.add(
+		self.architecture.instances["voter"].p_map.add(
 			"count_en", "start_all")
-		self.architecture.instances["output_voter"].p_map.add(
+		self.architecture.instances["voter"].p_map.add(
 			"count_rst", "restart")
-		self.architecture.instances["output_voter"].p_map.add(
+		self.architecture.instances["voter"].p_map.add(
 			"spikes_in", "layer_1_feedback")
-		self.architecture.instances["output_voter"].p_map.add(
+		self.architecture.instances["voter"].p_map.add(
 			"vote", "vote_strobe")
-		self.architecture.instances["output_voter"].p_map.add(
+		self.architecture.instances["voter"].p_map.add(
 			"voted_class", "voted_class")
-		self.architecture.instances["output_voter"].p_map.add(
+		self.architecture.instances["voter"].p_map.add(
 			"vote_valid", "out_valid")
 
 	def write_file_all(self, output_dir = "output", rm = False):
