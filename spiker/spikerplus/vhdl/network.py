@@ -252,8 +252,27 @@ class Network(VHDLblock, dict):
 			"ready", layer_ready)
 		self.architecture.instances[current_layer].p_map.add(
 			"out_spikes", current_layer + "_feedback")
-		self.architecture.instances[current_layer].p_map.add(
-			"inh_spikes", current_layer + "_feedback")
+
+		# Recurrent (self-)inhibition. The legacy/inference path feeds a
+		# layer's own output spikes back as inh_spikes (real lateral
+		# inhibition, matching mnist/original/network.vhd). Every
+		# hand-crafted Spiker-LL reference (mnist/rtl, mnist_8bit,
+		# digits/rtl, fmnist/rtl, mnist_reduced/rtl) instead ties
+		# inh_spikes to a constant zero for trainable layers -- recurrent
+		# inhibition was deliberately dropped for the on-chip-learning
+		# design. Reproduce that here so trainable layers match; leave
+		# inference-only layers on the original self-feedback wiring.
+		if getattr(layer, "trainable", False):
+			self.architecture.signal.add(
+				current_layer + "_inh_zero",
+				"std_logic_vector(" + str(layer.n_neurons-1) +
+				" downto 0)",
+				"(others => '0')")
+			self.architecture.instances[current_layer].p_map.add(
+				"inh_spikes", current_layer + "_inh_zero")
+		else:
+			self.architecture.instances[current_layer].p_map.add(
+				"inh_spikes", current_layer + "_feedback")
 
 		# Spiker-LL learning-mode wiring: route update strobe and target
 		# into the trainable layer. The hidden layer also needs the
