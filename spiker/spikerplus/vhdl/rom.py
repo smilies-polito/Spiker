@@ -131,9 +131,6 @@ class Rom(VHDLblock):
 			if hex_width == 0:
 				hex_width = 1
 
-			if hex_width < 2 and self.rom_columns > 16:
-				hex_width = 2
-
 			hex_index = str(int_to_hex(i, width = hex_width))
 
 			self.entity.port.add(
@@ -166,8 +163,13 @@ class Rom(VHDLblock):
 					" downto 0)"
 			)
 
+		# The Spiker-LL fork names the wrapper's internal read bus after
+		# the RAM's true dual-port read output (doutb); the read-only ROM
+		# keeps the original single-port name (douta).
+		read_bus = "doutb" if self.writable else "douta"
+
 		self.architecture.signal.add(
-			name	= "douta",
+			name	= read_bus,
 			signal_type	= "std_logic_vector(" +
 			str(self.bitwidth*self.rom_columns-1)
 			+ " downto 0)"
@@ -180,14 +182,11 @@ class Rom(VHDLblock):
 			if hex_width == 0:
 				hex_width = 1
 
-			if hex_width < 2 and self.rom_columns > 16:
-				hex_width = 2
-
 			hex_index = str(int_to_hex(i, width = hex_width))
 
 			self.architecture.bodyCodeHeader.add(
-				"dout_" + hex_index + " <= douta("
-				+ str(self.bitwidth*(i+1)-1) + " downto " + 
+				"dout_" + hex_index + " <= " + read_bus + "("
+				+ str(self.bitwidth*(i+1)-1) + " downto " +
 				str(self.bitwidth*i) + ");")
 
 
@@ -212,7 +211,7 @@ class Rom(VHDLblock):
 			self.architecture.instances[ip_inst_name].p_map.add(
 				"addrb", "raddr")
 			self.architecture.instances[ip_inst_name].p_map.add(
-				"doutb", "douta")
+				"doutb", "doutb")
 		else:
 			self.architecture.instances[ip_inst_name].port_map()
 

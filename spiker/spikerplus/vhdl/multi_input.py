@@ -38,6 +38,7 @@ class MultiInput(VHDLblock):
 		)
 
 		self.control_unit = MultiInputCU(
+			learning = trainable,
 			debug = debug,
 			debug_list = debug_list
 		)
@@ -212,13 +213,19 @@ class MultiInput(VHDLblock):
 
 		if self.trainable:
 			# Tap the datapath's exc_spike output so we can re-use it for
-			# both the original port and the new RAM write enable.
+			# both the original port and the new RAM write enable. The
+			# write enable only fires during the CU's dedicated
+			# train_update pass (``training``), mirroring the hand-coded
+			# reference.
 			self.architecture.signal.add(
 				name="exc_spike_s", signal_type="std_logic")
+			self.architecture.signal.add(
+				name="training", signal_type="std_logic")
 			self.architecture.bodyCodeHeader.add(
 				"exc_spike <= exc_spike_s;")
 			self.architecture.bodyCodeHeader.add(
-				"ram_wea <= update_weights and exc_spike_s;")
+				"ram_wea <= update_weights and exc_spike_s "
+				"and training;")
 		
 		# Datapath
 		self.architecture.instances.add(self.datapath,
@@ -246,6 +253,12 @@ class MultiInput(VHDLblock):
 				"control_unit")
 		self.architecture.instances["control_unit"].generic_map()
 		self.architecture.instances["control_unit"].port_map()
+
+		if self.trainable:
+			self.architecture.instances["control_unit"].p_map.add(
+				"train", "update_weights")
+			self.architecture.instances["control_unit"].p_map.add(
+				"training", "training")
 
 
 		# Debug

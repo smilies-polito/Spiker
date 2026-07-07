@@ -34,6 +34,21 @@ class VhdlGenerator:
 					"learning mode requires STSFTrainer.train() to have "
 					"run first (so snn.sel_idx_array and "
 					"snn.neuron_constants are populated)")
+			# update_every_n is carried on a cycles_cnt_bitwidth-wide
+			# port (the testbench convention drives it with N-1).
+			from math import log2 as _log2
+			from .vhdl.utils import ceil_pow2 as _ceil_pow2
+			cycles_cnt_bw = int(_log2(_ceil_pow2(
+				self.net.n_cycles + 1))) + 1
+			max_n = 2 ** cycles_cnt_bw
+			update_every = self.net.learning["update_every"]
+			if not 1 <= update_every <= max_n:
+				raise ValueError(
+					f"learning update_every={update_every} does "
+					f"not fit the {cycles_cnt_bw}-bit "
+					"update_every_n port (valid range: 1.."
+					f"{max_n} for n_cycles="
+					f"{self.net.n_cycles})")
 
 		self.input_size = self.input_size(list(self.net.layers)[0])
 		self.output_size = self.output_size(list(self.net.layers)[-2])
@@ -42,6 +57,24 @@ class VhdlGenerator:
 
 		learning_block = self.net.learning
 		n_classes = self.output_size if learning_block is not None else None
+
+		# On-chip learning supports exactly one configuration -- the one
+		# the hand-coded Spiker-LL accelerators use (functional design,
+		# inferred-BRAM memories, no wrapper, no debug taps). Reject the
+		# other modes explicitly instead of emitting untested VHDL.
+		if learning_block is not None and (
+				interface or debug or not functional):
+			raise ValueError(
+				"on-chip learning supports only the default "
+				"generate() configuration (functional=True, "
+				"interface=False, debug=False); got "
+				f"functional={functional}, interface={interface}, "
+				f"debug={debug}")
+
+		# Set (or reset) the package-level learning switch before any
+		# VHDL object is constructed -- see SpikerPackage.learning_mode.
+		from .vhdl.spiker_pkg import SpikerPackage
+		SpikerPackage.learning_mode = learning_block is not None
 
 		vhdl_net = Network(
 			self.net.n_cycles,

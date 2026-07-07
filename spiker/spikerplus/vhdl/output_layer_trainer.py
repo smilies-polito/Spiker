@@ -62,7 +62,9 @@ class OutputLayerTrainer(VHDLblock):
 
 		self.components = sub_components(self)
 
-		super().__init__(entity_name=self.name)
+		# The hand-coded Spiker-LL reference names this architecture
+		# "rtl"; mirror it.
+		super().__init__(entity_name=self.name, architecture_name="rtl")
 		self.vhdl(debug=debug)
 
 	def vhdl(self, debug=False):
@@ -126,6 +128,31 @@ class OutputLayerTrainer(VHDLblock):
 			signal_type="std_logic_vector("
 			"n_neurons*neuron_bit_width-1 downto 0)")
 
+		# Vivado waveform-debug types/signals, mirrored verbatim from
+		# the hand-coded reference. Functionally dead.
+		self.architecture.customTypes.add(
+			"std_logic_vector_array", "Array",
+			"natural range <>",
+			"std_logic_vector(neuron_bit_width-1 downto 0)")
+		self.architecture.signal.add(
+			name="dbg_w_in",
+			signal_type="std_logic_vector_array(0 to n_neurons-1)")
+		self.architecture.signal.add(
+			name="dbg_w_upd",
+			signal_type="std_logic_vector_array(0 to n_neurons-1)")
+		self.architecture.signal.add(
+			name="cmp", signal_type="std_logic")
+		self.architecture.customTypes.add(
+			"weight_array_t", "Array",
+			"0 to n_neurons-1",
+			"signed(neuron_bit_width-1 downto 0)")
+		self.architecture.signal.add(
+			name="debug_weights_in", signal_type="weight_array_t")
+		self.architecture.signal.add(
+			name="debug_weights_out", signal_type="weight_array_t")
+		self.architecture.signal.add(
+			name="debug_update_values", signal_type="weight_array_t")
+
 		# Update logic — one slice per output neuron. Same combinational
 		# pattern as the hidden trainer but with a fixed CONST instead of
 		# a per-neuron lookup.
@@ -150,4 +177,21 @@ class OutputLayerTrainer(VHDLblock):
 		self.architecture.bodyCodeHeader.add(
 			"weights_out <= updated_weights when update_weights = '1' "
 			"else (others => '0');"
+		)
+
+		self.architecture.bodyCodeHeader.add(
+			"debug_assign: for i in 0 to n_neurons-1 generate\n"
+			"        dbg_w_in(i) <= weights_in((i+1)*neuron_bit_width-1 downto i*neuron_bit_width);\n"
+			"        dbg_w_upd(i) <= updated_weights((i+1)*neuron_bit_width-1 downto i*neuron_bit_width);\n"
+			"    end generate debug_assign;"
+		)
+		self.architecture.bodyCodeHeader.add(
+			"cmp <= '1' when weights_in /= updated_weights else '0';")
+		self.architecture.bodyCodeHeader.add(
+			"debug_assign_gen: for i in 0 to n_neurons-1 generate\n"
+			"    begin\n"
+			"        debug_weights_in(i) <= signed(weights_in((i+1)*neuron_bit_width-1 downto i*neuron_bit_width));\n"
+			"        debug_weights_out(i) <= signed(updated_weights((i+1)*neuron_bit_width-1 downto i*neuron_bit_width));\n"
+			"        debug_update_values(i) <= signed(update_values((i+1)*neuron_bit_width-1 downto i*neuron_bit_width));\n"
+			"    end generate debug_assign_gen;"
 		)

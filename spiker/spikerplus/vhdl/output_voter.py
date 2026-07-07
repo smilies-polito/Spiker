@@ -32,7 +32,10 @@ class OutputVoter(VHDLblock):
 
 		self.components = sub_components(self)
 
-		super().__init__(entity_name=self.name)
+		# The hand-coded Spiker-LL reference names this architecture
+		# "behavioral" (not spikerplus's usual "behavior"); mirror it.
+		super().__init__(entity_name=self.name,
+				architecture_name="behavioral")
 		self.vhdl(debug=debug)
 
 	def vhdl(self, debug=False):
@@ -111,7 +114,9 @@ class OutputVoter(VHDLblock):
 			"voting_logic : process(spike_counts, vote)\n"
 			"        variable max_count : counter_t;\n"
 			"        variable max_idx   : integer range 0 to N_CLASSES-1;\n"
+			"        variable one_hot   : std_logic_vector(N_CLASSES-1 downto 0);\n"
 			"    begin\n"
+			"        one_hot := (others => '0');\n"
 			"        if vote = '1' then\n"
 			"            max_count := (others => '0');\n"
 			"            max_idx := 0;\n"

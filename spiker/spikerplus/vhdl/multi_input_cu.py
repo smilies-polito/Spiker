@@ -6,9 +6,11 @@ from .vhdltools.if_statement import If
 
 class MultiInputCU(VHDLblock):
 
-	def __init__(self, debug = False, debug_list = []):
-		
+	def __init__(self, learning = False, debug = False, debug_list = []):
+
 		self.name = "multi_input_cu"
+
+		self.learning = learning
 
 		self.spiker_pkg = SpikerPackage()
 		self.components = sub_components(self)
@@ -122,10 +124,22 @@ class MultiInputCU(VHDLblock):
 
 		# Output towards outside
 		self.entity.port.add(
-				name            = "ready", 
+				name            = "ready",
 				direction       = "out",
 				port_type       = "std_logic")
 
+		if self.learning:
+			# On-chip training handshake (mirrors the hand-coded
+			# Spiker-LL reference): train requests the post-readout
+			# weight-update pass, training reports it is running.
+			self.entity.port.add(
+					name            = "train",
+					direction       = "in",
+					port_type       = "std_logic")
+			self.entity.port.add(
+					name            = "training",
+					direction       = "out",
+					port_type       = "std_logic")
 
 		# Signals
 		self.architecture.signal.add(
@@ -303,15 +317,40 @@ class MultiInputCU(VHDLblock):
 			       case_list["present_state"].when_list[
 			       "exc_wait"].body.add(neurons_ready_check)
 
-		# Exc update 
+		# Exc update
 		exc_stop_check = If()
 		exc_stop_check._if_.conditions.add("exc_stop = '1'")
-		exc_stop_check._if_.body.add("next_state <= idle;")
+		if self.learning:
+			# After the last excitatory input, enter the training
+			# pass instead of idling when train is asserted.
+			train_check = If()
+			train_check._if_.conditions.add("train = '1'")
+			train_check._if_.body.add("next_state <= train_wait;")
+			train_check._else_.body.add("next_state <= idle;")
+			exc_stop_check._if_.body.add(train_check)
+		else:
+			exc_stop_check._if_.body.add("next_state <= idle;")
 		exc_stop_check._else_.body.add("next_state <= exc_update;")
 
 		self.architecture.processes["state_evaluation"].\
 			       case_list["present_state"].when_list[
 			       "exc_update"].body.add(exc_stop_check)
+
+		if self.learning:
+			# Train wait -> train update
+			self.architecture.processes["state_evaluation"].\
+				case_list["present_state"].when_list[
+				"train_wait"].body.add(
+				"next_state <= train_update;")
+
+			train_stop_check = If()
+			train_stop_check._if_.conditions.add("exc_stop = '1'")
+			train_stop_check._if_.body.add("next_state <= idle;")
+			train_stop_check._else_.body.add(
+				"next_state <= train_update;")
+			self.architecture.processes["state_evaluation"].\
+				case_list["present_state"].when_list[
+				"train_update"].body.add(train_stop_check)
 
 		# Inh wait
 		neurons_ready_check = If()
@@ -343,6 +382,9 @@ class MultiInputCU(VHDLblock):
 		self.architecture.processes.add("output_evaluation")
 		self.architecture.processes["output_evaluation"].\
 			       sensitivity_list.add("present_state")
+		if self.learning:
+			self.architecture.processes["output_evaluation"].\
+				       sensitivity_list.add("exc_stop")
 
 		# Default values
 		self.architecture.processes["output_evaluation"].\
@@ -365,6 +407,9 @@ class MultiInputCU(VHDLblock):
 			       bodyHeader.add("neuron_restart <= '0';")
 		self.architecture.processes["output_evaluation"].\
 			       bodyHeader.add("ready <= '0';")
+		if self.learning:
+			self.architecture.processes["output_evaluation"].\
+				       bodyHeader.add("training <= '0';")
 
 		self.architecture.processes["output_evaluation"].\
 			       case_list.add("present_state")
@@ -465,7 +510,7 @@ class MultiInputCU(VHDLblock):
 			       case_list["present_state"].when_list[
 			       "exc_wait"].body.add("ready <= '0';")
 
-		# Exc update 
+		# Exc update
 		self.architecture.processes["output_evaluation"].\
 			       case_list["present_state"].when_list[
 			       "exc_update"].body.add("exc <= '1';")
@@ -473,10 +518,39 @@ class MultiInputCU(VHDLblock):
 			       case_list["present_state"].when_list[
 			       "exc_update"].body.add(
 			       "exc_cnt_rst_n <= '1';")
-		self.architecture.processes["output_evaluation"].\
-			       case_list["present_state"].when_list[
-			       "exc_update"].body.add(
-			       "exc_cnt_en <= '1';")
+		if self.learning:
+			# Mirrors the reference's "[MOD] Avoid reading mem out
+			# of boundaries" guard.
+			exc_cnt_guard = If()
+			exc_cnt_guard._if_.conditions.add("exc_stop = '0'")
+			exc_cnt_guard._if_.body.add("exc_cnt_en <= '1';")
+			self.architecture.processes["output_evaluation"].\
+				       case_list["present_state"].when_list[
+				       "exc_update"].body.add(exc_cnt_guard)
+
+			# Train wait / train update outputs
+			self.architecture.processes["output_evaluation"].\
+				       case_list["present_state"].when_list[
+				       "train_wait"].body.add("ready <= '0';")
+			self.architecture.processes["output_evaluation"].\
+				       case_list["present_state"].when_list[
+				       "train_update"].body.add(
+				       "exc_cnt_rst_n <= '1';")
+			self.architecture.processes["output_evaluation"].\
+				       case_list["present_state"].when_list[
+				       "train_update"].body.add(
+				       "training <= '1';")
+			train_cnt_guard = If()
+			train_cnt_guard._if_.conditions.add("exc_stop = '0'")
+			train_cnt_guard._if_.body.add("exc_cnt_en <= '1';")
+			self.architecture.processes["output_evaluation"].\
+				       case_list["present_state"].when_list[
+				       "train_update"].body.add(train_cnt_guard)
+		else:
+			self.architecture.processes["output_evaluation"].\
+				       case_list["present_state"].when_list[
+				       "exc_update"].body.add(
+				       "exc_cnt_en <= '1';")
 
 		# Inh wait
 		self.architecture.processes["output_evaluation"].\

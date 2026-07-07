@@ -163,7 +163,8 @@ class Layer(VHDLblock):
 		)
 
 		self.barrier = Barrier(
-			bitwidth	= self.n_neurons
+			bitwidth	= self.n_neurons,
+			learning	= self.trainable
 		)
 
 		if self.lif_neuron.reset == "fixed":
@@ -295,6 +296,11 @@ class Layer(VHDLblock):
 					name="pred_spikes", direction="in",
 					port_type="std_logic_vector(" +
 					str(self.n_output_neurons-1) + " downto 0)")
+				# Echo of the barrier's sampling strobe, exported
+				# to the network top level (mirrors the reference).
+				self.entity.port.add(
+					name="input_sample", direction="out",
+					port_type="std_logic")
 			else:  # role == "output"
 				self.entity.port.add(
 					name="target", direction="in",
@@ -304,8 +310,6 @@ class Layer(VHDLblock):
 		hex_width = int(log2(ceil_pow2(self.n_neurons)) // 4)
 		if hex_width == 0:
 			hex_width = 1
-		if hex_width < 2 and self.n_neurons > 16:
-			hex_width = 2
 
 		# Input parameters
 		for i in range(self.n_neurons):
@@ -421,13 +425,22 @@ class Layer(VHDLblock):
 			self.architecture.signal.add(
 				name="trainer_weights_in",
 				signal_type="std_logic_vector(" +
-				str(self.n_neurons*self.bitwidth-1) + " downto 0)")
+				str(self.n_neurons) +
+				"*neuron_bit_width-1 downto 0)")
 			self.architecture.signal.add(
 				name="trainer_weights_out",
 				signal_type="std_logic_vector(" +
-				str(self.n_neurons*self.bitwidth-1) + " downto 0)")
+				str(self.n_neurons) +
+				"*neuron_bit_width-1 downto 0)")
 			self.architecture.signal.add(
 				name="ram_wea", signal_type="std_logic")
+			# Registered (post-barrier) copy of the output spikes:
+			# the trainers observe these, and the out_spikes port is
+			# driven from it (an out port cannot be read back).
+			self.architecture.signal.add(
+				name="out_spikes_s",
+				signal_type="std_logic_vector(" +
+				str(self.n_neurons-1) + " downto 0)")
 
 
 
@@ -659,9 +672,24 @@ class Layer(VHDLblock):
 		self.architecture.instances["spikes_barrier"].p_map.add(
 				"reg_in", "out_spikes_inst")
 		self.architecture.instances["spikes_barrier"].p_map.add(
-				"reg_out", "out_spikes")
+				"reg_out",
+				"out_spikes_s" if self.trainable
+				else "out_spikes")
 		self.architecture.instances["spikes_barrier"].p_map.add(
 				"ready", "barrier_ready")
+		if self.trainable:
+			self.architecture.bodyCodeHeader.add(
+				"out_spikes <= out_spikes_s;")
+			if self.role == "hidden":
+				self.architecture.instances[
+					"spikes_barrier"].p_map.add(
+					"input_sample", "input_sample")
+			else:
+				# The output layer has no input_sample port; the
+				# barrier's echo is left open, as in the
+				# hand-coded reference.
+				del(self.architecture.instances[
+					"spikes_barrier"].p_map["input_sample"])
 
 		# Trainer (only present in learning mode).
 		if self.trainable:
@@ -681,6 +709,10 @@ class Layer(VHDLblock):
 
 			self.architecture.instances.add(self.trainer, "trainer")
 			self.architecture.instances["trainer"].generic_map(mode="self")
+			# The trainer's bit width tracks the layer's generic, not
+			# a baked literal (mirrors the reference).
+			self.architecture.instances["trainer"].g_map.add(
+				"neuron_bit_width", "neuron_bit_width")
 			self.architecture.instances["trainer"].port_map()
 			self.architecture.instances["trainer"].p_map.add(
 				"update_weights", "update_weights")
@@ -694,19 +726,19 @@ class Layer(VHDLblock):
 			if self.role == "hidden":
 				# Hidden trainer:
 				#   x_pre      <- most recent excitatory input spike
-				#   x_post     <- this layer's neuron spikes (out_spikes_inst)
+				#   x_post     <- this layer's registered spikes (out_spikes_s)
 				#   out_spikes <- next layer's feedback (pred_spikes input)
 				self.architecture.instances["trainer"].p_map.add(
 					"x_pre", "exc_spike")
 				self.architecture.instances["trainer"].p_map.add(
-					"x_post", "out_spikes_inst")
+					"x_post", "out_spikes_s")
 				self.architecture.instances["trainer"].p_map.add(
 					"out_spikes", "pred_spikes")
 			else:  # role == "output"
 				# Output trainer:
 				#   clk, rst_n drive the (currently unused) clocked ports
 				#   in_spike   <- last hidden-layer spike (this layer's exc input)
-				#   out_spikes <- this layer's own spikes (out_spikes_inst)
+				#   out_spikes <- this layer's registered spikes (out_spikes_s)
 				self.architecture.instances["trainer"].p_map.add(
 					"clk", "clk")
 				self.architecture.instances["trainer"].p_map.add(
@@ -714,7 +746,7 @@ class Layer(VHDLblock):
 				self.architecture.instances["trainer"].p_map.add(
 					"in_spike", "exc_spike")
 				self.architecture.instances["trainer"].p_map.add(
-					"out_spikes", "out_spikes_inst")
+					"out_spikes", "out_spikes_s")
 
 		# Debug
 		if debug:

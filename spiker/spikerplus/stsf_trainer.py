@@ -194,6 +194,16 @@ class STSFTrainer:
 				f"(keys {expected}); got {layer_keys}. Check the net_dict "
 				"has exactly two 'layer_*' entries with neuron_model='lif'."
 			)
+		# The Spiker-LL RTL only implements subtractive reset
+		# (neuron_subtractive); reject anything else up front.
+		for key in ("lif1", "lif2"):
+			reset = getattr(snn.layers[key], "reset_mechanism", None)
+			if str(reset) != "subtract":
+				raise ValueError(
+					"STSFTrainer requires reset_mechanism="
+					f"'subtract' on both LIF layers; {key} "
+					f"has {reset!r}. The Spiker-LL hardware "
+					"only implements subtractive reset.")
 
 	# ------------------------------------------------------------------
 	# Per-sample forward + update

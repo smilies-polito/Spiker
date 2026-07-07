@@ -18,21 +18,26 @@ class MultiCycle(VHDLblock):
 		self.n_cycles = n_cycles
 		self.cycles_cnt_bitwidth = int(log2(ceil_pow2(n_cycles+1))) + 1
 
-		# When ``learning`` is True the block exposes extra ports
-		# (train_mode, update_every_n) and an inline counter generating
-		# the periodic update_weights_layer0/1 strobes. The underlying
-		# datapath/CU are reused unchanged.
+		# When ``learning`` is True this block structurally mirrors the
+		# hand-coded Spiker-LL reference: split ready inputs
+		# (layers_ready/input_ready), a timestep_end pulse, the output
+		# voter handshake, and the update-every-N machinery split
+		# between the CU (gating sub-FSM) and the datapath
+		# (counter + comparator). train_mode gating of the update
+		# strobes happens one level up, in network.vhd.
 		self.learning = learning
 
 		self.spiker_pkg = SpikerPackage()
 
 		self.datapath = MultiCycleDP(
 			n_cycles = n_cycles,
+			learning = learning,
 			debug = debug,
 			debug_list = debug_list
 		)
 
 		self.control_unit = MultiCycleCU(
+			learning = learning,
 			debug = debug,
 			debug_list = debug_list
 		)
@@ -79,26 +84,60 @@ class MultiCycle(VHDLblock):
 				direction	= "in",
 				port_type	= "std_logic")
 
-		self.entity.port.add(
-				name 		= "all_ready", 
-				direction	= "in",
-				port_type	= "std_logic")
+		if self.learning:
+			self.entity.port.add(
+					name		= "layers_ready",
+					direction	= "in",
+					port_type	= "std_logic")
+			self.entity.port.add(
+					name		= "input_ready",
+					direction	= "in",
+					port_type	= "std_logic")
+		else:
+			self.entity.port.add(
+					name 		= "all_ready",
+					direction	= "in",
+					port_type	= "std_logic")
 
 		# Output
 		self.entity.port.add(
-			name 		= "ready", 
+			name 		= "ready",
 			direction	= "out",
 			port_type	= "std_logic")
 
 		self.entity.port.add(
-			name 		= "restart", 
+			name 		= "restart",
 			direction	= "out",
 			port_type	= "std_logic")
 
 		self.entity.port.add(
-			name 		= "start_all", 
+			name 		= "start_all",
 			direction	= "out",
 			port_type	= "std_logic")
+
+		if self.learning:
+			self.entity.port.add(
+				name="timestep_end", direction="out",
+				port_type="std_logic")
+			self.entity.port.add(
+				name="output_voter_en", direction="out",
+				port_type="std_logic")
+			self.entity.port.add(
+				name="output_voter_vote", direction="out",
+				port_type="std_logic")
+			self.entity.port.add(
+				name="vote_valid", direction="in",
+				port_type="std_logic")
+			self.entity.port.add(
+				name="update_every_n", direction="in",
+				port_type="std_logic_vector("
+				"cycles_cnt_bitwidth-1 downto 0)")
+			self.entity.port.add(
+				name="update_weights_layer0", direction="out",
+				port_type="std_logic")
+			self.entity.port.add(
+				name="update_weights_layer1", direction="out",
+				port_type="std_logic")
 
 		# Signals
 		self.architecture.signal.add(
@@ -112,70 +151,14 @@ class MultiCycle(VHDLblock):
 			signal_type	= "std_logic")
 
 		if self.learning:
-			# update_cnt below is `unsigned`, which needs numeric_std --
-			# only pulled in for the learning path so plain (non-learning)
-			# generation is untouched.
-			self.library["ieee"].package.add("numeric_std")
-
-			# Extra top-level ports for on-chip learning.
-			self.entity.port.add(
-				name="train_mode", direction="in", port_type="std_logic")
-			self.entity.port.add(
-				name="update_every_n", direction="in",
-				port_type="std_logic_vector("
-				"cycles_cnt_bitwidth-1 downto 0)")
-			self.entity.port.add(
-				name="update_weights_layer0", direction="out",
-				port_type="std_logic")
-			self.entity.port.add(
-				name="update_weights_layer1", direction="out",
-				port_type="std_logic")
-
-			# Internal counter that advances once per inference timestep
-			# (``cycles_cnt_en`` already pulses once per cycle inside the
-			# control unit). When it reaches ``update_every_n`` it
-			# strobes the layer-0 update and resets; layer-1's update is
-			# the same strobe delayed by one clock so the trainer sees
-			# the updated layer-0 spikes first.
+			# temp1/temp2 are unused; mirrored verbatim (including
+			# the shared one-line declaration) from the hand-coded
+			# reference.
+			self.architecture.declarationHeader.add(
+				"signal temp1, temp2 : std_logic;")
 			self.architecture.signal.add(
-				name="update_cnt",
-				signal_type="unsigned(cycles_cnt_bitwidth-1 downto 0)")
-			self.architecture.signal.add(
-				name="update_weights_layer0_s", signal_type="std_logic")
-			self.architecture.signal.add(
-				name="update_weights_layer1_s", signal_type="std_logic")
-
-			update_cnt_proc = (
-				"update_cnt_proc : process(clk, rst_n)\n"
-				"    begin\n"
-				"        if rst_n = '0' then\n"
-				"            update_cnt <= (others => '0');\n"
-				"            update_weights_layer0_s <= '0';\n"
-				"            update_weights_layer1_s <= '0';\n"
-				"        elsif rising_edge(clk) then\n"
-				"            update_weights_layer1_s <= update_weights_layer0_s;\n"
-				"            update_weights_layer0_s <= '0';\n"
-				"            if cycles_cnt_en = '1' then\n"
-				"                if update_cnt + 1 >= unsigned(update_every_n) then\n"
-				"                    update_cnt <= (others => '0');\n"
-				"                    update_weights_layer0_s <= '1';\n"
-				"                else\n"
-				"                    update_cnt <= update_cnt + 1;\n"
-				"                end if;\n"
-				"            end if;\n"
-				"        end if;\n"
-				"    end process;"
-			)
-			self.architecture.bodyCodeHeader.add(update_cnt_proc)
-
-			# Final outputs are AND-gated by train_mode so the rest of
-			# the design sees zero update strobes during pure inference.
-			self.architecture.bodyCodeHeader.add(
-				"update_weights_layer0 <= update_weights_layer0_s and "
-				"train_mode;")
-			self.architecture.bodyCodeHeader.add(
-				"update_weights_layer1 <= update_weights_layer1_s and "
-				"train_mode;")
+				name	= "update_every_n_en",
+				signal_type = "std_logic")
 
 		# Components
 		self.architecture.component.add(self.datapath)

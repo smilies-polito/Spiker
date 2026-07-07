@@ -111,28 +111,49 @@ class Network(VHDLblock, dict):
 			port_type	= "std_logic")
 
 		self.entity.port.add(
-			name 		= "start", 
+			name 		= "start",
 			direction	= "in",
 			port_type	= "std_logic")
 
-		self.entity.port.add(
-			name 		= "sample_ready", 
-			direction	= "in",
-			port_type	= "std_logic")
+		if self.learning is not None:
+			self.entity.port.add(
+				name		= "in_valid",
+				direction	= "in",
+				port_type	= "std_logic")
+		else:
+			self.entity.port.add(
+				name 		= "sample_ready",
+				direction	= "in",
+				port_type	= "std_logic")
 
 		# Output
 		self.entity.port.add(
-			name 		= "ready", 
+			name 		= "ready",
 			direction	= "out",
 			port_type	= "std_logic")
+
+		if self.learning is not None:
+			self.entity.port.add(
+				name		= "timestep_start",
+				direction	= "out",
+				port_type	= "std_logic")
+			self.entity.port.add(
+				name		= "timestep_end",
+				direction	= "out",
+				port_type	= "std_logic")
 
 		self.entity.port.add(
 			name 		= "sample",
 			direction	= "out",
 			port_type	= "std_logic")
 
-		# Spiker-LL learning-mode top-level ports.
+		# Spiker-LL learning-mode top-level ports. out_spikes (the voted
+		# class) and in_spikes are added by add()/finalize() once the
+		# layer widths are known.
 		if self.learning is not None:
+			self.entity.port.add(
+				name="out_valid", direction="out",
+				port_type="std_logic")
 			self.entity.port.add(
 				name="train_mode", direction="in",
 				port_type="std_logic")
@@ -144,13 +165,6 @@ class Network(VHDLblock, dict):
 				name="update_every_n", direction="in",
 				port_type="std_logic_vector("
 				"cycles_cnt_bitwidth-1 downto 0)")
-			self.entity.port.add(
-				name="voted_class", direction="out",
-				port_type="std_logic_vector(" +
-				str(self.n_classes-1) + " downto 0)")
-			self.entity.port.add(
-				name="out_valid", direction="out",
-				port_type="std_logic")
 
 
 		# Components
@@ -158,12 +172,22 @@ class Network(VHDLblock, dict):
 		if self.learning is not None:
 			self.architecture.component.add(self.output_voter)
 
-			# Update strobes coming out of multi_cycle and shared signals
-			# routed into both layers.
+			# Update strobes: the multi_cycle emits the raw _s
+			# strobes; the network gates them with train_mode
+			# (mirrors the hand-coded reference's hierarchy).
+			self.architecture.declarationHeader.add(
+				"signal update_weights_layer0, "
+				"update_weights_layer0_s : std_logic;")
+			self.architecture.declarationHeader.add(
+				"signal update_weights_layer1, "
+				"update_weights_layer1_s : std_logic;")
 			self.architecture.signal.add(
-				name="update_weights_layer0", signal_type="std_logic")
+				name="output_voter_en", signal_type="std_logic")
 			self.architecture.signal.add(
-				name="update_weights_layer1", signal_type="std_logic")
+				name="output_voter_vote",
+				signal_type="std_logic")
+			self.architecture.signal.add(
+				name="vote_valid_s", signal_type="std_logic")
 
 		self.architecture.signal.add(
 			name		= "start_all",
@@ -171,7 +195,9 @@ class Network(VHDLblock, dict):
 		)
 
 		self.architecture.signal.add(
-			name		= "all_ready",
+			name		= ("layers_ready"
+					if self.learning is not None
+					else "all_ready"),
 			signal_type	= "std_logic"
 		)
 
@@ -180,9 +206,26 @@ class Network(VHDLblock, dict):
 			signal_type	= "std_logic"
 		)
 
-		self.architecture.bodyCodeHeader.add(
-			"sample <= start_all;"
-		)
+		if self.learning is not None:
+			# ``sample`` is driven by the hidden layer's
+			# input_sample echo (wired in add()); ``timestep_start``
+			# carries what the legacy design calls sample.
+			self.architecture.bodyCodeHeader.add(
+				"timestep_start <= start_all;")
+		else:
+			self.architecture.bodyCodeHeader.add(
+				"sample <= start_all;"
+			)
+
+		# The ready line must sit at bodyCodeHeader[1]: add() rewrites
+		# it by index as layers are added.
+		if self.learning is not None:
+			self.architecture.bodyCodeHeader.add("layers_ready <= "
+					+ self.all_ready.code() + ";\n")
+		else:
+			self.all_ready.add("sample_ready")
+			self.architecture.bodyCodeHeader.add("all_ready <= " +
+					self.all_ready.code() + ";\n")
 
 		# Multi-input control
 		self.architecture.instances.add(self.multi_cycle,
@@ -192,18 +235,25 @@ class Network(VHDLblock, dict):
 
 		if self.learning is not None:
 			# Forward the learning-mode signals to the multi_cycle.
+			# layers_ready / timestep_end / output_voter_* /
+			# update_every_n are matched by name via port_map().
 			self.architecture.instances["multi_cycle_control"].p_map.add(
-				"train_mode", "train_mode")
+				"input_ready", "in_valid")
 			self.architecture.instances["multi_cycle_control"].p_map.add(
-				"update_every_n", "update_every_n")
+				"vote_valid", "vote_valid_s")
 			self.architecture.instances["multi_cycle_control"].p_map.add(
-				"update_weights_layer0", "update_weights_layer0")
+				"update_weights_layer0",
+				"update_weights_layer0_s")
 			self.architecture.instances["multi_cycle_control"].p_map.add(
-				"update_weights_layer1", "update_weights_layer1")
+				"update_weights_layer1",
+				"update_weights_layer1_s")
 
-		self.all_ready.add("sample_ready")
-		self.architecture.bodyCodeHeader.add("all_ready <= " +
-				self.all_ready.code() + ";\n")
+			self.architecture.bodyCodeHeader.add(
+				"update_weights_layer0 <= "
+				"update_weights_layer0_s and train_mode;")
+			self.architecture.bodyCodeHeader.add(
+				"update_weights_layer1 <= "
+				"update_weights_layer1_s and train_mode;")
 
 		
 		# Debug
@@ -263,13 +313,14 @@ class Network(VHDLblock, dict):
 		# design. Reproduce that here so trainable layers match; leave
 		# inference-only layers on the original self-feedback wiring.
 		if getattr(layer, "trainable", False):
+			zero_sig = "zero" + str(layer.n_neurons)
 			self.architecture.signal.add(
-				current_layer + "_inh_zero",
+				zero_sig,
 				"std_logic_vector(" + str(layer.n_neurons-1) +
 				" downto 0)",
 				"(others => '0')")
 			self.architecture.instances[current_layer].p_map.add(
-				"inh_spikes", current_layer + "_inh_zero")
+				"inh_spikes", zero_sig)
 		else:
 			self.architecture.instances[current_layer].p_map.add(
 				"inh_spikes", current_layer + "_feedback")
@@ -285,6 +336,12 @@ class Network(VHDLblock, dict):
 				"update_weights", update_sig)
 			self.architecture.instances[current_layer].p_map.add(
 				"target", "target")
+			if getattr(layer, "role", None) == "hidden":
+				# The hidden layer's input_sample echo drives
+				# the top-level sample port (mirrors the
+				# hand-coded reference).
+				self.architecture.instances[current_layer].\
+					p_map.add("input_sample", "sample")
 
 
 		if self.layer_index == 0:
@@ -296,17 +353,18 @@ class Network(VHDLblock, dict):
 				str(layer.n_exc_inputs-1)  + " downto 0)"
 			)
 
-			self.entity.port.add(
-				name		= "out_spikes",
-				direction	= "out",
-				port_type	= "std_logic_vector(" +
-				str(layer.n_neurons-1)  + " downto 0)"
-			)
-
 			self.architecture.instances[current_layer].p_map.add(
 					"exc_spikes", "in_spikes")
 
-			self.architecture.bodyCodeHeader.add("out_spikes <= ",
+			if self.learning is None:
+				self.entity.port.add(
+					name		= "out_spikes",
+					direction	= "out",
+					port_type	= "std_logic_vector(" +
+					str(layer.n_neurons-1)  + " downto 0)"
+				)
+				self.architecture.bodyCodeHeader.add(
+					"out_spikes <= ",
 					current_layer + "_feedback;\n")
 
 		else:
@@ -355,19 +413,32 @@ class Network(VHDLblock, dict):
 
 			self.architecture.instances[current_layer].p_map.add(
 				"exc_spikes", exc_spikes_internal)
-			self.architecture.bodyCodeHeader[2] = SingleCodeLine(
-				"out_spikes <= ", current_layer + 
-				"_feedback;\n")
+			if self.learning is None:
+				self.architecture.bodyCodeHeader[2] = \
+					SingleCodeLine("out_spikes <= ",
+					current_layer + "_feedback;\n")
 
 			self.architecture.bodyCodeHeader.add(
-				exc_spikes_internal + "<= ", previous_layer + 
+				exc_spikes_internal + "<= ", previous_layer +
 				"_feedback;\n")
 
 
-		self.all_ready.add(layer_ready, "and")
-		self.architecture.bodyCodeHeader[1] = SingleCodeLine(
-				"all_ready <= " + self.all_ready.code()
-				+ ";\n")
+		if self.learning is None:
+			self.all_ready.add(layer_ready, "and")
+			self.architecture.bodyCodeHeader[1] = SingleCodeLine(
+					"all_ready <= " + self.all_ready.code()
+					+ ";\n")
+		else:
+			# Learning designs feed the input-stream valid separately
+			# into the CU (in_valid); only the layers' ready signals
+			# are ANDed here.
+			if self.layer_index == 0:
+				self.all_ready.add(layer_ready)
+			else:
+				self.all_ready.add(layer_ready, "and")
+			self.architecture.bodyCodeHeader[1] = SingleCodeLine(
+					"layers_ready <= " +
+					self.all_ready.code() + ";\n")
 
 		self.layer_index += 1
 
@@ -413,13 +484,11 @@ class Network(VHDLblock, dict):
 			self.architecture.instances["layer_0"].p_map.add(
 				"pred_spikes", "layer_1_feedback")
 
-		# OutputVoter wiring. ``count_en`` ticks once per inference
-		# timestep; ``vote`` fires once per sample at completion.
-		self.architecture.signal.add(
-			name="vote_strobe", signal_type="std_logic")
-		self.architecture.bodyCodeHeader.add(
-			"vote_strobe <= ready;")
-
+		# OutputVoter wiring, mirroring the hand-coded reference: the
+		# CU enables the per-class counters on each timestep
+		# (output_voter_en), requests the vote after the last timestep
+		# (output_voter_vote), and the voted one-hot class drives the
+		# top-level out_spikes.
 		self.architecture.instances.add(self.output_voter, "voter")
 		self.architecture.instances["voter"].generic_map(mode="self")
 		self.architecture.instances["voter"].port_map()
@@ -428,17 +497,20 @@ class Network(VHDLblock, dict):
 		self.architecture.instances["voter"].p_map.add(
 			"rst_n", "rst_n")
 		self.architecture.instances["voter"].p_map.add(
-			"count_en", "start_all")
+			"count_en", "output_voter_en")
 		self.architecture.instances["voter"].p_map.add(
 			"count_rst", "restart")
 		self.architecture.instances["voter"].p_map.add(
 			"spikes_in", "layer_1_feedback")
 		self.architecture.instances["voter"].p_map.add(
-			"vote", "vote_strobe")
+			"vote", "output_voter_vote")
 		self.architecture.instances["voter"].p_map.add(
-			"voted_class", "voted_class")
+			"voted_class", "out_spikes")
 		self.architecture.instances["voter"].p_map.add(
-			"vote_valid", "out_valid")
+			"vote_valid", "vote_valid_s")
+
+		self.architecture.bodyCodeFooter.add(
+			"out_valid <= vote_valid_s;")
 
 	def write_file_all(self, output_dir = "output", rm = False):
 		write_file_all(self, output_dir = output_dir, rm = rm)

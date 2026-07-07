@@ -12,11 +12,13 @@ from .vhdltools.if_statement import If
 
 class MultiCycleDP(VHDLblock):
 
-	def __init__(self, n_cycles = 10, debug = False, debug_list = []):
+	def __init__(self, n_cycles = 10, learning = False, debug = False,
+			debug_list = []):
 
 		self.name = "multi_cycle_dapapath"
 
 		self.n_cycles = n_cycles
+		self.learning = learning
 		self.cycles_cnt_bitwidth = int(log2(ceil_pow2(n_cycles + 1))) \
 				+ 1
 
@@ -65,15 +67,47 @@ class MultiCycleDP(VHDLblock):
 
 		# Output
 		self.entity.port.add(
-			name 		= "stop", 
-			direction	= "out", 
+			name 		= "stop",
+			direction	= "out",
 			port_type	= "std_logic")
+
+		if self.learning:
+			# Update-every-N machinery, mirrored from the hand-coded
+			# Spiker-LL reference: a second cnt+cmp_eq pair counts
+			# timesteps (enabled by the CU's gating sub-FSM) and
+			# strobes the layer-0 weight update on match; layer 1
+			# gets the same strobe one timestep later.
+			self.entity.port.add(
+				name="update_every_n", direction="in",
+				port_type="std_logic_vector("
+				"cycles_cnt_bitwidth-1 downto 0)")
+			self.entity.port.add(
+				name="update_every_n_en", direction="in",
+				port_type="std_logic")
+			self.entity.port.add(
+				name="update_weights_layer0", direction="out",
+				port_type="std_logic")
+			self.entity.port.add(
+				name="update_weights_layer1", direction="out",
+				port_type="std_logic")
 
 		# Signals
 		self.architecture.signal.add(
 			name		= "cycles_cnt",
 			signal_type	= "std_logic_vector("
 					"cycles_cnt_bitwidth-1 downto 0)")
+
+		if self.learning:
+			self.architecture.signal.add(
+				name	= "update_every_n_cnt_out",
+				signal_type = "std_logic_vector("
+					"cycles_cnt_bitwidth-1 downto 0)")
+			self.architecture.signal.add(
+				name	= "update_every_n_rst_n",
+				signal_type = "std_logic")
+			self.architecture.signal.add(
+				name	= "update_every_n_cmp_out",
+				signal_type = "std_logic")
 
 		# Components
 		self.architecture.component.add(self.counter)
@@ -103,11 +137,72 @@ class MultiCycleDP(VHDLblock):
 		self.architecture.instances["cycles_cmp"].port_map()
 		self.architecture.instances["cycles_cmp"].p_map.add(
 				"in0", "cycles_cnt")
+		# Learning designs stop at n_cycles + 2 ("to empty the output
+		# pipeline", per the hand-coded reference); plain designs keep
+		# the original n_cycles + 1.
+		stop_at = "n_cycles + 2" if self.learning else "n_cycles + 1"
 		self.architecture.instances["cycles_cmp"].p_map.add(
 				"in1", "std_logic_vector(to_unsigned("
-				"n_cycles + 1, cycles_cnt_bitwidth))")
+				+ stop_at + ", cycles_cnt_bitwidth))")
 		self.architecture.instances["cycles_cmp"].p_map.add("cmp_out",
 				"stop")
+
+		if self.learning:
+			self.architecture.bodyCodeHeader.add(
+				"update_every_n_rst_n <= cycles_cnt_rst_n and "
+				"not (update_every_n_cmp_out and "
+				"cycles_cnt_en);")
+			self.architecture.bodyCodeHeader.add(
+				"update_weights_layer0 <= "
+				"update_every_n_cmp_out;")
+			self.architecture.bodyCodeHeader.add(
+				"process(clk) is\n"
+				"    begin\n"
+				"        if rising_edge(clk) then\n"
+				"            if cycles_cnt_en = '1' then\n"
+				"                if update_every_n_cmp_out = '1' then\n"
+				"                    update_weights_layer1 <= '1';\n"
+				"                else\n"
+				"                    update_weights_layer1 <= '0';\n"
+				"                end if;\n"
+				"            end if;\n"
+				"        end if;\n"
+				"    end process;")
+
+			self.architecture.instances.add(self.counter,
+					"update_every_n_cnt")
+			self.architecture.instances["update_every_n_cnt"].\
+					generic_map()
+			self.architecture.instances["update_every_n_cnt"].\
+					g_map.add("N", "cycles_cnt_bitwidth")
+			del(self.architecture.instances["update_every_n_cnt"].\
+					g_map["rst_value"])
+			self.architecture.instances["update_every_n_cnt"].\
+					port_map()
+			self.architecture.instances["update_every_n_cnt"].\
+					p_map.add("cnt_en", "update_every_n_en")
+			self.architecture.instances["update_every_n_cnt"].\
+					p_map.add("cnt_rst_n",
+					"update_every_n_rst_n")
+			self.architecture.instances["update_every_n_cnt"].\
+					p_map.add("cnt_out",
+					"update_every_n_cnt_out")
+
+			self.architecture.instances.add(self.cmp,
+					"update_every_n_cmp")
+			self.architecture.instances["update_every_n_cmp"].\
+					generic_map()
+			self.architecture.instances["update_every_n_cmp"].\
+					g_map.add("N", "cycles_cnt_bitwidth")
+			self.architecture.instances["update_every_n_cmp"].\
+					port_map()
+			self.architecture.instances["update_every_n_cmp"].\
+					p_map.add("in0", "update_every_n_cnt_out")
+			self.architecture.instances["update_every_n_cmp"].\
+					p_map.add("in1", "update_every_n")
+			self.architecture.instances["update_every_n_cmp"].\
+					p_map.add("cmp_out",
+					"update_every_n_cmp_out")
 
 		# Debug
 		if debug:
