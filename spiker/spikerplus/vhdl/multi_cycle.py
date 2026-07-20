@@ -10,22 +10,34 @@ from .vhdltools.vhdl_block import VHDLblock
 
 class MultiCycle(VHDLblock):
 
-	def __init__(self, n_cycles = 2, debug = False, debug_list = []):
+	def __init__(self, n_cycles = 2, learning = False,
+			debug = False, debug_list = []):
 
 		self.name = "multi_cycle"
 
 		self.n_cycles = n_cycles
 		self.cycles_cnt_bitwidth = int(log2(ceil_pow2(n_cycles+1))) + 1
 
+		# When ``learning`` is True this block structurally mirrors the
+		# hand-coded Spiker-LL reference: split ready inputs
+		# (layers_ready/input_ready), a timestep_end pulse, the output
+		# voter handshake, and the update-every-N machinery split
+		# between the CU (gating sub-FSM) and the datapath
+		# (counter + comparator). train_mode gating of the update
+		# strobes happens one level up, in network.vhd.
+		self.learning = learning
+
 		self.spiker_pkg = SpikerPackage()
 
 		self.datapath = MultiCycleDP(
 			n_cycles = n_cycles,
+			learning = learning,
 			debug = debug,
 			debug_list = debug_list
 		)
 
 		self.control_unit = MultiCycleCU(
+			learning = learning,
 			debug = debug,
 			debug_list = debug_list
 		)
@@ -72,38 +84,81 @@ class MultiCycle(VHDLblock):
 				direction	= "in",
 				port_type	= "std_logic")
 
-		self.entity.port.add(
-				name 		= "all_ready", 
-				direction	= "in",
-				port_type	= "std_logic")
+		if self.learning:
+			self.entity.port.add(
+					name		= "layers_ready",
+					direction	= "in",
+					port_type	= "std_logic")
+			self.entity.port.add(
+					name		= "input_ready",
+					direction	= "in",
+					port_type	= "std_logic")
+		else:
+			self.entity.port.add(
+					name 		= "all_ready",
+					direction	= "in",
+					port_type	= "std_logic")
 
 		# Output
 		self.entity.port.add(
-			name 		= "ready", 
+			name 		= "ready",
 			direction	= "out",
 			port_type	= "std_logic")
 
 		self.entity.port.add(
-			name 		= "restart", 
+			name 		= "restart",
 			direction	= "out",
 			port_type	= "std_logic")
 
 		self.entity.port.add(
-			name 		= "start_all", 
+			name 		= "start_all",
 			direction	= "out",
 			port_type	= "std_logic")
+
+		if self.learning:
+			self.entity.port.add(
+				name="timestep_end", direction="out",
+				port_type="std_logic")
+			self.entity.port.add(
+				name="output_voter_en", direction="out",
+				port_type="std_logic")
+			self.entity.port.add(
+				name="output_voter_vote", direction="out",
+				port_type="std_logic")
+			self.entity.port.add(
+				name="vote_valid", direction="in",
+				port_type="std_logic")
+			self.entity.port.add(
+				name="update_every_n", direction="in",
+				port_type="std_logic_vector("
+				"cycles_cnt_bitwidth-1 downto 0)")
+			self.entity.port.add(
+				name="update_weights_layer0", direction="out",
+				port_type="std_logic")
+			self.entity.port.add(
+				name="update_weights_layer1", direction="out",
+				port_type="std_logic")
 
 		# Signals
 		self.architecture.signal.add(
-			name 		= "cycles_cnt_en", 
+			name 		= "cycles_cnt_en",
 			signal_type	= "std_logic")
 		self.architecture.signal.add(
-			name 		= "cycles_cnt_rst_n", 
+			name 		= "cycles_cnt_rst_n",
 			signal_type	= "std_logic")
 		self.architecture.signal.add(
-			name 		= "stop", 
+			name 		= "stop",
 			signal_type	= "std_logic")
 
+		if self.learning:
+			# temp1/temp2 are unused; mirrored verbatim (including
+			# the shared one-line declaration) from the hand-coded
+			# reference.
+			self.architecture.declarationHeader.add(
+				"signal temp1, temp2 : std_logic;")
+			self.architecture.signal.add(
+				name	= "update_every_n_en",
+				signal_type = "std_logic")
 
 		# Components
 		self.architecture.component.add(self.datapath)

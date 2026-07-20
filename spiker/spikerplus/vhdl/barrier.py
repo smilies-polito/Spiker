@@ -8,11 +8,13 @@ from .vhdltools.if_statement import If
 
 class Barrier(VHDLblock):
 
-	def __init__(self, bitwidth = 1, debug = False, debug_list = []):
+	def __init__(self, bitwidth = 1, learning = False, debug = False,
+			debug_list = []):
 
 		self.name = "barrier"
 
 		self.bitwidth = bitwidth
+		self.learning = learning
 
 		self.spiker_pkg = SpikerPackage()
 
@@ -85,11 +87,19 @@ class Barrier(VHDLblock):
 				port_type	= "std_logic")
 
 		self.entity.port.add(
-				name 		= "reg_out", 
+				name 		= "reg_out",
 				direction	= "out",
 				port_type	= "std_logic_vector(N-1"
 				" downto 0)")
 
+		if self.learning:
+			# Echo of barrier_en: tells the on-chip trainer when an
+			# input is being sampled (mirrors the hand-coded
+			# Spiker-LL barrier).
+			self.entity.port.add(
+					name		= "input_sample",
+					direction	= "out",
+					port_type	= "std_logic")
 
 		self.architecture.signal.add(
 				name = "present_state",
@@ -124,6 +134,9 @@ class Barrier(VHDLblock):
 		self.architecture.instances["datapath"].p_map.add("rst_n",
 				"barrier_rst_n")
 
+		if self.learning:
+			self.architecture.bodyCodeFooter.add(
+					"input_sample <= barrier_en;")
 
 		# Debug
 		if debug:

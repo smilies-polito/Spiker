@@ -16,10 +16,19 @@ class Rom(VHDLblock):
 			bitwidth : int, fp_decimals : int = 0,
 			max_word_size : int = np.inf, max_depth : int = np.inf,
 			init_file : str = None, name_term : str = "",
-			functional = False, debug = False, debug_list = []): 
+			functional = False, writable : bool = False,
+			debug = False, debug_list = []):
+
+		# When writable=True the block emits a dual-port RAM instead of a
+		# read-only ROM: the entity is renamed ram_<cols>x<rows><label>,
+		# the read port is exposed as (clk, raddr), and an extra write port
+		# (wea, waddr, din) is added. The initialization path (.coe file +
+		# behavioural IP) is reused — the .coe doubles as RAM init data.
+		self.writable = writable
+		prefix = "ram_" if writable else "rom_"
 
 		self.name_term = name_term
-		self.name = "rom_" + str(init_array.shape[1]) + "x" + \
+		self.name = prefix + str(init_array.shape[1]) + "x" + \
 			str(init_array.shape[0]) + self.name_term
 
 		self.rom_columns	= init_array.shape[0]
@@ -97,13 +106,19 @@ class Rom(VHDLblock):
 		self.library.add("ieee")
 		self.library["ieee"].package.add("std_logic_1164")
 
+		# In writable (RAM) mode, the read port carries different names to
+		# avoid colliding with the (separate) write port — match the
+		# Spiker-LL fork: clk, raddr, dout_*, wea, waddr, din.
+		read_clk_name  = "clk"   if self.writable else "clka"
+		read_addr_name = "raddr" if self.writable else "addra"
+
 		self.entity.port.add(
-			name 		= "clka",
+			name 		= read_clk_name,
 			direction	= "in",
 			port_type	= "std_logic"
 		)
 		self.entity.port.add(
-			name 		= "addra",
+			name 		= read_addr_name,
 			direction	= "in",
 			port_type	= "std_logic_vector(" +
 					str(self.addr_width-1)  + " downto 0)"
@@ -122,12 +137,39 @@ class Rom(VHDLblock):
 				name 		= "dout_" + hex_index,
 				direction	= "out",
 				port_type	= "std_logic_vector(" +
-						str(self.bitwidth-1) + 
+						str(self.bitwidth-1) +
 						" downto 0)"
 			)
 
+		if self.writable:
+			# Extra write-side ports — driven by the trainer + multi_input
+			# at runtime; values come from the on-chip learning module.
+			self.entity.port.add(
+				name		= "wea",
+				direction	= "in",
+				port_type	= "std_logic"
+			)
+			self.entity.port.add(
+				name		= "waddr",
+				direction	= "in",
+				port_type	= "std_logic_vector(" +
+						str(self.addr_width-1) + " downto 0)"
+			)
+			self.entity.port.add(
+				name		= "din",
+				direction	= "in",
+				port_type	= "std_logic_vector(" +
+					str(self.bitwidth*self.rom_columns-1) +
+					" downto 0)"
+			)
+
+		# The Spiker-LL fork names the wrapper's internal read bus after
+		# the RAM's true dual-port read output (doutb); the read-only ROM
+		# keeps the original single-port name (douta).
+		read_bus = "doutb" if self.writable else "douta"
+
 		self.architecture.signal.add(
-			name	= "douta",
+			name	= read_bus,
 			signal_type	= "std_logic_vector(" +
 			str(self.bitwidth*self.rom_columns-1)
 			+ " downto 0)"
@@ -143,16 +185,35 @@ class Rom(VHDLblock):
 			hex_index = str(int_to_hex(i, width = hex_width))
 
 			self.architecture.bodyCodeHeader.add(
-				"dout_" + hex_index + " <= douta("
-				+ str(self.bitwidth*(i+1)-1) + " downto " + 
+				"dout_" + hex_index + " <= " + read_bus + "("
+				+ str(self.bitwidth*(i+1)-1) + " downto " +
 				str(self.bitwidth*i) + ");")
 
 
 		self.architecture.component.add(self.rom_ip)
-		self.architecture.instances.add(self.rom_ip, 
-			self.entity.name + "_ip_instance")
-		self.architecture.instances[self.entity.name + 
-			"_ip_instance"].port_map()
+		ip_inst_name = self.entity.name + "_ip_instance"
+		self.architecture.instances.add(self.rom_ip, ip_inst_name)
+
+		if self.writable:
+			# Writable IP has separate write/read ports — wire them
+			# explicitly because the names don't match the outer entity.
+			self.architecture.instances[ip_inst_name].port_map(mode="no")
+			self.architecture.instances[ip_inst_name].p_map.add(
+				"clka",  "clk")
+			self.architecture.instances[ip_inst_name].p_map.add(
+				"wea",   "wea")
+			self.architecture.instances[ip_inst_name].p_map.add(
+				"addra", "waddr")
+			self.architecture.instances[ip_inst_name].p_map.add(
+				"dina",  "din")
+			self.architecture.instances[ip_inst_name].p_map.add(
+				"clkb",  "clk")
+			self.architecture.instances[ip_inst_name].p_map.add(
+				"addrb", "raddr")
+			self.architecture.instances[ip_inst_name].p_map.add(
+				"doutb", "doutb")
+		else:
+			self.architecture.instances[ip_inst_name].port_map()
 
 		# Debug
 		if debug:
@@ -176,51 +237,121 @@ class Rom(VHDLblock):
 		self.rom_ip.library["ieee"].package.add("std_logic_1164")
 		self.rom_ip.library["ieee"].package.add("numeric_std")
 
+		# Storage array — shared between ROM (read-only) and RAM (R/W).
+		# The ``mem`` constant doubles as the RAM init value: at synthesis
+		# Vivado picks it up exactly the same way it would a .coe file.
+		mem_type_name = "ram_type" if self.writable else "rom_type"
+		mem_decl = "signal" if self.writable else "constant"
 
-		self.rom_ip.entity.port.add(
-			name 		= "clka",
-			direction	= "in",
-			port_type	= "std_logic"
-		)
-		self.rom_ip.entity.port.add(
-			name 		= "addra",
-			direction	= "in",
-			port_type	= "std_logic_vector(" +
-					str(self.addr_width - 1) + " downto 0)"
-		)
-
-		self.rom_ip.entity.port.add(
-			name		= "douta",
-			direction	= "out",
-			port_type	= "std_logic_vector(" +
-			str(self.bitwidth*self.rom_columns-1)
-			+ " downto 0)"
-		)
+		if self.writable:
+			# Dual-port RAM: separate write port (clka/wea/addra/dina) and
+			# read port (clkb/addrb/doutb). Behavioural model only;
+			# replaced by a Vivado Block Memory IP at synthesis.
+			self.rom_ip.entity.port.add(
+				name="clka", direction="in", port_type="std_logic")
+			self.rom_ip.entity.port.add(
+				name="wea",  direction="in", port_type="std_logic")
+			self.rom_ip.entity.port.add(
+				name="addra", direction="in",
+				port_type="std_logic_vector(" +
+				str(self.addr_width - 1) + " downto 0)")
+			self.rom_ip.entity.port.add(
+				name="dina", direction="in",
+				port_type="std_logic_vector(" +
+				str(self.bitwidth*self.rom_columns-1) + " downto 0)")
+			self.rom_ip.entity.port.add(
+				name="clkb", direction="in", port_type="std_logic")
+			self.rom_ip.entity.port.add(
+				name="addrb", direction="in",
+				port_type="std_logic_vector(" +
+				str(self.addr_width - 1) + " downto 0)")
+			self.rom_ip.entity.port.add(
+				name="doutb", direction="out",
+				port_type="std_logic_vector(" +
+				str(self.bitwidth*self.rom_columns-1) + " downto 0)")
+		else:
+			# Single-port ROM (read-only) — original Spiker behaviour.
+			self.rom_ip.entity.port.add(
+				name 		= "clka",
+				direction	= "in",
+				port_type	= "std_logic"
+			)
+			self.rom_ip.entity.port.add(
+				name 		= "addra",
+				direction	= "in",
+				port_type	= "std_logic_vector(" +
+						str(self.addr_width - 1) + " downto 0)"
+			)
+			self.rom_ip.entity.port.add(
+				name		= "douta",
+				direction	= "out",
+				port_type	= "std_logic_vector(" +
+				str(self.bitwidth*self.rom_columns-1)
+				+ " downto 0)"
+			)
 
 		self.rom_ip.architecture.customTypes.add(
-			"rom_type",
+			mem_type_name,
 			"Array",
 			"0 to " + str(self.rom_rows),
 			"std_logic_vector(" +
-			str(self.rom_columns*self.bitwidth-1) 
+			str(self.rom_columns*self.bitwidth-1)
 			+ " downto 0)"
 		)
 
-		self.rom_ip.architecture.constant.add("mem", "rom_type",
-				init_matrix)
+		if self.writable:
+			# ``mem`` is a signal initialised to the trained weights —
+			# write_proc updates entries on the rising edge of clka.
+			self.rom_ip.architecture.signal.add(
+				name="ram",
+				signal_type=mem_type_name + " := " + init_matrix)
 
-		self.rom_ip.architecture.processes.add("rom_behavior")
-		self.rom_ip.architecture.processes["rom_behavior"].\
-			sensitivity_list.add("clka")
-		self.rom_ip.architecture.processes["rom_behavior"].\
-			if_list.add()
-		self.rom_ip.architecture.processes["rom_behavior"].\
-			if_list[0]._if_.conditions.add("clka'event")
-		self.rom_ip.architecture.processes["rom_behavior"].\
-			if_list[0]._if_.conditions.add("clka='1'", "and")
-		self.rom_ip.architecture.processes["rom_behavior"].\
-			if_list[0]._if_.body.add(
-			"douta <= mem(to_integer(unsigned(addra)));")
+			# Write port — synchronous on clka.
+			self.rom_ip.architecture.processes.add("write_proc")
+			self.rom_ip.architecture.processes["write_proc"].\
+				sensitivity_list.add("clka")
+			self.rom_ip.architecture.processes["write_proc"].if_list.add()
+			self.rom_ip.architecture.processes["write_proc"].\
+				if_list[0]._if_.conditions.add("clka'event")
+			self.rom_ip.architecture.processes["write_proc"].\
+				if_list[0]._if_.conditions.add("clka='1'", "and")
+			# Nested if for wea — keep the structure simple by emitting
+			# the inner write as a raw body line.
+			self.rom_ip.architecture.processes["write_proc"].\
+				if_list[0]._if_.body.add(
+				"if wea = '1' then\n"
+				"            ram(to_integer(unsigned(addra))) <= dina;\n"
+				"        end if;")
+
+			# Read port — synchronous on clkb.
+			self.rom_ip.architecture.processes.add("read_proc")
+			self.rom_ip.architecture.processes["read_proc"].\
+				sensitivity_list.add("clkb")
+			self.rom_ip.architecture.processes["read_proc"].if_list.add()
+			self.rom_ip.architecture.processes["read_proc"].\
+				if_list[0]._if_.conditions.add("clkb'event")
+			self.rom_ip.architecture.processes["read_proc"].\
+				if_list[0]._if_.conditions.add("clkb='1'", "and")
+			self.rom_ip.architecture.processes["read_proc"].\
+				if_list[0]._if_.body.add(
+				"doutb <= ram(to_integer(unsigned(addrb)));")
+		else:
+			# Read-only ROM — original behavior.
+			self.rom_ip.architecture.constant.add(
+				"mem", mem_type_name, init_matrix)
+
+			self.rom_ip.architecture.processes.add("rom_behavior")
+			self.rom_ip.architecture.processes["rom_behavior"].\
+				sensitivity_list.add("clka")
+			self.rom_ip.architecture.processes["rom_behavior"].\
+				if_list.add()
+			self.rom_ip.architecture.processes["rom_behavior"].\
+				if_list[0]._if_.conditions.add("clka'event")
+			self.rom_ip.architecture.processes["rom_behavior"].\
+				if_list[0]._if_.conditions.add("clka='1'", "and")
+			self.rom_ip.architecture.processes["rom_behavior"].\
+				if_list[0]._if_.body.add(
+				"douta <= mem(to_integer(unsigned(addra)));")
 
 
 	def write_file(self, output_dir = "output", rm = False):
@@ -228,5 +359,11 @@ class Rom(VHDLblock):
 
 		if self.functional:
 			self.rom_ip.write_file(output_dir = output_dir, rm = rm)
-		else:
+
+		# Writable RAMs always need the .coe as the eventual Vivado BRAM
+		# IP's initial contents, regardless of functional/interface mode.
+		# Read-only ROMs keep the exact original behaviour (.coe only when
+		# NOT also emitting the functional behavioural model), so legacy
+		# (non-learning) output is byte-for-byte unchanged.
+		if self.writable or not self.functional:
 			self.write_coe(output_dir = output_dir)

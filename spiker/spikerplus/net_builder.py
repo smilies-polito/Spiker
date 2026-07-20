@@ -14,6 +14,12 @@ class SNN(nn.Module):
 
 		self.n_cycles = net_dict["n_cycles"]
 
+		# Learning configuration is optional. When set it carries the
+		# STSF hyperparameters that ``STSFTrainer`` consumes and that
+		# ``VhdlGenerator`` reads to switch into Spiker-LL mode. None
+		# means inference-only (the original Spiker behaviour).
+		self.learning = net_dict.get("learning")
+
 		self.layers = nn.ModuleDict()
 
 		self.syn = {}
@@ -313,7 +319,13 @@ class NetBuilder:
 		}
 
 		self.net_allowed_keys = self.select_keys()
+		# Top-level ``learning`` block is also a valid key — it is parsed
+		# below as a dict rather than the usual int scalar.
+		if "learning" not in self.net_allowed_keys:
+			self.net_allowed_keys.append("learning")
+
 		self.supported_models = ["if", "lif", "syn", "rif", "rlif", "rsyn"]
+		self.supported_learning_rules = ["stsf"]
 
 		self.has_alpha = {
 			"if"	: False,
@@ -364,6 +376,95 @@ class NetBuilder:
 
 
 
+	def parse_learning(self, block):
+		"""Validate and apply defaults to the top-level ``learning`` block.
+
+		Returned dict carries the hyperparameters needed by both
+		``STSFTrainer`` (lr, loss_value, update_every, seed, bw, fp_dec) and
+		``VhdlGenerator`` (rule selection + the same hyperparameters,
+		which are baked into the output_layer_trainer's CONST value).
+		"""
+		if not isinstance(block, dict):
+			raise ValueError("'learning' must be a dict")
+
+		rule = block.get("rule", "stsf")
+		if rule not in self.supported_learning_rules:
+			raise ValueError(
+				f"Unsupported learning rule {rule!r}. Choose one of "
+				f"{self.supported_learning_rules}"
+			)
+
+		update_every = block.get("update_every", 5)
+		if not isinstance(update_every, int) or update_every < 1 \
+				or update_every >= 32:
+			raise ValueError(
+				"learning['update_every'] must be a positive integer "
+				"fitting in 5 bits; got " + repr(update_every))
+
+		lr = float(block.get("lr", 0.01))
+		loss_value = float(block.get("loss_value", 0.2))
+		seed = block.get("seed", None)
+
+		# Optional explicit output-trainer constant override. When set this
+		# value is used directly as CONST/NEG_CONST in the generated VHDL,
+		# bypassing the lr*loss_value*2^FP_DEC formula (which can round to
+		# 0 for small lr/loss_value).  The reference mnist/rtl uses 5.
+		output_const_value = block.get("output_const_value", None)
+		if output_const_value is not None:
+			output_const_value = int(output_const_value)
+			if output_const_value <= 0:
+				raise ValueError(
+					"learning['output_const_value'] must be a positive "
+					f"integer; got {output_const_value}")
+
+		# Fixed-point bitwidths used for weight quantisation during training
+		# and baked into the generated VHDL. Defaults match the original
+		# 16-bit hardware format so existing configs need no changes.
+		bw = block.get("bw", 16)
+		fp_dec = block.get("fp_dec", 8)
+		if not isinstance(bw, int) or bw < 2:
+			raise ValueError(
+				f"learning['bw'] must be an integer >= 2; got {bw!r}")
+		if not isinstance(fp_dec, int) or fp_dec < 1 or fp_dec >= bw:
+			raise ValueError(
+				f"learning['fp_dec'] must be a positive integer < bw ({bw}); "
+				f"got {fp_dec!r}")
+
+		return {
+			"rule":               rule,
+			"update_every":       update_every,
+			"lr":                 lr,
+			"loss_value":         loss_value,
+			"seed":               seed,
+			"output_const_value": output_const_value,
+			"bw":                 bw,
+			"fp_dec":             fp_dec,
+		}
+
+	def _validate_learning_topology(self, parsed_dict):
+		"""Enforce the constraints the Spiker-LL RTL bakes in.
+
+		Specifically: exactly two LIF layers, subtractive reset on both.
+		Anything else would either not synthesize or silently miscompute,
+		so fail loudly here at config-parsing time.
+		"""
+		layer_keys = [k for k in parsed_dict if k.startswith("layer_")]
+		if len(layer_keys) != 2:
+			raise ValueError(
+				"STSF learning currently requires exactly 2 layers "
+				f"(1 hidden + 1 output); got {len(layer_keys)} ({layer_keys})"
+			)
+		for k in layer_keys:
+			if parsed_dict[k]["neuron_model"] != "lif":
+				raise ValueError(
+					f"learning mode requires LIF neurons; layer {k} uses "
+					f"{parsed_dict[k]['neuron_model']}")
+			if parsed_dict[k]["reset_mechanism"] != "subtract":
+				raise ValueError(
+					"learning mode requires reset_mechanism='subtract' "
+					"(matches the HW neuron_subtractive); layer " + k +
+					" uses " + parsed_dict[k]["reset_mechanism"])
+
 	def parse_config(self, net_dict):
 
 		parsed_dict = {}
@@ -372,7 +473,12 @@ class NetBuilder:
 
 			if any([allowed in key for allowed in self.net_allowed_keys]):
 
-				if "layer" not in key:
+				if key == "learning":
+					# Learning block: dict with on-chip-learning hyperparams.
+					# Parsed/validated separately below.
+					parsed_dict[key] = self.parse_learning(net_dict[key])
+
+				elif "layer" not in key:
 
 					if type(net_dict[key]) is not int:
 						raise ValueError("Error, " + key + " must be an "
@@ -544,6 +650,11 @@ class NetBuilder:
 				if "layer_" in key:
 
 					parsed_dict[key] = self.default_dict[key]
+
+		# If learning was requested, enforce the topology constraints
+		# imposed by the Spiker-LL RTL.
+		if "learning" in parsed_dict:
+			self._validate_learning_topology(parsed_dict)
 
 		log_message = "Network configured: \n"
 		log_message += json.dumps(parsed_dict, indent = 4) + "\n"
