@@ -1,7 +1,7 @@
 numpy>=1.20
-torch==2.9.*
-torchaudio==2.9.*
-torchvision==0.24.*
+torch==2.8.*
+torchaudio==2.8.*
+torchvision==0.23.*
 snntorch>=0.9.1
 tabulate>=0.9.0
 tonic>=1.5.0
